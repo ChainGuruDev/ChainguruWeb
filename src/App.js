@@ -1,26 +1,117 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from "react";
+import CssBaseline from "@material-ui/core/CssBaseline";
+import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
+import { Switch, Route, BrowserRouter } from "react-router-dom";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+import "./i18n";
+import interestTheme from "./theme";
+
+import Header from "./components/header";
+import Footer from "./components/footer";
+import Home from "./components/home";
+import Short from "./components/short";
+import Medium from "./components/medium";
+import Long from "./components/long";
+import Market from "./components/market";
+
+import { injected } from "./stores/connectors";
+import { CONNECTION_CONNECTED } from "./constants";
+
+import Store from "./stores";
+const emitter = Store.emitter;
+const store = Store.store;
+
+class App extends Component {
+  state = {
+    headerValue: null,
+  };
+
+  setHeaderValue = (newValue) => {
+    this.setState({ headerValue: newValue });
+  };
+
+  componentDidMount() {
+    injected.isAuthorized().then((isAuthorized) => {
+      if (isAuthorized) {
+        injected
+          .activate()
+          .then((a) => {
+            store.setStore({
+              account: { address: a.account },
+              web3context: { library: { provider: a.provider } },
+            });
+            emitter.emit(CONNECTION_CONNECTED);
+            console.log(a);
+          })
+          .catch((e) => {
+            console.log(e);
+          });
+      } else {
+      }
+    });
+  }
+
+  render() {
+    const { headerValue } = this.state;
+
+    return (
+      <MuiThemeProvider theme={createMuiTheme(interestTheme)}>
+        <CssBaseline />
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            minHeight: "100vh",
+            alignItems: "center",
+            background: "#f9fafb",
+          }}
         >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+          <BrowserRouter>
+            <Switch>
+              <Route path="/short">
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                />
+                <Short />
+              </Route>
+            </Switch>
+            <Switch>
+              <Route path="/medium">
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                />
+                <Medium />
+              </Route>
+            </Switch>
+            <Switch>
+              <Route path="/long">
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                />
+                <Long />
+              </Route>
+            </Switch>
+            <Switch>
+              <Route path="/market">
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                />
+                <Market />
+              </Route>
+              <Route path="/">
+                <Home />
+              </Route>
+            </Switch>
+            <Footer />
+          </BrowserRouter>
+        </div>
+      </MuiThemeProvider>
+    );
+  }
 }
 
 export default App;

@@ -1,0 +1,28 @@
+{
+  "Unlock.Deactivate": "Deactivate",
+  "Unlock.WalletConnected": "Wallet successfully connected.",
+
+  "Snackbar.Error": "Error",
+  "Snackbar.Warning": "Warning",
+  "Snackbar.Info": "Info",
+  "Snackbar.Succecss": "Success",
+  "Snackbar.Hash": "Hash",
+
+  "Footer.Home": "home",
+  "Footer.About": "about",
+  "Footer.Docs": "docs",
+  "Footer.Code": "code",
+  "Footer.Telegram": "telegram",
+  "Footer.Yield": "yield",
+  "Footer.BuiltWith": "builtwith",
+  "Footer.Zap": "zap",
+  "Footer.Insure": "insure",
+
+  "Home.Short": "Short",
+  "Home.Medium": "Medium",
+  "Home.Long": "Long",
+  "Home.Market": "Market",
+
+  "Market.Connect": "Connect",
+  "Market.Disconnect": "Disconnect"
+}
