@@ -1,5 +1,5 @@
 const config = {
-  infuraProvider: "http://localhost:9545",
+  infuraProvider: "https://kovan.infura.io/v3/da08cbb0e0604f3ab2f57742f776c115",
   lfOriginalsContract: "0x85f8CDf1A693cDa94C0297c2c64eE54e713A4598",
 
   LFOriginalsABI: [
