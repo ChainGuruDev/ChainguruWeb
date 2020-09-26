@@ -15,6 +15,7 @@ import {
   Input,
   FormHelperText,
   TextField,
+  CircularProgress,
 } from "@material-ui/core";
 import Icon from "@material-ui/core/Icon";
 import Button from "@material-ui/core/Button";
@@ -32,6 +33,7 @@ import {
   CONNECTION_DISCONNECTED,
   GET_CURRENTEDITION,
   EDITION_RETURNED,
+  CREATE_NEW_EDITION,
 } from "../../../constants";
 
 import { withTranslation } from "react-i18next";
@@ -137,6 +139,7 @@ class NewEdit extends Component {
     const account = store.getStore("account");
 
     if (account && account.address) {
+      dispatcher.dispatch({ type: GET_CURRENTEDITION, content: {} });
     }
   }
 
@@ -144,6 +147,7 @@ class NewEdit extends Component {
     emitter.on(ERROR, this.errorReturned);
     emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
+    emitter.on(EDITION_RETURNED, this.editionReturned);
   }
 
   componentWillUnmount() {
@@ -153,7 +157,12 @@ class NewEdit extends Component {
       CONNECTION_DISCONNECTED,
       this.connectionDisconnected
     );
+    emitter.removeListener(EDITION_RETURNED, this.editionReturned);
   }
+
+  editionReturned = (curEdit) => {
+    this.setState({ curEdit: curEdit });
+  };
 
   connectionConnected = () => {
     const { t } = this.props;
@@ -193,9 +202,6 @@ class NewEdit extends Component {
     reader.readAsArrayBuffer(file);
     reader.onloadend = () => {
       this.convertToBuffer(reader);
-      //this.setState({ buffer: Buffer(reader.result) });
-      //console.log("buffer", this.state.buffer);
-      //this.uploadImage(this.state.buffer);
     };
   };
 
@@ -208,7 +214,7 @@ class NewEdit extends Component {
   uploadImage = async (buffer) => {
     let results = await ipfs.add(buffer);
     this.setState({
-      imagePath: "https://cloudflare-ipfs.com/ipfs/" + results[0].hash,
+      imagePath: "https://cloudflare-ipfs.com/ipfs/" + (await results.path),
       isUploading: false,
     });
   };
@@ -216,7 +222,7 @@ class NewEdit extends Component {
   uploadTokenURI = async (buffer) => {
     let results = await ipfs.add(buffer);
     this.setState({
-      tokenURI: "https://cloudflare-ipfs.com/ipfs/" + results[0].hash,
+      tokenURI: "https://cloudflare-ipfs.com/ipfs/" + (await results.path),
       isUploading: false,
     });
   };
@@ -227,12 +233,34 @@ class NewEdit extends Component {
 
   handleArtistName = (event) => {
     this.setState({ artistName: event.target.value });
-    console.log(event);
   };
 
   handleDesc = (event) => {
     this.setState({ description: event.target.value });
-    console.log(event.target.value);
+  };
+
+  handleClick = (event) => {
+    if (!this.state.imagePath.length > 0) return;
+
+    if (!this.state.name.length > 0 || !this.state.description.length > 0)
+      return;
+    this.setState({ isUploading: true });
+
+    let _editionNumber = (1 + parseInt(this.state.curEdit)) * 100;
+    let _extURL =
+      "https://longboardfamara.herokuapp.com/edition/" + _editionNumber;
+
+    let metadata = {};
+    metadata.name = this.state.name;
+    metadata.description = this.state.description;
+    metadata.artistName = this.state.artistName;
+    metadata.external_url = _extURL;
+    metadata.image = this.state.imagePath;
+    metadata = JSON.stringify(metadata);
+
+    let buffer = Buffer.from(metadata);
+
+    this.uploadTokenURI(buffer);
   };
 
   render() {
@@ -272,16 +300,20 @@ class NewEdit extends Component {
     };
 
     const onSubmit = async () => {
-      let _editionNumber;
-      let _editionData;
-      let _price;
-      console.log("editionNumber: " + _editionNumber);
-      console.log("editionData: " + _editionData);
-      console.log("artistAccount: " + artistAccount);
-      console.log("artistCommission: " + artistCommission);
-      console.log("price: " + _price);
-      console.log("tokenURI: " + this.state.tokenURI);
-      console.log("max supply: " + maxSupply);
+      let _editionNumber = (1 + parseInt(this.state.curEdit)) * 100;
+
+      dispatcher.dispatch({
+        type: CREATE_NEW_EDITION,
+        content: {
+          editionNumber: _editionNumber,
+          editionData: editionData,
+          artistAccount: artistAccount,
+          artistCommission: artistCommission,
+          price: price,
+          tokenURI: this.state.tokenURI,
+          maxSupply: maxSupply,
+        },
+      });
     };
 
     return (
@@ -317,30 +349,35 @@ class NewEdit extends Component {
                     <label
                       htmlFor="outlined-button-file"
                       style={{
-                        display: this.state.isUploading ? "none" : "block",
+                        display: this.state.isUploading ? "block" : "block",
                       }}
                     >
                       <Button
                         variant="contained"
                         color="primary"
                         component="span"
+                        style={{
+                          display: this.state.imagePath ? "none" : "flex",
+                        }}
+                        disabled={this.state.isUploading}
                       >
-                        Upload image
+                        {this.state.isUploading && (
+                          <CircularProgress size={24} />
+                        )}
+                        {!this.state.isUploading && "Upload image"}
                       </Button>
                     </label>
-                    <p
+                    <TextField
+                      id="standard-name"
+                      label="ImageURL"
+                      fullWidth
+                      disabled="True"
+                      margin="normal"
+                      value={this.state.imagePath}
                       style={{
-                        display: this.state.isUploading ? "block" : "none",
+                        display: this.state.imagePath ? "flex" : "none",
                       }}
-                    >
-                      Now Uploading...
-                    </p>
-
-                    <p>
-                      Image: <br />
-                      {this.state.imagePath}
-                    </p>
-
+                    />
                     <TextField
                       id="standard-name"
                       label="Name"
@@ -367,15 +404,17 @@ class NewEdit extends Component {
 
                     <Button
                       style={{
-                        display: this.state.imagePath ? "block" : "none",
+                        display: this.state.imagePath ? "flex" : "none",
                       }}
                       variant="contained"
                       color="primary"
                       component="span"
                       className={classes.button}
                       onClick={this.handleClick}
+                      disabled={this.state.isUploading}
                     >
-                      Upload Token
+                      {this.state.isUploading && <CircularProgress size={24} />}
+                      {!this.state.isUploading && "Upload token"}
                     </Button>
                   </form>
                   <form
@@ -393,7 +432,7 @@ class NewEdit extends Component {
                       <Input
                         id="editionData"
                         variant="filled"
-                        onChange={this.handleChange}
+                        onChange={handleChange}
                         aria-describedby="my-helper-text"
                       />
                       <FormHelperText id="my-helper-text">

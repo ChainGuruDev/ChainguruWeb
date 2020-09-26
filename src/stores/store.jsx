@@ -25,6 +25,8 @@ import {
   ITEMS_CIRCULATING_RETURNED,
   SALES_VALUE_RETURNED,
   ACCOUNT_ROLES_RETURNED,
+  CREATE_NEW_EDITION,
+  NEW_EDITION_RETURNED,
 } from "../constants";
 
 import {
@@ -114,6 +116,9 @@ class Store {
           case GET_ACCOUNT_ROLES:
             this.getAccountRoles(payload);
             break;
+          case CREATE_NEW_EDITION:
+            this.createNewEdition(payload);
+            break;
           default: {
           }
         }
@@ -130,6 +135,105 @@ class Store {
     //  console.log(this.store)
     return emitter.emit("StoreUpdated");
   }
+
+  createNewEdition = async (payload) => {
+    const web3 = new Web3(store.getStore("web3context").library.provider);
+    const account = store.getStore("account");
+    let lfOriginalsContract = new web3.eth.Contract(
+      config.LFOriginalsABI,
+      config.lfOriginalsContract
+    );
+
+    const {
+      editionNumber,
+      editionData,
+      artistAccount,
+      artistCommission,
+      price,
+      tokenURI,
+      maxSupply,
+    } = payload.content;
+
+    let _editionData = web3.eth.abi.encodeParameter(
+      "bytes32",
+      web3.utils.fromAscii(editionData)
+    );
+    let _price = web3.utils.toWei(price);
+
+    this._callCreateNew(
+      account.address,
+      editionNumber,
+      _editionData,
+      artistAccount,
+      artistCommission,
+      _price,
+      tokenURI,
+      maxSupply,
+      (err, result) => {
+        if (err) {
+          return emitter.emit(ERROR, err);
+        }
+
+        return emitter.emit(NEW_EDITION_RETURNED, result);
+      }
+    );
+    console.log("from: " + account.address);
+    console.log("editionNumber: " + editionNumber);
+    console.log("editionData: " + _editionData);
+    console.log("artistAccount: " + artistAccount);
+    console.log("artistCommission: " + artistCommission);
+    console.log("price: " + _price);
+    console.log("tokenURI: " + tokenURI);
+    console.log("max supply: " + maxSupply);
+  };
+
+  _callCreateNew = async (
+    account,
+    editionNumber,
+    editionData,
+    artistAccount,
+    artistCommission,
+    price,
+    tokenURI,
+    maxSupply,
+    callback
+  ) => {
+    const web3 = new Web3(store.getStore("web3context").library.provider);
+    let lfOriginalsContract = new web3.eth.Contract(
+      config.LFOriginalsABI,
+      config.lfOriginalsContract
+    );
+    lfOriginalsContract.methods
+      .createActiveEdition(
+        editionNumber,
+        editionData,
+        artistAccount,
+        artistCommission,
+        price,
+        tokenURI,
+        maxSupply
+      )
+      .send({
+        from: account,
+        gasPrice: web3.utils.toWei(await this._getGasPrice(), "gwei"),
+      })
+      .on("transactionHash", function (hash) {
+        console.log(hash);
+        callback(null, hash);
+      })
+      .on("receipt", function (receipt) {
+        console.log(receipt);
+      })
+      .on("error", function (error) {
+        console.log(error);
+        if (!error.toString().includes("-32601")) {
+          if (error.message) {
+            return callback(error.message);
+          }
+          callback(error);
+        }
+      });
+  };
 
   getTokenJson = async (url) => {
     let _tokenURI;
