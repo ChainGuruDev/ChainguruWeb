@@ -13,6 +13,7 @@ import Short from "./components/short";
 import Medium from "./components/medium";
 import Long from "./components/long";
 import Market from "./components/market";
+import NewEdit from "./components/market/edition/new";
 
 import { injected } from "./stores/connectors";
 import { CONNECTION_CONNECTED } from "./constants";
@@ -75,8 +76,6 @@ class App extends Component {
                 />
                 <Short />
               </Route>
-            </Switch>
-            <Switch>
               <Route path="/medium">
                 <Header
                   setHeaderValue={this.setHeaderValue}
@@ -84,8 +83,6 @@ class App extends Component {
                 />
                 <Medium />
               </Route>
-            </Switch>
-            <Switch>
               <Route path="/long">
                 <Header
                   setHeaderValue={this.setHeaderValue}
@@ -93,14 +90,19 @@ class App extends Component {
                 />
                 <Long />
               </Route>
-            </Switch>
-            <Switch>
               <Route path="/market">
                 <Header
                   setHeaderValue={this.setHeaderValue}
                   headerValue={headerValue}
                 />
                 <Market />
+              </Route>
+              <Route path="/edition/new">
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                />
+                <NewEdit />
               </Route>
               <Route path="/">
                 <Home />

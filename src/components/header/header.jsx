@@ -1,8 +1,18 @@
-import React from "react";
+import React, { Component } from "react";
 import { withStyles } from "@material-ui/core/styles";
 import { Typography } from "@material-ui/core";
 import { withRouter } from "react-router-dom";
 import { colors } from "../../theme";
+import ENS from "ethjs-ens";
+import { withTranslation } from "react-i18next";
+
+import { CONNECTION_CONNECTED, CONNECTION_DISCONNECTED } from "../../constants";
+
+import UnlockModal from "../unlock/unlockModal.jsx";
+
+import Store from "../../stores";
+const emitter = Store.emitter;
+const store = Store.store;
 
 const styles = (theme) => ({
   root: {
@@ -10,246 +20,254 @@ const styles = (theme) => ({
     width: "100%",
     display: "flex",
   },
-  earn: {
-    flex: "1",
-    height: "75px",
+  headerV2: {
+    background: colors.white,
     width: "100%",
     display: "flex",
-    justifyContent: "center",
+    borderBottom: "3px solid " + colors.green,
+    padding: "24px 32px",
     alignItems: "center",
-    cursor: "pointer",
-    backgroundColor: colors.pink,
-    "&:hover": {
-      backgroundColor: "#f9fafb",
-      "& .title": {
-        color: colors.pink,
-      },
-      "& .titleActive": {
-        color: colors.pink,
-        borderBottom: "4px solid " + colors.pink,
-        padding: "10px 0px",
-      },
-      "& .icon": {
-        color: colors.pink,
-      },
-    },
-    "& .title": {
-      color: colors.white,
-    },
-    "& .titleActive": {
-      color: colors.white,
-      borderBottom: "4px solid white",
-      padding: "10px 0px",
-    },
-    "& .icon": {
-      color: colors.white,
+    justifyContent: "center",
+    [theme.breakpoints.down("sm")]: {
+      justifyContent: "space-between",
+      padding: "16px 24px",
     },
   },
-  zap: {
-    flex: "1",
-    height: "75px",
-    width: "100%",
+  icon: {
     display: "flex",
-    justifyContent: "center",
     alignItems: "center",
+    flex: 1,
     cursor: "pointer",
-    backgroundColor: colors.lightBlue,
+  },
+  links: {
+    display: "flex",
+  },
+  link: {
+    padding: "12px 0px",
+    margin: "0px 12px",
+    cursor: "pointer",
     "&:hover": {
-      backgroundColor: "#f9fafb",
-      "& .title": {
-        color: colors.lightBlue,
-      },
-      "& .titleActive": {
-        color: colors.lightBlue,
-        borderBottom: "4px solid " + colors.lightBlue,
-        padding: "10px 0px",
-      },
-      "& .icon": {
-        color: colors.lightBlue,
-      },
-    },
-    "& .title": {
-      color: colors.white,
-    },
-    "& .titleActive": {
-      color: colors.white,
-      borderBottom: "4px solid white",
-      padding: "10px 0px",
-    },
-    "& .icon": {
-      color: colors.white,
+      paddingBottom: "9px",
+      borderBottom: "3px solid " + colors.compoundGreen,
     },
   },
-  apr: {
-    flex: "1",
-    height: "75px",
-    width: "100%",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
+  title: {
+    textTransform: "capitalize",
+  },
+  linkActive: {
+    padding: "12px 0px",
+    margin: "0px 12px",
     cursor: "pointer",
-    backgroundColor: colors.lightBlack,
-    "&:hover": {
-      backgroundColor: "#f9fafb",
-      "& .title": {
-        color: colors.lightBlack,
-      },
-      "& .titleActive": {
-        color: colors.lightBlack,
-        borderBottom: "4px solid " + colors.lightBlack,
-        padding: "10px 0px",
-      },
-      "& .icon": {
-        color: colors.lightBlack,
-      },
-    },
-    "& .title": {
-      color: colors.white,
-    },
-    "& .titleActive": {
-      color: colors.white,
-      borderBottom: "4px solid white",
-      padding: "10px 0px",
-    },
-    "& .icon": {
-      color: colors.white,
+    paddingBottom: "9px",
+    borderBottom: "3px solid " + colors.green,
+  },
+  account: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    flex: 1,
+    [theme.breakpoints.down("sm")]: {
+      flex: "0",
     },
   },
-  cover: {
-    flex: "1",
-    height: "75px",
-    width: "100%",
+  walletAddress: {
+    padding: "12px",
+    border: "2px solid rgb(174, 174, 174)",
+    borderRadius: "50px",
     display: "flex",
-    justifyContent: "center",
     alignItems: "center",
     cursor: "pointer",
-    backgroundColor: colors.compoundGreen,
     "&:hover": {
-      backgroundColor: "#f9fafb",
-      "& .title": {
-        color: colors.compoundGreen,
-      },
-      "& .titleActive": {
-        color: colors.compoundGreen,
-        borderBottom: "4px solid " + colors.compoundGreen,
-        padding: "10px 0px",
-      },
-      "& .icon": {
-        color: colors.compoundGreen,
-      },
-    },
-    "& .title": {
-      color: colors.white,
-    },
-    "& .titleActive": {
-      color: colors.white,
-      borderBottom: "4px solid white",
-      padding: "10px 0px",
-    },
-    "& .icon": {
-      color: colors.white,
+      border: "2px solid " + colors.borderBlue,
+      background: "rgba(47, 128, 237, 0.1)",
     },
   },
-  pool: {
-    flex: "1",
-    height: "75px",
-    width: "100%",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    cursor: "pointer",
-    backgroundColor: colors.tomato,
-    "&:hover": {
-      backgroundColor: "#f9fafb",
-      "& .title": {
-        color: colors.tomato,
-      },
-      "& .titleActive": {
-        color: colors.tomato,
-        borderBottom: "4px solid " + colors.tomato,
-        padding: "10px 0px",
-      },
-      "& .icon": {
-        color: colors.tomato,
-      },
-    },
-    "& .title": {
-      color: colors.white,
-    },
-    "& .titleActive": {
-      color: colors.white,
-      borderBottom: "4px solid white",
-      padding: "10px 0px",
-    },
-    "& .icon": {
-      color: colors.white,
+  walletTitle: {
+    flex: 1,
+    color: colors.darkGray,
+  },
+  connectedDot: {
+    background: colors.compoundGreen,
+    opacity: "1",
+    borderRadius: "10px",
+    width: "10px",
+    height: "10px",
+    marginRight: "3px",
+    marginLeft: "6px",
+  },
+  name: {
+    paddingLeft: "24px",
+    [theme.breakpoints.down("sm")]: {
+      display: "none",
     },
   },
 });
 
-function Header(props) {
-  const { classes, headerValue } = props;
+class Header extends Component {
+  constructor(props) {
+    super();
 
-  const nav = (screen) => {
-    props.history.push("/" + screen);
+    this.state = {
+      account: store.getStore("account"),
+      modalOpen: false,
+    };
+  }
+
+  componentDidMount() {
+    emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
+    emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
+  }
+
+  componentWillUnmount() {
+    emitter.removeListener(CONNECTION_CONNECTED, this.connectionConnected);
+    emitter.removeListener(
+      CONNECTION_DISCONNECTED,
+      this.connectionDisconnected
+    );
+  }
+
+  connectionConnected = () => {
+    this.setState({ account: store.getStore("account") });
+    this.setAddressEnsName();
   };
 
-  return (
-    <div className={classes.root}>
+  connectionDisconnected = () => {
+    this.setState({ account: store.getStore("account") });
+  };
+
+  setAddressEnsName = async () => {
+    const context = store.getStore("web3context");
+    if (context && context.library && context.library.provider) {
+      const provider = context.library.provider;
+      const account = store.getStore("account");
+      const { address } = account;
+      const network = provider.networkVersion;
+      const ens = new ENS({ provider, network });
+      const addressEnsName = await ens.reverse(address).catch(() => {});
+      if (addressEnsName) {
+        this.setState({ addressEnsName });
+      }
+    }
+  };
+
+  render() {
+    const { classes, t, location } = this.props;
+
+    const { account, addressEnsName, modalOpen } = this.state;
+
+    var address = null;
+    if (account.address) {
+      address =
+        account.address.substring(0, 6) +
+        "..." +
+        account.address.substring(
+          account.address.length - 4,
+          account.address.length
+        );
+    }
+    const addressAlias = addressEnsName || address;
+
+    return (
+      <div className={classes.root}>
+        <div className={classes.headerV2}>
+          <div className={classes.icon}>
+            <img
+              alt=""
+              height={"40px"}
+              onClick={() => {
+                this.nav("");
+              }}
+            />
+            <Typography
+              variant={"h3"}
+              className={classes.name}
+              onClick={() => {
+                this.nav("");
+              }}
+            >
+              LongboardFamara
+            </Typography>
+          </div>
+          <div className={classes.links}>
+            {this.renderLink("short")}
+            {this.renderLink("medium")}
+            {this.renderLink("long")}
+            {this.renderLink("market")}
+          </div>
+          <div className={classes.account}>
+            {address && (
+              <Typography
+                variant={"h4"}
+                className={classes.walletAddress}
+                noWrap
+                onClick={this.addressClicked}
+              >
+                {addressAlias}
+                <div className={classes.connectedDot}></div>
+              </Typography>
+            )}
+            {!address && (
+              <Typography
+                variant={"h4"}
+                className={classes.walletAddress}
+                noWrap
+                onClick={this.addressClicked}
+              >
+                {t("Market.Connect")}
+              </Typography>
+            )}
+          </div>
+        </div>
+        {modalOpen && this.renderModal()}
+      </div>
+    );
+  }
+
+  renderLink = (screen) => {
+    const { classes, t } = this.props;
+
+    return (
       <div
-        className={`${classes.earn}`}
+        className={
+          window.location.pathname === "/" + screen
+            ? classes.linkActive
+            : classes.link
+        }
         onClick={() => {
-          nav("short");
+          this.nav(screen);
         }}
       >
-        <Typography
-          variant={"h3"}
-          className={headerValue === 0 ? `titleActive` : `title`}
-        >
-          Short
+        <Typography variant={"h4"} className={`title`}>
+          {t("Home." + screen)}
         </Typography>
       </div>
-      <div
-        className={`${classes.zap}`}
-        onClick={() => {
-          nav("medium");
-        }}
-      >
-        <Typography
-          variant={"h3"}
-          className={headerValue === 1 ? `titleActive` : `title`}
-        >
-          Medium
-        </Typography>
-      </div>
-      <div
-        className={`${classes.apr}`}
-        onClick={() => {
-          nav("long");
-        }}
-      >
-        <Typography
-          variant={"h3"}
-          className={headerValue === 2 ? `titleActive` : `title`}
-        >
-          Long
-        </Typography>
-      </div>
-      <div
-        className={`${classes.pool}`}
-        onClick={() => {
-          nav("market");
-        }}
-      >
-        <Typography
-          variant={"h3"}
-          className={headerValue === 4 ? `titleActive` : `title`}
-        >
-          Market
-        </Typography>
-      </div>
-    </div>
-  );
+    );
+  };
+
+  nav = (screen) => {
+    if (screen === "cover") {
+      window.open("https://longboardfamara.herokuapp.com/", "_blank");
+      return;
+    }
+    this.props.history.push("/" + screen);
+  };
+
+  addressClicked = () => {
+    this.setState({ modalOpen: true });
+  };
+
+  closeModal = () => {
+    this.setState({ modalOpen: false });
+  };
+
+  renderModal = () => {
+    return (
+      <UnlockModal
+        closeModal={this.closeModal}
+        modalOpen={this.state.modalOpen}
+      />
+    );
+  };
 }
 
-export default withRouter(withStyles(styles)(Header));
+export default withTranslation()(withRouter(withStyles(styles)(Header)));

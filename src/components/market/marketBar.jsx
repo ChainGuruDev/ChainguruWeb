@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { withStyles } from "@material-ui/core/styles";
-import { withRouter } from "react-router-dom";
+import { withRouter, Link } from "react-router-dom";
 
 import {
   Grid,
@@ -48,12 +48,17 @@ const styles = (theme) => ({
   },
   button: {
     minWidth: "100%",
-    margin: theme.spacing(1),
+    marginTop: theme.spacing(1),
+  },
+
+  link: {
+    minWidth: "100%",
+    textDecoration: "none",
   },
 });
 
 class MarketBar extends Component {
-  constructor() {
+  constructor(props) {
     super();
 
     const account = store.getStore("account");
@@ -68,6 +73,10 @@ class MarketBar extends Component {
       isLF: "",
     };
   }
+  nav = (screen) => {
+    this.props.history.push(screen);
+  };
+
   static async getInitialProps(props) {
     return {
       userAccount: this.props.userAccount,
@@ -127,7 +136,7 @@ class MarketBar extends Component {
   };
 
   render() {
-    const { classes, t, account, edition } = this.props;
+    const { classes, t, location, account, edition } = this.props;
     const {
       loading,
       editionNum,
@@ -138,32 +147,6 @@ class MarketBar extends Component {
     return (
       <Paper className={classes.root} elevation={5}>
         <div className={classes.marketBar}>
-          {!account.address && (
-            <Button
-              variant="contained"
-              color="primary"
-              disabled={loading}
-              onClick={this.walletClick}
-            >
-              <Typography className={classes.buttonText} variant={"h5"}>
-                {t("Market.Connect")}
-              </Typography>
-            </Button>
-          )}
-          {account.address && (
-            <Card>
-              <Button
-                variant="outlined"
-                color="primary"
-                disabled={loading}
-                onClick={this.walletClick}
-              >
-                <Typography className={classes.buttonText} variant={"h5"}>
-                  {t("Market.Disconnect")}
-                </Typography>
-              </Button>
-            </Card>
-          )}
           <Typography className={classes.header}>Total editions</Typography>
           <Typography variant="h3" className={classes.header}>
             {this.props.edition}
@@ -207,15 +190,22 @@ class MarketBar extends Component {
           </Button>
           <Button
             variant="contained"
-            style={{
-              display: !this.state.isAdmin ? "none" : "block",
-            }}
-            onClick={this.overlayClicked}
             color="primary"
             className={classes.button}
+            onClick={() => {
+              this.nav("/edition/new");
+            }}
           >
             New Edition
           </Button>
+          <Link
+            to="/edition/new"
+            className={classes.link}
+            style={{
+              display: !this.state.isAdmin ? "none" : "block",
+            }}
+          ></Link>
+
           <Button
             variant="contained"
             style={{

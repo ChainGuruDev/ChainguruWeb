@@ -221,7 +221,7 @@ class Home extends Component {
           <AttachMoneyRoundedIcon className={`${classes.icon} icon`} />
           <WhatshotRoundedIcon className={`${classes.icon} icon`} />
           <Typography variant={"h3"} className={`${classes.title} title`}>
-            {t("Home.Short")}
+            {t("Home.short")}
           </Typography>
         </Card>
 
@@ -235,7 +235,7 @@ class Home extends Component {
           <GolfCourseRoundedIcon className={`${classes.icon} icon`} />
 
           <Typography variant={"h3"} className={`${classes.title} title`}>
-            {t("Home.Medium")}
+            {t("Home.medium")}
           </Typography>
         </Card>
         <Card
@@ -247,7 +247,7 @@ class Home extends Component {
           <AccountBalanceRoundedIcon className={`${classes.icon} icon`} />
           <TrendingUpRoundedIcon className={`${classes.icon} icon`} />
           <Typography variant={"h3"} className={`${classes.title} title`}>
-            {t("Home.Long")}
+            {t("Home.long")}
           </Typography>
         </Card>
 
@@ -259,7 +259,7 @@ class Home extends Component {
         >
           <StoreIcon className={`${classes.icon} icon`} />
           <Typography variant={"h3"} className={`${classes.title} title`}>
-            {t("Home.Market")}
+            {t("Home.market")}
           </Typography>
         </Card>
       </div>

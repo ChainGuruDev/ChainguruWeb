@@ -9,19 +9,11 @@
   "Snackbar.Hash": "Hash",
 
   "Footer.Home": "home",
-  "Footer.About": "about",
-  "Footer.Docs": "docs",
-  "Footer.Code": "code",
-  "Footer.Telegram": "telegram",
-  "Footer.Yield": "yield",
-  "Footer.BuiltWith": "builtwith",
-  "Footer.Zap": "zap",
-  "Footer.Insure": "insure",
 
-  "Home.Short": "Short",
-  "Home.Medium": "Medium",
-  "Home.Long": "Long",
-  "Home.Market": "Market",
+  "Home.short": "Short",
+  "Home.medium": "Medium",
+  "Home.long": "Long",
+  "Home.market": "Market",
 
   "Market.Connect": "Connect",
   "Market.Disconnect": "Disconnect"

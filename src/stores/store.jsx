@@ -69,7 +69,7 @@ class Store {
           code: "en",
         },
         {
-          language: "Spanish",
+          language: "Español",
           code: "es",
         },
       ],
@@ -149,29 +149,33 @@ class Store {
     return emitter.emit(TOKENJSON_RETURNED, await _tokenURI);
   };
 
-  getAccountRoles = async (account) => {
-    console.log("getting roles for account >>> " + account.content);
-    const web3 = new Web3(store.getStore("web3context").library.provider);
-    let lfOriginalsContract = new web3.eth.Contract(
-      config.LFOriginalsABI,
-      config.lfOriginalsContract
-    );
+  getAccountRoles = async () => {
     let isAdmin = false;
     let isMinter = false;
     let isLF = false;
-    if (account.content) {
-      isAdmin = await lfOriginalsContract.methods
-        .hasRole(web3.utils.keccak256("ADMIN_ROLE"), account.content)
-        .call();
-      isMinter = await lfOriginalsContract.methods
-        .hasRole(web3.utils.keccak256("MINTER_ROLE"), account.content)
-        .call();
-      isLF = await lfOriginalsContract.methods
-        .hasRole(web3.utils.keccak256("LF_MEMBER"), account.content)
-        .call();
+    if (store.getStore("web3context")) {
+      const account = store.getStore("account");
+      const web3 = new Web3(store.getStore("web3context").library.provider);
+      let lfOriginalsContract = new web3.eth.Contract(
+        config.LFOriginalsABI,
+        config.lfOriginalsContract
+      );
+      if (account.address) {
+        isAdmin = await lfOriginalsContract.methods
+          .hasRole(web3.utils.keccak256("ADMIN_ROLE"), account.address)
+          .call();
+        isMinter = await lfOriginalsContract.methods
+          .hasRole(web3.utils.keccak256("MINTER_ROLE"), account.address)
+          .call();
+        isLF = await lfOriginalsContract.methods
+          .hasRole(web3.utils.keccak256("LF_MEMBER"), account.address)
+          .call();
+      }
+    } else {
     }
+    /*
+     */
     let roles = [isAdmin, isMinter, isLF];
-
     return emitter.emit(ACCOUNT_ROLES_RETURNED, roles);
   };
 

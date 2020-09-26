@@ -125,7 +125,7 @@ class Market extends Component {
       dispatcher.dispatch({ type: GET_SALES_VALUE, content: {} });
       dispatcher.dispatch({
         type: GET_ACCOUNT_ROLES,
-        content: account.address,
+        content: {},
       });
     }
   }
@@ -167,7 +167,7 @@ class Market extends Component {
     dispatcher.dispatch({ type: GET_SALES_VALUE, content: {} });
     dispatcher.dispatch({
       type: GET_ACCOUNT_ROLES,
-      content: this.state.account.address,
+      content: {},
     });
 
     const that = this;
@@ -182,6 +182,10 @@ class Market extends Component {
 
   connectionDisconnected = () => {
     this.setState({ account: store.getStore("account") });
+    dispatcher.dispatch({
+      type: GET_ACCOUNT_ROLES,
+      content: {},
+    });
   };
 
   renderEditions = () => {

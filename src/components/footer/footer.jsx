@@ -38,7 +38,7 @@ const styles = (theme) => ({
   },
   languageContainer: {
     paddingLeft: "12px",
-    display: "none",
+    //display: "none",
   },
   selectInput: {
     fontSize: "14px",
@@ -67,7 +67,8 @@ class Footer extends Component {
       !location.pathname.includes("/short") &&
       !location.pathname.includes("/medium") &&
       !location.pathname.includes("/long") &&
-      !location.pathname.includes("/market")
+      !location.pathname.includes("/market") &&
+      !location.pathname.includes("/edition/new")
     ) {
       return null;
     }
@@ -80,37 +81,6 @@ class Footer extends Component {
               {t("Footer.Home")}
             </Typography>
           </Link>
-
-          <Typography
-            onClick={() => window.open("https://docs.yearn.finance", "_blank")}
-            className={classes.footerText}
-            variant={"h6"}
-          >
-            {t("Footer.About")}
-          </Typography>
-          <Typography
-            onClick={() => window.open("https://docs.yearn.finance", "_blank")}
-            className={classes.footerText}
-            variant={"h6"}
-          >
-            {t("Footer.Docs")}
-          </Typography>
-          <Typography
-            onClick={() =>
-              window.open("https://github.com/iearn-finance", "_blank")
-            }
-            className={classes.footerText}
-            variant={"h6"}
-          >
-            {t("Footer.Code")}
-          </Typography>
-          <Typography
-            onClick={() => window.open("https://t.me/iearnfinance", "_blank")}
-            className={classes.footerText}
-            variant={"h6"}
-          >
-            {t("Footer.Telegram")}
-          </Typography>
         </div>
         <div className={classes.languageContainer}>
           <FormControl variant="outlined">
