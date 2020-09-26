@@ -1,6 +1,7 @@
 {
   "short_name": "LF",
   "name": "Longboard Famara",
+  "start_url": ".",
   "icons": [
     {
       "src": "favicon.ico",
