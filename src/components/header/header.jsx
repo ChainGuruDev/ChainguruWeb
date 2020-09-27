@@ -151,7 +151,7 @@ class Header extends Component {
   };
 
   render() {
-    const { classes, t, location } = this.props;
+    const { classes, t } = this.props;
 
     const { account, addressEnsName, modalOpen } = this.state;
 

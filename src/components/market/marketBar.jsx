@@ -2,18 +2,7 @@ import React, { Component } from "react";
 import { withStyles } from "@material-ui/core/styles";
 import { withRouter, Link } from "react-router-dom";
 
-import {
-  Grid,
-  GridList,
-  GridListTileBar,
-  StarBorderIcon,
-  tileData,
-  Card,
-  Paper,
-  Typography,
-  Button,
-  Divider,
-} from "@material-ui/core";
+import { Paper, Typography, Button, Divider } from "@material-ui/core";
 import { colors } from "../../theme";
 import {
   AVAILABLE_ITEMS_RETURNED,
@@ -27,7 +16,6 @@ import UnlockModal from "../unlock/unlockModal.jsx";
 import { withTranslation } from "react-i18next";
 import Store from "../../stores";
 const emitter = Store.emitter;
-const dispatcher = Store.dispatcher;
 const store = Store.store;
 
 const styles = (theme) => ({
@@ -136,14 +124,8 @@ class MarketBar extends Component {
   };
 
   render() {
-    const { classes, t, location, account, edition } = this.props;
-    const {
-      loading,
-      editionNum,
-      itemsAvailable,
-      modalOpen,
-      snackbarMessage,
-    } = this.state;
+    const { classes, t } = this.props;
+    const { modalOpen, snackbarMessage } = this.state;
     return (
       <Paper className={classes.root} elevation={5}>
         <div className={classes.marketBar}>

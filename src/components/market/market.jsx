@@ -2,32 +2,13 @@ import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 
-import {
-  Grid,
-  GridList,
-  GridListTileBar,
-  StarBorderIcon,
-  tileData,
-  Card,
-  Paper,
-  Typography,
-} from "@material-ui/core";
-import Icon from "@material-ui/core/Icon";
-import Button from "@material-ui/core/Button";
-import AccountBalanceWalletRoundedIcon from "@material-ui/icons/AccountBalanceWalletRounded";
+import { Grid, GridList } from "@material-ui/core";
 
 //import ItemCard from "../components/itemCard";
 import RenderEditions from "./renderEditions";
-//import MarketBar from "../components/marketBar";
-//import MarketHeader from "../components/marketHeader";
-//import web3 from "../ethereum/web3Ganache.js";
-//import Web3Modal from "web3modal";
-//import lfOriginals from "../ethereum/lfOriginals.js";
-import web3 from "web3";
 import Loader from "../loader";
 import UnlockModal from "../unlock/unlockModal.jsx";
 import Snackbar from "../snackbar";
-import { colors } from "../../theme";
 import MarketBar from "./marketBar";
 
 import {
@@ -36,8 +17,8 @@ import {
   CONNECTION_DISCONNECTED,
   GET_CURRENTEDITION,
   EDITION_RETURNED,
-  GET_EDITION_DETAILS,
-  EDITION_DETAILS_RETURNED,
+  GET_EDITIONS_DETAILS,
+  EDITIONS_DETAILS_RETURNED,
   BUY_RETURNED,
   GET_AVAILABLE_ITEMS,
   GET_ITEMS_CIRCULATING,
@@ -135,6 +116,7 @@ class Market extends Component {
     emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
     emitter.on(EDITION_RETURNED, this.editionReturned);
+    emitter.on(EDITIONS_DETAILS_RETURNED, this.editionDetailsReturned);
   }
 
   componentWillUnmount() {
@@ -145,11 +127,19 @@ class Market extends Component {
       this.connectionDisconnected
     );
     emitter.removeListener(EDITION_RETURNED, this.editionReturned);
+    emitter.removeListener(
+      EDITIONS_DETAILS_RETURNED,
+      this.editionDetailsReturned
+    );
   }
 
   editionReturned = (curEdit) => {
-    const { t } = this.props;
     this.setState({ curEdit: curEdit });
+    let editions = [];
+    for (var i = 0; i < this.state.curEdit; i++) {
+      editions.push(i);
+    }
+    dispatcher.dispatch({ type: GET_EDITIONS_DETAILS, content: { editions } });
   };
 
   editionDetailsReturned = (editions) => {
@@ -189,18 +179,18 @@ class Market extends Component {
   };
 
   renderEditions = () => {
-    for (var i = 0; i < this.state.curEdit; i++) {
+    return this.state.editionsDetails.map((edition, index) => {
       return (
         <RenderEditions
-          key={i}
-          editionNum={i + 1}
-          //title="Remeras"
-          //author={edition._artistAccount}
+          key={index}
+          editionNum={index + 1}
+          //tokenURI={this.state.editionsDetails[index]._tokenURI}
+          details={this.state.editionsDetails[index]}
           //description={web3.utils.toAscii(edition._editionData)}
-          //  imageURL=""
+          //imageURL=""
         />
       );
-    }
+    });
   };
 
   errorReturned = (error) => {
@@ -226,18 +216,8 @@ class Market extends Component {
   }
 
   render() {
-    const { classes, t } = this.props;
-    const { account, loading, modalOpen, snackbarMessage } = this.state;
-    var address = null;
-    if (account.address) {
-      address =
-        account.address.substring(0, 6) +
-        "..." +
-        account.address.substring(
-          account.address.length - 4,
-          account.address.length
-        );
-    }
+    const { classes } = this.props;
+    const { loading, modalOpen, snackbarMessage } = this.state;
 
     return (
       <div className={classes.background}>
@@ -255,15 +235,13 @@ class Market extends Component {
               {this.renderEditions()}
             </GridList>
             <Grid item xs={3}>
-              <MarketBar
-                account={this.state.account}
-                edition={this.state.curEdit}
-              />
+              <MarketBar edition={this.state.curEdit} />
             </Grid>
           </Grid>
+          {loading && <Loader />}
+
           {modalOpen && this.renderModal()}
           {snackbarMessage && this.renderSnackbar()}
-          {loading && <Loader />}
         </div>
       </div>
     );
@@ -271,6 +249,9 @@ class Market extends Component {
 
   startLoading = () => {
     this.setState({ loading: true });
+  };
+  stopLoading = () => {
+    this.setState({ loading: false });
   };
 
   renderModal = () => {

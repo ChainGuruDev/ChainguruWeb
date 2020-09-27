@@ -3,13 +3,7 @@ import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import {
   Grid,
-  GridList,
-  GridListTileBar,
-  StarBorderIcon,
-  tileData,
   Card,
-  Paper,
-  Typography,
   FormControl,
   InputLabel,
   Input,
@@ -17,9 +11,7 @@ import {
   TextField,
   CircularProgress,
 } from "@material-ui/core";
-import Icon from "@material-ui/core/Icon";
 import Button from "@material-ui/core/Button";
-import AccountBalanceWalletRoundedIcon from "@material-ui/icons/AccountBalanceWalletRounded";
 import ipfs from "../../ipfs";
 
 import Loader from "../../loader";
@@ -264,15 +256,9 @@ class NewEdit extends Component {
   };
 
   render() {
-    const { classes, t, location } = this.props;
+    const { classes, t } = this.props;
     const { loading, snackbarMessage } = this.state;
-    let editionData,
-      editionNumber,
-      artistAccount,
-      artistCommission,
-      price,
-      tokenURI,
-      maxSupply;
+    let editionData, artistAccount, artistCommission, price, maxSupply;
 
     const handleChange = (event) => {
       switch (event.target.id) {
@@ -287,9 +273,6 @@ class NewEdit extends Component {
           break;
         case "price":
           price = event.target.value;
-          break;
-        case "tokenURI":
-          tokenURI = event.target.value;
           break;
         case "maxSupply":
           maxSupply = event.target.value;

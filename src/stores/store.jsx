@@ -1,6 +1,4 @@
 import config from "../config";
-import async from "async";
-import * as moment from "moment";
 
 import Web3 from "web3";
 import {
@@ -12,7 +10,9 @@ import {
   GET_CURRENTEDITION,
   EDITION_RETURNED,
   GET_EDITION_DETAILS,
+  GET_EDITIONS_DETAILS,
   EDITION_DETAILS_RETURNED,
+  EDITIONS_DETAILS_RETURNED,
   GET_TOKENJSON,
   TOKENJSON_RETURNED,
   BUY_EDITION,
@@ -39,7 +39,6 @@ import {
 } from "./connectors";
 
 const rp = require("request-promise");
-const ethers = require("ethers");
 
 const Dispatcher = require("flux").Dispatcher;
 const Emitter = require("events").EventEmitter;
@@ -98,6 +97,10 @@ class Store {
           case GET_EDITION_DETAILS:
             this.getEditionDetails(payload);
             break;
+          case GET_EDITIONS_DETAILS:
+            this.getEditionsDetails(payload);
+            break;
+
           case GET_TOKENJSON:
             this.getTokenJson(payload);
             break;
@@ -139,10 +142,6 @@ class Store {
   createNewEdition = async (payload) => {
     const web3 = new Web3(store.getStore("web3context").library.provider);
     const account = store.getStore("account");
-    let lfOriginalsContract = new web3.eth.Contract(
-      config.LFOriginalsABI,
-      config.lfOriginalsContract
-    );
 
     const {
       editionNumber,
@@ -283,16 +282,6 @@ class Store {
     return emitter.emit(ACCOUNT_ROLES_RETURNED, roles);
   };
 
-  getCurrentEdition = async () => {
-    const web3 = new Web3(store.getStore("web3context").library.provider);
-    let lfOriginalsContract = new web3.eth.Contract(
-      config.LFOriginalsABI,
-      config.lfOriginalsContract
-    );
-    let curEdit = await lfOriginalsContract.methods.edition().call();
-    return emitter.emit(EDITION_RETURNED, curEdit);
-  };
-
   getAvailableItems = async () => {
     const web3 = new Web3(store.getStore("web3context").library.provider);
     let lfOriginalsContract = new web3.eth.Contract(
@@ -343,6 +332,33 @@ class Store {
       .call();
 
     return emitter.emit(EDITION_DETAILS_RETURNED, editions);
+  };
+
+  getCurrentEdition = async () => {
+    const web3 = new Web3(store.getStore("web3context").library.provider);
+    let lfOriginalsContract = new web3.eth.Contract(
+      config.LFOriginalsABI,
+      config.lfOriginalsContract
+    );
+    let curEdit = await lfOriginalsContract.methods.edition().call();
+    return emitter.emit(EDITION_RETURNED, curEdit);
+  };
+
+  getEditionsDetails = async (curEdit) => {
+    const web3 = new Web3(store.getStore("web3context").library.provider);
+    let lfOriginalsContract = new web3.eth.Contract(
+      config.LFOriginalsABI,
+      config.lfOriginalsContract
+    );
+    const editionsDetails = await Promise.all(
+      curEdit.content.editions.fill().map((element, index) => {
+        return lfOriginalsContract.methods
+          .detailsOfEdition((index + 1) * 100)
+          .call();
+      })
+    );
+
+    return emitter.emit(EDITIONS_DETAILS_RETURNED, editionsDetails);
   };
 
   buyEdition = async (payload) => {

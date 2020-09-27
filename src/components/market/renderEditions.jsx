@@ -8,23 +8,13 @@ import CardMedia from "@material-ui/core/CardMedia";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import CircularProgress from "@material-ui/core/CircularProgress";
-import Loader from "../loader";
 
-import web3 from "web3";
-import {
-  ERROR,
-  GET_EDITION_DETAILS,
-  EDITION_DETAILS_RETURNED,
-  GET_TOKENJSON,
-  TOKENJSON_RETURNED,
-  BUY_EDITION,
-} from "../../constants";
+import { ERROR, BUY_EDITION } from "../../constants";
 import { withTranslation } from "react-i18next";
 
 import Store from "../../stores";
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
-const store = Store.store;
 
 const styles = (theme) => ({
   root: {
@@ -40,42 +30,37 @@ class RenderEditions extends Component {
     return {
       key: this.props.key,
       editionNum: this.props.editionNum,
+      details: this.props.details,
     };
   }
 
   componentDidMount() {
     emitter.on(ERROR, this.errorReturned);
-    emitter.on(EDITION_DETAILS_RETURNED, this.editionDetailsReturned);
-    emitter.on(TOKENJSON_RETURNED, this.tokenJsonReturned);
-
-    dispatcher.dispatch({
-      type: GET_EDITION_DETAILS,
-      content: this.props.editionNum,
-    });
+    this.getTokenJson(this.props.details._tokenURI);
+    //this.getTokenJson(this.props.editionNum);
   }
 
-  refresh() {
-    dispatcher.dispatch({
-      type: GET_EDITION_DETAILS,
-      content: this.props.editionNum,
-    });
-  }
+  getTokenJson = async (url) => {
+    let _tokenURI;
+    await fetch(url)
+      .then(function (response) {
+        _tokenURI = response.json();
+      })
+      .then(function (data) {
+        //console.log('JSON from "' + fullurl + '" parsed successfully!');
+        //console.log(data.image);
+      })
+      .catch(function (error) {
+        //console.error(error.message);
+      });
+    this.setState({ tokenURI: await _tokenURI });
+  };
+
+  refresh() {}
 
   componentWillUnmount() {
     emitter.removeListener(ERROR, this.errorReturned);
-    emitter.removeListener(
-      EDITION_DETAILS_RETURNED,
-      this.editionDetailsReturned
-    );
   }
-
-  editionDetailsReturned = (editions) => {
-    this.setState({ editionsDetails: editions });
-    dispatcher.dispatch({
-      type: GET_TOKENJSON,
-      content: this.state.editionsDetails._tokenURI,
-    });
-  };
 
   state = {
     editionsDetails: [],
@@ -83,10 +68,6 @@ class RenderEditions extends Component {
     tJSON: {},
     tokenURI: "",
     imageURL: "",
-  };
-
-  tokenJsonReturned = (tokenJson) => {
-    this.updateState(tokenJson);
   };
 
   errorReturned = (error) => {
@@ -104,12 +85,11 @@ class RenderEditions extends Component {
   };
 
   buyEdition = (editNum) => {
-    const { startLoading } = this.props;
     this.startLoading();
     dispatcher.dispatch({
       type: BUY_EDITION,
       editNum: this.props.editionNum * 100,
-      value: this.state.editionsDetails._priceInWei,
+      value: this.props.details._priceInWei,
     });
   };
 
@@ -131,7 +111,7 @@ class RenderEditions extends Component {
 
   render(props) {
     const { classes } = this.props;
-    const { loading, snackbarMessage } = this.state;
+    const { loading } = this.state;
 
     const editNum = this.props.editionNum;
 
@@ -143,7 +123,7 @@ class RenderEditions extends Component {
               component="img"
               alt=""
               height="140"
-              image={this.state.imageURL}
+              image={this.state.tokenURI.image}
               title=""
             />
             <CardContent>
