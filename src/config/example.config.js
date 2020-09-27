@@ -1,6 +1,11 @@
 const config = {
-  infuraProvider: "https://kovan.infura.io/v3/da08cbb0e0604f3ab2f57742f776c115",
-  lfOriginalsContract: "0x85f8CDf1A693cDa94C0297c2c64eE54e713A4598",
+  infuraProvider:
+    "https://rinkeby.infura.io/v3/da08cbb0e0604f3ab2f57742f776c115",
+  lfOriginalsContract: "0xa91F7Cbd319a294E38e6Cb912BE6163b33898d2C",
+
+  //lfOriginalsContractKovan: "0x85f8CDf1A693cDa94C0297c2c64eE54e713A4598",
+
+  //lfOriginalsContractRinkeby: "0xa91F7Cbd319a294E38e6Cb912BE6163b33898d2C",
 
   LFOriginalsABI: [
     {
