@@ -106,26 +106,9 @@ class MarketBar extends Component {
     this.setState({ isLF: payload[2] });
   };
 
-  walletClick = () => {
-    this.setState({ modalOpen: true });
-  };
-
-  closeModal = () => {
-    this.setState({ modalOpen: false });
-  };
-
-  renderModal = () => {
-    return (
-      <UnlockModal
-        closeModal={this.closeModal}
-        modalOpen={this.state.modalOpen}
-      />
-    );
-  };
-
   render() {
     const { classes, t } = this.props;
-    const { modalOpen, snackbarMessage } = this.state;
+    const { snackbarMessage } = this.state;
     return (
       <Paper className={classes.root} elevation={5}>
         <div className={classes.marketBar}>
@@ -171,6 +154,9 @@ class MarketBar extends Component {
             My Items
           </Button>
           <Button
+            style={{
+              display: !this.state.isAdmin ? "none" : "block",
+            }}
             variant="contained"
             color="primary"
             className={classes.button}
@@ -180,14 +166,17 @@ class MarketBar extends Component {
           >
             New Edition
           </Button>
-          <Link
-            to="/edition/new"
-            className={classes.link}
+          <Button
             style={{
               display: !this.state.isAdmin ? "none" : "block",
             }}
-          ></Link>
-
+            variant="contained"
+            color="primary"
+            className={classes.button}
+          >
+            Admin Panel
+          </Button>
+          /*
           <Button
             variant="contained"
             style={{
@@ -210,7 +199,7 @@ class MarketBar extends Component {
           >
             LF Crew
           </Button>
-          {modalOpen && this.renderModal()}
+          */
         </div>
       </Paper>
     );
