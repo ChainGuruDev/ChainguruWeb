@@ -26,6 +26,8 @@ import {
   GET_CURRENTEDITION,
   EDITION_RETURNED,
   CREATE_NEW_EDITION,
+  ACCOUNT_ROLES_RETURNED,
+  GET_ACCOUNT_ROLES,
 } from "../../../constants";
 
 import { withTranslation } from "react-i18next";
@@ -132,6 +134,10 @@ class NewEdit extends Component {
 
     if (account && account.address) {
       dispatcher.dispatch({ type: GET_CURRENTEDITION, content: {} });
+      dispatcher.dispatch({
+        type: GET_ACCOUNT_ROLES,
+        content: {},
+      });
     }
   }
 
@@ -140,6 +146,11 @@ class NewEdit extends Component {
     emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
     emitter.on(EDITION_RETURNED, this.editionReturned);
+    emitter.on(ACCOUNT_ROLES_RETURNED, this.accountRolesReturned);
+    dispatcher.dispatch({
+      type: GET_ACCOUNT_ROLES,
+      content: {},
+    });
   }
 
   componentWillUnmount() {
@@ -150,10 +161,25 @@ class NewEdit extends Component {
       this.connectionDisconnected
     );
     emitter.removeListener(EDITION_RETURNED, this.editionReturned);
+    emitter.removeListener(ACCOUNT_ROLES_RETURNED, this.accountRolesReturned);
   }
 
   editionReturned = (curEdit) => {
     this.setState({ curEdit: curEdit });
+  };
+
+  accountRolesReturned = (payload) => {
+    console.log(payload);
+    this.setState({ isAdmin: payload[0] });
+    this.setState({ isMinter: payload[1] });
+    this.setState({ isLF: payload[2] });
+  };
+
+  refresh = () => {
+    dispatcher.dispatch({
+      type: GET_ACCOUNT_ROLES,
+      content: {},
+    });
   };
 
   connectionConnected = () => {
@@ -167,10 +193,18 @@ class NewEdit extends Component {
       };
       that.setState(snackbarObj);
     });
+    dispatcher.dispatch({
+      type: GET_ACCOUNT_ROLES,
+      content: {},
+    });
   };
 
   connectionDisconnected = () => {
     this.setState({ account: store.getStore("account") });
+    dispatcher.dispatch({
+      type: GET_ACCOUNT_ROLES,
+      content: {},
+    });
   };
 
   errorReturned = (error) => {
@@ -257,7 +291,7 @@ class NewEdit extends Component {
 
   render() {
     const { classes, t } = this.props;
-    const { loading, snackbarMessage } = this.state;
+    const { loading, snackbarMessage, isAdmin, isMinter, isLF } = this.state;
     let editionData, artistAccount, artistCommission, price, maxSupply;
 
     const handleChange = (event) => {
@@ -302,211 +336,221 @@ class NewEdit extends Component {
     return (
       <div className={classes.background}>
         <div className={classes.root}>
-          <Grid justify="space-evenly" container spacing={3}>
-            <Grid item xs={12}>
-              <Card className={classes.editionCreate} elevation={10}>
-                <Grid
-                  container
-                  direction="column"
-                  justify="center"
-                  alignItems="center"
-                >
-                  <form
-                    className={classes.root}
-                    style={{
-                      display: this.state.tokenURI ? "none" : "flex",
-                    }}
-                    noValidate
-                    autoComplete="off"
+          {isAdmin && (
+            <Grid justify="space-evenly" container spacing={3}>
+              <Grid item xs={12}>
+                <Card className={classes.editionCreate} elevation={10}>
+                  <Grid
+                    container
+                    direction="column"
+                    justify="center"
+                    alignItems="center"
                   >
-                    <input
-                      accept="image/*"
-                      className={classes.input}
-                      id="outlined-button-file"
-                      type="file"
-                      onChange={this.handleFile}
-                      onClick={(event) => {
-                        event.target.value = null;
-                      }}
-                    />
-                    <label
-                      htmlFor="outlined-button-file"
+                    <form
+                      className={classes.root}
                       style={{
-                        display: this.state.isUploading ? "block" : "block",
+                        display: this.state.tokenURI ? "none" : "flex",
                       }}
+                      noValidate
+                      autoComplete="off"
                     >
+                      <input
+                        accept="image/*"
+                        className={classes.input}
+                        id="outlined-button-file"
+                        type="file"
+                        onChange={this.handleFile}
+                        onClick={(event) => {
+                          event.target.value = null;
+                        }}
+                      />
+                      <label
+                        htmlFor="outlined-button-file"
+                        style={{
+                          display: this.state.isUploading ? "block" : "block",
+                        }}
+                      >
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          component="span"
+                          style={{
+                            display: this.state.imagePath ? "none" : "flex",
+                          }}
+                          disabled={this.state.isUploading}
+                        >
+                          {this.state.isUploading && (
+                            <CircularProgress size={24} />
+                          )}
+                          {!this.state.isUploading && "Upload image"}
+                        </Button>
+                      </label>
+                      <TextField
+                        id="standard-name"
+                        label="ImageURL"
+                        fullWidth
+                        disabled="True"
+                        margin="normal"
+                        value={this.state.imagePath}
+                        style={{
+                          display: this.state.imagePath ? "flex" : "none",
+                        }}
+                      />
+                      <TextField
+                        id="standard-name"
+                        label="Name"
+                        fullWidth
+                        onChange={this.handleName}
+                        margin="normal"
+                      />
+                      <TextField
+                        id="standard-multiline-flexible"
+                        label="Description"
+                        multiline
+                        rowsMax="4"
+                        onChange={this.handleDesc}
+                        fullWidth
+                        margin="normal"
+                      />
+                      <TextField
+                        id="standard-name"
+                        label="Artist Name"
+                        fullWidth
+                        onChange={this.handleArtistName}
+                        margin="normal"
+                      />
+
                       <Button
+                        style={{
+                          display: this.state.imagePath ? "flex" : "none",
+                        }}
                         variant="contained"
                         color="primary"
                         component="span"
-                        style={{
-                          display: this.state.imagePath ? "none" : "flex",
-                        }}
+                        className={classes.button}
+                        onClick={this.handleClick}
                         disabled={this.state.isUploading}
                       >
                         {this.state.isUploading && (
                           <CircularProgress size={24} />
                         )}
-                        {!this.state.isUploading && "Upload image"}
+                        {!this.state.isUploading && "Upload token"}
                       </Button>
-                    </label>
-                    <TextField
-                      id="standard-name"
-                      label="ImageURL"
-                      fullWidth
-                      disabled="True"
-                      margin="normal"
-                      value={this.state.imagePath}
+                    </form>
+                    <form
+                      className={classes.root}
+                      noValidate
+                      autoComplete="off"
                       style={{
-                        display: this.state.imagePath ? "flex" : "none",
+                        display: this.state.tokenURI ? "flex" : "none",
                       }}
-                    />
-                    <TextField
-                      id="standard-name"
-                      label="Name"
-                      fullWidth
-                      onChange={this.handleName}
-                      margin="normal"
-                    />
-                    <TextField
-                      id="standard-multiline-flexible"
-                      label="Description"
-                      multiline
-                      rowsMax="4"
-                      onChange={this.handleDesc}
-                      fullWidth
-                      margin="normal"
-                    />
-                    <TextField
-                      id="standard-name"
-                      label="Artist Name"
-                      fullWidth
-                      onChange={this.handleArtistName}
-                      margin="normal"
-                    />
-
-                    <Button
-                      style={{
-                        display: this.state.imagePath ? "flex" : "none",
-                      }}
-                      variant="contained"
-                      color="primary"
-                      component="span"
-                      className={classes.button}
-                      onClick={this.handleClick}
-                      disabled={this.state.isUploading}
                     >
-                      {this.state.isUploading && <CircularProgress size={24} />}
-                      {!this.state.isUploading && "Upload token"}
-                    </Button>
-                  </form>
-                  <form
-                    className={classes.root}
-                    noValidate
-                    autoComplete="off"
-                    style={{
-                      display: this.state.tokenURI ? "flex" : "none",
-                    }}
-                  >
-                    <FormControl fullWidth>
-                      <InputLabel id="editionData" htmlFor="editionData">
-                        Edition Data
-                      </InputLabel>
-                      <Input
-                        id="editionData"
-                        variant="filled"
-                        onChange={handleChange}
-                        aria-describedby="my-helper-text"
-                      />
-                      <FormHelperText id="my-helper-text">
-                        Additional Edition data.
-                      </FormHelperText>
-                    </FormControl>
-                    <FormControl fullWidth>
-                      <InputLabel id="artistAccount" htmlFor="artistAccount">
-                        Artist Account
-                      </InputLabel>
-                      <Input
-                        id="artistAccount"
-                        onChange={handleChange}
-                        variant="filled"
-                      />
-                      <FormHelperText id="my-helper-textartist">
-                        Artist's ethereum Wallet address.
-                      </FormHelperText>
-                    </FormControl>
-                    <FormControl fullWidth>
-                      <InputLabel
-                        id="artistCommission"
-                        htmlFor="artistCommission"
+                      <FormControl fullWidth>
+                        <InputLabel id="editionData" htmlFor="editionData">
+                          Edition Data
+                        </InputLabel>
+                        <Input
+                          id="editionData"
+                          variant="filled"
+                          onChange={handleChange}
+                          aria-describedby="my-helper-text"
+                        />
+                        <FormHelperText id="my-helper-text">
+                          Additional Edition data.
+                        </FormHelperText>
+                      </FormControl>
+                      <FormControl fullWidth>
+                        <InputLabel id="artistAccount" htmlFor="artistAccount">
+                          Artist Account
+                        </InputLabel>
+                        <Input
+                          id="artistAccount"
+                          onChange={handleChange}
+                          variant="filled"
+                        />
+                        <FormHelperText id="my-helper-textartist">
+                          Artist's ethereum Wallet address.
+                        </FormHelperText>
+                      </FormControl>
+                      <FormControl fullWidth>
+                        <InputLabel
+                          id="artistCommission"
+                          htmlFor="artistCommission"
+                        >
+                          Artist Commission
+                        </InputLabel>
+                        <Input
+                          onChange={handleChange}
+                          id="artistCommission"
+                          variant="filled"
+                          aria-describedby="my-helper-textartist"
+                        />
+                        <FormHelperText id="my-helper-textartist">
+                          Artist's commision share 0 - 100%.
+                        </FormHelperText>
+                      </FormControl>
+                      <FormControl fullWidth>
+                        <InputLabel id="price" htmlFor="price">
+                          Price
+                        </InputLabel>
+                        <Input
+                          onChange={handleChange}
+                          id="price"
+                          variant="filled"
+                          aria-describedby="my-helper-textprice"
+                        />
+                        <FormHelperText id="my-helper-textprice">
+                          price per item in Eth.
+                        </FormHelperText>
+                      </FormControl>
+                      <FormControl fullWidth>
+                        <InputLabel id="tokenURI" htmlFor="tokenURI">
+                          Token URI
+                        </InputLabel>
+                        <Input
+                          id="tokenURI"
+                          variant="filled"
+                          value={this.state.tokenURI}
+                          aria-describedby="my-helper-textprice"
+                        />
+                        <FormHelperText id="my-helper-textprice">
+                          Token URI IPFS Link.
+                        </FormHelperText>
+                      </FormControl>
+                      <FormControl fullWidth>
+                        <InputLabel id="maxSupply" htmlFor="maxSupply">
+                          Max Supply
+                        </InputLabel>
+                        <Input
+                          onChange={handleChange}
+                          id="maxSupply"
+                          variant="filled"
+                          aria-describedby="my-helper-textprice"
+                        />
+                        <FormHelperText id="my-helper-textprice">
+                          Maximum ammount available.
+                        </FormHelperText>
+                      </FormControl>
+                      <Button
+                        variant="contained"
+                        disabled={loading}
+                        onClick={onSubmit}
+                        color="primary"
                       >
-                        Artist Commission
-                      </InputLabel>
-                      <Input
-                        onChange={handleChange}
-                        id="artistCommission"
-                        variant="filled"
-                        aria-describedby="my-helper-textartist"
-                      />
-                      <FormHelperText id="my-helper-textartist">
-                        Artist's commision share 0 - 100%.
-                      </FormHelperText>
-                    </FormControl>
-                    <FormControl fullWidth>
-                      <InputLabel id="price" htmlFor="price">
-                        Price
-                      </InputLabel>
-                      <Input
-                        onChange={handleChange}
-                        id="price"
-                        variant="filled"
-                        aria-describedby="my-helper-textprice"
-                      />
-                      <FormHelperText id="my-helper-textprice">
-                        price per item in Eth.
-                      </FormHelperText>
-                    </FormControl>
-                    <FormControl fullWidth>
-                      <InputLabel id="tokenURI" htmlFor="tokenURI">
-                        Token URI
-                      </InputLabel>
-                      <Input
-                        id="tokenURI"
-                        variant="filled"
-                        value={this.state.tokenURI}
-                        aria-describedby="my-helper-textprice"
-                      />
-                      <FormHelperText id="my-helper-textprice">
-                        Token URI IPFS Link.
-                      </FormHelperText>
-                    </FormControl>
-                    <FormControl fullWidth>
-                      <InputLabel id="maxSupply" htmlFor="maxSupply">
-                        Max Supply
-                      </InputLabel>
-                      <Input
-                        onChange={handleChange}
-                        id="maxSupply"
-                        variant="filled"
-                        aria-describedby="my-helper-textprice"
-                      />
-                      <FormHelperText id="my-helper-textprice">
-                        Maximum ammount available.
-                      </FormHelperText>
-                    </FormControl>
-                    <Button
-                      variant="contained"
-                      disabled={loading}
-                      onClick={onSubmit}
-                      color="primary"
-                    >
-                      Submit
-                    </Button>
-                  </form>
-                </Grid>
-              </Card>
+                        Submit
+                      </Button>
+                    </form>
+                  </Grid>
+                </Card>
+              </Grid>
             </Grid>
-          </Grid>
+          )}
+          {!this.state.account.address && !isAdmin && (
+            <div>{t("Wallet.PleaseConnect")}</div>
+          )}
+          {this.state.account.address && !isAdmin && (
+            <div>{t("Wallet.NotAdmin")}</div>
+          )}
           {loading && <Loader />}
         </div>
       </div>

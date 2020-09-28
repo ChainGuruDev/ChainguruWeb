@@ -16,5 +16,7 @@
   "Home.market": "Market",
 
   "Market.Connect": "Connect",
-  "Market.Disconnect": "Disconnect"
+  "Market.Disconnect": "Disconnect",
+  "Wallet.PleaseConnect": "Please connect your wallet to use the service",
+  "Wallet.NotAdmin": "Connected Wallet is not a valid admin/minter account"
 }

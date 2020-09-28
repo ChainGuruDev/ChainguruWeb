@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 
-import { Grid, GridList } from "@material-ui/core";
+import { Grid, GridList, Button } from "@material-ui/core";
 
 //import ItemCard from "../components/itemCard";
 import RenderEditions from "./renderEditions";
@@ -216,28 +216,34 @@ class Market extends Component {
   }
 
   render() {
-    const { classes } = this.props;
+    const { classes, t } = this.props;
     const { loading, modalOpen, snackbarMessage } = this.state;
 
     return (
       <div className={classes.background}>
         <div className={classes.root}>
-          <Grid justify="space-evenly" container spacing={3}>
-            <Grid item xs={12}></Grid>
-            <GridList
-              item
-              xs={9}
-              cellHeight={200}
-              container
-              spacing={3}
-              className={classes.gridList}
-            >
-              {this.renderEditions()}
-            </GridList>
-            <Grid item xs={3}>
-              <MarketBar edition={this.state.curEdit} />
+          {this.state.account.address && (
+            <Grid justify="space-evenly" container spacing={3}>
+              <Grid item xs={12}></Grid>
+              <GridList
+                item
+                xs={9}
+                cellHeight={200}
+                container
+                spacing={3}
+                className={classes.gridList}
+              >
+                {this.renderEditions()}
+              </GridList>
+              <Grid item xs={3}>
+                <MarketBar edition={this.state.curEdit} />
+              </Grid>
             </Grid>
-          </Grid>
+          )}
+          {!this.state.account.address && (
+            <div>{t("Wallet.PleaseConnect")}</div>
+          )}
+
           {loading && <Loader />}
 
           {modalOpen && this.renderModal()}

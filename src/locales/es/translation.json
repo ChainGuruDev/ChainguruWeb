@@ -16,5 +16,7 @@
   "Home.market": "Mercadillo",
 
   "Market.Connect": "Conectar",
-  "Market.Disconnect": "Desconectar"
+  "Market.Disconnect": "Desconectar",
+  "Wallet.PleaseConnect": "Por favor, conectar su wallet para usar el servicio",
+  "Wallet.NotAdmin": "El wallet conectado no es un Admin/Minter valido"
 }

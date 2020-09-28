@@ -9,6 +9,8 @@ import {
   ITEMS_CIRCULATING_RETURNED,
   SALES_VALUE_RETURNED,
   ACCOUNT_ROLES_RETURNED,
+  CONNECTION_CONNECTED,
+  CONNECTION_DISCONNECTED,
 } from "../../constants";
 
 import UnlockModal from "../unlock/unlockModal.jsx";
@@ -75,6 +77,8 @@ class MarketBar extends Component {
     emitter.on(ITEMS_CIRCULATING_RETURNED, this.itemsCirculatingReturned);
     emitter.on(SALES_VALUE_RETURNED, this.salesValueReturned);
     emitter.on(ACCOUNT_ROLES_RETURNED, this.accountRolesReturned);
+    emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
+    emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
   }
 
   componentWillUnmount() {
@@ -88,8 +92,20 @@ class MarketBar extends Component {
     );
     emitter.removeListener(SALES_VALUE_RETURNED, this.salesValueReturned);
     emitter.removeListener(ACCOUNT_ROLES_RETURNED, this.accountRolesReturned);
+    emitter.removeListener(CONNECTION_CONNECTED, this.connectionConnected);
+    emitter.removeListener(
+      CONNECTION_DISCONNECTED,
+      this.connectionDisconnected
+    );
   }
 
+  connectionConnected = () => {
+    this.setState({ account: store.getStore("account") });
+  };
+
+  connectionDisconnected = () => {
+    this.setState({ account: store.getStore("account") });
+  };
   availableItemsReturned = (payload) => {
     this.setState({ itemsAvailable: payload });
   };
@@ -108,7 +124,7 @@ class MarketBar extends Component {
 
   render() {
     const { classes, t } = this.props;
-    const { snackbarMessage } = this.state;
+    const { userAccount, snackbarMessage } = this.state;
     return (
       <Paper className={classes.root} elevation={5}>
         <div className={classes.marketBar}>
@@ -144,6 +160,7 @@ class MarketBar extends Component {
           </Typography>
         </div>
         <Divider flexItem light />
+
         <div className={classes.marketBar}>
           <Button
             variant="contained"
@@ -176,7 +193,7 @@ class MarketBar extends Component {
           >
             Admin Panel
           </Button>
-          /*
+
           <Button
             variant="contained"
             style={{
@@ -199,7 +216,6 @@ class MarketBar extends Component {
           >
             LF Crew
           </Button>
-          */
         </div>
       </Paper>
     );
