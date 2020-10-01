@@ -545,10 +545,10 @@ class NewEdit extends Component {
               </Grid>
             </Grid>
           )}
-          {!this.state.account.address && !isAdmin && (
+          {!this.state.account.address && (
             <div>{t("Wallet.PleaseConnect")}</div>
           )}
-          {this.state.account.address && !isAdmin && (
+          {this.state.account.address && !isLF && (
             <div>{t("Wallet.NotLF")}</div>
           )}
           {loading && <Loader />}
