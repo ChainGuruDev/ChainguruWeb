@@ -336,7 +336,7 @@ class NewEdit extends Component {
     return (
       <div className={classes.background}>
         <div className={classes.root}>
-          {isAdmin && (
+          {isLF && (
             <Grid justify="space-evenly" container spacing={3}>
               <Grid item xs={12}>
                 <Card className={classes.editionCreate} elevation={10}>
@@ -549,7 +549,7 @@ class NewEdit extends Component {
             <div>{t("Wallet.PleaseConnect")}</div>
           )}
           {this.state.account.address && !isAdmin && (
-            <div>{t("Wallet.NotAdmin")}</div>
+            <div>{t("Wallet.NotLF")}</div>
           )}
           {loading && <Loader />}
         </div>

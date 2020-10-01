@@ -18,5 +18,5 @@
   "Market.Connect": "Connect",
   "Market.Disconnect": "Disconnect",
   "Wallet.PleaseConnect": "Please connect your wallet to use the service",
-  "Wallet.NotAdmin": "Connected Wallet is not a valid admin/minter account"
+  "Wallet.NotLF": "Connected Wallet is not a valid admin/minter account"
 }
