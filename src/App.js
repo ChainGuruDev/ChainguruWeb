@@ -13,6 +13,7 @@ import Short from "./components/short";
 import Medium from "./components/medium";
 import Long from "./components/long";
 import Market from "./components/market";
+import AdminPanel from "./components/adminPanel";
 import NewEdit from "./components/market/edition/new";
 
 import { injected } from "./stores/connectors";
@@ -104,6 +105,14 @@ class App extends Component {
                 />
                 <NewEdit />
               </Route>
+              <Route path="/edition/adminPanel">
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                />
+                <AdminPanel />
+              </Route>
+
               <Route path="/">
                 <Home />
               </Route>

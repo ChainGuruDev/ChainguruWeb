@@ -1,6 +1,13 @@
 import createBreakpoints from "@material-ui/core/styles/createBreakpoints";
 
 import WorkSansTTF from "../assets/fonts/WorkSans-VariableFont_wght.ttf";
+import RobotoTTF from "typeface-roboto";
+
+const Roboto = {
+  fontFamily: "Roboto",
+  fontStyle: "normal",
+  fontWeight: 400,
+};
 
 const WorkSans = {
   fontFamily: "Work Sans Thin",
@@ -53,18 +60,7 @@ const breakpoints = createBreakpoints({
 
 const iswapTheme = {
   typography: {
-    fontFamily: [
-      '"Work Sans Thin"',
-      "BlinkMacSystemFont",
-      '"Segoe UI"',
-      "Roboto",
-      '"Helvetica Neue"',
-      "Arial",
-      "sans-serif",
-      '"Apple Color Emoji"',
-      '"Segoe UI Emoji"',
-      '"Segoe UI Symbol"',
-    ].join(","),
+    fontFamily: ["Roboto"].join(","),
     h1: {
       fontSize: "48px",
       fontWeight: "600",
@@ -117,7 +113,7 @@ const iswapTheme = {
   overrides: {
     MuiCssBaseline: {
       "@global": {
-        "@font-face": [WorkSans],
+        "@font-face": [Roboto],
       },
     },
     MuiSelect: {

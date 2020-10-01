@@ -172,7 +172,7 @@ class MarketBar extends Component {
           </Button>
           <Button
             style={{
-              display: !this.state.isAdmin ? "none" : "block",
+              display: !this.state.isLF ? "none" : "block",
             }}
             variant="contained"
             color="primary"
@@ -190,31 +190,11 @@ class MarketBar extends Component {
             variant="contained"
             color="primary"
             className={classes.button}
+            onClick={() => {
+              this.nav("/edition/adminPanel");
+            }}
           >
             Admin Panel
-          </Button>
-
-          <Button
-            variant="contained"
-            style={{
-              display: !this.state.isMinter ? "none" : "block",
-            }}
-            onClick={this.overlayClicked}
-            color="primary"
-            className={classes.button}
-          >
-            do minter stuff
-          </Button>
-          <Button
-            variant="contained"
-            style={{
-              display: !this.state.isLF ? "none" : "block",
-            }}
-            onClick={this.overlayClicked}
-            color="primary"
-            className={classes.button}
-          >
-            LF Crew
           </Button>
         </div>
       </Paper>

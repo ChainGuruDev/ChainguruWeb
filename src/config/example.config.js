@@ -1,11 +1,13 @@
 const config = {
   infuraProvider:
     "https://rinkeby.infura.io/v3/da08cbb0e0604f3ab2f57742f776c115",
-  lfOriginalsContract: "0xa91F7Cbd319a294E38e6Cb912BE6163b33898d2C",
+  lfOriginalsContract: "0x0c78941edA624511DAF3C05b082cb19c0e6c7C0d",
+  //lfOriginalsContractGanache: "0x18a704cE592CC6E1609f253715DA629F517d0850",
 
   //lfOriginalsContractKovan: "0x85f8CDf1A693cDa94C0297c2c64eE54e713A4598",
 
   //lfOriginalsContractRinkeby: "0xa91F7Cbd319a294E38e6Cb912BE6163b33898d2C",
+  //lfOriginalsContractRinkebyv2: "0x0c78941edA624511DAF3C05b082cb19c0e6c7C0d",
 
   LFOriginalsABI: [
     {
