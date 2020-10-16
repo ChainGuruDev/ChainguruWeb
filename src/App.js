@@ -1,7 +1,12 @@
 import React, { Component } from "react";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
-import { Switch, Route, BrowserRouter } from "react-router-dom";
+import {
+  BrowserRouter,
+  Switch,
+  Route,
+  BrowserRouter as useParams,
+} from "react-router-dom";
 
 import "./i18n";
 import interestTheme from "./theme";
@@ -15,6 +20,9 @@ import Long from "./components/long";
 import Market from "./components/market";
 import AdminPanel from "./components/adminPanel";
 import NewEdit from "./components/market/edition/new";
+import Show from "./components/market/edition/show";
+import Artist from "./components/market/artist/artist";
+import User from "./components/market/user/user";
 
 import { injected } from "./stores/connectors";
 import { CONNECTION_CONNECTED } from "./constants";
@@ -91,6 +99,13 @@ class App extends Component {
                 />
                 <Long />
               </Route>
+              <Route path="/market/adminPanel">
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                />
+                <AdminPanel />
+              </Route>
               <Route path="/market">
                 <Header
                   setHeaderValue={this.setHeaderValue}
@@ -98,6 +113,21 @@ class App extends Component {
                 />
                 <Market />
               </Route>
+              <Route path="/artist/:artistAccount">
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                />
+                <Artist />
+              </Route>
+              <Route path="/user/:userAccount">
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                />
+                <User />
+              </Route>
+
               <Route path="/edition/new">
                 <Header
                   setHeaderValue={this.setHeaderValue}
@@ -105,12 +135,12 @@ class App extends Component {
                 />
                 <NewEdit />
               </Route>
-              <Route path="/edition/adminPanel">
+              <Route path="/edition/:editionNumber">
                 <Header
                   setHeaderValue={this.setHeaderValue}
                   headerValue={headerValue}
                 />
-                <AdminPanel />
+                <Show />
               </Route>
 
               <Route path="/">

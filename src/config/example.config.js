@@ -1,7 +1,10 @@
 const config = {
-  infuraProvider:
-    "https://rinkeby.infura.io/v3/da08cbb0e0604f3ab2f57742f776c115",
-  lfOriginalsContract: "0x0c78941edA624511DAF3C05b082cb19c0e6c7C0d",
+  infuraProvider: "http://127.0.0.1:9545/",
+  lfOriginalsContract: "0x18a704cE592CC6E1609f253715DA629F517d0850",
+
+  //infuraProvider: "http://127.0.0.1:9545/",
+  //infuraProvider: "https://rinkeby.infura.io/v3/da08cbb0e0604f3ab2f57742f776c115",
+
   //lfOriginalsContractGanache: "0x18a704cE592CC6E1609f253715DA629F517d0850",
 
   //lfOriginalsContractKovan: "0x85f8CDf1A693cDa94C0297c2c64eE54e713A4598",
@@ -69,6 +72,50 @@ const config = {
       anonymous: false,
       inputs: [
         {
+          indexed: true,
+          internalType: "uint256",
+          name: "_editionNumber",
+          type: "uint256",
+        },
+        {
+          indexed: true,
+          internalType: "address",
+          name: "_artistAccount",
+          type: "address",
+        },
+      ],
+      name: "EditionCreated",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: true,
+          internalType: "uint256",
+          name: "_tokenId",
+          type: "uint256",
+        },
+        {
+          indexed: true,
+          internalType: "uint256",
+          name: "_editionNumber",
+          type: "uint256",
+        },
+        {
+          indexed: true,
+          internalType: "address",
+          name: "_buyer",
+          type: "address",
+        },
+      ],
+      name: "Minted",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
           indexed: false,
           internalType: "address",
           name: "account",
@@ -76,6 +123,37 @@ const config = {
         },
       ],
       name: "Paused",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: true,
+          internalType: "uint256",
+          name: "_tokenId",
+          type: "uint256",
+        },
+        {
+          indexed: true,
+          internalType: "uint256",
+          name: "_editionNumber",
+          type: "uint256",
+        },
+        {
+          indexed: true,
+          internalType: "address",
+          name: "_buyer",
+          type: "address",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "_priceInWei",
+          type: "uint256",
+        },
+      ],
+      name: "Purchase",
       type: "event",
     },
     {
@@ -203,7 +281,6 @@ const config = {
       ],
       stateMutability: "view",
       type: "function",
-      constant: true,
     },
     {
       inputs: [],
@@ -217,7 +294,6 @@ const config = {
       ],
       stateMutability: "view",
       type: "function",
-      constant: true,
     },
     {
       inputs: [],
@@ -231,7 +307,6 @@ const config = {
       ],
       stateMutability: "view",
       type: "function",
-      constant: true,
     },
     {
       inputs: [],
@@ -245,7 +320,6 @@ const config = {
       ],
       stateMutability: "view",
       type: "function",
-      constant: true,
     },
     {
       inputs: [
@@ -268,6 +342,49 @@ const config = {
     {
       inputs: [
         {
+          internalType: "uint256",
+          name: "_editionNumber",
+          type: "uint256",
+        },
+      ],
+      name: "artistCommission",
+      outputs: [
+        {
+          internalType: "address",
+          name: "_artistAccount",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "_artistCommission",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "_artistsAccount",
+          type: "address",
+        },
+      ],
+      name: "artistsEditions",
+      outputs: [
+        {
+          internalType: "uint256[]",
+          name: "_editionNumbers",
+          type: "uint256[]",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
           internalType: "address",
           name: "owner",
           type: "address",
@@ -283,7 +400,6 @@ const config = {
       ],
       stateMutability: "view",
       type: "function",
-      constant: true,
     },
     {
       inputs: [],
@@ -297,7 +413,254 @@ const config = {
       ],
       stateMutability: "view",
       type: "function",
-      constant: true,
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "_tokenId",
+          type: "uint256",
+        },
+      ],
+      name: "burn",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "_editionNumber",
+          type: "uint256",
+        },
+        {
+          internalType: "address payable",
+          name: "_artistAccount",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "_artistCommission",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "_priceInWei",
+          type: "uint256",
+        },
+        {
+          internalType: "string",
+          name: "_tokenURI",
+          type: "string",
+        },
+        {
+          internalType: "uint256",
+          name: "_maxAvailable",
+          type: "uint256",
+        },
+      ],
+      name: "createActiveEdition",
+      outputs: [
+        {
+          internalType: "bool",
+          name: "",
+          type: "bool",
+        },
+      ],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "_editionNumber",
+          type: "uint256",
+        },
+        {
+          internalType: "address payable",
+          name: "_artistAccount",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "_artistCommission",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "_priceInWei",
+          type: "uint256",
+        },
+        {
+          internalType: "string",
+          name: "_tokenURI",
+          type: "string",
+        },
+        {
+          internalType: "uint256",
+          name: "_totalSupply",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "_totalAvailable",
+          type: "uint256",
+        },
+      ],
+      name: "createActivePreMintedEdition",
+      outputs: [
+        {
+          internalType: "bool",
+          name: "",
+          type: "bool",
+        },
+      ],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "_editionNumber",
+          type: "uint256",
+        },
+        {
+          internalType: "address payable",
+          name: "_artistAccount",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "_artistCommission",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "_priceInWei",
+          type: "uint256",
+        },
+        {
+          internalType: "string",
+          name: "_tokenURI",
+          type: "string",
+        },
+        {
+          internalType: "uint256",
+          name: "_totalAvailable",
+          type: "uint256",
+        },
+      ],
+      name: "createInactiveEdition",
+      outputs: [
+        {
+          internalType: "bool",
+          name: "",
+          type: "bool",
+        },
+      ],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "_editionNumber",
+          type: "uint256",
+        },
+        {
+          internalType: "address payable",
+          name: "_artistAccount",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "_artistCommission",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "_priceInWei",
+          type: "uint256",
+        },
+        {
+          internalType: "string",
+          name: "_tokenURI",
+          type: "string",
+        },
+        {
+          internalType: "uint256",
+          name: "_totalSupply",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "_totalAvailable",
+          type: "uint256",
+        },
+      ],
+      name: "createInactivePreMintedEdition",
+      outputs: [
+        {
+          internalType: "bool",
+          name: "",
+          type: "bool",
+        },
+      ],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "editionNumber",
+          type: "uint256",
+        },
+      ],
+      name: "detailsOfEdition",
+      outputs: [
+        {
+          internalType: "address payable",
+          name: "_artistAccount",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "_artistCommission",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "_priceInWei",
+          type: "uint256",
+        },
+        {
+          internalType: "string",
+          name: "_tokenURI",
+          type: "string",
+        },
+        {
+          internalType: "uint256",
+          name: "_circulatingSupply",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "_maxAvailable",
+          type: "uint256",
+        },
+        {
+          internalType: "bool",
+          name: "_active",
+          type: "bool",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
     },
     {
       inputs: [],
@@ -311,7 +674,25 @@ const config = {
       ],
       stateMutability: "view",
       type: "function",
-      constant: true,
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "_editionNumber",
+          type: "uint256",
+        },
+      ],
+      name: "editionExists",
+      outputs: [
+        {
+          internalType: "bool",
+          name: "",
+          type: "bool",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
     },
     {
       inputs: [
@@ -327,11 +708,6 @@ const config = {
           internalType: "uint256",
           name: "editionNumber",
           type: "uint256",
-        },
-        {
-          internalType: "bytes32",
-          name: "editionData",
-          type: "bytes32",
         },
         {
           internalType: "address payable",
@@ -355,12 +731,12 @@ const config = {
         },
         {
           internalType: "uint256",
-          name: "circulatingSupply",
+          name: "totalSupply",
           type: "uint256",
         },
         {
           internalType: "uint256",
-          name: "maxAvailable",
+          name: "totalAvailable",
           type: "uint256",
         },
         {
@@ -371,7 +747,25 @@ const config = {
       ],
       stateMutability: "view",
       type: "function",
-      constant: true,
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "_tokenId",
+          type: "uint256",
+        },
+      ],
+      name: "editionOfTokenId",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "_editionNumber",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
     },
     {
       inputs: [
@@ -391,7 +785,6 @@ const config = {
       ],
       stateMutability: "view",
       type: "function",
-      constant: true,
     },
     {
       inputs: [
@@ -411,7 +804,6 @@ const config = {
       ],
       stateMutability: "view",
       type: "function",
-      constant: true,
     },
     {
       inputs: [
@@ -436,7 +828,6 @@ const config = {
       ],
       stateMutability: "view",
       type: "function",
-      constant: true,
     },
     {
       inputs: [
@@ -456,7 +847,6 @@ const config = {
       ],
       stateMutability: "view",
       type: "function",
-      constant: true,
     },
     {
       inputs: [
@@ -499,7 +889,6 @@ const config = {
       ],
       stateMutability: "view",
       type: "function",
-      constant: true,
     },
     {
       inputs: [
@@ -524,7 +913,6 @@ const config = {
       ],
       stateMutability: "view",
       type: "function",
-      constant: true,
     },
     {
       inputs: [],
@@ -538,7 +926,30 @@ const config = {
       ],
       stateMutability: "view",
       type: "function",
-      constant: true,
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "_to",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "_editionNumber",
+          type: "uint256",
+        },
+      ],
+      name: "mint",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "nonpayable",
+      type: "function",
     },
     {
       inputs: [],
@@ -552,7 +963,6 @@ const config = {
       ],
       stateMutability: "view",
       type: "function",
-      constant: true,
     },
     {
       inputs: [
@@ -572,7 +982,6 @@ const config = {
       ],
       stateMutability: "view",
       type: "function",
-      constant: true,
     },
     {
       inputs: [],
@@ -586,7 +995,87 @@ const config = {
       ],
       stateMutability: "view",
       type: "function",
-      constant: true,
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "_editionNumber",
+          type: "uint256",
+        },
+      ],
+      name: "priceInWeiEdition",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "_priceInWei",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "_tokenId",
+          type: "uint256",
+        },
+      ],
+      name: "priceInWeiToken",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "_priceInWei",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "_editionNumber",
+          type: "uint256",
+        },
+      ],
+      name: "purchase",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "payable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "_to",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "_editionNumber",
+          type: "uint256",
+        },
+      ],
+      name: "purchaseTo",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "payable",
+      type: "function",
     },
     {
       inputs: [
@@ -696,6 +1185,24 @@ const config = {
     {
       inputs: [
         {
+          internalType: "uint256",
+          name: "_tokenId",
+          type: "uint256",
+        },
+        {
+          internalType: "string",
+          name: "_uri",
+          type: "string",
+        },
+      ],
+      name: "setTokenURI",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
           internalType: "bytes4",
           name: "interfaceId",
           type: "bytes4",
@@ -711,7 +1218,6 @@ const config = {
       ],
       stateMutability: "view",
       type: "function",
-      constant: true,
     },
     {
       inputs: [],
@@ -725,7 +1231,6 @@ const config = {
       ],
       stateMutability: "view",
       type: "function",
-      constant: true,
     },
     {
       inputs: [
@@ -745,7 +1250,35 @@ const config = {
       ],
       stateMutability: "view",
       type: "function",
-      constant: true,
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "_tokenId",
+          type: "uint256",
+        },
+      ],
+      name: "tokenData",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "_editionNumber",
+          type: "uint256",
+        },
+        {
+          internalType: "string",
+          name: "_tokenURI",
+          type: "string",
+        },
+        {
+          internalType: "address",
+          name: "_owner",
+          type: "address",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
     },
     {
       inputs: [
@@ -770,7 +1303,6 @@ const config = {
       ],
       stateMutability: "view",
       type: "function",
-      constant: true,
     },
     {
       inputs: [
@@ -790,7 +1322,25 @@ const config = {
       ],
       stateMutability: "view",
       type: "function",
-      constant: true,
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "_editionNumber",
+          type: "uint256",
+        },
+      ],
+      name: "tokensOfEdition",
+      outputs: [
+        {
+          internalType: "uint256[]",
+          name: "_tokenIds",
+          type: "uint256[]",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
     },
     {
       inputs: [],
@@ -804,7 +1354,6 @@ const config = {
       ],
       stateMutability: "view",
       type: "function",
-      constant: true,
     },
     {
       inputs: [],
@@ -818,7 +1367,6 @@ const config = {
       ],
       stateMutability: "view",
       type: "function",
-      constant: true,
     },
     {
       inputs: [],
@@ -832,7 +1380,25 @@ const config = {
       ],
       stateMutability: "view",
       type: "function",
-      constant: true,
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "_editionNumber",
+          type: "uint256",
+        },
+      ],
+      name: "totalRemaining",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
     },
     {
       inputs: [],
@@ -846,7 +1412,6 @@ const config = {
       ],
       stateMutability: "view",
       type: "function",
-      constant: true,
     },
     {
       inputs: [
@@ -874,47 +1439,22 @@ const config = {
     {
       inputs: [
         {
-          internalType: "uint256",
-          name: "_editionNumber",
-          type: "uint256",
-        },
-        {
-          internalType: "bytes32",
-          name: "_editionData",
-          type: "bytes32",
-        },
-        {
-          internalType: "address payable",
-          name: "_artistAccount",
+          internalType: "address",
+          name: "_to",
           type: "address",
         },
         {
           internalType: "uint256",
-          name: "_artistCommission",
-          type: "uint256",
-        },
-        {
-          internalType: "uint256",
-          name: "_priceInWei",
-          type: "uint256",
-        },
-        {
-          internalType: "string",
-          name: "_tokenURI",
-          type: "string",
-        },
-        {
-          internalType: "uint256",
-          name: "_maxAvailable",
+          name: "_editionNumber",
           type: "uint256",
         },
       ],
-      name: "createActiveEdition",
+      name: "underMint",
       outputs: [
         {
-          internalType: "bool",
+          internalType: "uint256",
           name: "",
-          type: "bool",
+          type: "uint256",
         },
       ],
       stateMutability: "nonpayable",
@@ -927,213 +1467,52 @@ const config = {
           name: "_editionNumber",
           type: "uint256",
         },
-      ],
-      name: "purchase",
-      outputs: [
-        {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
-        },
-      ],
-      stateMutability: "payable",
-      type: "function",
-      payable: true,
-    },
-    {
-      inputs: [
-        {
-          internalType: "address",
-          name: "_to",
-          type: "address",
-        },
-        {
-          internalType: "uint256",
-          name: "_editionNumber",
-          type: "uint256",
-        },
-      ],
-      name: "purchaseTo",
-      outputs: [
-        {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
-        },
-      ],
-      stateMutability: "payable",
-      type: "function",
-      payable: true,
-    },
-    {
-      inputs: [
-        {
-          internalType: "uint256",
-          name: "_tokenId",
-          type: "uint256",
-        },
-      ],
-      name: "editionOfTokenId",
-      outputs: [
-        {
-          internalType: "uint256",
-          name: "_editionNumber",
-          type: "uint256",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-      constant: true,
-    },
-    {
-      inputs: [
-        {
-          internalType: "address",
-          name: "_artistsAccount",
-          type: "address",
-        },
-      ],
-      name: "artistsEditions",
-      outputs: [
-        {
-          internalType: "uint256[]",
-          name: "_editionNumbers",
-          type: "uint256[]",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-      constant: true,
-    },
-    {
-      inputs: [
-        {
-          internalType: "uint256",
-          name: "_editionNumber",
-          type: "uint256",
-        },
-      ],
-      name: "tokensOfEdition",
-      outputs: [
-        {
-          internalType: "uint256[]",
-          name: "_tokenIds",
-          type: "uint256[]",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-      constant: true,
-    },
-    {
-      inputs: [
-        {
-          internalType: "uint256",
-          name: "editionNumber",
-          type: "uint256",
-        },
-      ],
-      name: "detailsOfEdition",
-      outputs: [
-        {
-          internalType: "bytes32",
-          name: "_editionData",
-          type: "bytes32",
-        },
-        {
-          internalType: "address payable",
-          name: "_artistAccount",
-          type: "address",
-        },
-        {
-          internalType: "uint256",
-          name: "_artistCommission",
-          type: "uint256",
-        },
-        {
-          internalType: "uint256",
-          name: "_priceInWei",
-          type: "uint256",
-        },
-        {
-          internalType: "string",
-          name: "_tokenURI",
-          type: "string",
-        },
-        {
-          internalType: "uint256",
-          name: "_circulatingSupply",
-          type: "uint256",
-        },
-        {
-          internalType: "uint256",
-          name: "_maxAvailable",
-          type: "uint256",
-        },
         {
           internalType: "bool",
           name: "_active",
           type: "bool",
         },
       ],
-      stateMutability: "view",
+      name: "updateActive",
+      outputs: [],
+      stateMutability: "nonpayable",
       type: "function",
-      constant: true,
     },
     {
       inputs: [
-        {
-          internalType: "uint256",
-          name: "_tokenId",
-          type: "uint256",
-        },
-      ],
-      name: "tokenData",
-      outputs: [
         {
           internalType: "uint256",
           name: "_editionNumber",
           type: "uint256",
         },
         {
-          internalType: "bytes32",
-          name: "_editionData",
-          type: "bytes32",
+          internalType: "uint256",
+          name: "_rate",
+          type: "uint256",
+        },
+      ],
+      name: "updateArtistCommission",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "_editionNumber",
+          type: "uint256",
         },
         {
-          internalType: "string",
-          name: "_tokenURI",
-          type: "string",
-        },
-        {
-          internalType: "address",
-          name: "_owner",
+          internalType: "address payable",
+          name: "_artistAccount",
           type: "address",
         },
       ],
-      stateMutability: "view",
+      name: "updateArtistsAccount",
+      outputs: [],
+      stateMutability: "nonpayable",
       type: "function",
-      constant: true,
-    },
-    {
-      inputs: [
-        {
-          internalType: "uint256",
-          name: "_tokenId",
-          type: "uint256",
-        },
-      ],
-      name: "priceInWeiToken",
-      outputs: [
-        {
-          internalType: "uint256",
-          name: "_priceInWei",
-          type: "uint256",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-      constant: true,
     },
     {
       inputs: [
@@ -1142,18 +1521,83 @@ const config = {
           name: "_editionNumber",
           type: "uint256",
         },
+        {
+          internalType: "string",
+          name: "_uri",
+          type: "string",
+        },
       ],
-      name: "priceInWeiEdition",
-      outputs: [
+      name: "updateEditionTokenURI",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address payable",
+          name: "_lfCommissionAccount",
+          type: "address",
+        },
+      ],
+      name: "updateLFCommissionAccount",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "_editionNumber",
+          type: "uint256",
+        },
         {
           internalType: "uint256",
           name: "_priceInWei",
           type: "uint256",
         },
       ],
-      stateMutability: "view",
+      name: "updatePriceInWei",
+      outputs: [],
+      stateMutability: "nonpayable",
       type: "function",
-      constant: true,
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "_editionNumber",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "_totalAvailable",
+          type: "uint256",
+        },
+      ],
+      name: "updateTotalAvailable",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "_editionNumber",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "_totalSupply",
+          type: "uint256",
+        },
+      ],
+      name: "updateTotalSupply",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
     },
   ],
 };

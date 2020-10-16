@@ -3,9 +3,9 @@
   "Unlock.WalletConnected": "Billetera connectada correctamente.",
 
   "Snackbar.Error": "Error",
-  "Snackbar.Warning": "Warning",
+  "Snackbar.Warning": "Advertencia",
   "Snackbar.Info": "Info",
-  "Snackbar.Succecss": "Success",
+  "Snackbar.Succecss": "Exito",
   "Snackbar.Hash": "Hash",
 
   "Footer.Home": "inicio",
@@ -17,6 +17,6 @@
 
   "Market.Connect": "Conectar",
   "Market.Disconnect": "Desconectar",
-  "Wallet.PleaseConnect": "Por favor, conectar su wallet para usar el servicio",
-  "Wallet.NotLF": "El wallet conectado no es un Admin/Minter valido"
+  "Wallet.PleaseConnect": "Por favor, conectar su billetera para usar el servicio",
+  "Wallet.NotLF": "La billetera conectado no es un Admin/Minter valido"
 }

@@ -39,50 +39,34 @@ const styles = (theme) => ({
     display: "flex",
     flexDirection: "column",
     minWidth: "100%",
-    minHeight: "100vh",
-
+    Width: "100%",
+    minHeight: "100%",
     alignItems: "center",
     background: "linear-gradient(to top, #3cba92, #68efcf)",
   },
   root: {
-    marginTop: "40px",
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    maxWidth: "1000px",
+    maxWidth: "1920px",
     width: "90%",
     alignItems: "center",
   },
-  paper: {
-    padding: theme.spacing(10),
-    textAlign: "center",
-  },
-  paperHeader: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
 
-    padding: theme.spacing(1),
-    borderRadius: "35px",
-  },
-  header: {
-    marginLeft: "auto",
-  },
-  buttonWallet: {
-    marginLeft: "auto",
-    borderRadius: "35px",
-  },
   gridList: {
-    // Promote the list into his own layer on Chrome. This cost memory but helps keeping high FPS.
-    transform: "translateZ(0)",
-    minWidth: "75%",
-
-    maxWidth: "75%",
+    display: "flex",
+    flex: 1,
+    justifyContent: "end",
+    padding: 40,
   },
-  titleBar: {
-    background:
-      "linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, " +
-      "rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)",
+  connect: {
+    minWidth: "100%",
+    alignItems: "center",
+    textAlign: "center",
+    justifyContent: "center",
+    marginTop: "5%",
+  },
+  gridContainer: {
+    display: "flex",
+    flex: 1,
+    justifyContent: "center",
   },
 });
 
@@ -117,6 +101,7 @@ class Market extends Component {
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
     emitter.on(EDITION_RETURNED, this.editionReturned);
     emitter.on(EDITIONS_DETAILS_RETURNED, this.editionDetailsReturned);
+    emitter.on(BUY_RETURNED, this.buyReturned);
   }
 
   componentWillUnmount() {
@@ -131,6 +116,7 @@ class Market extends Component {
       EDITIONS_DETAILS_RETURNED,
       this.editionDetailsReturned
     );
+    emitter.removeListener(BUY_RETURNED, this.buyReturned);
   }
 
   editionReturned = (curEdit) => {
@@ -140,6 +126,22 @@ class Market extends Component {
       editions.push(i);
     }
     dispatcher.dispatch({ type: GET_EDITIONS_DETAILS, content: { editions } });
+  };
+
+  buyReturned = () => {
+    dispatcher.dispatch({ type: GET_CURRENTEDITION, content: {} });
+    dispatcher.dispatch({ type: GET_AVAILABLE_ITEMS, content: {} });
+    dispatcher.dispatch({ type: GET_ITEMS_CIRCULATING, content: {} });
+    dispatcher.dispatch({ type: GET_SALES_VALUE, content: {} });
+
+    const that = this;
+    setTimeout(() => {
+      const snackbarObj = {
+        snackbarMessage: "Edition Bought",
+        snackbarType: "Info",
+      };
+      that.setState(snackbarObj);
+    });
   };
 
   editionDetailsReturned = (editions) => {
@@ -223,15 +225,11 @@ class Market extends Component {
       <div className={classes.background}>
         <div className={classes.root}>
           {this.state.account.address && (
-            <Grid justify="space-evenly" container spacing={3}>
-              <Grid item xs={12}></Grid>
+            <Grid className={classes.gridList} container>
               <GridList
-                item
                 xs={9}
                 cellHeight={200}
-                container
-                spacing={3}
-                className={classes.gridList}
+                className={classes.gridContainer}
               >
                 {this.renderEditions()}
               </GridList>
@@ -241,11 +239,10 @@ class Market extends Component {
             </Grid>
           )}
           {!this.state.account.address && (
-            <div>{t("Wallet.PleaseConnect")}</div>
+            <div className={classes.connect}>{t("Wallet.PleaseConnect")}</div>
           )}
 
           {loading && <Loader />}
-
           {modalOpen && this.renderModal()}
           {snackbarMessage && this.renderSnackbar()}
         </div>

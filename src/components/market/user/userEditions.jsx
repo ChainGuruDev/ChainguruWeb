@@ -10,11 +10,11 @@ import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import CircularProgress from "@material-ui/core/CircularProgress";
 
-import { ERROR, BUY_EDITION, BUY_RETURNED } from "../../constants";
+import { ERROR, BUY_EDITION, BUY_RETURNED } from "../../../constants";
 import { withTranslation } from "react-i18next";
-import { colors } from "../../theme";
+import { colors } from "../../../theme";
 
-import Store from "../../stores";
+import Store from "../../../stores";
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
 
@@ -22,6 +22,7 @@ const styles = (theme) => ({
   root: {
     width: 325,
     minHeight: 325,
+    padding: theme.spacing(1),
     margin: theme.spacing(2),
     display: "flex",
     flexDirection: "column",
@@ -30,12 +31,13 @@ const styles = (theme) => ({
   description: {},
 });
 
-class RenderEditions extends Component {
+class UserEditions extends Component {
   static async getInitialProps(props) {
     return {
       key: this.props.key,
       editionNum: this.props.editionNum,
       details: this.props.details,
+      owned: this.props.owned,
     };
   }
 
@@ -46,6 +48,7 @@ class RenderEditions extends Component {
   componentDidMount() {
     emitter.on(ERROR, this.errorReturned);
     emitter.on(BUY_RETURNED, this.buyReturned);
+    //console.log(this.props.details._tokenURI);
     this.getTokenJson(this.props.details._tokenURI);
     //this.getTokenJson(this.props.editionNum);
   }
@@ -65,7 +68,6 @@ class RenderEditions extends Component {
       });
     this.setState({ tokenURI: await _tokenURI });
   };
-
   componentWillUnmount() {
     emitter.removeListener(ERROR, this.errorReturned);
     emitter.removeListener(BUY_RETURNED, this.buyReturned);
@@ -97,7 +99,7 @@ class RenderEditions extends Component {
     this.startLoading();
     dispatcher.dispatch({
       type: BUY_EDITION,
-      editNum: this.props.editionNum * 100,
+      editNum: this.props.editionNum,
       value: this.props.details._priceInWei,
     });
   };
@@ -127,15 +129,16 @@ class RenderEditions extends Component {
   }
 
   editionClicked = () => {
-    let _editNumber = this.props.editionNum * 100;
+    let _editNumber = this.props.editionNum;
     this.nav(`/edition/${_editNumber}`);
   };
 
   render(props) {
     const { classes } = this.props;
     const { loading } = this.state;
-
     const editNum = this.props.editionNum;
+    const owned = this.props.owned.length;
+
     return (
       <div>
         <Card className={classes.root} elevation={6}>
@@ -212,10 +215,9 @@ class RenderEditions extends Component {
               </Button>
             )}
             <Button variant="outlined" disabled size="small" color="secondary">
-              {this.props.details._maxAvailable -
-                this.props.details._circulatingSupply}
+              {owned}
               {" / "}
-              {this.props.details._maxAvailable} remaining
+              {this.props.details._maxAvailable} Owned
             </Button>
           </CardActions>
         </Card>
@@ -223,4 +225,4 @@ class RenderEditions extends Component {
     );
   }
 }
-export default withRouter(withStyles(styles)(RenderEditions));
+export default withRouter(withStyles(styles)(UserEditions));

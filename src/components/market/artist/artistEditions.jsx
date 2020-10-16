@@ -10,11 +10,11 @@ import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import CircularProgress from "@material-ui/core/CircularProgress";
 
-import { ERROR, BUY_EDITION, BUY_RETURNED } from "../../constants";
+import { ERROR, BUY_EDITION, BUY_RETURNED } from "../../../constants";
 import { withTranslation } from "react-i18next";
-import { colors } from "../../theme";
+import { colors } from "../../../theme";
 
-import Store from "../../stores";
+import Store from "../../../stores";
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
 
@@ -22,6 +22,7 @@ const styles = (theme) => ({
   root: {
     width: 325,
     minHeight: 325,
+    padding: theme.spacing(1),
     margin: theme.spacing(2),
     display: "flex",
     flexDirection: "column",
@@ -30,7 +31,7 @@ const styles = (theme) => ({
   description: {},
 });
 
-class RenderEditions extends Component {
+class ArtistEditions extends Component {
   static async getInitialProps(props) {
     return {
       key: this.props.key,
@@ -97,7 +98,7 @@ class RenderEditions extends Component {
     this.startLoading();
     dispatcher.dispatch({
       type: BUY_EDITION,
-      editNum: this.props.editionNum * 100,
+      editNum: this.props.editionNum,
       value: this.props.details._priceInWei,
     });
   };
@@ -127,7 +128,7 @@ class RenderEditions extends Component {
   }
 
   editionClicked = () => {
-    let _editNumber = this.props.editionNum * 100;
+    let _editNumber = this.props.editionNum;
     this.nav(`/edition/${_editNumber}`);
   };
 
@@ -223,4 +224,4 @@ class RenderEditions extends Component {
     );
   }
 }
-export default withRouter(withStyles(styles)(RenderEditions));
+export default withRouter(withStyles(styles)(ArtistEditions));

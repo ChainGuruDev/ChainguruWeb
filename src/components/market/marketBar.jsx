@@ -22,9 +22,12 @@ const store = Store.store;
 
 const styles = (theme) => ({
   root: {
+    marginTop: 15,
     width: "100%",
     maxWidth: 360,
-    backgroundColor: colors.white,
+    minWidth: 200,
+
+    backgroundColor: colors.cardBackground,
   },
   marketBar: {
     flex: 1,
@@ -36,6 +39,17 @@ const styles = (theme) => ({
     padding: theme.spacing(1),
     textAlign: "center",
   },
+  menuItems: {
+    padding: 15,
+    alignItems: "center",
+    textAlign: "left",
+
+    background: colors.cardBackground,
+  },
+  divider: {
+    margin: 15,
+  },
+
   button: {
     minWidth: "100%",
     marginTop: theme.spacing(1),
@@ -126,47 +140,41 @@ class MarketBar extends Component {
     const { classes, t } = this.props;
     const { userAccount, snackbarMessage } = this.state;
     return (
-      <Paper className={classes.root} elevation={5}>
-        <div className={classes.marketBar}>
+      <div className={classes.root}>
+        <Paper className={classes.menuItems} elevation={3}>
           <Typography className={classes.header}>Total editions</Typography>
           <Typography variant="h3" className={classes.header}>
             {this.props.edition}
           </Typography>
-        </div>
-        <Divider flexItem light />
-        <div className={classes.marketBar}>
+          <Divider className={classes.divider} />
           <Typography className={classes.header}>
             Total items available
           </Typography>
           <Typography variant="h3" className={classes.header}>
             {this.state.itemsAvailable}
           </Typography>
-        </div>
 
-        <Divider flexItem light />
-        <div className={classes.marketBar}>
+          <Divider className={classes.divider} />
           <Typography className={classes.header}>
             Total items Circulating
           </Typography>
           <Typography variant="h3" className={classes.header}>
             {this.state.itemsCirculating}
           </Typography>
-        </div>
-        <Divider flexItem light />
-        <div className={classes.marketBar}>
+          <Divider className={classes.divider} />
           <Typography className={classes.header}>Total sales in Eth</Typography>
           <Typography variant="h3" className={classes.header}>
             {this.state.salesValue}
           </Typography>
-        </div>
-        <Divider flexItem light />
-
-        <div className={classes.marketBar}>
+          <Divider className={classes.divider} />
           <Button
-            variant="contained"
+            variant="outlined"
             onClick={this.overlayClicked}
-            color="primary"
             className={classes.button}
+            color="primary"
+            onClick={() => {
+              this.nav(`/user/${this.state.account.address}`);
+            }}
           >
             My Items
           </Button>
@@ -191,13 +199,13 @@ class MarketBar extends Component {
             color="primary"
             className={classes.button}
             onClick={() => {
-              this.nav("/edition/adminPanel");
+              this.nav("/market/adminPanel");
             }}
           >
             Admin Panel
           </Button>
-        </div>
-      </Paper>
+        </Paper>
+      </div>
     );
   }
 }

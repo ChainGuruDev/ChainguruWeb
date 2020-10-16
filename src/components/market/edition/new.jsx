@@ -26,8 +26,11 @@ import {
   GET_CURRENTEDITION,
   EDITION_RETURNED,
   CREATE_NEW_EDITION,
+  NEW_EDITION_RETURNED,
   ACCOUNT_ROLES_RETURNED,
   GET_ACCOUNT_ROLES,
+  CHECK_ACCOUNT,
+  CHECK_ACCOUNT_RETURNED,
 } from "../../../constants";
 
 import { withTranslation } from "react-i18next";
@@ -106,12 +109,21 @@ const styles = (theme) => ({
     border: 0,
     verticalAlign: "top", // Fix alignment issue on Safari.
   },
+  form: {
+    borderRadius: "5px",
+  },
   bigDisplay: {
     background:
       "linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, " +
       "rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)",
     minWidth: "50%",
     minHeight: "100%",
+  },
+  image: {
+    border: "1px solid #ddd",
+    borderRadius: "4px",
+    padding: "5px",
+    width: "250px",
   },
 });
 
@@ -122,6 +134,10 @@ class NewEdit extends Component {
       name: "",
       description: "",
       artistName: "",
+      artistAccount: "",
+      commision: "",
+      price: "",
+      maxSupply: "",
       external_url: "",
       tokenURI: "",
       imagePath: "",
@@ -129,6 +145,17 @@ class NewEdit extends Component {
       loading: false,
       account: "",
       buffer: null,
+      errorName: false,
+      errorDesc: false,
+      errorArtistName: false,
+      errorAccount: false,
+      errorCommission: false,
+      errorPrice: false,
+      errorSupply: false,
+      errMsgAccount: "Artist's ethereum Wallet address.",
+      errMsgCommission: "Artist commission share %",
+      errMsgPrice: "Edition price in Eth",
+      errMsgSupply: "Maximum ammount available.",
     };
     const account = store.getStore("account");
 
@@ -141,12 +168,19 @@ class NewEdit extends Component {
     }
   }
 
+  nav = (screen) => {
+    this.props.history.push(screen);
+  };
+
   componentDidMount() {
     emitter.on(ERROR, this.errorReturned);
     emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
     emitter.on(EDITION_RETURNED, this.editionReturned);
+    emitter.on(NEW_EDITION_RETURNED, this.newEditionReturned);
     emitter.on(ACCOUNT_ROLES_RETURNED, this.accountRolesReturned);
+    emitter.on(CHECK_ACCOUNT_RETURNED, this.checkAccountReturned);
+
     dispatcher.dispatch({
       type: GET_ACCOUNT_ROLES,
       content: {},
@@ -161,15 +195,30 @@ class NewEdit extends Component {
       this.connectionDisconnected
     );
     emitter.removeListener(EDITION_RETURNED, this.editionReturned);
+    emitter.removeListener(NEW_EDITION_RETURNED, this.newEditionReturned);
+
     emitter.removeListener(ACCOUNT_ROLES_RETURNED, this.accountRolesReturned);
+    emitter.removeListener(CHECK_ACCOUNT_RETURNED, this.checkAccountReturned);
   }
+
+  checkAccountReturned = (_isAccount) => {
+    if (!_isAccount) {
+      this.setState({ errMsgAccount: "Not a valid ethereum address" });
+    } else {
+      this.setState({ errMsgAccount: "Artist's ethereum Wallet address." });
+    }
+    this.setState({ errorAccount: !_isAccount });
+  };
 
   editionReturned = (curEdit) => {
     this.setState({ curEdit: curEdit });
   };
 
+  newEditionReturned = () => {
+    this.nav(`/market`);
+  };
+
   accountRolesReturned = (payload) => {
-    console.log(payload);
     this.setState({ isAdmin: payload[0] });
     this.setState({ isMinter: payload[1] });
     this.setState({ isLF: payload[2] });
@@ -211,6 +260,8 @@ class NewEdit extends Component {
     const snackbarObj = { snackbarMessage: null, snackbarType: null };
     this.setState(snackbarObj);
     this.setState({ loading: false });
+    this.setState({ isUploading: false });
+
     const that = this;
     setTimeout(() => {
       const snackbarObj = {
@@ -255,21 +306,36 @@ class NewEdit extends Component {
 
   handleName = (event) => {
     this.setState({ name: event.target.value });
+    this.setState({ errorName: false });
   };
 
   handleArtistName = (event) => {
     this.setState({ artistName: event.target.value });
+    this.setState({ errorArtistName: false });
   };
 
   handleDesc = (event) => {
     this.setState({ description: event.target.value });
+    this.setState({ errorDesc: false });
   };
 
   handleClick = (event) => {
     if (!this.state.imagePath.length > 0) return;
-
-    if (!this.state.name.length > 0 || !this.state.description.length > 0)
-      return;
+    if (!this.state.name.length > 0)
+      return (
+        this.setState({ errorName: true }),
+        this.errorReturned("Must input some Token Name")
+      );
+    if (!this.state.artistName.length > 0)
+      return (
+        this.setState({ errorArtistName: true }),
+        this.errorReturned("Must input Artist Name")
+      );
+    if (!this.state.description.length > 0)
+      return (
+        this.setState({ errorDesc: true }),
+        this.errorReturned("Must input some description")
+      );
     this.setState({ isUploading: true });
 
     let _editionNumber = (1 + parseInt(this.state.curEdit)) * 100;
@@ -289,49 +355,139 @@ class NewEdit extends Component {
     this.uploadTokenURI(buffer);
   };
 
-  render() {
-    const { classes, t } = this.props;
-    const { loading, snackbarMessage, isAdmin, isMinter, isLF } = this.state;
-    let editionData, artistAccount, artistCommission, price, maxSupply;
+  handleChange = (event) => {
+    switch (event.target.id) {
+      case "artistAccount":
+        this.setState({ artistAccount: event.target.value });
+        this.setState({ errorAccount: false });
+        dispatcher.dispatch({
+          type: CHECK_ACCOUNT,
+          content: event.target.value,
+        });
+        break;
 
-    const handleChange = (event) => {
-      switch (event.target.id) {
-        case "editionData":
-          editionData = event.target.value;
-          break;
-        case "artistAccount":
-          artistAccount = event.target.value;
-          break;
-        case "artistCommission":
-          artistCommission = event.target.value;
-          break;
-        case "price":
-          price = event.target.value;
-          break;
-        case "maxSupply":
-          maxSupply = event.target.value;
-          break;
-        default:
-          break;
-      }
-    };
+      case "artistCommission":
+        let _commission = event.target.value.replace(",", ".");
 
-    const onSubmit = async () => {
-      let _editionNumber = (1 + parseInt(this.state.curEdit)) * 100;
+        this.setState({ commision: _commission });
+        this.setState({ errorCommission: false });
+        if (isNaN(_commission)) {
+          this.setState({ errorCommission: true });
+          this.setState({
+            errMsgCommission: "commission must be a number between 0 and 100",
+          });
+        } else {
+          if (_commission < 0 || _commission > 100) {
+            this.setState({ errorCommission: true });
+            this.setState({
+              errMsgCommission: "commission must be a number between 0 and 100",
+            });
+          } else {
+            this.setState({ errorCommission: false });
+            this.setState({ errMsgCommission: "Artist commission share %" });
+          }
+        }
+        break;
 
+      case "price":
+        let _price = event.target.value.replace(",", ".");
+        this.setState({ price: _price });
+        if (isNaN(_price)) {
+          this.setState({ errorPrice: true });
+          this.setState({ errMsgPrice: "Price must be a number" });
+        } else {
+          this.setState({ errorPrice: false });
+          this.setState({ errMsgPrice: "Edition price in Eth" });
+        }
+        break;
+
+      case "maxSupply":
+        let _maxSupply = parseInt(event.target.value);
+        this.setState({ maxSupply: _maxSupply });
+        this.setState({ errorSupply: false });
+        if (!Number.isInteger(_maxSupply)) {
+          this.setState({ errorSupply: true });
+          this.setState({ errMsgSupply: "Maximum supply must be an integer" });
+        }
+        if (Number.isInteger(_maxSupply)) {
+          if (_maxSupply < 1 || _maxSupply > 99) {
+            this.setState({ errorSupply: true });
+            this.setState({
+              errMsgSupply: "Max Supply must be a number between 1 and 99",
+            });
+          } else {
+            this.setState({ errorSupply: false });
+            this.setState({ errMsgSupply: "Maximum ammount available." });
+          }
+        }
+
+        break;
+
+      default:
+        break;
+    }
+  };
+
+  onSubmit = async () => {
+    let _price = this.state.price.replace(",", ".");
+    this.setState({ isUploading: true });
+    if (!this.state.commision) {
+      return (
+        this.setState({ isUploading: false }),
+        this.setState({ errorCommission: true }),
+        this.setState({ errMsgCommission: "Must input some Commission value" }),
+        this.errorReturned("Must input some Commission value")
+      );
+    }
+    if (!this.state.artistAccount) {
+      return (
+        this.setState({ isUploading: false }),
+        this.setState({ errorAccount: true }),
+        this.setState({ errMsgAccount: "Must input some artist Account" }),
+        this.errorReturned("Must input some artist Account")
+      );
+    }
+    if (!this.state.price) {
+      return (
+        this.setState({ isUploading: false }),
+        this.setState({ errorPrice: true }),
+        this.setState({ errMsgPrice: "Must input some price value" }),
+        this.errorReturned("Must input some price value")
+      );
+    }
+    if (!this.state.maxSupply) {
+      return (
+        this.setState({ isUploading: false }),
+        this.setState({ errorSupply: true }),
+        this.setState({ errMsgSupply: "Must input some max supply" }),
+        this.errorReturned("Must input some max supply")
+      );
+    }
+
+    if (
+      this.state.errorAccount ||
+      this.state.errorPrice ||
+      this.state.errorCommission ||
+      this.state.errorSupply
+    ) {
+      this.setState({ isUploading: false });
+    } else {
       dispatcher.dispatch({
         type: CREATE_NEW_EDITION,
         content: {
-          editionNumber: _editionNumber,
-          editionData: editionData,
-          artistAccount: artistAccount,
-          artistCommission: artistCommission,
-          price: price,
+          artistAccount: this.state.artistAccount,
+          artistCommission: this.state.commision,
+          price: _price,
           tokenURI: this.state.tokenURI,
-          maxSupply: maxSupply,
+          maxSupply: this.state.maxSupply,
         },
       });
-    };
+    }
+  };
+
+  render() {
+    const { classes, t } = this.props;
+    const { loading, snackbarMessage, isAdmin, isMinter, isLF } = this.state;
 
     return (
       <div className={classes.background}>
@@ -371,7 +527,7 @@ class NewEdit extends Component {
                         }}
                       >
                         <Button
-                          variant="contained"
+                          variant="outlined"
                           color="primary"
                           component="span"
                           style={{
@@ -385,23 +541,28 @@ class NewEdit extends Component {
                           {!this.state.isUploading && "Upload image"}
                         </Button>
                       </label>
-                      <TextField
-                        id="standard-name"
-                        label="ImageURL"
-                        fullWidth
-                        disabled="True"
-                        margin="normal"
-                        value={this.state.imagePath}
+
+                      <img
+                        className={classes.image}
+                        alt={this.state.imagePath}
+                        src={this.state.imagePath}
+                        borderRadius="8px"
                         style={{
                           display: this.state.imagePath ? "flex" : "none",
                         }}
-                      />
+                      ></img>
+
                       <TextField
                         id="standard-name"
                         label="Name"
                         fullWidth
                         onChange={this.handleName}
                         margin="normal"
+                        error={this.state.errorName}
+                        className={classes.form}
+                        helperText={
+                          this.state.errorName && "Please enter some token name"
+                        }
                       />
                       <TextField
                         id="standard-multiline-flexible"
@@ -411,6 +572,11 @@ class NewEdit extends Component {
                         onChange={this.handleDesc}
                         fullWidth
                         margin="normal"
+                        error={this.state.errorDesc}
+                        helperText={
+                          this.state.errorDesc &&
+                          "Please enter some description"
+                        }
                       />
                       <TextField
                         id="standard-name"
@@ -418,13 +584,17 @@ class NewEdit extends Component {
                         fullWidth
                         onChange={this.handleArtistName}
                         margin="normal"
+                        error={this.state.errorArtistName}
+                        helperText={
+                          this.state.errorArtistName &&
+                          "Please enter some artist name"
+                        }
                       />
-
                       <Button
                         style={{
                           display: this.state.imagePath ? "flex" : "none",
                         }}
-                        variant="contained"
+                        variant="outlined"
                         color="primary"
                         component="span"
                         className={classes.button}
@@ -445,99 +615,49 @@ class NewEdit extends Component {
                         display: this.state.tokenURI ? "flex" : "none",
                       }}
                     >
-                      <FormControl fullWidth>
-                        <InputLabel id="editionData" htmlFor="editionData">
-                          Edition Data
-                        </InputLabel>
-                        <Input
-                          id="editionData"
-                          variant="filled"
-                          onChange={handleChange}
-                          aria-describedby="my-helper-text"
-                        />
-                        <FormHelperText id="my-helper-text">
-                          Additional Edition data.
-                        </FormHelperText>
-                      </FormControl>
-                      <FormControl fullWidth>
-                        <InputLabel id="artistAccount" htmlFor="artistAccount">
-                          Artist Account
-                        </InputLabel>
-                        <Input
-                          id="artistAccount"
-                          onChange={handleChange}
-                          variant="filled"
-                        />
-                        <FormHelperText id="my-helper-textartist">
-                          Artist's ethereum Wallet address.
-                        </FormHelperText>
-                      </FormControl>
-                      <FormControl fullWidth>
-                        <InputLabel
-                          id="artistCommission"
-                          htmlFor="artistCommission"
-                        >
-                          Artist Commission
-                        </InputLabel>
-                        <Input
-                          onChange={handleChange}
-                          id="artistCommission"
-                          variant="filled"
-                          aria-describedby="my-helper-textartist"
-                        />
-                        <FormHelperText id="my-helper-textartist">
-                          Artist's commision share 0 - 100%.
-                        </FormHelperText>
-                      </FormControl>
-                      <FormControl fullWidth>
-                        <InputLabel id="price" htmlFor="price">
-                          Price
-                        </InputLabel>
-                        <Input
-                          onChange={handleChange}
-                          id="price"
-                          variant="filled"
-                          aria-describedby="my-helper-textprice"
-                        />
-                        <FormHelperText id="my-helper-textprice">
-                          price per item in Eth.
-                        </FormHelperText>
-                      </FormControl>
-                      <FormControl fullWidth>
-                        <InputLabel id="tokenURI" htmlFor="tokenURI">
-                          Token URI
-                        </InputLabel>
-                        <Input
-                          id="tokenURI"
-                          variant="filled"
-                          value={this.state.tokenURI}
-                          aria-describedby="my-helper-textprice"
-                        />
-                        <FormHelperText id="my-helper-textprice">
-                          Token URI IPFS Link.
-                        </FormHelperText>
-                      </FormControl>
-                      <FormControl fullWidth>
-                        <InputLabel id="maxSupply" htmlFor="maxSupply">
-                          Max Supply
-                        </InputLabel>
-                        <Input
-                          onChange={handleChange}
-                          id="maxSupply"
-                          variant="filled"
-                          aria-describedby="my-helper-textprice"
-                        />
-                        <FormHelperText id="my-helper-textprice">
-                          Maximum ammount available.
-                        </FormHelperText>
-                      </FormControl>
+                      <TextField
+                        fullWidth
+                        id="artistAccount"
+                        label="Artist Account"
+                        onChange={this.handleChange}
+                        helperText={this.state.errMsgAccount}
+                        error={this.state.errorAccount}
+                      />
+
+                      <TextField
+                        fullWidth
+                        id="artistCommission"
+                        label="Artist Commision"
+                        onChange={this.handleChange}
+                        error={this.state.errorCommission}
+                        helperText={this.state.errMsgCommission}
+                      />
+                      <TextField
+                        fullWidth
+                        id="price"
+                        label="Price"
+                        onChange={this.handleChange}
+                        error={this.state.errorPrice}
+                        helperText={this.state.errMsgPrice}
+                      />
+                      <TextField
+                        fullWidth
+                        label="Max Supply"
+                        onChange={this.handleChange}
+                        id="maxSupply"
+                        error={this.state.errorSupply}
+                        helperText={this.state.errMsgSupply}
+                      />
                       <Button
-                        variant="contained"
-                        disabled={loading}
-                        onClick={onSubmit}
+                        variant="outlined"
+                        disabled={this.state.isUploading}
+                        onClick={this.onSubmit}
                         color="primary"
                       >
-                        Submit
+                        {this.state.isUploading && (
+                          <CircularProgress size={24} />
+                        )}
+                        {!this.state.isUploading && "Submit"}
                       </Button>
                     </form>
                   </Grid>
@@ -545,13 +665,14 @@ class NewEdit extends Component {
               </Grid>
             </Grid>
           )}
-          {!this.state.account.address && (
+          {!this.state.account.address && !isLF && (
             <div>{t("Wallet.PleaseConnect")}</div>
           )}
           {this.state.account.address && !isLF && (
             <div>{t("Wallet.NotLF")}</div>
           )}
           {loading && <Loader />}
+          {snackbarMessage && this.renderSnackbar()}
         </div>
       </div>
     );

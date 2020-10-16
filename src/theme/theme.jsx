@@ -39,12 +39,14 @@ export const colors = {
   compoundGreen: "#00d395",
   tomato: "#e56b73",
   purple: "#935dff",
-
   text: "#212529",
   lightBlue: "#2F80ED",
   topaz: "#0b8f92",
   darkGray: "rgba(43,57,84,.5)",
   borderBlue: "rgba(25, 101, 233, 0.5)",
+
+  cardBackground: "#68efcf",
+  buttonPrimary: "#0b8f92",
 };
 
 const breakpoints = createBreakpoints({
@@ -282,7 +284,7 @@ const iswapTheme = {
   },
   palette: {
     primary: {
-      main: colors.blue,
+      main: colors.buttonPrimary,
     },
     secondary: {
       main: colors.topaz,
