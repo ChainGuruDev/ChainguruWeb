@@ -78,8 +78,8 @@ class Short extends Component {
     this.setState({ coinList: payload });
   };
 
-  coinDataReturned = (payload) => {
-    console.log(payload.content);
+  coinDataReturned = (data) => {
+    console.log(data);
   };
 
   render() {

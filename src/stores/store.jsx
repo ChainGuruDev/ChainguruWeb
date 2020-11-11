@@ -1049,13 +1049,13 @@ class Store {
 
   getCoinData = async (coin) => {
     let data;
-    console.log(data);
+    console.log(coin.content);
     try {
       let data = await CoinGeckoClient.coins.fetch(coin.content, {});
+      emitter.emit(COIN_DATA_RETURNED, await data.data);
     } catch (err) {
       console.log(err);
     }
-    emitter.emit(COIN_DATA_RETURNED, data);
   };
 
   getWalletTokenBalance = async () => {
