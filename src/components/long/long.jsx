@@ -4,12 +4,15 @@ import { withStyles } from "@material-ui/core/styles";
 import { Card, Typography } from "@material-ui/core";
 import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
-import FlashOnIcon from "@material-ui/icons/FlashOn";
-import AttachMoneyIcon from "@material-ui/icons/AttachMoney";
-import BarChartIcon from "@material-ui/icons/BarChart";
-import PieChartIcon from "@material-ui/icons/PieChart";
 
 const styles = (theme) => ({
+  background: {
+    flex: 1,
+    display: "flex",
+    width: "100%",
+    justifyContent: "space-around",
+    background: "linear-gradient(to top, #2F80ED, #56CCF2)",
+  },
   root: {
     flex: 1,
     display: "flex",
@@ -33,7 +36,11 @@ class Long extends Component {
   render() {
     const { classes, t, location } = this.props;
 
-    return <div className={classes.root}>LONG TERM STRATEGY PAGE</div>;
+    return (
+      <div className={classes.background}>
+        <div className={classes.root}>LONG TERM STRATEGY PAGE</div>
+      </div>
+    );
   }
 
   nav = (screen) => {

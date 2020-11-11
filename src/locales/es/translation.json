@@ -18,5 +18,8 @@
   "Market.Connect": "Conectar",
   "Market.Disconnect": "Desconectar",
   "Wallet.PleaseConnect": "Por favor, conectar su billetera para usar el servicio",
-  "Wallet.NotLF": "La billetera conectado no es un Admin/Minter valido"
+  "Wallet.NotLF": "La billetera conectada no es un Admin/Minter valido",
+
+  "Admin.AllowArtist": "Cuenta definida como vendedor",
+  "Admin.ArtistNotAllowed": "Cuanta no permitida como vendedor"
 }

@@ -11,6 +11,7 @@ import {
   ACCOUNT_ROLES_RETURNED,
   CONNECTION_CONNECTED,
   CONNECTION_DISCONNECTED,
+  IS_ALLOWED_RETURNED,
 } from "../../constants";
 
 import UnlockModal from "../unlock/unlockModal.jsx";
@@ -75,6 +76,7 @@ class MarketBar extends Component {
       isAdmin: "",
       isMinter: "",
       isLF: "",
+      isAllowedArtist: false,
     };
   }
   nav = (screen) => {
@@ -93,6 +95,7 @@ class MarketBar extends Component {
     emitter.on(ACCOUNT_ROLES_RETURNED, this.accountRolesReturned);
     emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
+    emitter.on(IS_ALLOWED_RETURNED, this.isAllowedReturned);
   }
 
   componentWillUnmount() {
@@ -111,6 +114,7 @@ class MarketBar extends Component {
       CONNECTION_DISCONNECTED,
       this.connectionDisconnected
     );
+    emitter.removeListener(IS_ALLOWED_RETURNED, this.isAllowedReturned);
   }
 
   connectionConnected = () => {
@@ -134,6 +138,10 @@ class MarketBar extends Component {
     this.setState({ isAdmin: payload[0] });
     this.setState({ isMinter: payload[1] });
     this.setState({ isLF: payload[2] });
+  };
+
+  isAllowedReturned = (payload) => {
+    this.setState({ isAllowedArtist: payload });
   };
 
   render() {
@@ -180,7 +188,7 @@ class MarketBar extends Component {
           </Button>
           <Button
             style={{
-              display: !this.state.isLF ? "none" : "block",
+              display: !this.state.isAllowedArtist ? "none" : "block",
             }}
             variant="contained"
             color="primary"
@@ -190,6 +198,19 @@ class MarketBar extends Component {
             }}
           >
             New Edition
+          </Button>
+          <Button
+            style={{
+              display: !this.state.isAdmin ? "none" : "block",
+            }}
+            variant="contained"
+            color="primary"
+            className={classes.button}
+            onClick={() => {
+              this.nav("/edition/new");
+            }}
+          >
+            Admin New Edition
           </Button>
           <Button
             style={{

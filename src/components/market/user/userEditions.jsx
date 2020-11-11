@@ -10,6 +10,8 @@ import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import CircularProgress from "@material-ui/core/CircularProgress";
 
+import GiftModal from "../gift/giftModal.jsx";
+
 import { ERROR, BUY_EDITION, BUY_RETURNED } from "../../../constants";
 import { withTranslation } from "react-i18next";
 import { colors } from "../../../theme";
@@ -33,6 +35,10 @@ const styles = (theme) => ({
 
 class UserEditions extends Component {
   static async getInitialProps(props) {
+    this.state = {
+      modalOpen: false,
+    };
+
     return {
       key: this.props.key,
       editionNum: this.props.editionNum,
@@ -51,6 +57,7 @@ class UserEditions extends Component {
     //console.log(this.props.details._tokenURI);
     this.getTokenJson(this.props.details._tokenURI);
     //this.getTokenJson(this.props.editionNum);
+    console.log(this.props.owned);
   }
 
   getTokenJson = async (url) => {
@@ -135,7 +142,7 @@ class UserEditions extends Component {
 
   render(props) {
     const { classes } = this.props;
-    const { loading } = this.state;
+    const { loading, modalOpen } = this.state;
     const editNum = this.props.editionNum;
     const owned = this.props.owned.length;
 
@@ -182,47 +189,43 @@ class UserEditions extends Component {
               alignItems: "end",
             }}
           >
-            {this.props.details._maxAvailable -
-              this.props.details._circulatingSupply !=
-              0 && (
-              <Button
-                variant="outlined"
-                disabled={loading}
-                onClick={this.buyEdition}
-                size="small"
-                color="primary"
-              >
-                {loading && <CircularProgress size={24} />}
-                {!loading &&
-                  this.props.details._maxAvailable -
-                    this.props.details._circulatingSupply >
-                    0 &&
-                  "Buy for " +
-                    this.props.details._priceInWei / 1000000000000000000 +
-                    " eth"}
-              </Button>
-            )}
-            {this.props.details._maxAvailable -
-              this.props.details._circulatingSupply ===
-              0 && (
-              <Button
-                variant="outlined"
-                disabled={loading}
-                size="small"
-                color="primary"
-              >
-                Sold Out
-              </Button>
-            )}
+            <Button
+              variant="outlined"
+              disabled={loading}
+              onClick={this.giftEdition}
+              size="small"
+              color="primary"
+            >
+              {loading && <CircularProgress size={24} />}
+              {!loading && owned > 0 && "Gift"}
+            </Button>
             <Button variant="outlined" disabled size="small" color="secondary">
               {owned}
-              {" / "}
               {this.props.details._maxAvailable} Owned
             </Button>
           </CardActions>
         </Card>
+        {modalOpen && this.renderModal()}
       </div>
     );
   }
+  giftEdition = () => {
+    this.setState({ modalOpen: true });
+  };
+
+  closeModal = () => {
+    this.setState({ modalOpen: false });
+  };
+
+  renderModal = () => {
+    return (
+      <GiftModal
+        closeModal={this.closeModal}
+        modalOpen={this.state.modalOpen}
+        editionNumber={this.props.editionNum}
+        tokens={this.props.owned}
+      />
+    );
+  };
 }
 export default withRouter(withStyles(styles)(UserEditions));

@@ -97,7 +97,7 @@ class RenderEditions extends Component {
     this.startLoading();
     dispatcher.dispatch({
       type: BUY_EDITION,
-      editNum: this.props.editionNum * 100,
+      editNum: this.props.editionNum,
       value: this.props.details._priceInWei,
     });
   };
@@ -127,7 +127,7 @@ class RenderEditions extends Component {
   }
 
   editionClicked = () => {
-    let _editNumber = this.props.editionNum * 100;
+    let _editNumber = this.props.editionNum;
     this.nav(`/edition/${_editNumber}`);
   };
 

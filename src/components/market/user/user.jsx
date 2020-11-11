@@ -30,6 +30,7 @@ import {
   GET_ARTIST_EDITIONS_DETAILS,
   EDITIONS_DETAILS_RETURNED,
   USER_EDITIONS_RETURNED,
+  GET_EDITION_DETAILS,
 } from "../../../constants";
 
 import { withTranslation } from "react-i18next";
@@ -209,6 +210,7 @@ class User extends Component {
   };
 
   editionDetailsReturned = (editions) => {
+    console.log(editions);
     this.setState({ editionDetails: editions });
     //this.getTokenJson(editions[editions.length - 1]._tokenURI);
   };
@@ -221,6 +223,7 @@ class User extends Component {
     let _userOwnedTokens = payload[4];
     this.setState({ userTokens: _userOwnedTokens });
     this.setState({ userEditions: _userOwnedEditions });
+    this.setState({ editionDetails: _userTokenDetails });
   };
 
   renderEditions = (edition) => {
@@ -238,6 +241,7 @@ class User extends Component {
         );
       });
     } else {
+      return <div>"user doesn't own any LF tokens"</div>;
     }
   };
 
@@ -267,16 +271,12 @@ class User extends Component {
           {!this.state.userTokens.isEmpty && (
             <Grid className={classes.gridList}>
               <GridList
-                xs={9}
+                xs={12}
                 cellHeight={200}
                 className={classes.gridContainer}
               >
-                {""}
                 {this.renderEditions(this.state.userEditions)}
               </GridList>
-              <Grid className={classes.menuBar} item xs={3}>
-                <Paper className={classes.menuItems} elevation={3}></Paper>
-              </Grid>
             </Grid>
           )}
           {!this.state.account.address && (

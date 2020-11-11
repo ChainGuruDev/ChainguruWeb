@@ -1,6 +1,6 @@
 import config from "../config";
-
 import Web3 from "web3";
+
 import {
   ERROR,
   CONNECT_LEDGER,
@@ -41,6 +41,21 @@ import {
   USER_EDITIONS_RETURNED,
   GET_ARTIST_EDITIONS_DETAILS,
   ARTIST_EDITIONS_DETAILS_RETURNED,
+  PING_COINGECKO,
+  GET_COIN_LIST,
+  GET_COIN_DATA,
+  COIN_DATA_RETURNED,
+  COINLIST_RETURNED,
+  GET_WALLET_TOKENS_BALANCE,
+  SET_ALLOWED_ARTIST,
+  ALLOWED_ARTIST_RETURNED,
+  SET_OPEN_TO_ALL_ARTISTS,
+  IS_ALLOWED_ARTIST,
+  IS_ALLOWED_RETURNED,
+  GIFT_EDITION,
+  GIFT_EDITION_ARTIST,
+  GET_MAX_EDITIONSIZE,
+  MAX_EDIT_SIZE_RETURNED,
 } from "../constants";
 
 import {
@@ -54,9 +69,11 @@ import {
 
 const rp = require("request-promise");
 
+const CoinGecko = require("coingecko-api");
+const CoinGeckoClient = new CoinGecko();
+
 const Dispatcher = require("flux").Dispatcher;
 const Emitter = require("events").EventEmitter;
-
 const dispatcher = new Dispatcher();
 const emitter = new Emitter();
 
@@ -88,6 +105,7 @@ class Store {
           code: "es",
         },
       ],
+      coinList: [],
     };
 
     dispatcher.register(
@@ -161,6 +179,29 @@ class Store {
           case CREATE_NEW_EDITION:
             this.createNewEdition(payload);
             break;
+          case PING_COINGECKO:
+            this.pingCoinGecko(payload);
+            break;
+          case GET_COIN_LIST:
+            this.getCoinList(payload);
+            break;
+          case GET_COIN_DATA:
+            this.getCoinData(payload);
+            break;
+          case GET_WALLET_TOKENS_BALANCE:
+            this.getWalletTokenBalance(payload);
+            break;
+          case SET_ALLOWED_ARTIST:
+            this.setAllowedArtist(payload);
+            break;
+          case IS_ALLOWED_ARTIST:
+            this.isAllowedArtist(payload);
+            break;
+          case GIFT_EDITION:
+            this.giftEdition(payload);
+            break;
+          case GET_MAX_EDITIONSIZE:
+            this.getMaxEditSize(payload);
           default: {
           }
         }
@@ -191,6 +232,34 @@ class Store {
     return emitter.emit(CHECK_ACCOUNT_RETURNED, _isAccount);
   };
 
+  giftEdition = async (payload) => {
+    const web3 = new Web3(store.getStore("web3context").library.provider);
+    const account = store.getStore("account");
+
+    let lfOriginalsContract = new web3.eth.Contract(
+      config.LFOriginalsABI,
+      config.lfOriginalsContract
+    );
+
+    let _isAccount = false;
+    try {
+      const address = web3.utils.toChecksumAddress(payload.destAccount);
+      lfOriginalsContract.methods
+        .safeTransferFrom(
+          account.address,
+          payload.destAccount,
+          payload.giftToken
+        )
+        .send({
+          from: account.address,
+          gasPrice: web3.utils.toWei(await this._getGasPrice(), "gwei"),
+        });
+    } catch (e) {
+      _isAccount = false;
+      return emitter.emit(ERROR, "NOT A VALID ACCOUNT");
+    }
+  };
+
   createNewEdition = async (payload) => {
     const web3 = new Web3(store.getStore("web3context").library.provider);
     const account = store.getStore("account");
@@ -207,7 +276,6 @@ class Store {
 
     this._callCreateNew(
       account.address,
-      artistAccount,
       artistCommission,
       _price,
       tokenURI,
@@ -218,17 +286,66 @@ class Store {
         }
       }
     );
-    //console.log("from: " + account.address);
-    //console.log("artistAccount: " + artistAccount);
-    //console.log("artistCommission: " + artistCommission);
-    //console.log("price: " + _price);
-    //console.log("tokenURI: " + tokenURI);
-    //console.log("max supply: " + maxSupply);
+    // console.log("from: " + account.address);
+    // console.log("artistAccount: " + artistAccount);
+    // console.log("artistCommission: " + artistCommission);
+    // console.log("price: " + _price);
+    // console.log("tokenURI: " + tokenURI);
+    // console.log("max supply: " + maxSupply);
   };
+
+  /*
+  // _callCreateNew = async (
+  //   account,
+  //   artistAccount,
+  //   artistCommission,
+  //   price,
+  //   tokenURI,
+  //   maxSupply,
+  //   callback
+  // ) => {
+  //   const web3 = new Web3(store.getStore("web3context").library.provider);
+  //   let lfOriginalsContract = new web3.eth.Contract(
+  //     config.LFOriginalsABI,
+  //     config.lfOriginalsContract
+  //   );
+  //   const curEdit = await lfOriginalsContract.methods.edition().call();
+  //   let _editionNumber = (1 + parseInt(await curEdit)) * 100;
+  //   lfOriginalsContract.methods
+  //     .createActiveEdition(
+  //       _editionNumber,
+  //       artistAccount,
+  //       artistCommission,
+  //       price,
+  //       tokenURI,
+  //       maxSupply
+  //     )
+  //     .send({
+  //       from: account,
+  //       gasPrice: web3.utils.toWei(await this._getGasPrice(), "gwei"),
+  //     })
+  //     .on("receipt", function (receipt) {
+  //       return emitter.emit(NEW_EDITION_RETURNED, receipt);
+  //     })
+  //     .on("error", function (error) {
+  //       //console.log(error);
+  //       if (!error.toString().includes("-32601")) {
+  //         if (error.message) {
+  //           return callback(error.message);
+  //         }
+  //         callback(error);
+  //       } else {
+  //         if (error.message) {
+  //           return callback(error.message);
+  //         }
+  //         callback(error);
+  //       }
+  //     });
+  // };
+  */
 
   _callCreateNew = async (
     account,
-    artistAccount,
     artistCommission,
     price,
     tokenURI,
@@ -236,21 +353,12 @@ class Store {
     callback
   ) => {
     const web3 = new Web3(store.getStore("web3context").library.provider);
-    let lfOriginalsContract = new web3.eth.Contract(
-      config.LFOriginalsABI,
-      config.lfOriginalsContract
+    let selfServiceEditionCurationContract = new web3.eth.Contract(
+      config.SelfServiceEditionCurationABI,
+      config.selfServiceEditionCurationContract
     );
-    const curEdit = await lfOriginalsContract.methods.edition().call();
-    let _editionNumber = (1 + parseInt(await curEdit)) * 100;
-    lfOriginalsContract.methods
-      .createActiveEdition(
-        _editionNumber,
-        artistAccount,
-        artistCommission,
-        price,
-        tokenURI,
-        maxSupply
-      )
+    selfServiceEditionCurationContract.methods
+      .createEdition(true, artistCommission, price, maxSupply, tokenURI)
       .send({
         from: account,
         gasPrice: web3.utils.toWei(await this._getGasPrice(), "gwei"),
@@ -333,22 +441,28 @@ class Store {
         config.LFOriginalsABI,
         config.lfOriginalsContract
       );
-      if (_account.content) {
-        isAdmin = await lfOriginalsContract.methods
-          .hasRole(web3.utils.keccak256("ADMIN_ROLE"), _account.content)
-          .call();
-        isMinter = await lfOriginalsContract.methods
-          .hasRole(web3.utils.keccak256("MINTER_ROLE"), _account.content)
-          .call();
-        isLF = await lfOriginalsContract.methods
-          .hasRole(web3.utils.keccak256("LF_MEMBER"), _account.content)
-          .call();
+      console.log(_account.content);
+      try {
+        const address = web3.utils.toChecksumAddress(_account.content);
+        if (_account.content) {
+          isAdmin = await lfOriginalsContract.methods
+            .hasRole(web3.utils.keccak256("ADMIN_ROLE"), _account.content)
+            .call();
+          isMinter = await lfOriginalsContract.methods
+            .hasRole(web3.utils.keccak256("MINTER_ROLE"), _account.content)
+            .call();
+          isLF = await lfOriginalsContract.methods
+            .hasRole(web3.utils.keccak256("LF_MEMBER"), _account.content)
+            .call();
+        }
+      } catch (e) {
+        return emitter.emit(ERROR, e.message);
       }
-    } else {
     }
     /*
      */
     let roles = [isAdmin, isMinter, isLF];
+    console.log(roles);
     return emitter.emit(CHECK_ROLES_RETURNED, roles);
   };
 
@@ -360,67 +474,151 @@ class Store {
         config.LFOriginalsABI,
         config.lfOriginalsContract
       );
-      if (payload.role === 1) {
-        await lfOriginalsContract.methods
-          .grantRole(web3.utils.keccak256("ADMIN_ROLE"), payload.account)
-          .send({
-            from: account.address,
-            gasPrice: web3.utils.toWei(await this._getGasPrice(), "gwei"),
-          })
-          .on("transactionHash", function (hash) {
-            console.log(hash);
-          })
-          .on("receipt", function (receipt) {
-            console.log(receipt);
-          })
-          .on("error", function (error) {
-            console.log(error);
-            if (!error.toString().includes("-32601")) {
-              if (error.message) {
+      let _isAccount = false;
+      try {
+        const address = web3.utils.toChecksumAddress(payload.account);
+        _isAccount = true;
+        if (_isAccount) {
+          if (payload.role === 1) {
+            await lfOriginalsContract.methods
+              .grantRole(web3.utils.keccak256("ADMIN_ROLE"), payload.account)
+              .send({
+                from: account.address,
+                gasPrice: web3.utils.toWei(await this._getGasPrice(), "gwei"),
+              })
+              .on("transactionHash", function (hash) {
+                console.log(hash);
+                dispatcher.dispatch({
+                  type: CHECK_ROLES,
+                  content: payload.account,
+                });
+              })
+              .on("receipt", function (receipt) {
+                console.log(receipt);
+              })
+              .on("error", function (error) {
+                console.log(error);
+                if (!error.toString().includes("-32601")) {
+                  if (error.message) {
+                    return emitter.emit(ERROR, error.message);
+                  }
+                }
+              });
+          } else if (payload.role === 2) {
+            await lfOriginalsContract.methods
+              .grantRole(web3.utils.keccak256("MINTER_ROLE"), payload.account)
+              .send({
+                from: account.address,
+                gasPrice: web3.utils.toWei(await this._getGasPrice(), "gwei"),
+              })
+              .on("transactionHash", function (hash) {
+                console.log(hash);
+                dispatcher.dispatch({
+                  type: CHECK_ROLES,
+                  content: payload.account,
+                });
+              })
+              .on("receipt", function (receipt) {
+                console.log(receipt);
+              })
+              .on("error", function (error) {
+                console.log(error);
+                if (!error.toString().includes("-32601")) {
+                  if (error.message) {
+                    return emitter.emit(ERROR, error.message);
+                  }
+                }
+              });
+          } else if (payload.role === 3) {
+            await lfOriginalsContract.methods
+              .grantRole(web3.utils.keccak256("LF_MEMBER"), payload.account)
+              .send({
+                from: account.address,
+                gasPrice: web3.utils.toWei(await this._getGasPrice(), "gwei"),
+              })
+              .on("transactionHash", function (hash) {
+                console.log(hash);
+                dispatcher.dispatch({
+                  type: CHECK_ROLES,
+                  content: payload.account,
+                });
+              })
+              .on("receipt", function (receipt) {
+                console.log(receipt);
+              })
+              .on("error", function (error) {
+                console.log(error);
+                if (!error.toString().includes("-32601")) {
+                  if (error.message) {
+                    return emitter.emit(ERROR, error.message);
+                  }
+                }
+              });
+          }
+        }
+      } catch (e) {
+        _isAccount = false;
+        return emitter.emit(ERROR, e);
+      }
+    }
+  };
+
+  isAllowedArtist = async () => {
+    if (store.getStore("web3context")) {
+      let _isAllowed = false;
+      const account = store.getStore("account");
+      const web3 = new Web3(store.getStore("web3context").library.provider);
+      let selfServiceAccessControls = new web3.eth.Contract(
+        config.SelfServiceAccessControlsABI,
+        config.selfServiceAccessControlsContract
+      );
+      if (account.address) {
+        let _isAllowed = await selfServiceAccessControls.methods
+          .isEnabledForAccount(account.address)
+          .call();
+        return emitter.emit(IS_ALLOWED_RETURNED, await _isAllowed);
+      }
+    }
+  };
+
+  setAllowedArtist = async (payload) => {
+    if (store.getStore("web3context")) {
+      const account = store.getStore("account");
+      const web3 = new Web3(store.getStore("web3context").library.provider);
+      let selfServiceAccessControls = new web3.eth.Contract(
+        config.SelfServiceAccessControlsABI,
+        config.selfServiceAccessControlsContract
+      );
+      let _isAccount = false;
+      try {
+        const address = web3.utils.toChecksumAddress(payload.account);
+        _isAccount = true;
+        if (_isAccount) {
+          await selfServiceAccessControls.methods
+            .setAllowedArtist(payload.account, payload.enabled)
+            .send({
+              from: account.address,
+              gasPrice: web3.utils.toWei(await this._getGasPrice(), "gwei"),
+            })
+            .on("transactionHash", function (hash) {
+              //console.log(hash);
+            })
+            .on("receipt", function (receipt) {
+              //console.log(receipt);
+            })
+            .on("error", function (error) {
+              console.log(error.message);
+              if (!error.toString().includes("-32601")) {
+                if (error.message) {
+                  return emitter.emit(ERROR, error.message);
+                }
               }
-            }
-          });
-      } else if (payload.role === 2) {
-        await lfOriginalsContract.methods
-          .grantRole(web3.utils.keccak256("MINTER_ROLE"), payload.account)
-          .send({
-            from: account.address,
-            gasPrice: web3.utils.toWei(await this._getGasPrice(), "gwei"),
-          })
-          .on("transactionHash", function (hash) {
-            console.log(hash);
-          })
-          .on("receipt", function (receipt) {
-            console.log(receipt);
-          })
-          .on("error", function (error) {
-            console.log(error);
-            if (!error.toString().includes("-32601")) {
-              if (error.message) {
-              }
-            }
-          });
-      } else if (payload.role === 3) {
-        await lfOriginalsContract.methods
-          .grantRole(web3.utils.keccak256("LF_MEMBER"), payload.account)
-          .send({
-            from: account.address,
-            gasPrice: web3.utils.toWei(await this._getGasPrice(), "gwei"),
-          })
-          .on("transactionHash", function (hash) {
-            console.log(hash);
-          })
-          .on("receipt", function (receipt) {
-            console.log(receipt);
-            this.checkRoles(payload.account);
-          })
-          .on("error", function (error) {
-            console.log(error);
-            if (!error.toString().includes("-32601")) {
-              if (error.message) {
-              }
-            }
-          });
+            });
+          return emitter.emit(ALLOWED_ARTIST_RETURNED, payload.enabled);
+        }
+      } catch (e) {
+        _isAccount = false;
+        return emitter.emit(ERROR, e);
       }
     }
   };
@@ -433,71 +631,94 @@ class Store {
         config.LFOriginalsABI,
         config.lfOriginalsContract
       );
-      if (payload.role === 1) {
-        await lfOriginalsContract.methods
-          .revokeRole(web3.utils.keccak256("ADMIN_ROLE"), payload.account)
-          .send({
-            from: account.address,
-            gasPrice: web3.utils.toWei(await this._getGasPrice(), "gwei"),
-          })
-          .on("transactionHash", function (hash) {
-            console.log(hash);
-          })
-          .on("receipt", function (receipt) {
-            console.log(receipt);
-            this.checkRoles(payload.account);
-          })
-          .on("error", function (error) {
-            console.log(error);
-            if (!error.toString().includes("-32601")) {
-              if (error.message) {
-              }
-            }
-          });
-      }
-      if (payload.role === 2) {
-        await lfOriginalsContract.methods
-          .revokeRole(web3.utils.keccak256("MINTER_ROLE"), payload.account)
-          .send({
-            from: account.address,
-            gasPrice: web3.utils.toWei(await this._getGasPrice(), "gwei"),
-          })
-          .on("transactionHash", function (hash) {
-            console.log(hash);
-          })
-          .on("receipt", function (receipt) {
-            console.log(receipt);
-            this.checkRoles(payload.account);
-          })
-          .on("error", function (error) {
-            console.log(error);
-            if (!error.toString().includes("-32601")) {
-              if (error.message) {
-              }
-            }
-          });
-      }
-      if (payload.role === 3) {
-        await lfOriginalsContract.methods
-          .revokeRole(web3.utils.keccak256("LF_MEMBER"), payload.account)
-          .send({
-            from: account.address,
-            gasPrice: web3.utils.toWei(await this._getGasPrice(), "gwei"),
-          })
-          .on("transactionHash", function (hash) {
-            console.log(hash);
-          })
-          .on("receipt", function (receipt) {
-            console.log(receipt);
-            this.checkRoles(payload.account);
-          })
-          .on("error", function (error) {
-            console.log(error);
-            if (!error.toString().includes("-32601")) {
-              if (error.message) {
-              }
-            }
-          });
+      let _isAccount = false;
+      try {
+        const address = web3.utils.toChecksumAddress(payload.account);
+        _isAccount = true;
+        if (_isAccount) {
+          if (payload.role === 1) {
+            await lfOriginalsContract.methods
+              .revokeRole(web3.utils.keccak256("ADMIN_ROLE"), payload.account)
+              .send({
+                from: account.address,
+                gasPrice: web3.utils.toWei(await this._getGasPrice(), "gwei"),
+              })
+              .on("transactionHash", function (hash) {
+                console.log(hash);
+                dispatcher.dispatch({
+                  type: CHECK_ROLES,
+                  content: payload.account,
+                });
+              })
+              .on("receipt", function (receipt) {
+                console.log(receipt);
+              })
+              .on("error", function (error) {
+                console.log(error);
+                if (!error.toString().includes("-32601")) {
+                  if (error.message) {
+                    return emitter.emit(ERROR, error.message);
+                  }
+                }
+              });
+          }
+
+          if (payload.role === 2) {
+            await lfOriginalsContract.methods
+              .revokeRole(web3.utils.keccak256("MINTER_ROLE"), payload.account)
+              .send({
+                from: account.address,
+                gasPrice: web3.utils.toWei(await this._getGasPrice(), "gwei"),
+              })
+              .on("transactionHash", function (hash) {
+                console.log(hash);
+                dispatcher.dispatch({
+                  type: CHECK_ROLES,
+                  content: payload.account,
+                });
+              })
+              .on("receipt", function (receipt) {
+                console.log(receipt);
+              })
+              .on("error", function (error) {
+                console.log(error);
+                if (!error.toString().includes("-32601")) {
+                  if (error.message) {
+                    return emitter.emit(ERROR, error.message);
+                  }
+                }
+              });
+          }
+          if (payload.role === 3) {
+            await lfOriginalsContract.methods
+              .revokeRole(web3.utils.keccak256("LF_MEMBER"), payload.account)
+              .send({
+                from: account.address,
+                gasPrice: web3.utils.toWei(await this._getGasPrice(), "gwei"),
+              })
+              .on("transactionHash", function (hash) {
+                console.log(hash);
+                dispatcher.dispatch({
+                  type: CHECK_ROLES,
+                  content: payload.account,
+                });
+              })
+              .on("receipt", function (receipt) {
+                console.log(receipt);
+              })
+              .on("error", function (error) {
+                console.log(error);
+                if (!error.toString().includes("-32601")) {
+                  if (error.message) {
+                    return emitter.emit(ERROR, error.message);
+                  }
+                }
+              });
+          }
+        }
+      } catch (e) {
+        _isAccount = false;
+        return emitter.emit(ERROR, e);
       }
     }
   };
@@ -584,16 +805,17 @@ class Store {
 
     let _userOwnedEditions = [];
     let _userOwnedTokens = {};
-
     for (var i = 0; i < (await _userBalance); i++) {
       let _tokenID = await lfOriginalsContract.methods
         .tokenOfOwnerByIndex(payload.content, i)
         .call();
-      _userTokens[i] = [_tokenID];
+      _userTokens[i] = _tokenID;
+    }
+
+    for (var i = 0; i < (await _userBalance); i++) {
       let _tokenDetails = await lfOriginalsContract.methods
         .tokenData(await _userTokens[i])
         .call();
-
       _userTokenDetails[i] = _tokenDetails;
     }
 
@@ -605,10 +827,6 @@ class Store {
         _userOwnedTokens[_userTokenDetails[i][0]] = [_userTokens[i]];
       }
     }
-    dispatcher.dispatch({
-      type: GET_ARTIST_EDITIONS_DETAILS,
-      content: _userOwnedEditions,
-    });
 
     return emitter.emit(USER_EDITIONS_RETURNED, [
       _userBalance,
@@ -652,16 +870,35 @@ class Store {
     return emitter.emit(EDITIONS_DETAILS_RETURNED, editionDetails);
   };
 
+  getMaxEditSize = async () => {
+    const web3 = new Web3(store.getStore("web3context").library.provider);
+    let selfServiceEditionCurationContract = new web3.eth.Contract(
+      config.SelfServiceEditionCurationABI,
+      config.selfServiceEditionCurationContract
+    );
+    let maxEditSize = await selfServiceEditionCurationContract.methods
+      .maxEditionSize()
+      .call();
+    return emitter.emit(MAX_EDIT_SIZE_RETURNED, maxEditSize);
+  };
+
   getEditionsDetails = async (curEdit) => {
     const web3 = new Web3(store.getStore("web3context").library.provider);
     let lfOriginalsContract = new web3.eth.Contract(
       config.LFOriginalsABI,
       config.lfOriginalsContract
     );
+    let selfServiceEditionCurationContract = new web3.eth.Contract(
+      config.SelfServiceEditionCurationABI,
+      config.selfServiceEditionCurationContract
+    );
+    let maxEditSize = await selfServiceEditionCurationContract.methods
+      .maxEditionSize()
+      .call();
     const editionsDetails = await Promise.all(
       curEdit.content.editions.fill().map((element, index) => {
         return lfOriginalsContract.methods
-          .detailsOfEdition((index + 1) * 100)
+          .detailsOfEdition((index + 1) * maxEditSize)
           .call();
       })
     );
@@ -789,6 +1026,76 @@ class Store {
             store.setStore({ events: txs });
             return emitter.emit(GET_CONTRACT_EVENTS_RETURNED, txs);
           });
+        });
+      });
+  };
+
+  pingCoinGecko = async () => {
+    let data = await CoinGeckoClient.ping();
+    console.log(data.data);
+  };
+
+  getCoinList = async () => {
+    if (this.store.coinList.length > 0) {
+      console.log("Coinlist already loaded");
+    } else {
+      let data = await CoinGeckoClient.coins.list();
+
+      this.store.coinList = data.data;
+      emitter.emit(COINLIST_RETURNED, this.store.coinList);
+    }
+    //let data = await CoinGeckoClient.coins.list();
+  };
+
+  getCoinData = async (coin) => {
+    let data;
+    console.log(data);
+    try {
+      let data = await CoinGeckoClient.coins.fetch(coin.content, {});
+    } catch (err) {
+      console.log(err);
+    }
+    emitter.emit(COIN_DATA_RETURNED, data);
+  };
+
+  getWalletTokenBalance = async () => {
+    console.log("Getting balances");
+    const web3 = new Web3(store.getStore("web3context").library.provider);
+
+    var subscription = web3.eth
+      .subscribe(
+        "logs",
+        {
+          fromBlock: 1,
+          address: "0xda0aed568d9a2dbdcbafc1576fedc633d28eee9a",
+        },
+        function () {}
+      )
+      .on("data", function (trxData) {
+        function formatAddress(data) {
+          var step1 = web3.utils.hexToBytes(data);
+          for (var i = 0; i < step1.length; i++)
+            if (step1[0] == 0) step1.splice(0, 1);
+          return web3.utils.bytesToHex(step1);
+        }
+
+        console.log("Register new transfer: " + trxData.transactionHash);
+        console.log(
+          "Contract " +
+            trxData.address +
+            " has transaction of " +
+            web3.utils.hexToNumberString(trxData.data) +
+            " from " +
+            formatAddress(trxData.topics["1"]) +
+            " to " +
+            formatAddress(trxData.topics["2"])
+        );
+        //console.log(trxData);
+        web3.eth.getTransactionReceipt(trxData.transactionHash, function (
+          error,
+          reciept
+        ) {
+          console.log("Sent by " + reciept.from + " to contract " + reciept.to);
         });
       });
   };

@@ -12,6 +12,9 @@ import {
 } from "@material-ui/core";
 import { colors } from "../../theme";
 
+import AddCircleRoundedIcon from "@material-ui/icons/AddCircleRounded";
+import CancelRoundedIcon from "@material-ui/icons/CancelRounded";
+
 import Loader from "../loader";
 import UnlockModal from "../unlock/unlockModal.jsx";
 import Snackbar from "../snackbar";
@@ -20,10 +23,15 @@ import {
   ERROR,
   CONNECTION_CONNECTED,
   CONNECTION_DISCONNECTED,
+  CHECK_ACCOUNT,
+  CHECK_ACCOUNT_RETURNED,
   CHECK_ROLES,
   CHECK_ROLES_RETURNED,
   SET_ROLES,
   REVOKE_ROLES,
+  SET_ALLOWED_ARTIST,
+  SET_OPEN_TO_ALL_ARTISTS,
+  ALLOWED_ARTIST_RETURNED,
 } from "../../constants";
 
 import { withTranslation } from "react-i18next";
@@ -87,6 +95,7 @@ class AdminPanel extends Component {
       account: account,
       loading: false,
       accountAddress: "",
+      artistAddress: "",
       isAdmin: false,
       isMinter: false,
       isLF: false,
@@ -101,6 +110,8 @@ class AdminPanel extends Component {
     emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
     emitter.on(CHECK_ROLES_RETURNED, this.accountRolesReturned);
+    emitter.on(CHECK_ACCOUNT_RETURNED, this.checkAccountReturned);
+    emitter.on(ALLOWED_ARTIST_RETURNED, this.allowedArtistReturned);
   }
 
   componentWillUnmount() {
@@ -111,6 +122,8 @@ class AdminPanel extends Component {
       this.connectionDisconnected
     );
     emitter.removeListener(CHECK_ROLES_RETURNED, this.accountRolesReturned);
+    emitter.removeListener(CHECK_ACCOUNT_RETURNED, this.checkAccountReturned);
+    emitter.removeListener(ALLOWED_ARTIST_RETURNED, this.allowedArtistReturned);
   }
 
   connectionConnected = () => {
@@ -147,13 +160,35 @@ class AdminPanel extends Component {
   };
 
   handleAccount = (event) => {
-    this.setState({ accountAddress: event.target.value });
+    this.setState({
+      accountAddress: event.target.value,
+    });
+  };
+
+  handleArtistAccount = (event) => {
+    this.setState({
+      artistAddress: event.target.value,
+    });
+  };
+
+  checkAccountReturned = (_isAccount) => {
+    if (!_isAccount) {
+      this.setState({ errMsgArtistAccount: "Not a valid ethereum address" });
+    } else {
+      this.setState({
+        errMsgArtistAccount: "Artist's ethereum Wallet address.",
+      });
+    }
+    this.setState({
+      errorArtistAccount: !_isAccount,
+    });
   };
 
   accountRolesReturned = (payload) => {
     this.setState({ isAdmin: payload[0] });
     this.setState({ isMinter: payload[1] });
     this.setState({ isLF: payload[2] });
+    this.setState({ loading: false });
   };
 
   getRoles = async () => {
@@ -164,6 +199,8 @@ class AdminPanel extends Component {
   };
 
   setRoleAdmin = async () => {
+    this.setState({ loading: true });
+
     dispatcher.dispatch({
       type: SET_ROLES,
       account: this.state.accountAddress,
@@ -172,6 +209,8 @@ class AdminPanel extends Component {
   };
 
   setRoleMinter = async () => {
+    this.setState({ loading: true });
+
     dispatcher.dispatch({
       type: SET_ROLES,
       account: this.state.accountAddress,
@@ -180,6 +219,8 @@ class AdminPanel extends Component {
   };
 
   setRoleLFCrew = async () => {
+    this.setState({ loading: true });
+
     dispatcher.dispatch({
       type: SET_ROLES,
       account: this.state.accountAddress,
@@ -188,6 +229,8 @@ class AdminPanel extends Component {
   };
 
   revokeRoleAdmin = async () => {
+    this.setState({ loading: true });
+
     dispatcher.dispatch({
       type: REVOKE_ROLES,
       account: this.state.accountAddress,
@@ -196,6 +239,8 @@ class AdminPanel extends Component {
   };
 
   revokeRoleMinter = async () => {
+    this.setState({ loading: true });
+
     dispatcher.dispatch({
       type: REVOKE_ROLES,
       account: this.state.accountAddress,
@@ -204,11 +249,57 @@ class AdminPanel extends Component {
   };
 
   revokeRoleLFCrew = async () => {
+    this.setState({ loading: true });
+
     dispatcher.dispatch({
       type: REVOKE_ROLES,
       account: this.state.accountAddress,
       role: 3,
     });
+  };
+
+  allowArtist = async () => {
+    this.setState({ loading: true });
+
+    dispatcher.dispatch({
+      type: SET_ALLOWED_ARTIST,
+      account: this.state.artistAddress,
+      enabled: true,
+    });
+  };
+
+  disallowArtist = async () => {
+    this.setState({ loading: true });
+    dispatcher.dispatch({
+      type: SET_ALLOWED_ARTIST,
+      account: this.state.artistAddress,
+      enabled: false,
+    });
+  };
+
+  allowedArtistReturned = async (payload) => {
+    const { t } = this.props;
+
+    this.setState({ loading: false });
+
+    const that = this;
+    if (payload) {
+      setTimeout(() => {
+        const snackbarObj = {
+          snackbarMessage: t("Admin.AllowArtist"),
+          snackbarType: "Info",
+        };
+        that.setState(snackbarObj);
+      });
+    } else {
+      setTimeout(() => {
+        const snackbarObj = {
+          snackbarMessage: t("Admin.ArtistNotAllowed"),
+          snackbarType: "Info",
+        };
+        that.setState(snackbarObj);
+      });
+    }
   };
 
   render() {
@@ -222,7 +313,7 @@ class AdminPanel extends Component {
             <Paper className={classes.adminPanel} elevation={3}>
               <Grid>
                 <Typography align="center" variant="h3">
-                  Admin Panel
+                  Account Roles
                 </Typography>
                 <Divider variant="middle" />
                 <form
@@ -235,6 +326,7 @@ class AdminPanel extends Component {
                     id="AccountCheck"
                     label="Account"
                     onChange={this.handleAccount}
+                    error={this.state.errorRoleAccount}
                   />
                 </form>
                 <Grid
@@ -279,15 +371,6 @@ class AdminPanel extends Component {
                     {this.state.isLF && "LF Crew"}
                     {!this.state.isLF && "Not LF"}
                   </Button>
-                </Grid>
-                <Divider style={{ marginTop: 20 }} variant="middle" />
-
-                <Grid
-                  className={classes.buttons}
-                  justify="space-evenly"
-                  container
-                  alignItems="center"
-                >
                   <Button
                     variant="outlined"
                     color="primary"
@@ -299,7 +382,7 @@ class AdminPanel extends Component {
                     Check Roles
                   </Button>
                 </Grid>
-                <Divider variant="middle" />
+                <Divider style={{ marginTop: 20 }} variant="middle" />
                 <Grid
                   className={classes.buttons}
                   justify="space-evenly"
@@ -337,7 +420,6 @@ class AdminPanel extends Component {
                     Set LF Crew
                   </Button>
                 </Grid>
-                <Divider variant="middle" />
                 <Grid
                   className={classes.buttons}
                   justify="space-evenly"
@@ -373,6 +455,55 @@ class AdminPanel extends Component {
                     className={classes.button}
                   >
                     Revoke LF Crew
+                  </Button>
+                </Grid>
+                <Divider variant="middle" />
+                <Typography
+                  style={{ marginTop: 20 }}
+                  align="center"
+                  variant="h3"
+                >
+                  Setup Seller
+                </Typography>
+                <Divider variant="middle" />
+                <form
+                  className={classes.adminPanel}
+                  noValidate
+                  autoComplete="off"
+                >
+                  <TextField
+                    className={classes.textInput}
+                    id="ArtistAccount"
+                    label="Artist Account"
+                    onChange={this.handleArtistAccount}
+                    error={this.state.errorArtistAccount}
+                  />
+                </form>
+                <Grid
+                  justify="space-evenly"
+                  container
+                  alignItems="center"
+                  padding="5"
+                >
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    className={classes.button}
+                    startIcon={<AddCircleRoundedIcon />}
+                    onClick={this.allowArtist}
+                    disabled={this.state.loading}
+                  >
+                    Add
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    className={classes.button}
+                    startIcon={<CancelRoundedIcon />}
+                    onClick={this.disallowArtist}
+                    disabled={this.state.loading}
+                  >
+                    Remove
                   </Button>
                 </Grid>
               </Grid>

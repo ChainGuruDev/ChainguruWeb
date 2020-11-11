@@ -24,6 +24,9 @@ import {
   GET_ITEMS_CIRCULATING,
   GET_SALES_VALUE,
   GET_ACCOUNT_ROLES,
+  IS_ALLOWED_ARTIST,
+  MAX_EDIT_SIZE_RETURNED,
+  GET_MAX_EDITIONSIZE,
 } from "../../constants";
 
 import { withTranslation } from "react-i18next";
@@ -81,15 +84,21 @@ class Market extends Component {
       loading: false,
       tJSON: {},
       curEdit: "",
+      maxEditSize: "",
     };
 
     if (account && account.address) {
       dispatcher.dispatch({ type: GET_CURRENTEDITION, content: {} });
+      dispatcher.dispatch({ type: GET_MAX_EDITIONSIZE, content: {} });
       dispatcher.dispatch({ type: GET_AVAILABLE_ITEMS, content: {} });
       dispatcher.dispatch({ type: GET_ITEMS_CIRCULATING, content: {} });
       dispatcher.dispatch({ type: GET_SALES_VALUE, content: {} });
       dispatcher.dispatch({
         type: GET_ACCOUNT_ROLES,
+        content: {},
+      });
+      dispatcher.dispatch({
+        type: IS_ALLOWED_ARTIST,
         content: {},
       });
     }
@@ -102,6 +111,7 @@ class Market extends Component {
     emitter.on(EDITION_RETURNED, this.editionReturned);
     emitter.on(EDITIONS_DETAILS_RETURNED, this.editionDetailsReturned);
     emitter.on(BUY_RETURNED, this.buyReturned);
+    emitter.on(MAX_EDIT_SIZE_RETURNED, this.maxEditSize);
   }
 
   componentWillUnmount() {
@@ -117,7 +127,12 @@ class Market extends Component {
       this.editionDetailsReturned
     );
     emitter.removeListener(BUY_RETURNED, this.buyReturned);
+    emitter.removeListener(MAX_EDIT_SIZE_RETURNED, this.maxEditSize);
   }
+
+  maxEditSize = (payload) => {
+    this.setState({ maxEditSize: payload });
+  };
 
   editionReturned = (curEdit) => {
     this.setState({ curEdit: curEdit });
@@ -152,13 +167,17 @@ class Market extends Component {
     const { t } = this.props;
 
     this.setState({ account: store.getStore("account") });
-
+    dispatcher.dispatch({ type: GET_MAX_EDITIONSIZE, content: {} });
     dispatcher.dispatch({ type: GET_CURRENTEDITION, content: {} });
     dispatcher.dispatch({ type: GET_AVAILABLE_ITEMS, content: {} });
     dispatcher.dispatch({ type: GET_ITEMS_CIRCULATING, content: {} });
     dispatcher.dispatch({ type: GET_SALES_VALUE, content: {} });
     dispatcher.dispatch({
       type: GET_ACCOUNT_ROLES,
+      content: {},
+    });
+    dispatcher.dispatch({
+      type: IS_ALLOWED_ARTIST,
       content: {},
     });
 
@@ -185,7 +204,7 @@ class Market extends Component {
       return (
         <RenderEditions
           key={index}
-          editionNum={index + 1}
+          editionNum={(index + 1) * this.state.maxEditSize}
           //tokenURI={this.state.editionsDetails[index]._tokenURI}
           details={this.state.editionsDetails[index]}
           //description={web3.utils.toAscii(edition._editionData)}
@@ -213,6 +232,10 @@ class Market extends Component {
     this.renderEditions();
     dispatcher.dispatch({
       type: GET_ACCOUNT_ROLES,
+      content: this.state.account.address,
+    });
+    dispatcher.dispatch({
+      type: IS_ALLOWED_ARTIST,
       content: this.state.account.address,
     });
   }

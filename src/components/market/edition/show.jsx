@@ -17,6 +17,8 @@ import {
   Link,
 } from "@material-ui/core";
 
+import GiftModal from "../gift/giftModal.jsx";
+
 import Loader from "../../loader";
 import Snackbar from "../../snackbar";
 import { colors } from "../../../theme";
@@ -29,6 +31,8 @@ import {
   BUY_RETURNED,
   GET_ACCOUNT_ROLES,
   BUY_EDITION,
+  GET_USER_EDITIONS,
+  USER_EDITIONS_RETURNED,
 } from "../../../constants";
 
 import { withTranslation } from "react-i18next";
@@ -109,6 +113,8 @@ class Show extends Component {
       editionNumber: "",
       editionDetails: [],
       editionToken: [],
+      userOwned: false,
+      userTokens: [],
     };
 
     if (account && account.address) {
@@ -133,6 +139,7 @@ class Show extends Component {
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
     emitter.on(EDITION_DETAILS_RETURNED, this.editionDetailsReturned);
     emitter.on(BUY_RETURNED, this.buyReturned);
+    emitter.on(USER_EDITIONS_RETURNED, this.userEditionsReturned);
 
     if (account && account.address) {
       dispatcher.dispatch({
@@ -142,6 +149,10 @@ class Show extends Component {
       dispatcher.dispatch({
         type: GET_EDITION_DETAILS,
         content: _editNumber,
+      });
+      dispatcher.dispatch({
+        type: GET_USER_EDITIONS,
+        content: account.address,
       });
     }
   }
@@ -158,6 +169,7 @@ class Show extends Component {
       this.editionDetailsReturned
     );
     emitter.removeListener(BUY_RETURNED, this.buyReturned);
+    emitter.removeListener(USER_EDITIONS_RETURNED, this.userEditionsReturned);
   }
 
   connectionConnected = () => {
@@ -172,7 +184,10 @@ class Show extends Component {
       type: GET_EDITION_DETAILS,
       content: editionNumber,
     });
-
+    dispatcher.dispatch({
+      type: GET_USER_EDITIONS,
+      content: this.state.account.address,
+    });
     const that = this;
     setTimeout(() => {
       const snackbarObj = {
@@ -196,6 +211,7 @@ class Show extends Component {
     this.setState(snackbarObj);
     this.setState({ loading: false });
     const that = this;
+
     setTimeout(() => {
       const snackbarObj = {
         snackbarMessage: error.toString(),
@@ -208,6 +224,18 @@ class Show extends Component {
   editionDetailsReturned = (payload) => {
     this.setState({ editionDetails: payload });
     this.getTokenJson(payload._tokenURI);
+  };
+
+  userEditionsReturned = (payload) => {
+    const _editNumber = this.props.match.params.editionNumber;
+    let _userTokenBalance = payload[0];
+    let _userTokens = payload[1];
+    let _userTokenDetails = payload[2];
+    let _userOwnedEditions = payload[3];
+    let _userOwnedTokens = payload[4];
+    var userOwned = _userOwnedEditions.includes(_editNumber);
+    this.setState({ userOwned });
+    this.setState({ userTokens: _userOwnedTokens[_editNumber] });
   };
 
   getTokenJson = async (url) => {
@@ -266,6 +294,7 @@ class Show extends Component {
       snackbarMessage,
       editionToken,
       editionDetails,
+      userOwned,
     } = this.state;
 
     return (
@@ -344,6 +373,19 @@ class Show extends Component {
                         "Buy"}
                     </Button>
                   )}
+                  {userOwned && (
+                    <Button
+                      variant="outlined"
+                      disabled={loading}
+                      onClick={this.giftEdition}
+                      size="small"
+                      color="primary"
+                      className={classes.button}
+                    >
+                      {loading && <CircularProgress size={24} />}
+                      {!loading && "Gift"}
+                    </Button>
+                  )}
                   {editionDetails._maxAvailable -
                     editionDetails._circulatingSupply ===
                     0 && (
@@ -357,28 +399,50 @@ class Show extends Component {
                       Sold Out
                     </Button>
                   )}
-                  <Button
-                    variant="outlined"
-                    disabled
-                    size="small"
-                    className={classes.button}
-                  >
-                    {editionDetails._maxAvailable -
-                      editionDetails._circulatingSupply}
-                    {" / "}
-                    {editionDetails._maxAvailable} remaining
-                  </Button>
+                  {editionDetails._maxAvailable -
+                    editionDetails._circulatingSupply !=
+                    0 && (
+                    <Button
+                      variant="outlined"
+                      disabled
+                      size="small"
+                      className={classes.button}
+                    >
+                      {editionDetails._maxAvailable -
+                        editionDetails._circulatingSupply}
+                      {" / "}
+                      {editionDetails._maxAvailable} remaining
+                    </Button>
+                  )}
                 </Paper>
               </Grid>
             </Grid>
           </div>
         )}
         {!this.state.account.address && <div>{t("Wallet.PleaseConnect")}</div>}
-
+        {modalOpen && this.renderModal()}
         {snackbarMessage && this.renderSnackbar()}
       </div>
     );
   }
+  giftEdition = () => {
+    this.setState({ modalOpen: true });
+  };
+
+  closeModal = () => {
+    this.setState({ modalOpen: false });
+  };
+
+  renderModal = () => {
+    return (
+      <GiftModal
+        closeModal={this.closeModal}
+        modalOpen={this.state.modalOpen}
+        editionNumber={this.props.match.params.editionNumber}
+        tokens={this.state.userTokens[this.state.userTokens.length - 1]}
+      />
+    );
+  };
 
   renderSnackbar = () => {
     var { snackbarType, snackbarMessage } = this.state;

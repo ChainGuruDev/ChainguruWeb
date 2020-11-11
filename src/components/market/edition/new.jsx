@@ -31,6 +31,8 @@ import {
   GET_ACCOUNT_ROLES,
   CHECK_ACCOUNT,
   CHECK_ACCOUNT_RETURNED,
+  IS_ALLOWED_RETURNED,
+  IS_ALLOWED_ARTIST,
 } from "../../../constants";
 
 import { withTranslation } from "react-i18next";
@@ -131,6 +133,8 @@ class NewEdit extends Component {
   constructor(props) {
     super();
     this.state = {
+      isAllowedArtist: false,
+      canCreate: false,
       name: "",
       description: "",
       artistName: "",
@@ -165,6 +169,10 @@ class NewEdit extends Component {
         type: GET_ACCOUNT_ROLES,
         content: {},
       });
+      dispatcher.dispatch({
+        type: IS_ALLOWED_ARTIST,
+        content: {},
+      });
     }
   }
 
@@ -180,9 +188,13 @@ class NewEdit extends Component {
     emitter.on(NEW_EDITION_RETURNED, this.newEditionReturned);
     emitter.on(ACCOUNT_ROLES_RETURNED, this.accountRolesReturned);
     emitter.on(CHECK_ACCOUNT_RETURNED, this.checkAccountReturned);
-
+    emitter.on(IS_ALLOWED_RETURNED, this.isAllowedReturned);
     dispatcher.dispatch({
       type: GET_ACCOUNT_ROLES,
+      content: {},
+    });
+    dispatcher.dispatch({
+      type: IS_ALLOWED_ARTIST,
       content: {},
     });
   }
@@ -196,9 +208,9 @@ class NewEdit extends Component {
     );
     emitter.removeListener(EDITION_RETURNED, this.editionReturned);
     emitter.removeListener(NEW_EDITION_RETURNED, this.newEditionReturned);
-
     emitter.removeListener(ACCOUNT_ROLES_RETURNED, this.accountRolesReturned);
     emitter.removeListener(CHECK_ACCOUNT_RETURNED, this.checkAccountReturned);
+    emitter.removeListener(IS_ALLOWED_RETURNED, this.isAllowedReturned);
   }
 
   checkAccountReturned = (_isAccount) => {
@@ -222,16 +234,34 @@ class NewEdit extends Component {
     this.setState({ isAdmin: payload[0] });
     this.setState({ isMinter: payload[1] });
     this.setState({ isLF: payload[2] });
+    if (payload[0] || payload[2]) {
+      this.setState({ canCreate: true });
+    }
+  };
+
+  isAllowedReturned = (payload) => {
+    this.setState({ isAllowedArtist: payload });
+    if (this.state.isAdmin || payload) {
+      this.setState({ canCreate: true });
+      console.log("CAN CREATE");
+    }
   };
 
   refresh = () => {
+    const account = store.getStore("account");
+
     dispatcher.dispatch({
       type: GET_ACCOUNT_ROLES,
+      content: {},
+    });
+    dispatcher.dispatch({
+      type: IS_ALLOWED_ARTIST,
       content: {},
     });
   };
 
   connectionConnected = () => {
+    const account = store.getStore("account").address;
     const { t } = this.props;
     this.setState({ account: store.getStore("account") });
     const that = this;
@@ -246,12 +276,22 @@ class NewEdit extends Component {
       type: GET_ACCOUNT_ROLES,
       content: {},
     });
+    dispatcher.dispatch({
+      type: IS_ALLOWED_ARTIST,
+      content: {},
+    });
   };
 
   connectionDisconnected = () => {
+    const account = store.getStore("account");
+
     this.setState({ account: store.getStore("account") });
     dispatcher.dispatch({
       type: GET_ACCOUNT_ROLES,
+      content: {},
+    });
+    dispatcher.dispatch({
+      type: IS_ALLOWED_ARTIST,
       content: {},
     });
   };
@@ -439,13 +479,17 @@ class NewEdit extends Component {
         this.errorReturned("Must input some Commission value")
       );
     }
-    if (!this.state.artistAccount) {
-      return (
-        this.setState({ isUploading: false }),
-        this.setState({ errorAccount: true }),
-        this.setState({ errMsgAccount: "Must input some artist Account" }),
-        this.errorReturned("Must input some artist Account")
-      );
+    if (this.state.isAdmin) {
+      if (!this.state.artistAccount) {
+        return (
+          this.setState({ isUploading: false }),
+          this.setState({ errorAccount: true }),
+          this.setState({ errMsgAccount: "Must input some artist Account" }),
+          this.errorReturned("Must input some artist Account")
+        );
+      }
+    } else {
+      this.setState({ artistAccount: this.state.account });
     }
     if (!this.state.price) {
       return (
@@ -487,12 +531,20 @@ class NewEdit extends Component {
 
   render() {
     const { classes, t } = this.props;
-    const { loading, snackbarMessage, isAdmin, isMinter, isLF } = this.state;
+    const {
+      loading,
+      snackbarMessage,
+      isAdmin,
+      isMinter,
+      isLF,
+      isAllowedArtist,
+      canCreate,
+    } = this.state;
 
     return (
       <div className={classes.background}>
         <div className={classes.root}>
-          {isLF && (
+          {canCreate && (
             <Grid justify="space-evenly" container spacing={3}>
               <Grid item xs={12}>
                 <Card className={classes.editionCreate} elevation={10}>
@@ -615,14 +667,16 @@ class NewEdit extends Component {
                         display: this.state.tokenURI ? "flex" : "none",
                       }}
                     >
-                      <TextField
-                        fullWidth
-                        id="artistAccount"
-                        label="Artist Account"
-                        onChange={this.handleChange}
-                        helperText={this.state.errMsgAccount}
-                        error={this.state.errorAccount}
-                      />
+                      {isAdmin && (
+                        <TextField
+                          fullWidth
+                          id="artistAccount"
+                          label="Artist Account"
+                          onChange={this.handleChange}
+                          helperText={this.state.errMsgAccount}
+                          error={this.state.errorAccount}
+                        />
+                      )}
 
                       <TextField
                         fullWidth
@@ -665,10 +719,10 @@ class NewEdit extends Component {
               </Grid>
             </Grid>
           )}
-          {!this.state.account.address && !isLF && (
+          {!this.state.account.address && !canCreate && (
             <div>{t("Wallet.PleaseConnect")}</div>
           )}
-          {this.state.account.address && !isLF && (
+          {this.state.account.address && !canCreate && (
             <div>{t("Wallet.NotLF")}</div>
           )}
           {loading && <Loader />}

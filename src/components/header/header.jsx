@@ -128,7 +128,7 @@ class Header extends Component {
 
   connectionConnected = () => {
     this.setState({ account: store.getStore("account") });
-    this.setAddressEnsName();
+    //this.setAddressEnsName();
   };
 
   connectionDisconnected = () => {
@@ -185,7 +185,7 @@ class Header extends Component {
                 this.nav("");
               }}
             >
-              LongboardFamara
+              ChainGuru
             </Typography>
           </div>
           <div className={classes.links}>
