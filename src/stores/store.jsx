@@ -1037,7 +1037,7 @@ class Store {
 
   getCoinList = async () => {
     if (this.store.coinList.length > 0) {
-      console.log("Coinlist already loaded");
+      emitter.emit(COINLIST_RETURNED, this.store.coinList);
     } else {
       let data = await CoinGeckoClient.coins.list();
 
@@ -1049,10 +1049,9 @@ class Store {
 
   getCoinData = async (coin) => {
     let data;
-    console.log(coin.content);
     try {
       let data = await CoinGeckoClient.coins.fetch(coin.content, {});
-      emitter.emit(COIN_DATA_RETURNED, await data.data);
+      emitter.emit(COIN_DATA_RETURNED, [await data.data, coin.BarID]);
     } catch (err) {
       console.log(err);
     }

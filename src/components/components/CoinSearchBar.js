@@ -54,13 +54,22 @@ class CoinSearchBar extends Component {
     this.setState({ items: payload });
   };
 
-  coinSelect = (newValue) => {
-    let _id = newValue.id;
-
-    dispatcher.dispatch({
-      type: GET_COIN_DATA,
-      content: _id,
-    });
+  coinSelect = (newValue, compareBarID) => {
+    if (newValue) {
+      let _id = newValue.id;
+      if (compareBarID) {
+        dispatcher.dispatch({
+          type: GET_COIN_DATA,
+          content: _id,
+          BarID: compareBarID,
+        });
+      } else {
+        dispatcher.dispatch({
+          type: GET_COIN_DATA,
+          content: _id,
+        });
+      }
+    }
   };
 
   render() {
@@ -69,9 +78,8 @@ class CoinSearchBar extends Component {
         id="coin-search-bar"
         options={this.state.items}
         getOptionLabel={(option) => option.id}
-        style={{ width: 300 }}
         onChange={(event, newValue) => {
-          this.coinSelect(newValue);
+          this.coinSelect(newValue, this.props.id);
         }}
         renderInput={(params) => (
           <TextField {...params} label="Coin Search" variant="outlined" />

@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import { Card, Typography } from "@material-ui/core";
+import { Card, Typography, Grid, Divider } from "@material-ui/core";
 import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
 import FlashOnIcon from "@material-ui/icons/FlashOn";
@@ -9,6 +9,7 @@ import AttachMoneyIcon from "@material-ui/icons/AttachMoney";
 import BarChartIcon from "@material-ui/icons/BarChart";
 import PieChartIcon from "@material-ui/icons/PieChart";
 import CoinSearchBar from "../components/CoinSearchBar.js";
+import CoinCompare from "../components/CoinCompare.js";
 
 import {
   ERROR,
@@ -45,6 +46,19 @@ const styles = (theme) => ({
     justifyContent: "space-around",
     background: "linear-gradient(to top, #F37335, #FDC830)",
   },
+  compareGrid: {
+    maxWidth: "1200px",
+    alignItems: "stretch",
+    minHeight: "100%",
+    textAlign: "center",
+    justifyContent: "center",
+  },
+
+  divider: {
+    alignItems: "center",
+    textAlign: "center",
+    justifyContent: "center",
+  },
 });
 
 class Short extends Component {
@@ -61,7 +75,6 @@ class Short extends Component {
 
   componentDidMount() {
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
-    emitter.on(COIN_DATA_RETURNED, this.coinDataReturned);
 
     dispatcher.dispatch({
       type: PING_COINGECKO,
@@ -71,15 +84,10 @@ class Short extends Component {
 
   componentWillUnmount() {
     emitter.removeListener(COINLIST_RETURNED, this.coinlistReturned);
-    emitter.removeListener(COIN_DATA_RETURNED, this.coinDataReturned);
   }
 
   coinlistReturned = (payload) => {
     this.setState({ coinList: payload });
-  };
-
-  coinDataReturned = (data) => {
-    console.log(data);
   };
 
   render() {
@@ -87,7 +95,17 @@ class Short extends Component {
     return (
       <div className={classes.background}>
         <div className={classes.root}>
-          <CoinSearchBar />
+          <Grid className={classes.compareGrid} container spacing={3}>
+            <Grid item xs={5}>
+              <CoinCompare id={"A"} />
+            </Grid>
+            <Grid item xs={1}>
+              <Divider className={classes.divider} orientation="vertical" />
+            </Grid>
+            <Grid item xs={5}>
+              <CoinCompare id={"B"} />
+            </Grid>
+          </Grid>
         </div>
       </div>
     );
