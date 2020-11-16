@@ -47,6 +47,7 @@ export const colors = {
 
   cardBackground: "#68efcf",
   buttonPrimary: "#0b8f92",
+  buttonSecondary: "#ed4337",
 };
 
 const breakpoints = createBreakpoints({
@@ -161,11 +162,11 @@ const iswapTheme = {
         },
         color: colors.text,
         padding: "14px",
-        borderRadius: "50px",
+        borderRadius: "10px",
       },
       root: {
         // border: "none !important",
-        borderRadius: "50px",
+        borderRadius: "5px",
       },
       notchedOutline: {
         // border: "none !important"
@@ -287,7 +288,7 @@ const iswapTheme = {
       main: colors.buttonPrimary,
     },
     secondary: {
-      main: colors.topaz,
+      main: colors.buttonSecondary,
     },
     text: {
       primary: colors.text,

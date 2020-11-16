@@ -43,9 +43,11 @@ import {
   ARTIST_EDITIONS_DETAILS_RETURNED,
   PING_COINGECKO,
   GET_COIN_LIST,
+  COINLIST_RETURNED,
   GET_COIN_DATA,
   COIN_DATA_RETURNED,
-  COINLIST_RETURNED,
+  GET_COIN_PRICECHART,
+  COIN_PRICECHART_RETURNED,
   GET_WALLET_TOKENS_BALANCE,
   SET_ALLOWED_ARTIST,
   ALLOWED_ARTIST_RETURNED,
@@ -202,6 +204,9 @@ class Store {
             break;
           case GET_MAX_EDITIONSIZE:
             this.getMaxEditSize(payload);
+            break;
+          case GET_COIN_PRICECHART:
+            this.getCoinPriceChart(payload);
           default: {
           }
         }
@@ -1055,6 +1060,24 @@ class Store {
     } catch (err) {
       console.log(err);
     }
+  };
+
+  getCoinPriceChart = async (payload) => {
+    let data;
+    if (payload.content[2]) {
+      data = await CoinGeckoClient.coins.fetchMarketChart(payload.content[0], {
+        days: payload.content[2],
+      });
+    } else {
+      data = await CoinGeckoClient.coins.fetchMarketChart(payload.content[0], {
+        days: "1",
+      });
+    }
+
+    emitter.emit(COIN_PRICECHART_RETURNED, [
+      await data.data,
+      payload.content[1],
+    ]);
   };
 
   getWalletTokenBalance = async () => {

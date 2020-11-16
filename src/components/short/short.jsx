@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import { Card, Typography, Grid, Divider } from "@material-ui/core";
+import { Card, Typography, Grid, Divider, IconButton } from "@material-ui/core";
 import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
 import FlashOnIcon from "@material-ui/icons/FlashOn";
@@ -10,6 +10,7 @@ import BarChartIcon from "@material-ui/icons/BarChart";
 import PieChartIcon from "@material-ui/icons/PieChart";
 import CoinSearchBar from "../components/CoinSearchBar.js";
 import CoinCompare from "../components/CoinCompare.js";
+import SwapHorizIcon from "@material-ui/icons/SwapHoriz";
 
 import {
   ERROR,
@@ -48,13 +49,31 @@ const styles = (theme) => ({
   },
   compareGrid: {
     maxWidth: "1200px",
-    alignItems: "stretch",
     minHeight: "100%",
+    textAlign: "center",
+    justifyContent: "space-evenly",
+  },
+  compareCard: {
+    padding: 10,
+    minHeight: "70%",
+    marginTop: 10,
+    marginBottom: 10,
+    display: "flex",
+    flex: 1,
+    textAlign: "center",
+    justifyContent: "space-between",
+    direction: "row",
+    alignItems: "stretch",
+    background: "rgba(255,255,255,0.25)",
+  },
+  divider: {
+    alignItems: "center",
     textAlign: "center",
     justifyContent: "center",
   },
-
-  divider: {
+  swapBTN: {
+    width: "50px",
+    height: "50px",
     alignItems: "center",
     textAlign: "center",
     justifyContent: "center",
@@ -95,16 +114,23 @@ class Short extends Component {
     return (
       <div className={classes.background}>
         <div className={classes.root}>
-          <Grid className={classes.compareGrid} container spacing={3}>
-            <Grid item xs={5}>
-              <CoinCompare id={"A"} />
-            </Grid>
-            <Grid item xs={1}>
-              <Divider className={classes.divider} orientation="vertical" />
-            </Grid>
-            <Grid item xs={5}>
-              <CoinCompare id={"B"} />
-            </Grid>
+          <Grid className={classes.compareGrid} spacing={3} container>
+            <Card className={classes.compareCard} elevation={3}>
+              <Grid item xs={6}>
+                <CoinCompare id={"A"} />
+              </Grid>
+              <Grid
+                item
+                style={{ padding: 10, marginTop: "auto", marginBottom: "auto" }}
+              >
+                <IconButton className={classes.swapBTN} aria-label="swap">
+                  <SwapHorizIcon size="large" />
+                </IconButton>
+              </Grid>
+              <Grid item xs={6}>
+                <CoinCompare id={"B"} />
+              </Grid>
+            </Card>
           </Grid>
         </div>
       </div>
