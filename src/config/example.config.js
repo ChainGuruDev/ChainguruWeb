@@ -1,16 +1,29 @@
 const config = {
   infuraProvider:
-    "https://mainnet.infura.io/v3/da08cbb0e0604f3ab2f57742f776c115",
-  lfOriginalsContract: "0x18a704cE592CC6E1609f253715DA629F517d0850",
-  artistAcceptingBidsContract: "0xCC6C77ED6b61A6719f3Fe3af6e67Ae6e65205696",
-  artistEditionControlsContract: "0x655bC370E4AD7276b178C2eb976c92467522b565",
+    "https://rinkeby.infura.io/v3/da08cbb0e0604f3ab2f57742f776c115",
+
+  lfOriginalsContract: "0x19C2F41c55976b5998e43F111317e545B4d762cA",
+  artistAcceptingBidsContract: "0x8371E161bEe660e2b8AC0eAFf182974C09766E4B",
+  artistEditionControlsContract: "0x823CbdeE6BD52111A48a6E95D76220B953B17200",
   selfServiceAccessControlsContract:
-    "0x8474abe3177B9E4f8B3569A4eF49DEc6b3a31382",
-  selfServiceEditionCurationContract:
-    "0xb5F689ec76F13676949Cc1D9FDfBFf1dE4497407",
+    "0x3477039241E7920E8fffA84F302FCEdB5341B990",
   selfServiceFrequencyControlsContract:
-    "0x7d178d906FAEEC30A7A1dd686e444927EF3568c8",
-  tokenMarketplaceContract: "0x211D24E111e25a3FAD2A4B6E0899655Ccd771162",
+    "0x8B732C78E53D4BeA17e87994Fd23bD3D6ED4dFE5",
+  selfServiceEditionCurationContract:
+    "0x201B7FbA1739Cfb7b08d93860bDB66E86F9908f6",
+  tokenMarketplaceContract: "0xdD9Ba9ab355b35F3C33DF8E460EcE4bB4ea1f7Fb",
+
+  // lfOriginalsContract: "0x18a704cE592CC6E1609f253715DA629F517d0850",
+  // artistAcceptingBidsContract: "0xCC6C77ED6b61A6719f3Fe3af6e67Ae6e65205696",
+  // artistEditionControlsContract: "0x655bC370E4AD7276b178C2eb976c92467522b565",
+  // selfServiceAccessControlsContract:
+  //   "0x8474abe3177B9E4f8B3569A4eF49DEc6b3a31382",
+  // selfServiceEditionCurationContract:
+  //   "0xb5F689ec76F13676949Cc1D9FDfBFf1dE4497407",
+  // selfServiceFrequencyControlsContract:
+  //   "0x7d178d906FAEEC30A7A1dd686e444927EF3568c8",
+  // tokenMarketplaceContract: "0x211D24E111e25a3FAD2A4B6E0899655Ccd771162",
+
   //infuraProvider: "http://127.0.0.1:9545/",
   //infuraProvider: "https://rinkeby.infura.io/v3/da08cbb0e0604f3ab2f57742f776c115",
 
