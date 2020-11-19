@@ -25,13 +25,20 @@ class PriceChart extends Component {
   constructor(props) {
     super(props);
 
+    let color;
+    if (props.id == "A") {
+      color = ["#247BA0"];
+    } else {
+      color = ["#FF1654"];
+    }
+
     this.state = {
       options: {
         stroke: {
           width: 2,
           curve: "smooth",
         },
-        colors: colors.primary,
+        colors: color,
         chart: {
           id: "",
         },

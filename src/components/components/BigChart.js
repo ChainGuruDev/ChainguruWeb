@@ -83,6 +83,17 @@ class BigChart extends Component {
     const { classes, t, location, coinDataA, coinDataB } = this.props;
     const { loading } = this.state;
 
+    const handleClick = (timeFrame) => {
+      dispatcher.dispatch({
+        type: GET_COIN_PRICECHART,
+        content: [coinDataA.id, this.props.idA, timeFrame],
+      });
+      dispatcher.dispatch({
+        type: GET_COIN_PRICECHART,
+        content: [coinDataB.id, this.props.idB, timeFrame],
+      });
+    };
+
     return (
       <Card className={classes.cryptoCard} spacing={3} variant="outlined">
         <Grid
@@ -92,6 +103,102 @@ class BigChart extends Component {
           alignItems="stretch"
           spacing={1}
         >
+          <Grid
+            style={{
+              marginTop: 10,
+            }}
+            direction="row"
+            container
+            justify="space-around"
+            alignItems="flex-start"
+            item
+          >
+            <Grid item>
+              <Grid direction="column" container>
+                <Grid item>
+                  <Typography variant="subtitle2">24hs</Typography>
+                </Grid>
+                <Grid item>
+                  <Chip
+                    variant="outlined"
+                    color={
+                      coinDataA.market_data.price_change_percentage_24h > 0
+                        ? "primary"
+                        : "secondary"
+                    }
+                    icon={
+                      coinDataA.market_data.price_change_percentage_24h > 0 ? (
+                        <ArrowDropUpRoundedIcon />
+                      ) : (
+                        <ArrowDropDownRoundedIcon />
+                      )
+                    }
+                    label={`${coinDataA.market_data.price_change_percentage_24h}%`}
+                    onClick={() => {
+                      handleClick(1);
+                    }}
+                  />
+                </Grid>
+              </Grid>
+            </Grid>
+            <Divider light orientation="vertical" flexItem />
+            <Grid item>
+              <Grid direction="column" container>
+                <Typography variant="subtitle2">7d</Typography>
+                <Grid item>
+                  <Chip
+                    variant="outlined"
+                    color={
+                      coinDataA.market_data.price_change_percentage_7d > 0
+                        ? "primary"
+                        : "secondary"
+                    }
+                    icon={
+                      coinDataA.market_data.price_change_percentage_7d > 0 ? (
+                        <ArrowDropUpRoundedIcon />
+                      ) : (
+                        <ArrowDropDownRoundedIcon />
+                      )
+                    }
+                    label={`${coinDataA.market_data.price_change_percentage_7d}%`}
+                    onClick={() => {
+                      handleClick(7);
+                    }}
+                  />
+                </Grid>
+              </Grid>
+            </Grid>
+            <Divider light flexItem orientation="vertical" />
+            <Grid item>
+              <Grid direction="column" container>
+                <Grid item>
+                  <Typography variant="subtitle2">30d</Typography>
+                </Grid>
+                <Grid item>
+                  <Chip
+                    variant="outlined"
+                    color={
+                      coinDataA.market_data.price_change_percentage_30d > 0
+                        ? "primary"
+                        : "secondary"
+                    }
+                    icon={
+                      coinDataA.market_data.price_change_percentage_30d > 0 ? (
+                        <ArrowDropUpRoundedIcon />
+                      ) : (
+                        <ArrowDropDownRoundedIcon />
+                      )
+                    }
+                    label={`${coinDataA.market_data.price_change_percentage_30d}%`}
+                    onClick={() => {
+                      handleClick(30);
+                    }}
+                  />
+                </Grid>
+              </Grid>
+            </Grid>
+          </Grid>
+
           <Grid item xs={12}>
             <CompareChart
               idA={this.props.idA}
@@ -99,6 +206,101 @@ class BigChart extends Component {
               coinIDA={coinDataA.id}
               coinIDB={coinDataB.id}
             />
+          </Grid>
+          <Grid
+            style={{
+              marginTop: 10,
+            }}
+            direction="row"
+            container
+            justify="space-around"
+            alignItems="flex-start"
+            item
+          >
+            <Grid item>
+              <Grid direction="column" container>
+                <Grid item>
+                  <Typography variant="subtitle2">24hs</Typography>
+                </Grid>
+                <Grid item>
+                  <Chip
+                    variant="outlined"
+                    color={
+                      coinDataB.market_data.price_change_percentage_24h > 0
+                        ? "primary"
+                        : "secondary"
+                    }
+                    icon={
+                      coinDataB.market_data.price_change_percentage_24h > 0 ? (
+                        <ArrowDropUpRoundedIcon />
+                      ) : (
+                        <ArrowDropDownRoundedIcon />
+                      )
+                    }
+                    label={`${coinDataB.market_data.price_change_percentage_24h}%`}
+                    onClick={() => {
+                      handleClick(1);
+                    }}
+                  />
+                </Grid>
+              </Grid>
+            </Grid>
+            <Divider light orientation="vertical" flexItem />
+            <Grid item>
+              <Grid direction="column" container>
+                <Typography variant="subtitle2">7d</Typography>
+                <Grid item>
+                  <Chip
+                    variant="outlined"
+                    color={
+                      coinDataB.market_data.price_change_percentage_7d > 0
+                        ? "primary"
+                        : "secondary"
+                    }
+                    icon={
+                      coinDataB.market_data.price_change_percentage_7d > 0 ? (
+                        <ArrowDropUpRoundedIcon />
+                      ) : (
+                        <ArrowDropDownRoundedIcon />
+                      )
+                    }
+                    label={`${coinDataB.market_data.price_change_percentage_7d}%`}
+                    onClick={() => {
+                      handleClick(7);
+                    }}
+                  />
+                </Grid>
+              </Grid>
+            </Grid>
+            <Divider light flexItem orientation="vertical" />
+            <Grid item>
+              <Grid direction="column" container>
+                <Grid item>
+                  <Typography variant="subtitle2">30d</Typography>
+                </Grid>
+                <Grid item>
+                  <Chip
+                    variant="outlined"
+                    color={
+                      coinDataB.market_data.price_change_percentage_30d > 0
+                        ? "primary"
+                        : "secondary"
+                    }
+                    icon={
+                      coinDataB.market_data.price_change_percentage_30d > 0 ? (
+                        <ArrowDropUpRoundedIcon />
+                      ) : (
+                        <ArrowDropDownRoundedIcon />
+                      )
+                    }
+                    label={`${coinDataB.market_data.price_change_percentage_30d}%`}
+                    onClick={() => {
+                      handleClick(30);
+                    }}
+                  />
+                </Grid>
+              </Grid>
+            </Grid>
           </Grid>
         </Grid>
       </Card>
