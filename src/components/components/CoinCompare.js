@@ -66,6 +66,7 @@ class CoinCompare extends Component {
   }
 
   coinDataReturned = (data) => {
+    console.log(data);
     if (data[1] == this.props.id) {
       this.setState({ coinData: data[0], loading: false });
     }
@@ -96,6 +97,7 @@ class CoinCompare extends Component {
               style={{ marginTop: 10 }}
               container
               justify="space-evenly"
+              alignItems="stretch"
               direction="row"
             >
               <Grid item xs={1}>
@@ -108,26 +110,38 @@ class CoinCompare extends Component {
                 </div>
               </Grid>
               <Divider flexItem orientation="vertical" />
-              <Grid item xs={5}>
+              <Grid item xs={4}>
                 <Grid
                   container
                   direction="column"
                   alignItems="flex-start"
                   item
-                  xs={10}
+                  xs={12}
                 >
                   <Typography variant="body1">{coinData.name}</Typography>
                   <Typography variant="subtitle1">{coinData.symbol}</Typography>
                 </Grid>
               </Grid>
               <Grid
-                container
-                alignItems="flex-start"
-                justify="flex-end"
                 item
-                xs={5}
+                container
+                direction="row"
+                justify="flex-end"
+                alignItems="flex-end"
+                xs={6}
               >
-                <Typography variant="subtitle2">Marketcap 24hs</Typography>
+                <Typography color="textSecondary" align="right" variant="h2">
+                  {coinData.market_data.current_price.usd}
+                </Typography>
+                <Typography
+                  color="textPrimary"
+                  align="right"
+                  variant="subtitle1"
+                >
+                  USD
+                </Typography>
+              </Grid>
+              <Grid container alignItems="center" justify="center" item xs={12}>
                 <Chip
                   variant="outlined"
                   color={
@@ -143,7 +157,7 @@ class CoinCompare extends Component {
                       <ArrowDropDownRoundedIcon />
                     )
                   }
-                  label={`${coinData.market_data.market_cap_change_percentage_24h}%`}
+                  label={`${coinData.market_data.market_cap_change_percentage_24h}% - Marketcap 24hs`}
                 />
               </Grid>
               <Grid
@@ -244,7 +258,9 @@ class CoinCompare extends Component {
                   </Grid>
                 </Grid>
               </Grid>
-              <PriceChart id={this.props.id} coinID={coinData.id} />
+              <Grid item xs={12}>
+                <PriceChart id={this.props.id} coinID={coinData.id} />
+              </Grid>
             </Grid>
           </Grid>
         )}
