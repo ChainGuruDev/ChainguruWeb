@@ -174,17 +174,17 @@ class CompareChart extends Component {
 
               axisBorder: {
                 show: true,
-                color: "#FF1654",
+                color: "#247BA0",
               },
               labels: {
                 style: {
-                  colors: "#FF1654",
+                  colors: "#247BA0",
                 },
               },
               title: {
                 text: this.props.coinIDA,
                 style: {
-                  color: "#FF1654",
+                  color: "#247BA0",
                 },
               },
             },
@@ -197,17 +197,17 @@ class CompareChart extends Component {
               opposite: true,
               axisBorder: {
                 show: true,
-                color: "#247BA0",
+                color: "#FF1654",
               },
               labels: {
                 style: {
-                  colors: "#247BA0",
+                  colors: "#FF1654",
                 },
               },
               title: {
                 text: this.props.coinIDB,
                 style: {
-                  color: "#247BA0",
+                  color: "#FF1654",
                 },
               },
             },

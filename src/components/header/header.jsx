@@ -6,12 +6,17 @@ import { colors } from "../../theme";
 import ENS from "ethjs-ens";
 import { withTranslation } from "react-i18next";
 
-import { CONNECTION_CONNECTED, CONNECTION_DISCONNECTED } from "../../constants";
+import {
+  CONNECTION_CONNECTED,
+  CONNECTION_DISCONNECTED,
+  DB_GET_USERDATA,
+} from "../../constants";
 
 import UnlockModal from "../unlock/unlockModal.jsx";
 
 import Store from "../../stores";
 const emitter = Store.emitter;
+const dispatcher = Store.dispatcher;
 const store = Store.store;
 
 const styles = (theme) => ({
@@ -127,7 +132,12 @@ class Header extends Component {
   }
 
   connectionConnected = () => {
-    this.setState({ account: store.getStore("account") });
+    let _acc = store.getStore("account");
+    this.setState({ account: _acc });
+    dispatcher.dispatch({
+      type: DB_GET_USERDATA,
+      address: _acc.address,
+    });
     //this.setAddressEnsName();
   };
 

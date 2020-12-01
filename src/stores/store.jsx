@@ -58,6 +58,7 @@ import {
   GIFT_EDITION_ARTIST,
   GET_MAX_EDITIONSIZE,
   MAX_EDIT_SIZE_RETURNED,
+  DB_GET_USERDATA,
 } from "../constants";
 
 import {
@@ -73,7 +74,7 @@ const rp = require("request-promise");
 
 const CoinGecko = require("coingecko-api");
 const CoinGeckoClient = new CoinGecko();
-
+const axios = require("axios").default;
 const Dispatcher = require("flux").Dispatcher;
 const Emitter = require("events").EventEmitter;
 const dispatcher = new Dispatcher();
@@ -108,6 +109,7 @@ class Store {
         },
       ],
       coinList: [],
+      userData: {},
     };
 
     dispatcher.register(
@@ -207,6 +209,10 @@ class Store {
             break;
           case GET_COIN_PRICECHART:
             this.getCoinPriceChart(payload);
+            break;
+          case DB_GET_USERDATA:
+            this.db_getUserData(payload);
+            break;
           default: {
           }
         }
@@ -220,7 +226,6 @@ class Store {
 
   setStore(obj) {
     this.store = { ...this.store, ...obj };
-    //  console.log(this.store)
     return emitter.emit("StoreUpdated");
   }
 
@@ -1042,6 +1047,7 @@ class Store {
 
   getCoinList = async () => {
     if (this.store.coinList.length > 0) {
+      console.log("Cached coinlist");
       emitter.emit(COINLIST_RETURNED, this.store.coinList);
     } else {
       let data = await CoinGeckoClient.coins.list();
@@ -1120,6 +1126,14 @@ class Store {
           console.log("Sent by " + reciept.from + " to contract " + reciept.to);
         });
       });
+  };
+
+  db_getUserData = async (payload) => {
+    console.log("GETTING USER DATA from > " + payload.address);
+    let _dbUserData = await axios.get(
+      `https://chainguru-db.herokuapp.com/users/${payload.address}`
+    );
+    console.log(await _dbUserData.data);
   };
 }
 

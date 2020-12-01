@@ -25,7 +25,7 @@ import Artist from "./components/market/artist/artist";
 import User from "./components/market/user/user";
 
 import { injected } from "./stores/connectors";
-import { CONNECTION_CONNECTED } from "./constants";
+import { CONNECTION_CONNECTED, DB_GET_USERDATA } from "./constants";
 
 import Store from "./stores";
 const emitter = Store.emitter;
@@ -41,24 +41,26 @@ class App extends Component {
   };
 
   componentDidMount() {
-    injected.isAuthorized().then((isAuthorized) => {
-      if (isAuthorized) {
-        injected
-          .activate()
-          .then((a) => {
-            store.setStore({
-              account: { address: a.account },
-              web3context: { library: { provider: a.provider } },
-            });
-            emitter.emit(CONNECTION_CONNECTED);
-            console.log(a);
-          })
-          .catch((e) => {
-            console.log(e);
-          });
-      } else {
-      }
-    });
+    // injected.isAuthorized().then((isAuthorized) => {
+    //   if (isAuthorized) {
+    //     injected
+    //       .activate()
+    //       .then((a) => {
+    //         console.log(a);
+    //
+    //         store.setStore({
+    //           account: { address: a.account },
+    //           web3context: { library: { provider: a.provider } },
+    //         });
+    //         emitter.emit(CONNECTION_CONNECTED);
+    //         console.log(a);
+    //       })
+    //       .catch((e) => {
+    //         console.log(e);
+    //       });
+    //   } else {
+    //   }
+    // });
   }
 
   render() {

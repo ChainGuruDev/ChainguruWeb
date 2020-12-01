@@ -127,12 +127,24 @@ class CoinCompare extends Component {
                 item
                 xs={5}
               >
-                <Typography variant="subtitle2">
-                  Marketcap {coinData.market_data.market_cap.eur} eur
-                </Typography>
-                <Typography variant="subtitle2">
-                  {coinData.market_data.market_cap_change_percentage_24h}% 24hs
-                </Typography>
+                <Typography variant="subtitle2">Marketcap 24hs</Typography>
+                <Chip
+                  variant="outlined"
+                  color={
+                    coinData.market_data.market_cap_change_percentage_24h > 0
+                      ? "primary"
+                      : "secondary"
+                  }
+                  icon={
+                    coinData.market_data.market_cap_change_percentage_24h >
+                    0 ? (
+                      <ArrowDropUpRoundedIcon />
+                    ) : (
+                      <ArrowDropDownRoundedIcon />
+                    )
+                  }
+                  label={`${coinData.market_data.market_cap_change_percentage_24h}%`}
+                />
               </Grid>
               <Grid
                 style={{

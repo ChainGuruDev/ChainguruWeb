@@ -4,6 +4,7 @@ import { withRouter, Link } from "react-router-dom";
 
 import TextField from "@material-ui/core/TextField";
 import Autocomplete from "@material-ui/lab/Autocomplete";
+import CircularProgress from "@material-ui/core/CircularProgress";
 
 import { colors } from "../../theme";
 
@@ -29,6 +30,8 @@ class CoinSearchBar extends Component {
 
     this.state = {
       items: [],
+      open: false,
+      loading: this.open && this.items.length === 0,
     };
   }
 
@@ -38,10 +41,6 @@ class CoinSearchBar extends Component {
 
   componentDidMount() {
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
-    dispatcher.dispatch({
-      type: GET_COIN_LIST,
-      content: {},
-    });
   }
 
   componentWillUnmount() {
@@ -49,8 +48,7 @@ class CoinSearchBar extends Component {
   }
 
   coinlistReturned = (payload) => {
-    console.log(payload);
-
+    this.setState({ loading: false });
     this.setState({ items: payload });
   };
 
@@ -72,17 +70,46 @@ class CoinSearchBar extends Component {
     }
   };
 
+  openSearch = () => {
+    this.setState({ loading: true });
+    dispatcher.dispatch({
+      type: GET_COIN_LIST,
+      content: {},
+    });
+  };
+
   render() {
     return (
       <Autocomplete
         id="coin-search-bar"
         options={this.state.items}
-        getOptionLabel={(option) => option.id}
+        open={this.state.openSearch}
+        onOpen={() => {
+          this.openSearch();
+        }}
+        getOptionSelected={(option, value) => option.name === value.name}
+        getOptionLabel={(option) => option.name}
         onChange={(event, newValue) => {
           this.coinSelect(newValue, this.props.id);
         }}
+        loading={this.state.loading}
         renderInput={(params) => (
-          <TextField {...params} label="Coin Search" variant="outlined" />
+          <TextField
+            {...params}
+            label="Coin Search"
+            variant="outlined"
+            InputProps={{
+              ...params.InputProps,
+              endAdornment: (
+                <React.Fragment>
+                  {this.state.loading ? (
+                    <CircularProgress color="inherit" size={20} />
+                  ) : null}
+                  {params.InputProps.endAdornment}
+                </React.Fragment>
+              ),
+            }}
+          />
         )}
       />
     );
