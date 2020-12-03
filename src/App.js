@@ -1,12 +1,7 @@
 import React, { Component } from "react";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
-import {
-  BrowserRouter,
-  Switch,
-  Route,
-  BrowserRouter as useParams,
-} from "react-router-dom";
+import { BrowserRouter, Switch, Route } from "react-router-dom";
 
 import "./i18n";
 import interestTheme from "./theme";
@@ -24,8 +19,8 @@ import Show from "./components/market/edition/show";
 import Artist from "./components/market/artist/artist";
 import User from "./components/market/user/user";
 
-import { injected } from "./stores/connectors";
-import { CONNECTION_CONNECTED, DB_GET_USERDATA } from "./constants";
+//import { injected } from "./stores/connectors";
+import { CONNECTION_CONNECTED } from "./constants";
 
 import Store from "./stores";
 const emitter = Store.emitter;

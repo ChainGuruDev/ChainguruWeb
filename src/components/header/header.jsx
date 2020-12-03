@@ -138,6 +138,7 @@ class Header extends Component {
       type: DB_GET_USERDATA,
       address: _acc.address,
     });
+
     //this.setAddressEnsName();
   };
 

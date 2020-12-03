@@ -126,12 +126,12 @@ class CompareChart extends Component {
   }
 
   coinDataReturned = (data) => {
-    if (data[1] == this.props.idA) {
+    if (data[1] === this.props.idA) {
       dispatcher.dispatch({
         type: GET_COIN_PRICECHART,
         content: [this.props.coinIDA, this.props.idA],
       });
-    } else if (data[1] == this.props.idB) {
+    } else if (data[1] === this.props.idB) {
       dispatcher.dispatch({
         type: GET_COIN_PRICECHART,
         content: [this.props.coinIDB, this.props.idB],
@@ -140,7 +140,7 @@ class CompareChart extends Component {
   };
 
   coinPriceChartReturned = (data) => {
-    if (data[1] == this.props.idA) {
+    if (data[1] === this.props.idA) {
       let prices = data[0].prices.map(function (each_element) {
         return [each_element[1]];
       });
@@ -214,7 +214,7 @@ class CompareChart extends Component {
           ],
         },
       });
-    } else if (data[1] == this.props.idB) {
+    } else if (data[1] === this.props.idB) {
       let prices = data[0].prices.map(function (each_element) {
         return [each_element[1]];
       });

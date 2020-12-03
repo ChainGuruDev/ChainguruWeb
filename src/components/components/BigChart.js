@@ -1,32 +1,17 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import {
-  Card,
-  Typography,
-  Grid,
-  Button,
-  Divider,
-  Chip,
-} from "@material-ui/core";
+import { Card, Typography, Grid, Divider, Chip } from "@material-ui/core";
 import { withTranslation } from "react-i18next";
-import { colors } from "../../theme";
-import CoinSearchBar from "../components/CoinSearchBar.js";
 import CompareChart from "../components/CompareChart.js";
 import ArrowDropUpRoundedIcon from "@material-ui/icons/ArrowDropUpRounded";
 import ArrowDropDownRoundedIcon from "@material-ui/icons/ArrowDropDownRounded";
 
-import {
-  COIN_DATA_RETURNED,
-  GET_COIN_LIST,
-  COINLIST_RETURNED,
-  GET_COIN_PRICECHART,
-} from "../../constants";
+import { COIN_DATA_RETURNED, GET_COIN_PRICECHART } from "../../constants";
 
 import Store from "../../stores";
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
-const store = Store.store;
 
 const styles = (theme) => ({
   cryptoCard: {
@@ -70,9 +55,9 @@ class BigChart extends Component {
   }
 
   coinDataReturned = (data) => {
-    if (data[1] == this.props.idA) {
+    if (data[1] === this.props.idA) {
       this.setState({ coinDataA: data[0], loading: false });
-    } else if (data[1] == this.props.idB) {
+    } else if (data[1] === this.props.idB) {
       this.setState({ coinDataB: data[0], loading: false });
     } else {
       console.log("bad ID");
@@ -81,7 +66,6 @@ class BigChart extends Component {
 
   render() {
     const { classes, t, location, coinDataA, coinDataB } = this.props;
-    const { loading } = this.state;
 
     const handleClick = (timeFrame) => {
       dispatcher.dispatch({

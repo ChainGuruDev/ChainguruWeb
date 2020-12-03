@@ -1,32 +1,18 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import {
-  Card,
-  Typography,
-  Grid,
-  Button,
-  Divider,
-  Chip,
-} from "@material-ui/core";
+import { Card, Typography, Grid, Divider, Chip } from "@material-ui/core";
 import { withTranslation } from "react-i18next";
-import { colors } from "../../theme";
 import CoinSearchBar from "../components/CoinSearchBar.js";
 import PriceChart from "../components/Chart.js";
 import ArrowDropUpRoundedIcon from "@material-ui/icons/ArrowDropUpRounded";
 import ArrowDropDownRoundedIcon from "@material-ui/icons/ArrowDropDownRounded";
 
-import {
-  COIN_DATA_RETURNED,
-  GET_COIN_LIST,
-  COINLIST_RETURNED,
-  GET_COIN_PRICECHART,
-} from "../../constants";
+import { COIN_DATA_RETURNED, GET_COIN_PRICECHART } from "../../constants";
 
 import Store from "../../stores";
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
-const store = Store.store;
 
 const styles = (theme) => ({
   cryptoCard: {
@@ -67,13 +53,13 @@ class CoinCompare extends Component {
 
   coinDataReturned = (data) => {
     console.log(data);
-    if (data[1] == this.props.id) {
+    if (data[1] === this.props.id) {
       this.setState({ coinData: data[0], loading: false });
     }
   };
 
   render() {
-    const { classes, t, location } = this.props;
+    const { classes, t } = this.props;
     const { coinData, loading } = this.state;
 
     const handleClick = (timeFrame) => {

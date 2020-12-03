@@ -2,8 +2,6 @@ import React, { Component } from "react";
 import Chart from "react-apexcharts";
 import { withStyles } from "@material-ui/core/styles";
 
-import { colors } from "../../theme";
-
 import {
   COIN_DATA_RETURNED,
   COIN_PRICECHART_RETURNED,
@@ -13,7 +11,6 @@ import {
 import Store from "../../stores";
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
-const store = Store.store;
 
 const styles = (theme) => ({
   root: {
@@ -74,7 +71,7 @@ class PriceChart extends Component {
   }
 
   coinDataReturned = (data) => {
-    if (data[1] == this.props.id) {
+    if (data[1] === this.props.id) {
       dispatcher.dispatch({
         type: GET_COIN_PRICECHART,
         content: [this.props.coinID, this.props.id],
@@ -83,7 +80,7 @@ class PriceChart extends Component {
   };
 
   coinPriceChartReturned = (data) => {
-    if (data[1] == this.props.id) {
+    if (data[1] === this.props.id) {
       let roundedPrices = data[0].prices.map(function (each_element) {
         return [each_element[0], Number(each_element[1]).toFixed(3)];
       });

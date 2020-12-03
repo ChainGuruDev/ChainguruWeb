@@ -42,6 +42,8 @@ import {
   GET_ARTIST_EDITIONS_DETAILS,
   ARTIST_EDITIONS_DETAILS_RETURNED,
   PING_COINGECKO,
+  COINGECKO_POPULATE_FAVLIST,
+  COINGECKO_POPULATE_FAVLIST_RETURNED,
   GET_COIN_LIST,
   COINLIST_RETURNED,
   GET_COIN_DATA,
@@ -59,6 +61,9 @@ import {
   GET_MAX_EDITIONSIZE,
   MAX_EDIT_SIZE_RETURNED,
   DB_GET_USERDATA,
+  DB_USERDATA_RETURNED,
+  DB_ADD_FAVORITE,
+  DB_ADD_FAVORITE_RETURNED,
 } from "../constants";
 
 import {
@@ -150,6 +155,7 @@ class Store {
             break;
           case GET_ARTIST_EDITIONS_DETAILS:
             this.getArtistEditionsDetails(payload);
+            break;
           case GET_TOKENJSON:
             this.getTokenJson(payload);
             break;
@@ -176,9 +182,6 @@ class Store {
             break;
           case REVOKE_ROLES:
             this.revokeRoles(payload);
-            break;
-          case GET_CONTRACT_EVENTS:
-            this.getContractEvents(payload);
             break;
           case CREATE_NEW_EDITION:
             this.createNewEdition(payload);
@@ -212,6 +215,12 @@ class Store {
             break;
           case DB_GET_USERDATA:
             this.db_getUserData(payload);
+            break;
+          case DB_ADD_FAVORITE:
+            this.db_addFavorite(payload);
+            break;
+          case COINGECKO_POPULATE_FAVLIST:
+            this.geckoPopulateFavList(payload);
             break;
           default: {
           }
@@ -1068,6 +1077,21 @@ class Store {
     }
   };
 
+  geckoPopulateFavList = async (tokenIds) => {
+    let data;
+    try {
+      let data = await CoinGeckoClient.coins.markets({
+        ids: tokenIds.tokenIDs,
+        vs_currency: "usd",
+        sparkline: true,
+        price_change_percentage: "1h,24h,7d,30d,1y",
+      });
+      emitter.emit(COINGECKO_POPULATE_FAVLIST_RETURNED, await data.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   getCoinPriceChart = async (payload) => {
     let data;
     if (payload.content[2]) {
@@ -1103,7 +1127,7 @@ class Store {
         function formatAddress(data) {
           var step1 = web3.utils.hexToBytes(data);
           for (var i = 0; i < step1.length; i++)
-            if (step1[0] == 0) step1.splice(0, 1);
+            if (step1[0] === 0) step1.splice(0, 1);
           return web3.utils.bytesToHex(step1);
         }
 
@@ -1129,11 +1153,39 @@ class Store {
   };
 
   db_getUserData = async (payload) => {
-    console.log("GETTING USER DATA from > " + payload.address);
-    let _dbUserData = await axios.get(
-      `https://chainguru-db.herokuapp.com/users/${payload.address}`
+    try {
+      let _userExists = await axios.get(
+        `https://chainguru-db.herokuapp.com/users/${payload.address}`
+      );
+      if (await _userExists) {
+        emitter.emit(DB_USERDATA_RETURNED, _userExists.data);
+      }
+    } catch (err) {
+      try {
+        let _newUser = await axios.put(
+          `https://chainguru-db.herokuapp.com/users/${payload.address}`
+        );
+        if (await _newUser) {
+          dispatcher.dispatch({
+            type: DB_GET_USERDATA,
+            address: payload.address,
+          });
+        }
+      } catch (err) {
+        console.log(err.message);
+      }
+    }
+  };
+
+  db_addFavorite = async (payload) => {
+    const account = store.getStore("account");
+
+    let _dbAddFav = await axios.put(
+      `https://chainguru-db.herokuapp.com/favorites/${account.address}`,
+      { tokenID: payload.content }
     );
-    console.log(await _dbUserData.data);
+
+    emitter.emit(DB_ADD_FAVORITE_RETURNED, await _dbAddFav.data);
   };
 }
 
