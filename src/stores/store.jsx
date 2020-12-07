@@ -64,6 +64,8 @@ import {
   DB_USERDATA_RETURNED,
   DB_ADD_FAVORITE,
   DB_ADD_FAVORITE_RETURNED,
+  DB_DEL_FAVORITE,
+  DB_DEL_FAVORITE_RETURNED,
 } from "../constants";
 
 import {
@@ -218,6 +220,9 @@ class Store {
             break;
           case DB_ADD_FAVORITE:
             this.db_addFavorite(payload);
+            break;
+          case DB_DEL_FAVORITE:
+            this.db_delFavorite(payload);
             break;
           case COINGECKO_POPULATE_FAVLIST:
             this.geckoPopulateFavList(payload);
@@ -1184,8 +1189,17 @@ class Store {
       `https://chainguru-db.herokuapp.com/favorites/${account.address}`,
       { tokenID: payload.content }
     );
-
     emitter.emit(DB_ADD_FAVORITE_RETURNED, await _dbAddFav.data);
+  };
+
+  db_delFavorite = async (payload) => {
+    const account = store.getStore("account");
+
+    let _dbDelFav = await axios.delete(
+      `https://chainguru-db.herokuapp.com/favorites/${account.address}`,
+      { data: { tokenID: payload.content } }
+    );
+    emitter.emit(DB_DEL_FAVORITE_RETURNED, await _dbDelFav.data);
   };
 }
 

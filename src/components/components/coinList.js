@@ -33,6 +33,8 @@ import {
   COIN_DATA_RETURNED,
   DB_USERDATA_RETURNED,
   DB_ADD_FAVORITE_RETURNED,
+  DB_DEL_FAVORITE,
+  DB_DEL_FAVORITE_RETURNED,
   COINGECKO_POPULATE_FAVLIST,
   COINGECKO_POPULATE_FAVLIST_RETURNED,
 } from "../../constants";
@@ -61,6 +63,7 @@ class CoinList extends Component {
     emitter.on(COIN_DATA_RETURNED, this.coinDataReturned);
     emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
     emitter.on(DB_ADD_FAVORITE_RETURNED, this.dbAddFavoriteReturned);
+    emitter.on(DB_DEL_FAVORITE_RETURNED, this.dbDelFavoriteReturned);
     emitter.on(
       COINGECKO_POPULATE_FAVLIST_RETURNED,
       this.geckoFavListDataReturned
@@ -75,6 +78,11 @@ class CoinList extends Component {
     );
     emitter.removeListener(DB_USERDATA_RETURNED, this.dbUserDataReturned);
     emitter.removeListener(
+      DB_DEL_FAVORITE_RETURNED,
+      this.dbDelFavoriteReturned
+    );
+
+    emitter.removeListener(
       COINGECKO_POPULATE_FAVLIST_RETURNED,
       this.geckoFavListDataReturned
     );
@@ -85,19 +93,33 @@ class CoinList extends Component {
   };
 
   dbUserDataReturned = (data) => {
-    dispatcher.dispatch({
-      type: COINGECKO_POPULATE_FAVLIST,
-      tokenIDs: data.favorites.tokenIDs,
-    });
+    if (data.favorites.tokenIDs.length > 0) {
+      dispatcher.dispatch({
+        type: COINGECKO_POPULATE_FAVLIST,
+        tokenIDs: data.favorites.tokenIDs,
+      });
+    }
   };
 
   dbAddFavoriteReturned = (data) => {
-    console.log(data);
+    dispatcher.dispatch({
+      type: COINGECKO_POPULATE_FAVLIST,
+      tokenIDs: data.tokenIDs,
+    });
+  };
+
+  dbDelFavoriteReturned = (data) => {
+    console.log(data.tokenIDs);
+    dispatcher.dispatch({
+      type: COINGECKO_POPULATE_FAVLIST,
+      tokenIDs: data.tokenIDs,
+    });
   };
 
   createData = (
     image,
     name,
+    id,
     symbol,
     current_price,
     price_change_percentage_1h_in_currency,
@@ -112,6 +134,7 @@ class CoinList extends Component {
     return {
       image,
       name,
+      id,
       symbol,
       current_price,
       price_change_percentage_1h_in_currency,
@@ -131,20 +154,56 @@ class CoinList extends Component {
       let rowData = this.createData(
         item.image,
         item.name,
+        item.id,
         item.symbol,
-        item.current_price,
+        this.formatMoney(item.current_price, 2),
         parseFloat(item.price_change_percentage_1h_in_currency).toFixed(2),
         parseFloat(item.price_change_percentage_24h).toFixed(2),
         parseFloat(item.price_change_percentage_7d_in_currency).toFixed(2),
         parseFloat(item.price_change_percentage_30d_in_currency).toFixed(2),
         parseFloat(item.price_change_percentage_1y_in_currency).toFixed(2),
-        parseFloat(item.market_cap),
+        this.formatMoney(item.market_cap, 0),
         parseFloat(item.market_cap_change_percentage_24h).toFixed(2),
         item.sparkline_in_7d
       );
       rows.push(rowData);
     });
     this.setState({ rowData: rows });
+  };
+
+  deleteFav = (tokenID) => {
+    dispatcher.dispatch({
+      type: DB_DEL_FAVORITE,
+      content: tokenID,
+    });
+  };
+
+  formatMoney = (amount, decimalCount = 2, decimal = ".", thousands = ",") => {
+    try {
+      decimalCount = Math.abs(decimalCount);
+      decimalCount = isNaN(decimalCount) ? 2 : decimalCount;
+
+      const negativeSign = amount < 0 ? "-" : "";
+
+      let i = parseInt(
+        (amount = Math.abs(Number(amount) || 0).toFixed(decimalCount))
+      ).toString();
+      let j = i.length > 3 ? i.length % 3 : 0;
+
+      return (
+        negativeSign +
+        (j ? i.substr(0, j) + thousands : "") +
+        i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousands) +
+        (decimalCount
+          ? decimal +
+            Math.abs(amount - i)
+              .toFixed(decimalCount)
+              .slice(2)
+          : "")
+      );
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   render() {
@@ -256,7 +315,10 @@ class CoinList extends Component {
                   </Typography>
                 </TableCell>
                 <TableCell padding="none">
-                  <IconButton aria-label="delete">
+                  <IconButton
+                    aria-label="delete"
+                    onClick={(e) => this.deleteFav(row.id, e)}
+                  >
                     <DeleteIcon />
                   </IconButton>
                 </TableCell>
