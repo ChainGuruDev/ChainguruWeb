@@ -30,6 +30,9 @@ class CompareChart extends Component {
         dataLabels: {
           enabled: false,
         },
+        legend: {
+          position: "top",
+        },
         stroke: {
           width: 2,
           curve: "smooth",
@@ -159,6 +162,9 @@ class CompareChart extends Component {
           },
         ],
         options: {
+          legend: {
+            position: "top",
+          },
           xaxis: {
             type: "datetime",
             tickAmount: 5,
@@ -233,6 +239,9 @@ class CompareChart extends Component {
           },
         ],
         options: {
+          legend: {
+            position: "top",
+          },
           chart: {
             width: "100%",
             height: "100%",

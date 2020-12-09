@@ -4,6 +4,7 @@ import clsx from "clsx";
 import { withRouter } from "react-router-dom";
 import { lighten, withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
+import SparklineChart from "./SparklineChart.js";
 
 import {
   Table,
@@ -164,7 +165,7 @@ class CoinList extends Component {
         parseFloat(item.price_change_percentage_1y_in_currency).toFixed(2),
         this.formatMoney(item.market_cap, 0),
         parseFloat(item.market_cap_change_percentage_24h).toFixed(2),
-        item.sparkline_in_7d
+        item.sparkline_in_7d.price
       );
       rows.push(rowData);
     });
@@ -231,6 +232,7 @@ class CoinList extends Component {
               <TableCell align="right">Price 1y</TableCell>
               <TableCell align="right">Marketcap</TableCell>
               <TableCell align="right">Marketcap 24hs</TableCell>
+              <TableCell align="center">Chart (7d)</TableCell>
               <TableCell padding="none"></TableCell>
             </TableRow>
           </TableHead>
@@ -313,6 +315,9 @@ class CoinList extends Component {
                   >
                     {row.market_cap_change_percentage_24h}%
                   </Typography>
+                </TableCell>
+                <TableCell align="right">
+                  <SparklineChart id={row.symbol} data={row.sparkline_in_7d} />
                 </TableCell>
                 <TableCell padding="none">
                   <IconButton

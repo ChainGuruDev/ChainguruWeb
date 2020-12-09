@@ -73,11 +73,15 @@ const styles = (theme) => ({
   },
 });
 
+const validChainId = 4; //ONLY VALID FOR RINKEBY FOR NOW
+
 class Market extends Component {
   constructor() {
     super();
 
     const account = store.getStore("account");
+    const web3 = store.getStore("web3context");
+
     this.state = {
       editionsDetails: [],
       account: account,
@@ -85,9 +89,9 @@ class Market extends Component {
       tJSON: {},
       curEdit: "",
       maxEditSize: "",
+      web3context: web3,
     };
-
-    if (account && account.address) {
+    if (account && account.address && web3.chainId === validChainId) {
       dispatcher.dispatch({ type: GET_CURRENTEDITION, content: {} });
       dispatcher.dispatch({ type: GET_MAX_EDITIONSIZE, content: {} });
       dispatcher.dispatch({ type: GET_AVAILABLE_ITEMS, content: {} });
@@ -105,6 +109,7 @@ class Market extends Component {
   }
 
   componentDidMount() {
+    console.log(this.state.web3context);
     emitter.on(ERROR, this.errorReturned);
     emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
@@ -167,32 +172,47 @@ class Market extends Component {
     const { t } = this.props;
 
     this.setState({ account: store.getStore("account") });
-    dispatcher.dispatch({ type: GET_MAX_EDITIONSIZE, content: {} });
-    dispatcher.dispatch({ type: GET_CURRENTEDITION, content: {} });
-    dispatcher.dispatch({ type: GET_AVAILABLE_ITEMS, content: {} });
-    dispatcher.dispatch({ type: GET_ITEMS_CIRCULATING, content: {} });
-    dispatcher.dispatch({ type: GET_SALES_VALUE, content: {} });
-    dispatcher.dispatch({
-      type: GET_ACCOUNT_ROLES,
-      content: {},
-    });
-    dispatcher.dispatch({
-      type: IS_ALLOWED_ARTIST,
-      content: {},
-    });
+    this.setState({ web3context: store.getStore("web3context") });
+    let web3 = store.getStore("web3context");
+    if (web3.chainId === validChainId) {
+      dispatcher.dispatch({ type: GET_MAX_EDITIONSIZE, content: {} });
+      dispatcher.dispatch({ type: GET_CURRENTEDITION, content: {} });
+      dispatcher.dispatch({ type: GET_AVAILABLE_ITEMS, content: {} });
+      dispatcher.dispatch({ type: GET_ITEMS_CIRCULATING, content: {} });
+      dispatcher.dispatch({ type: GET_SALES_VALUE, content: {} });
+      dispatcher.dispatch({
+        type: GET_ACCOUNT_ROLES,
+        content: {},
+      });
+      dispatcher.dispatch({
+        type: IS_ALLOWED_ARTIST,
+        content: {},
+      });
 
-    const that = this;
-    setTimeout(() => {
-      const snackbarObj = {
-        snackbarMessage: t("Unlock.WalletConnected"),
-        snackbarType: "Info",
-      };
-      that.setState(snackbarObj);
-    });
+      const that = this;
+      setTimeout(() => {
+        const snackbarObj = {
+          snackbarMessage: t("Unlock.WalletConnected"),
+          snackbarType: "Info",
+        };
+        that.setState(snackbarObj);
+      });
+    } else {
+      const that = this;
+      setTimeout(() => {
+        const snackbarObj = {
+          snackbarMessage: "PLEASE SWITCH TO RINKEBY TESTNET AND RECONNECT",
+          snackbarType: "Info",
+        };
+        that.setState(snackbarObj);
+      });
+    }
   };
 
   connectionDisconnected = () => {
     this.setState({ account: store.getStore("account") });
+    this.setState({ web3context: store.getStore("web3context") });
+
     dispatcher.dispatch({
       type: GET_ACCOUNT_ROLES,
       content: {},
@@ -247,20 +267,27 @@ class Market extends Component {
     return (
       <div className={classes.background}>
         <div className={classes.root}>
-          {this.state.account.address && (
-            <Grid className={classes.gridList} container>
-              <GridList
-                xs={9}
-                cellHeight={200}
-                className={classes.gridContainer}
-              >
-                {this.renderEditions()}
-              </GridList>
-              <Grid item xs={3}>
-                <MarketBar edition={this.state.curEdit} />
+          {this.state.account.address &&
+            this.state.web3context.chainId === validChainId && (
+              <Grid className={classes.gridList} container>
+                <GridList
+                  xs={9}
+                  cellHeight={200}
+                  className={classes.gridContainer}
+                >
+                  {this.renderEditions()}
+                </GridList>
+                <Grid item xs={3}>
+                  <MarketBar edition={this.state.curEdit} />
+                </Grid>
               </Grid>
-            </Grid>
-          )}
+            )}
+          {this.state.account.address &&
+            this.state.web3context.chainId != validChainId && (
+              <div className={classes.connect}>
+                PLEASE SWITCH TO RINKEBY TESTNET AND RECONNECT
+              </div>
+            )}
           {!this.state.account.address && (
             <div className={classes.connect}>{t("Wallet.PleaseConnect")}</div>
           )}

@@ -33,15 +33,21 @@ class PriceChart extends Component {
       options: {
         stroke: {
           width: 2,
-          curve: "smooth",
+          curve: "straight",
         },
+
         colors: color,
         chart: {
           id: "",
         },
         xaxis: {
           type: "datetime",
-          categories: [],
+          tickAmount: 1,
+        },
+        yaxis: {
+          type: "numeric",
+          decimalsInFloat: 4,
+          forceNiceScale: true,
         },
       },
       series: [
@@ -81,12 +87,12 @@ class PriceChart extends Component {
 
   coinPriceChartReturned = (data) => {
     if (data[1] === this.props.id) {
-      let roundedPrices = data[0].prices.map(function (each_element) {
-        return [each_element[0], Number(each_element[1]).toFixed(3)];
-      });
+      // let roundedPrices = data[0].prices.map(function (each_element) {
+      //   return [each_element[0], Number(each_element[1]).toFixed(3)];
+      // });
 
       this.setState({
-        series: [{ name: this.props.id, data: roundedPrices }],
+        series: [{ name: this.props.id, data: data[0].prices }],
       });
     }
   };
