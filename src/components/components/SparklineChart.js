@@ -20,7 +20,7 @@ class SparklineChart extends Component {
       options: {
         chart: {
           type: "line",
-          width: 100,
+          width: 150,
           height: 35,
           sparkline: {
             enabled: true,
@@ -74,7 +74,7 @@ class SparklineChart extends Component {
           <div className="chart">
             <Chart
               options={this.state.options}
-              width="100"
+              width="150"
               height="35"
               series={this.state.series}
             />

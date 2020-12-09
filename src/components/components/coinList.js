@@ -233,7 +233,7 @@ class CoinList extends Component {
               <TableCell align="right">Marketcap</TableCell>
               <TableCell align="right">Marketcap 24hs</TableCell>
               <TableCell align="center">Chart (7d)</TableCell>
-              <TableCell padding="none"></TableCell>
+              <TableCell></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -246,8 +246,12 @@ class CoinList extends Component {
                     src={row.image}
                   />
                 </TableCell>
-                <TableCell align="left">{row.symbol}</TableCell>
-                <TableCell align="left">{row.name}</TableCell>
+                <TableCell padding="none" align="left">
+                  {row.symbol}
+                </TableCell>
+                <TableCell padding="none" align="left">
+                  {row.name}
+                </TableCell>
                 <TableCell align="right">{row.current_price}</TableCell>
                 <TableCell align="right">
                   <Typography
@@ -316,7 +320,7 @@ class CoinList extends Component {
                     {row.market_cap_change_percentage_24h}%
                   </Typography>
                 </TableCell>
-                <TableCell align="right">
+                <TableCell align="center">
                   <SparklineChart id={row.symbol} data={row.sparkline_in_7d} />
                 </TableCell>
                 <TableCell padding="none">
