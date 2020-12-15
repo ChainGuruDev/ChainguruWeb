@@ -66,6 +66,11 @@ import {
   DB_ADD_FAVORITE_RETURNED,
   DB_DEL_FAVORITE,
   DB_DEL_FAVORITE_RETURNED,
+  DB_GET_BLUECHIPS,
+  DB_GET_BLUECHIPS_RETURNED,
+  COINGECKO_ALLTIME_CHART_RETURNED,
+  COINGECKO_GET_ALLTIME_CHART,
+  UNISWAP_TRADE,
 } from "../constants";
 
 import {
@@ -224,10 +229,20 @@ class Store {
           case DB_DEL_FAVORITE:
             this.db_delFavorite(payload);
             break;
+          case DB_GET_BLUECHIPS:
+            this.db_getBluechips();
+            break;
           case COINGECKO_POPULATE_FAVLIST:
             this.geckoPopulateFavList(payload);
             break;
+          case COINGECKO_GET_ALLTIME_CHART:
+            this.coingeckoGetAllTimeChart(payload);
+            break;
+          case UNISWAP_TRADE:
+            this.uniswapTrade(payload);
+            break;
           default: {
+            break;
           }
         }
       }.bind(this)
@@ -449,8 +464,6 @@ class Store {
       }
     } else {
     }
-    /*
-     */
     let roles = [isAdmin, isMinter, isLF];
     return emitter.emit(ACCOUNT_ROLES_RETURNED, roles);
   };
@@ -1200,6 +1213,57 @@ class Store {
       { data: { tokenID: payload.content } }
     );
     emitter.emit(DB_DEL_FAVORITE_RETURNED, await _dbDelFav.data);
+  };
+
+  db_getBluechips = async () => {
+    try {
+      let data = await CoinGeckoClient.coins.markets({
+        ids:
+          "bitcoin, ethereum, polkadot, kusama, energy-web-token, ocean-protocol, robonomics-network, unibright, iota, cosmos, neo, darwinia-network-native-token, maker, ontology, waves, republic-protocol, enjincoin, iexec-rlc, aave, chainlink, sora",
+        vs_currency: "usd",
+        price_change_percentage: "1y",
+      });
+      emitter.emit(COINGECKO_POPULATE_FAVLIST_RETURNED, await data.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  coingeckoGetAllTimeChart = async (payload) => {
+    emitter.emit(COINGECKO_ALLTIME_CHART_RETURNED, payload.payload);
+    let chartData = [];
+    try {
+      chartData = await CoinGeckoClient.coins.fetchMarketChart(
+        payload.payload,
+        {
+          days: "max",
+        }
+      );
+      emitter.emit(COINGECKO_ALLTIME_CHART_RETURNED, [
+        await chartData.data,
+        payload.payload,
+      ]);
+    } catch (err) {
+      console.log(err.message);
+    }
+  };
+
+  uniswapTrade = async (payload) => {
+    let contractAddress = "";
+    try {
+      let data = await CoinGeckoClient.coins.fetch(payload.id, {});
+      if (data.data.contract_address) {
+        console.log(data.data.contract_address);
+        window.open(
+          `https://app.uniswap.org/#/swap?outputCurrency=${data.data.contract_address}`,
+          "_blank"
+        );
+      } else {
+        return emitter.emit(ERROR, "Token not listed on Uniswap");
+      }
+    } catch (err) {
+      console.log(err);
+    }
   };
 }
 
