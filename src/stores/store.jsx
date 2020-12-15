@@ -1253,7 +1253,6 @@ class Store {
     try {
       let data = await CoinGeckoClient.coins.fetch(payload.id, {});
       if (data.data.contract_address) {
-        console.log(data.data.contract_address);
         window.open(
           `https://app.uniswap.org/#/swap?outputCurrency=${data.data.contract_address}`,
           "_blank"

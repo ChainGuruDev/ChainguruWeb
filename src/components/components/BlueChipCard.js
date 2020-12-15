@@ -79,6 +79,10 @@ class BlueChipCard extends Component {
     if (data[1] === this.props.data.id) {
       this.setState({ chartData: data[0].prices });
       this.setState({ loadingChart: false });
+      emitter.removeListener(
+        COINGECKO_ALLTIME_CHART_RETURNED,
+        this.geckoAlltimeChart
+      );
     }
   };
 

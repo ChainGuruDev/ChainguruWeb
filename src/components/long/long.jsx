@@ -74,6 +74,7 @@ class Long extends Component {
   }
 
   componentDidMount() {
+    emitter.setMaxListeners(this.state.chipData.length);
     emitter.on(ERROR, this.errorReturned);
     emitter.on(COINGECKO_POPULATE_FAVLIST_RETURNED, this.geckoBluechipData);
     dispatcher.dispatch({
