@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import { withRouter } from "react-router-dom";
-import { lighten, withStyles } from "@material-ui/core/styles";
+import { lighten, withStyles, makeStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
 import SparklineChart from "./SparklineChart.js";
 
@@ -24,6 +24,8 @@ import {
   Switch,
   IconButton,
 } from "@material-ui/core";
+
+import { DataGrid } from "@material-ui/data-grid";
 
 import ArrowDropUpRoundedIcon from "@material-ui/icons/ArrowDropUpRounded";
 import ArrowDropDownRoundedIcon from "@material-ui/icons/ArrowDropDownRounded";
@@ -50,6 +52,9 @@ const styles = (theme) => ({
   },
   tokenLogo: {
     maxHeight: 30,
+  },
+  list: {
+    height: 400,
   },
 });
 
@@ -150,10 +155,11 @@ class FavoriteList extends Component {
   };
 
   geckoFavListDataReturned = (data) => {
+    const { classes } = this.props;
     let rows = [];
     data.forEach((item, i) => {
       let rowData = this.createData(
-        item.image,
+        `<img className={classes.tokenLogo} alt="coin-icon" src=${item.image} />`,
         item.name,
         item.id,
         item.symbol,
@@ -211,131 +217,81 @@ class FavoriteList extends Component {
     const { classes, t } = this.props;
     const { coinData, loading, rowData } = this.state;
 
+    const columns = [
+      { field: "image", headerName: " " },
+      { field: "name", headerName: "Name" },
+      {
+        field: "symbol",
+        headerName: " ",
+        type: "number",
+      },
+      {
+        field: "current_price",
+        headerName: "Price",
+        type: "number",
+      },
+      {
+        field: "price_change_percentage_1h_in_currency",
+        headerName: "Price 1h",
+        type: "number",
+      },
+      {
+        field: "price_change_percentage_24h",
+        headerName: "Price 24h",
+        type: "number",
+      },
+      {
+        field: "price_change_percentage_7d_in_currency",
+        headerName: "Price 7d",
+        type: "number",
+      },
+      {
+        field: "price_change_percentage_30d_in_currency",
+        headerName: "Price 30d",
+        type: "number",
+      },
+      {
+        field: "price_change_percentage_1y_in_currency",
+        headerName: "Price 1y",
+        type: "number",
+      },
+      {
+        field: "market_cap",
+        headerName: "Marketcap",
+        type: "number",
+      },
+      {
+        field: "market_cap_change_percentage_24h",
+        headerName: "Marketcap 24h",
+        type: "number",
+      },
+      {
+        field: "sparkline_in_7d",
+        headerName: "Chart (7d)",
+      },
+    ];
+
+    const rows = [
+      { id: 1, lastName: "Snow", firstName: "Jon", age: 35 },
+      { id: 2, lastName: "Lannister", firstName: "Cersei", age: 42 },
+      { id: 3, lastName: "Lannister", firstName: "Jaime", age: 45 },
+      { id: 4, lastName: "Stark", firstName: "Arya", age: 16 },
+      { id: 5, lastName: "Targaryen", firstName: "Daenerys", age: null },
+      { id: 6, lastName: "Melisandre", firstName: null, age: 150 },
+      { id: 7, lastName: "Clifford", firstName: "Ferrara", age: 44 },
+      { id: 8, lastName: "Frances", firstName: "Rossini", age: 36 },
+      { id: 9, lastName: "Roxie", firstName: "Harvey", age: 65 },
+    ];
+
+    console.log(rows);
     return (
-      <TableContainer
-        className={classes.root}
-        component={Paper}
-        elevation={2}
-        size="small"
-      >
-        <Table className={classes.table} aria-label="favoritesList">
-          <TableHead>
-            <TableRow>
-              <TableCell></TableCell>
-              <TableCell></TableCell>
-              <TableCell align="left">Name</TableCell>
-              <TableCell align="right">Current Price</TableCell>
-              <TableCell align="right">Price 1h</TableCell>
-              <TableCell align="right">Price 24hs</TableCell>
-              <TableCell align="right">Price 7d</TableCell>
-              <TableCell align="right">Price 30d</TableCell>
-              <TableCell align="right">Price 1y</TableCell>
-              <TableCell align="right">Marketcap</TableCell>
-              <TableCell align="right">Marketcap 24hs</TableCell>
-              <TableCell align="center">Chart (7d)</TableCell>
-              <TableCell></TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {rowData.map((row) => (
-              <TableRow key={row.name}>
-                <TableCell component="th" scope="row">
-                  <img
-                    className={classes.tokenLogo}
-                    alt="coin-icon"
-                    src={row.image}
-                  />
-                </TableCell>
-                <TableCell padding="none" align="left">
-                  {row.symbol}
-                </TableCell>
-                <TableCell padding="none" align="left">
-                  {row.name}
-                </TableCell>
-                <TableCell align="right">{row.current_price}</TableCell>
-                <TableCell align="right">
-                  <Typography
-                    color={
-                      row.price_change_percentage_1h_in_currency > 0
-                        ? "primary"
-                        : "secondary"
-                    }
-                  >
-                    {row.price_change_percentage_1h_in_currency}%
-                  </Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Typography
-                    color={
-                      row.price_change_percentage_24h > 0
-                        ? "primary"
-                        : "secondary"
-                    }
-                  >
-                    {row.price_change_percentage_24h}%
-                  </Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Typography
-                    color={
-                      row.price_change_percentage_7d_in_currency > 0
-                        ? "primary"
-                        : "secondary"
-                    }
-                  >
-                    {row.price_change_percentage_7d_in_currency}%
-                  </Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Typography
-                    color={
-                      row.price_change_percentage_30d_in_currency > 0
-                        ? "primary"
-                        : "secondary"
-                    }
-                  >
-                    {row.price_change_percentage_30d_in_currency}%
-                  </Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Typography
-                    color={
-                      row.price_change_percentage_1y_in_currency > 0
-                        ? "primary"
-                        : "secondary"
-                    }
-                  >
-                    {row.price_change_percentage_1y_in_currency}%
-                  </Typography>
-                </TableCell>
-                <TableCell align="right">{row.market_cap}</TableCell>
-                <TableCell align="right">
-                  <Typography
-                    color={
-                      row.market_cap_change_percentage_24h > 0
-                        ? "primary"
-                        : "secondary"
-                    }
-                  >
-                    {row.market_cap_change_percentage_24h}%
-                  </Typography>
-                </TableCell>
-                <TableCell align="center">
-                  <SparklineChart id={row.symbol} data={row.sparkline_in_7d} />
-                </TableCell>
-                <TableCell padding="none">
-                  <IconButton
-                    aria-label="delete"
-                    onClick={(e) => this.deleteFav(row.id, e)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <div style={{ height: 600, width: "100%" }}>
+        <div style={{ display: "flex", height: "100%" }}>
+          <div style={{ flexGrow: 1 }}>
+            <DataGrid rows={rowData} columns={columns} checkboxSelection />
+          </div>
+        </div>
+      </div>
     );
   }
 }

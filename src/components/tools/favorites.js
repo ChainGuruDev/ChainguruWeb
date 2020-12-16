@@ -3,7 +3,7 @@ import { withRouter, Link } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
-import CoinList from "../components/coinList.js";
+import FavoriteList from "../components/favoriteList.js";
 
 //IMPORT MaterialUI
 import {
@@ -216,7 +216,7 @@ class Favorites extends Component {
                 </Grid>
               </Grid>
               <Grid item className={classes.favList} xs={12}>
-                <CoinList />
+                <FavoriteList />
               </Grid>
             </Grid>
           </Card>
