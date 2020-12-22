@@ -88,7 +88,7 @@ class CoinSearchBar extends Component {
           this.openSearch();
         }}
         getOptionSelected={(option, value) => option.name === value.name}
-        getOptionLabel={(option) => option.name}
+        getOptionLabel={(option) => `${option.name} (${option.symbol})`}
         onChange={(event, newValue) => {
           this.coinSelect(newValue, this.props.id);
         }}

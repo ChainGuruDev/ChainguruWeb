@@ -122,6 +122,7 @@ class Favorites extends Component {
   };
 
   coinlistReturned = (payload) => {
+    console.log(payload);
     this.setState({ loading: false, items: payload });
   };
 
@@ -175,7 +176,9 @@ class Favorites extends Component {
                     getOptionSelected={(option, value) =>
                       option.name === value.name
                     }
-                    getOptionLabel={(option) => option.name}
+                    getOptionLabel={(option) =>
+                      `${option.name} (${option.symbol})`
+                    }
                     onChange={(event, newValue) => {
                       this.coinSelect(newValue, this.props.id);
                     }}

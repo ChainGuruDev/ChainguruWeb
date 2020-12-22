@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
-import { withRouter } from "react-router-dom";
+import { withRouter, Link } from "react-router-dom";
 import { lighten, withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
 import SparklineChart from "./SparklineChart.js";
@@ -283,11 +283,13 @@ class FavoriteList extends Component {
       return formatedRows.map((row) => (
         <TableRow key={row.name}>
           <TableCell component="th" scope="row">
-            <img
-              className={classes.tokenLogo}
-              alt="coin-icon"
-              src={row.image}
-            />
+            <Link onClick={() => this.detective(row.id)}>
+              <img
+                className={classes.tokenLogo}
+                alt="coin-icon"
+                src={row.image}
+              />
+            </Link>
           </TableCell>
           <TableCell padding="none" align="left">
             {row.symbol}
@@ -389,6 +391,15 @@ class FavoriteList extends Component {
       this.setState({ sortBy: _sortBy, sortOrder: "dsc" });
     }
   }
+
+  nav = (screen) => {
+    console.log(screen);
+    this.props.history.push(screen);
+  };
+
+  detective = (id) => {
+    this.nav("/short/detective/" + id);
+  };
 
   render() {
     const { classes, t } = this.props;

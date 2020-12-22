@@ -1075,6 +1075,7 @@ class Store {
   getCoinList = async () => {
     if (this.store.coinList.length > 0) {
       console.log("Cached coinlist");
+
       emitter.emit(COINLIST_RETURNED, this.store.coinList);
     } else {
       let data = await CoinGeckoClient.coins.list();
@@ -1082,6 +1083,7 @@ class Store {
       this.store.coinList = data.data;
       emitter.emit(COINLIST_RETURNED, this.store.coinList);
     }
+    console.log(this.store.coinList);
     //let data = await CoinGeckoClient.coins.list();
   };
 
@@ -1174,6 +1176,7 @@ class Store {
     try {
       let _userExists = await axios.get(
         `https://chainguru-db.herokuapp.com/users/${payload.address}`
+        // `https://localhost:3001/users/${payload.address}`
       );
       if (await _userExists) {
         emitter.emit(DB_USERDATA_RETURNED, _userExists.data);
@@ -1182,6 +1185,7 @@ class Store {
       try {
         let _newUser = await axios.put(
           `https://chainguru-db.herokuapp.com/users/${payload.address}`
+          // `https://localhost:3001/users/${payload.address}`
         );
         if (await _newUser) {
           dispatcher.dispatch({

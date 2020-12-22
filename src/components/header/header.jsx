@@ -236,7 +236,6 @@ class Header extends Component {
 
   renderLink = (screen) => {
     const { classes, t } = this.props;
-
     return (
       <div
         className={

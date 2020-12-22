@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { withRouter } from "react-router-dom";
+import { withRouter, Link } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { Card, Typography, Grid, Divider, Chip } from "@material-ui/core";
 import { withTranslation } from "react-i18next";
@@ -58,6 +58,15 @@ class CoinCompare extends Component {
     }
   };
 
+  nav = (screen) => {
+    console.log(screen);
+    this.props.history.push(screen);
+  };
+
+  detective = (id) => {
+    this.nav("/short/detective/" + id);
+  };
+
   render() {
     const { classes, t } = this.props;
     const { coinData, loading } = this.state;
@@ -87,13 +96,15 @@ class CoinCompare extends Component {
               direction="row"
             >
               <Grid item xs={1}>
-                <div className={classes.image}>
-                  <img
-                    className={classes.img}
-                    alt="coin-icon"
-                    src={coinData.image.small}
-                  />
-                </div>
+                <Link onClick={() => this.detective(coinData.id)}>
+                  <div className={classes.image}>
+                    <img
+                      className={classes.img}
+                      alt="coin-icon"
+                      src={coinData.image.small}
+                    />
+                  </div>
+                </Link>
               </Grid>
               <Divider flexItem orientation="vertical" />
               <Grid item xs={4}>

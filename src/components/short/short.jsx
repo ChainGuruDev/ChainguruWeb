@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, useEffect } from "react";
 import PropTypes from "prop-types";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
@@ -8,7 +8,7 @@ import { withTranslation } from "react-i18next";
 import FlashOnIcon from "@material-ui/icons/FlashOn";
 import CompareArrowsIcon from "@material-ui/icons/CompareArrows";
 import SearchIcon from "@material-ui/icons/Search";
-
+import CryptoDetective from "../tools/cryptoDetective";
 import CryptoCompare from "../tools/cryptoCompare";
 import Favorites from "../tools/favorites";
 
@@ -111,8 +111,8 @@ function a11yProps(index) {
 }
 
 class Short extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
 
     const account = store.getStore("account");
     this.state = {
@@ -122,10 +122,32 @@ class Short extends Component {
       bigChart: false,
       coinDataA: [],
       coinDataB: [],
-      valueTab: 0,
+      valueTab:
+        this.props.match.params.tool === "detective" ||
+        this.props.tool === "detective"
+          ? 2
+          : 0,
       selectA: false,
       selectB: false,
+      coinID: this.props.match.params.coinID,
     };
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.match.params.coinID !== this.props.match.params.coinID) {
+      if (this.props.match.params.tool === "detective") {
+        this.setState({
+          valueTab: 2,
+          coinID: this.props.match.params.coinID,
+        });
+      }
+      if (this.props.tool === "detective") {
+        this.setState({
+          valueTab: 2,
+          coinID: this.props.match.params.coinID,
+        });
+      }
+    }
   }
 
   componentDidMount() {
@@ -164,7 +186,7 @@ class Short extends Component {
 
   render() {
     const { classes, t, location } = this.props;
-    const { bigChart, valueTab } = this.state;
+    const { bigChart, valueTab, coinID } = this.state;
     const handleChangeTabs = (event, newValueTab) => {
       this.setState({ valueTab: newValueTab });
     };
@@ -201,7 +223,8 @@ class Short extends Component {
           <Favorites />
         </TabPanel>
         <TabPanel value={valueTab} index={2}>
-          Crypto Detective
+          {coinID && <CryptoDetective coinID={coinID} />}
+          {!coinID && <CryptoDetective />}
         </TabPanel>
       </div>
     );

@@ -32,6 +32,8 @@ class App extends Component {
   };
 
   setHeaderValue = (newValue) => {
+    console.log(newValue);
+
     this.setState({ headerValue: newValue });
   };
 
@@ -60,7 +62,6 @@ class App extends Component {
 
   render() {
     const { headerValue } = this.state;
-
     return (
       <MuiThemeProvider theme={createMuiTheme(interestTheme)}>
         <CssBaseline />
@@ -75,6 +76,22 @@ class App extends Component {
         >
           <BrowserRouter>
             <Switch>
+              <Route path="/coins/:coinID">
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                />
+                <Short tool="detective" />
+              </Route>
+
+              <Route path="/short/:tool/:coinID">
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                />
+                <Short />
+              </Route>
+
               <Route path="/short">
                 <Header
                   setHeaderValue={this.setHeaderValue}
@@ -139,7 +156,6 @@ class App extends Component {
                 />
                 <Show />
               </Route>
-
               <Route path="/">
                 <Home />
               </Route>
