@@ -1,7 +1,13 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import { Typography, Select, MenuItem, FormControl } from "@material-ui/core";
+import {
+  Typography,
+  Select,
+  MenuItem,
+  FormControl,
+  Paper,
+} from "@material-ui/core";
 import { Link } from "react-router-dom";
 import { withTranslation } from "react-i18next";
 import i18n from "../../i18n";
@@ -12,11 +18,13 @@ const store = Store.store;
 
 const styles = (theme) => ({
   footer: {
+    borderTop: "3px solid " + colors.cgOrange,
     padding: "24px",
     display: "flex",
     flexWrap: "wrap",
     justifyContent: "flex-end",
     width: "100%",
+    borderRadius: 0,
     alignItems: "center",
     [theme.breakpoints.up("sm")]: {
       flexDirection: "row",
@@ -74,7 +82,7 @@ class Footer extends Component {
     }
 
     return (
-      <div className={classes.footer}>
+      <Paper className={classes.footer}>
         <div className={classes.footerLinks}>
           <Link to={"/"} className={classes.link}>
             <Typography className={classes.footerText} variant={"h6"}>
@@ -102,7 +110,7 @@ class Footer extends Component {
             </Select>
           </FormControl>
         </div>
-      </div>
+      </Paper>
     );
   }
 

@@ -176,7 +176,7 @@ class MarketBar extends Component {
           </Typography>
           <Divider className={classes.divider} />
           <Button
-            variant="outlined"
+            variant="contained"
             onClick={this.overlayClicked}
             className={classes.button}
             color="primary"
@@ -204,7 +204,7 @@ class MarketBar extends Component {
               display: !this.state.isAdmin ? "none" : "block",
             }}
             variant="contained"
-            color="primary"
+            color="secondary"
             className={classes.button}
             onClick={() => {
               this.nav("/edition/new");
@@ -217,7 +217,7 @@ class MarketBar extends Component {
               display: !this.state.isAdmin ? "none" : "block",
             }}
             variant="contained"
-            color="primary"
+            color="secondary"
             className={classes.button}
             onClick={() => {
               this.nav("/market/adminPanel");

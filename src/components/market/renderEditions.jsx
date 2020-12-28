@@ -183,7 +183,7 @@ class RenderEditions extends Component {
               this.props.details._circulatingSupply !=
               0 && (
               <Button
-                variant="outlined"
+                variant="contained"
                 disabled={loading}
                 onClick={this.buyEdition}
                 size="small"
@@ -203,7 +203,7 @@ class RenderEditions extends Component {
               this.props.details._circulatingSupply ===
               0 && (
               <Button
-                variant="outlined"
+                variant="contained"
                 disabled={loading}
                 size="small"
                 color="primary"
@@ -211,7 +211,7 @@ class RenderEditions extends Component {
                 Sold Out
               </Button>
             )}
-            <Button variant="outlined" disabled size="small" color="secondary">
+            <Button variant="contained" disabled size="small" color="secondary">
               {this.props.details._maxAvailable -
                 this.props.details._circulatingSupply}
               {" / "}

@@ -24,6 +24,13 @@ const WorkSans = {
 };
 
 export const colors = {
+  cgBlack: "#000000",
+  cgRed: "#ed867c",
+  cgOrange: "#f79d6b",
+  cgYellow: "#fcc98b",
+  cgBlue: "#9de2f9",
+  cgGreen: "#79d8a2",
+
   white: "#fff",
   black: "#000",
   darkBlue: "#2c3b57",
@@ -61,7 +68,7 @@ const breakpoints = createBreakpoints({
   },
 });
 
-const iswapTheme = {
+const cgTheme = {
   typography: {
     fontFamily: ["Roboto"].join(","),
     h1: {
@@ -204,7 +211,7 @@ const iswapTheme = {
     MuiAccordion: {
       root: {
         border: "1px solid " + "rgba(0,0,0,0.2)",
-        backgroundColor: "rgba(255,255,255,0.25)",
+        //backgroundColor: "rgba(255,255,255,0.25)",
 
         margin: "0px 0px",
         "&:before": {
@@ -283,19 +290,19 @@ const iswapTheme = {
       },
     },
   },
-  palette: {
-    primary: {
-      main: colors.buttonPrimary,
-    },
-    secondary: {
-      main: colors.buttonSecondary,
-    },
-    text: {
-      primary: colors.text,
-      secondary: colors.text,
-    },
-  },
+  // palette: {
+  //   primary: {
+  //     main: colors.buttonPrimary,
+  //   },
+  //   secondary: {
+  //     main: colors.buttonSecondary,
+  //   },
+  //   text: {
+  //     primary: colors.text,
+  //     secondary: colors.text,
+  //   },
+  // },
   breakpoints: breakpoints,
 };
 
-export default iswapTheme;
+export default cgTheme;

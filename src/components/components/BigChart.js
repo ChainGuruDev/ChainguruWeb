@@ -43,6 +43,7 @@ class BigChart extends Component {
       coinDataA: this.coinDataA,
       coinDataB: this.coinDataB,
       loading: true,
+      timeFrame: this.props.timeFrame,
     };
   }
 
@@ -76,6 +77,7 @@ class BigChart extends Component {
         type: GET_COIN_PRICECHART,
         content: [coinDataB.id, this.props.idB, timeFrame],
       });
+      this.setState({ timeFrame: timeFrame });
     };
 
     return (
@@ -189,6 +191,7 @@ class BigChart extends Component {
               idB={this.props.idB}
               coinIDA={coinDataA.id}
               coinIDB={coinDataB.id}
+              timeFrame={this.state.timeFrame}
             />
           </Grid>
           <Grid

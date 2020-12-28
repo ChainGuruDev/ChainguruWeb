@@ -71,6 +71,8 @@ import {
   COINGECKO_ALLTIME_CHART_RETURNED,
   COINGECKO_GET_ALLTIME_CHART,
   UNISWAP_TRADE,
+  DARKMODE_SWITCH,
+  DARKMODE_SWITCH_RETURN,
 } from "../constants";
 
 import {
@@ -122,6 +124,7 @@ class Store {
       ],
       coinList: [],
       userData: {},
+      theme: "light",
     };
 
     dispatcher.register(
@@ -240,6 +243,9 @@ class Store {
             break;
           case UNISWAP_TRADE:
             this.uniswapTrade(payload);
+            break;
+          case DARKMODE_SWITCH:
+            this.darkModeSwitch(payload);
             break;
           default: {
             break;
@@ -466,6 +472,12 @@ class Store {
     }
     let roles = [isAdmin, isMinter, isLF];
     return emitter.emit(ACCOUNT_ROLES_RETURNED, roles);
+  };
+
+  darkModeSwitch = (state) => {
+    let theme = state.content ? "dark" : "light";
+    store.setStore({ theme: theme });
+    return emitter.emit(DARKMODE_SWITCH_RETURN, state.content);
   };
 
   checkRoles = async (_account) => {

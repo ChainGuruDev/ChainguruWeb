@@ -353,7 +353,7 @@ class Show extends Component {
                     editionDetails._circulatingSupply !=
                     0 && (
                     <Button
-                      variant="outlined"
+                      variant="contained"
                       disabled={loading}
                       onClick={() => {
                         this.buyEdition(
@@ -375,7 +375,7 @@ class Show extends Component {
                   )}
                   {userOwned && (
                     <Button
-                      variant="outlined"
+                      variant="contained"
                       disabled={loading}
                       onClick={this.giftEdition}
                       size="small"
@@ -390,7 +390,7 @@ class Show extends Component {
                     editionDetails._circulatingSupply ===
                     0 && (
                     <Button
-                      variant="outlined"
+                      variant="contained"
                       disabled={loading}
                       size="small"
                       color="primary"
@@ -403,7 +403,7 @@ class Show extends Component {
                     editionDetails._circulatingSupply !=
                     0 && (
                     <Button
-                      variant="outlined"
+                      variant="contained"
                       disabled
                       size="small"
                       className={classes.button}

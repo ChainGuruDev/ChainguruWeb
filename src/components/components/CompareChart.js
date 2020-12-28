@@ -8,6 +8,7 @@ import {
   COIN_DATA_RETURNED,
   COIN_PRICECHART_RETURNED,
   GET_COIN_PRICECHART,
+  DARKMODE_SWITCH_RETURN,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -25,8 +26,15 @@ class CompareChart extends Component {
   constructor(props) {
     super(props);
 
+    let colorMode = store.getStore("theme");
     this.state = {
       options: {
+        tooltip: {
+          enabled: true,
+          shared: true,
+          intersect: false,
+          theme: colorMode,
+        },
         dataLabels: {
           enabled: false,
         },
@@ -37,7 +45,7 @@ class CompareChart extends Component {
           width: 2,
           curve: "smooth",
         },
-        colors: ["#247BA0", "#FF1654"],
+        colors: [colors.cgGreen, colors.cgRed],
         chart: {
           id: "",
         },
@@ -53,17 +61,17 @@ class CompareChart extends Component {
             forceNiceScale: true,
             axisBorder: {
               show: true,
-              color: "#247BA0",
+              color: colors.cgGreen,
             },
             labels: {
               style: {
-                colors: "#247BA0",
+                colors: colors.cgGreen,
               },
             },
             title: {
               text: this.props.coinIDA,
               style: {
-                color: "#247BA0",
+                color: colors.cgGreen,
               },
             },
           },
@@ -74,17 +82,17 @@ class CompareChart extends Component {
             opposite: true,
             axisBorder: {
               show: true,
-              color: "#FF1654",
+              color: colors.cgRed,
             },
             labels: {
               style: {
-                colors: "#FF1654",
+                colors: colors.cgRed,
               },
             },
             title: {
               text: this.props.coinIDB,
               style: {
-                color: "#FF1654",
+                color: colors.cgRed,
               },
             },
           },
@@ -109,15 +117,16 @@ class CompareChart extends Component {
     if (this.props.coinIDA) {
       dispatcher.dispatch({
         type: GET_COIN_PRICECHART,
-        content: [this.props.coinIDA, this.props.idA, 7],
+        content: [this.props.coinIDA, this.props.idA, this.props.timeFrame],
       });
     }
     if (this.props.coinIDB) {
       dispatcher.dispatch({
         type: GET_COIN_PRICECHART,
-        content: [this.props.coinIDB, this.props.idB, 7],
+        content: [this.props.coinIDB, this.props.idB, this.props.timeFrame],
       });
     }
+    emitter.on(DARKMODE_SWITCH_RETURN, this.darkModeSwitchReturned);
   }
 
   componentWillUnmount() {
@@ -126,7 +135,19 @@ class CompareChart extends Component {
       COIN_PRICECHART_RETURNED,
       this.coinPriceChartReturned
     );
+    emitter.removeListener(DARKMODE_SWITCH_RETURN, this.darkModeSwitchReturned);
   }
+
+  darkModeSwitchReturned = (theme) => {
+    console.log(this.state.options.tooltip.theme);
+    console.log(theme);
+    let colorMode = theme ? "light" : "dark";
+
+    let newOptions = { ...this.state.options };
+    newOptions.tooltip.theme = colorMode;
+    this.setState({ options: newOptions });
+    console.log(this.state.options);
+  };
 
   coinDataReturned = (data) => {
     if (data[1] === this.props.idA) {
@@ -143,6 +164,8 @@ class CompareChart extends Component {
   };
 
   coinPriceChartReturned = (data) => {
+    let colorMode = store.getStore("theme");
+
     if (data[1] === this.props.idA) {
       let prices = data[0].prices.map(function (each_element) {
         return [each_element[1]];
@@ -162,12 +185,16 @@ class CompareChart extends Component {
           },
         ],
         options: {
+          tooltip: {
+            enabled: true,
+            shared: true,
+            theme: colorMode,
+          },
           legend: {
             position: "top",
           },
           xaxis: {
             type: "datetime",
-            tickAmount: 5,
             categories: [],
           },
           yaxis: [
@@ -180,17 +207,17 @@ class CompareChart extends Component {
 
               axisBorder: {
                 show: true,
-                color: "#247BA0",
+                color: colors.cgGreen,
               },
               labels: {
                 style: {
-                  colors: "#247BA0",
+                  colors: colors.cgGreen,
                 },
               },
               title: {
                 text: this.props.coinIDA,
                 style: {
-                  color: "#247BA0",
+                  color: colors.cgGreen,
                 },
               },
             },
@@ -203,17 +230,17 @@ class CompareChart extends Component {
               opposite: true,
               axisBorder: {
                 show: true,
-                color: "#FF1654",
+                color: colors.cgRed,
               },
               labels: {
                 style: {
-                  colors: "#FF1654",
+                  colors: colors.cgRed,
                 },
               },
               title: {
                 text: this.props.coinIDB,
                 style: {
-                  color: "#FF1654",
+                  color: colors.cgRed,
                 },
               },
             },
@@ -239,6 +266,11 @@ class CompareChart extends Component {
           },
         ],
         options: {
+          tooltip: {
+            enabled: true,
+            shared: true,
+            theme: colorMode,
+          },
           legend: {
             position: "top",
           },
@@ -248,7 +280,6 @@ class CompareChart extends Component {
           },
           xaxis: {
             type: "datetime",
-            tickAmount: 5,
             categories: [],
           },
           yaxis: [
@@ -261,17 +292,17 @@ class CompareChart extends Component {
 
               axisBorder: {
                 show: true,
-                color: "#247BA0",
+                color: colors.cgGreen,
               },
               labels: {
                 style: {
-                  colors: "#247BA0",
+                  colors: colors.cgGreen,
                 },
               },
               title: {
                 text: this.props.coinIDA,
                 style: {
-                  color: "#247BA0",
+                  color: colors.cgGreen,
                 },
               },
             },
@@ -284,17 +315,17 @@ class CompareChart extends Component {
               opposite: true,
               axisBorder: {
                 show: true,
-                color: "#FF1654",
+                color: colors.cgRed,
               },
               labels: {
                 style: {
-                  colors: "#FF1654",
+                  colors: colors.cgRed,
                 },
               },
               title: {
                 text: this.props.coinIDB,
                 style: {
-                  color: "#FF1654",
+                  color: colors.cgRed,
                 },
               },
             },

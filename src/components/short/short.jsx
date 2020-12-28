@@ -2,7 +2,7 @@ import React, { Component, useEffect } from "react";
 import PropTypes from "prop-types";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import { Typography, AppBar, Tabs, Tab, Box } from "@material-ui/core";
+import { Typography, AppBar, Tabs, Tab, Box, Paper } from "@material-ui/core";
 import { withTranslation } from "react-i18next";
 
 import FlashOnIcon from "@material-ui/icons/FlashOn";
@@ -34,7 +34,7 @@ const styles = (theme) => ({
   rootTabs: {
     flexGrow: 1,
     width: "100%",
-    background: "linear-gradient(to top, #F37335, #FDC830)",
+    borderRadius: 0,
   },
   background: {
     flex: 1,
@@ -192,15 +192,15 @@ class Short extends Component {
     };
 
     return (
-      <div className={classes.rootTabs}>
-        <AppBar position="static" color="default">
+      <Paper className={classes.rootTabs}>
+        <AppBar position="static" color="background">
           <Tabs
             value={valueTab}
             onChange={handleChangeTabs}
             aria-label="tool tabs"
             scrollButtons="auto"
             indicatorColor="primary"
-            textColor="primary"
+            textColor="default"
             centered
           >
             <Tab
@@ -226,7 +226,7 @@ class Short extends Component {
           {coinID && <CryptoDetective coinID={coinID} />}
           {!coinID && <CryptoDetective />}
         </TabPanel>
-      </div>
+      </Paper>
     );
   }
 

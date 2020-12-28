@@ -13,7 +13,11 @@ import BigChart from "../components/BigChart.js";
 import SwapHorizIcon from "@material-ui/icons/SwapHoriz";
 import AspectRatioRoundedIcon from "@material-ui/icons/AspectRatioRounded";
 
-import { COINLIST_RETURNED, COIN_DATA_RETURNED } from "../../constants";
+import {
+  COINLIST_RETURNED,
+  COIN_DATA_RETURNED,
+  GRAPH_TIMEFRAME_CHANGED,
+} from "../../constants";
 
 import Store from "../../stores";
 const emitter = Store.emitter;
@@ -88,17 +92,25 @@ class CryptoCompare extends Component {
       valueTab: 0,
       selectA: false,
       selectB: false,
+      timeFrame: 7,
     };
   }
   componentDidMount() {
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
     emitter.on(COIN_DATA_RETURNED, this.coinDataReturned);
+    emitter.on(GRAPH_TIMEFRAME_CHANGED, this.graphTimeframeChanged);
   }
 
   componentWillUnmount() {
     emitter.removeListener(COINLIST_RETURNED, this.coinlistReturned);
     emitter.removeListener(COIN_DATA_RETURNED, this.coinDataReturned);
+    emitter.removeListener(GRAPH_TIMEFRAME_CHANGED, this.graphTimeframeChanged);
   }
+
+  graphTimeframeChanged = (data) => {
+    console.log(data);
+    this.setState({ timeFrame: data });
+  };
 
   coinlistReturned = (payload) => {
     this.setState({ coinList: payload });
@@ -116,12 +128,11 @@ class CryptoCompare extends Component {
 
   handleBigChart = () => {
     this.setState({ bigChart: !this.state.bigChart });
-    console.log("Big Chart " + this.state.bigChart);
   };
 
   render() {
     const { classes } = this.props;
-    const { bigChart, selectA, selectB } = this.state;
+    const { bigChart, selectA, selectB, timeFrame } = this.state;
 
     return (
       <div className={classes.background}>
@@ -173,6 +184,7 @@ class CryptoCompare extends Component {
                   idB={"B"}
                   coinDataA={this.state.coinDataA}
                   coinDataB={this.state.coinDataB}
+                  timeFrame={this.state.timeFrame}
                 />
               </Grid>
               <Grid item style={{ padding: 10 }}>

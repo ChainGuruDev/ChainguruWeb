@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import Chart from "react-apexcharts";
 import { withStyles } from "@material-ui/core/styles";
 
+import { colors } from "../../theme";
+
 import {
   COIN_DATA_RETURNED,
   COIN_PRICECHART_RETURNED,
@@ -24,9 +26,9 @@ class PriceChart extends Component {
 
     let color;
     if (props.id == "A") {
-      color = ["#247BA0"];
+      color = [colors.cgGreen];
     } else {
-      color = ["#FF1654"];
+      color = [colors.cgRed];
     }
 
     this.state = {

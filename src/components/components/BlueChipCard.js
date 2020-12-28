@@ -143,7 +143,7 @@ class BlueChipCard extends Component {
             spacing={2}
           >
             <Button
-              variant="outlined"
+              variant="contained"
               onClick={this.overlayClicked}
               className={classes.button}
               color="primary"

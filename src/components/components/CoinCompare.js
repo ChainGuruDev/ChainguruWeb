@@ -8,7 +8,11 @@ import PriceChart from "../components/Chart.js";
 import ArrowDropUpRoundedIcon from "@material-ui/icons/ArrowDropUpRounded";
 import ArrowDropDownRoundedIcon from "@material-ui/icons/ArrowDropDownRounded";
 
-import { COIN_DATA_RETURNED, GET_COIN_PRICECHART } from "../../constants";
+import {
+  COIN_DATA_RETURNED,
+  GET_COIN_PRICECHART,
+  GRAPH_TIMEFRAME_CHANGED,
+} from "../../constants";
 
 import Store from "../../stores";
 const emitter = Store.emitter;
@@ -45,11 +49,22 @@ class CoinCompare extends Component {
 
   componentDidMount() {
     emitter.on(COIN_DATA_RETURNED, this.coinDataReturned);
+    emitter.on(GRAPH_TIMEFRAME_CHANGED, this.graphTimeFrameChanged);
   }
 
   componentWillUnmount() {
     emitter.removeListener(COIN_DATA_RETURNED, this.coinDataReturned);
+    emitter.removeListener(GRAPH_TIMEFRAME_CHANGED, this.graphTimeFrameChanged);
   }
+
+  graphTimeFrameChanged = (data) => {
+    const { coinData, loading } = this.state;
+
+    dispatcher.dispatch({
+      type: GET_COIN_PRICECHART,
+      content: [coinData.id, this.props.id, data],
+    });
+  };
 
   coinDataReturned = (data) => {
     console.log(data);
@@ -72,10 +87,7 @@ class CoinCompare extends Component {
     const { coinData, loading } = this.state;
 
     const handleClick = (timeFrame) => {
-      dispatcher.dispatch({
-        type: GET_COIN_PRICECHART,
-        content: [coinData.id, this.props.id, timeFrame],
-      });
+      return emitter.emit(GRAPH_TIMEFRAME_CHANGED, timeFrame);
     };
 
     return (
