@@ -22,7 +22,7 @@ const styles = (theme) => ({
   cryptoCard: {
     padding: 10,
     minHeight: "100%",
-    backgroundColor: "rgba(0, 0, 0, 0);",
+    backgroundColor: "rgba(255, 255, 255, 0.025);",
     alignItems: "center",
     textAlign: "center",
     justifyContent: "center",
@@ -108,17 +108,18 @@ class CoinCompare extends Component {
               direction="row"
             >
               <Grid item xs={1}>
-                <Link onClick={() => this.detective(coinData.id)}>
-                  <div className={classes.image}>
-                    <img
-                      className={classes.img}
-                      alt="coin-icon"
-                      src={coinData.image.small}
-                    />
-                  </div>
-                </Link>
+                <div
+                  className={classes.image}
+                  onClick={() => this.detective(coinData.id)}
+                  style={{ cursor: "pointer" }}
+                >
+                  <img
+                    className={classes.img}
+                    alt="coin-icon"
+                    src={coinData.image.small}
+                  />
+                </div>
               </Grid>
-              <Divider flexItem orientation="vertical" />
               <Grid item xs={4}>
                 <Grid
                   container
@@ -127,8 +128,12 @@ class CoinCompare extends Component {
                   item
                   xs={12}
                 >
-                  <Typography variant="body1">{coinData.name}</Typography>
-                  <Typography variant="subtitle1">{coinData.symbol}</Typography>
+                  <Typography component={"span"} variant="body1">
+                    {coinData.name}
+                  </Typography>
+                  <Typography component={"span"} variant="subtitle1">
+                    {coinData.symbol}
+                  </Typography>
                 </Grid>
               </Grid>
               <Grid
@@ -139,13 +144,19 @@ class CoinCompare extends Component {
                 alignItems="flex-end"
                 xs={6}
               >
-                <Typography color="textSecondary" align="right" variant="h2">
+                <Typography
+                  component={"span"}
+                  color="textSecondary"
+                  align="right"
+                  variant="h2"
+                >
                   {coinData.market_data.current_price.usd}
                 </Typography>
                 <Typography
                   color="textPrimary"
                   align="right"
                   variant="subtitle1"
+                  component={"span"}
                 >
                   USD
                 </Typography>

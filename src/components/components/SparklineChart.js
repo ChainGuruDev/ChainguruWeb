@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import Chart from "react-apexcharts";
 import { withStyles } from "@material-ui/core/styles";
+import { colors } from "../../theme";
 
 const styles = (theme) => ({
   root: {},
@@ -11,9 +12,9 @@ class SparklineChart extends Component {
     super(props);
     let profit7D_BasedColor;
     if (props.data[0] < props.data[props.data.length - 1]) {
-      profit7D_BasedColor = ["#247BA0"];
+      profit7D_BasedColor = [colors.cgGreen];
     } else {
-      profit7D_BasedColor = ["#FF1654"];
+      profit7D_BasedColor = [colors.cgOrange];
     }
 
     this.state = {

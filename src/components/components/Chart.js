@@ -8,11 +8,13 @@ import {
   COIN_DATA_RETURNED,
   COIN_PRICECHART_RETURNED,
   GET_COIN_PRICECHART,
+  DARKMODE_SWITCH_RETURN,
 } from "../../constants";
 
 import Store from "../../stores";
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
+const store = Store.store;
 
 const styles = (theme) => ({
   root: {
@@ -31,8 +33,13 @@ class PriceChart extends Component {
       color = [colors.cgRed];
     }
 
+    const tema = store.getStore("theme");
+
     this.state = {
       options: {
+        theme: {
+          mode: tema,
+        },
         stroke: {
           width: 2,
           curve: "straight",
@@ -41,6 +48,7 @@ class PriceChart extends Component {
         colors: color,
         chart: {
           id: "",
+          background: "rgba(0, 0, 0, 0.0)",
         },
         xaxis: {
           type: "datetime",
@@ -64,6 +72,7 @@ class PriceChart extends Component {
   componentDidMount() {
     emitter.on(COIN_DATA_RETURNED, this.coinDataReturned);
     emitter.on(COIN_PRICECHART_RETURNED, this.coinPriceChartReturned);
+    emitter.on(DARKMODE_SWITCH_RETURN, this.darkModeSwitchReturned);
     dispatcher.dispatch({
       type: GET_COIN_PRICECHART,
       content: [this.props.coinID, this.props.id],
@@ -76,7 +85,20 @@ class PriceChart extends Component {
       COIN_PRICECHART_RETURNED,
       this.coinPriceChartReturned
     );
+    emitter.removeListener(DARKMODE_SWITCH_RETURN, this.darkModeSwitchReturned);
   }
+
+  darkModeSwitchReturned = (theme) => {
+    let colorMode = theme ? "dark" : "light";
+    this.setState({
+      options: {
+        ...this.state.options,
+        theme: {
+          mode: colorMode,
+        },
+      },
+    });
+  };
 
   coinDataReturned = (data) => {
     if (data[1] === this.props.id) {

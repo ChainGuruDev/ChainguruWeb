@@ -61,7 +61,7 @@ const styles = (theme) => ({
     justifyContent: "space-between",
     direction: "row",
     alignItems: "stretch",
-    background: "rgba(255,255,255,0.25)",
+    background: "rgba(255,255,255,0.05)",
   },
   divider: {
     alignItems: "center",
@@ -156,13 +156,14 @@ class CryptoCompare extends Component {
                 <SwapHorizIcon size="large" />
               </IconButton>
               {selectA && selectB && (
-                <IconButton className={classes.swapBTN} aria-label="merge">
-                  <AspectRatioRoundedIcon
-                    onClick={() => {
-                      this.handleBigChart();
-                    }}
-                    size="large"
-                  />
+                <IconButton
+                  onClick={() => {
+                    this.handleBigChart();
+                  }}
+                  className={classes.swapBTN}
+                  aria-label="merge"
+                >
+                  <AspectRatioRoundedIcon size="large" />
                 </IconButton>
               )}
             </Grid>
@@ -191,13 +192,14 @@ class CryptoCompare extends Component {
                 <IconButton className={classes.swapBTN} aria-label="swap">
                   <SwapHorizIcon size="large" />
                 </IconButton>
-                <IconButton className={classes.swapBTN} aria-label="merge">
-                  <AspectRatioRoundedIcon
-                    onClick={() => {
-                      this.handleBigChart();
-                    }}
-                    size="large"
-                  />
+                <IconButton
+                  onClick={() => {
+                    this.handleBigChart();
+                  }}
+                  className={classes.swapBTN}
+                  aria-label="merge"
+                >
+                  <AspectRatioRoundedIcon size="large" />
                 </IconButton>
               </Grid>
             </Card>

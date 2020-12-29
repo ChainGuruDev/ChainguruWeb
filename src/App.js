@@ -74,7 +74,7 @@ class App extends Component {
 
   darkModeSwitch = (state) => {
     const mainPrimaryColor = state ? colors.cgGreen : colors.cgGreen;
-    const mainSecondaryColor = state ? colors.cgRed : colors.cgRed;
+    const mainSecondaryColor = state ? colors.cgOrange : colors.cgOrange;
     const Roboto = {
       fontFamily: "Roboto",
       fontStyle: "normal",

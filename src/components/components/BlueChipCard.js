@@ -94,7 +94,7 @@ class BlueChipCard extends Component {
       <Grid item xs={6}>
         <Paper className={classes.paper} elevation={10}>
           <Grid container direction="row" spacing={2}>
-            <Grid item xs={2} spacing={2}>
+            <Grid item xs={2}>
               <img className={classes.img} alt="coin-icon" src={data.image} />
             </Grid>
             <Grid item xs container direction="column" spacing={2}>
@@ -119,7 +119,7 @@ class BlueChipCard extends Component {
                 </Typography>
               )}
             </Grid>
-            <Grid item xs direction="column" spacing={3}>
+            <Grid item xs>
               {!loadingChart && (
                 <AlltimeChart id={data.symbol} data={chartData} />
               )}

@@ -7,6 +7,7 @@ import { withTranslation } from "react-i18next";
 import SparklineChart from "./SparklineChart.js";
 import ArrowDropDownRoundedIcon from "@material-ui/icons/ArrowDropDownRounded";
 import ArrowDropUpRoundedIcon from "@material-ui/icons/ArrowDropUpRounded";
+import { colors } from "../../theme";
 
 import {
   Table,
@@ -281,25 +282,28 @@ class FavoriteList extends Component {
 
     if (formatedRows.length > 1) {
       return formatedRows.map((row) => (
-        <TableRow key={row.name}>
+        <TableRow hover="true" key={row.name}>
           <TableCell component="th" scope="row">
-            <Link onClick={() => this.detective(row.id)}>
-              <img
-                className={classes.tokenLogo}
-                alt="coin-icon"
-                src={row.image}
-              />
-            </Link>
+            <img
+              style={{ cursor: "pointer" }}
+              className={classes.tokenLogo}
+              alt="coin-icon"
+              src={row.image}
+              onClick={() => this.detective(row.id)}
+            />
           </TableCell>
           <TableCell padding="none" align="left">
             {row.symbol}
           </TableCell>
-          <TableCell padding="none" align="left">
-            {row.name}
+          <TableCell align="left">
+            <Typography variant={"h4"}>{row.name}</Typography>
           </TableCell>
-          <TableCell align="right">{row.current_price}</TableCell>
+          <TableCell align="right">
+            <Typography variant={"h4"}>{row.current_price}</Typography>
+          </TableCell>
           <TableCell align="right">
             <Typography
+              variant={"h4"}
               color={
                 row.price_change_percentage_1h_in_currency > 0
                   ? "primary"
@@ -311,6 +315,7 @@ class FavoriteList extends Component {
           </TableCell>
           <TableCell align="right">
             <Typography
+              variant={"h4"}
               color={
                 row.price_change_percentage_24h > 0 ? "primary" : "secondary"
               }
@@ -320,6 +325,7 @@ class FavoriteList extends Component {
           </TableCell>
           <TableCell align="right">
             <Typography
+              variant={"h4"}
               color={
                 row.price_change_percentage_7d_in_currency > 0
                   ? "primary"
@@ -331,6 +337,7 @@ class FavoriteList extends Component {
           </TableCell>
           <TableCell align="right">
             <Typography
+              variant={"h4"}
               color={
                 row.price_change_percentage_30d_in_currency > 0
                   ? "primary"
@@ -342,6 +349,7 @@ class FavoriteList extends Component {
           </TableCell>
           <TableCell align="right">
             <Typography
+              variant={"h4"}
               color={
                 row.price_change_percentage_1y_in_currency > 0
                   ? "primary"
@@ -351,9 +359,12 @@ class FavoriteList extends Component {
               {row.price_change_percentage_1y_in_currency}%
             </Typography>
           </TableCell>
-          <TableCell align="right">{row.market_cap}</TableCell>
+          <TableCell align="right">
+            <Typography variant={"h4"}>{row.market_cap} </Typography>
+          </TableCell>
           <TableCell align="right">
             <Typography
+              variant={"h4"}
               color={
                 row.market_cap_change_percentage_24h > 0
                   ? "primary"
@@ -413,7 +424,7 @@ class FavoriteList extends Component {
         size="small"
       >
         <Table className={classes.table} aria-label="favoritesList">
-          <TableHead>
+          <TableHead style={{ backgroundColor: colors.cgOrange }}>
             <TableRow>
               <TableCell></TableCell>
               <TableCell></TableCell>
@@ -511,7 +522,7 @@ class FavoriteList extends Component {
                 Price 30d
               </TableCell>
               <TableCell
-                hover
+                hover="true"
                 onClick={() =>
                   this.sortBy("price_change_percentage_1y_in_currency")
                 }
@@ -530,7 +541,7 @@ class FavoriteList extends Component {
                 Price 1y
               </TableCell>
               <TableCell
-                hover
+                hover="true"
                 onClick={() => this.sortBy("market_cap")}
                 align="right"
               >

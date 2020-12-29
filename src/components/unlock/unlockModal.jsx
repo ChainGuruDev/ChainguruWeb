@@ -3,9 +3,9 @@ import { DialogContent, Dialog, Slide } from "@material-ui/core";
 
 import Unlock from "./unlock.jsx";
 
-function Transition(props) {
-  return <Slide direction="up" {...props} />;
-}
+const Transition = React.forwardRef(function Transition(props, ref) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
 
 class UnlockModal extends Component {
   render() {

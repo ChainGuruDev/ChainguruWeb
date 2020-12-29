@@ -29,11 +29,8 @@ class CompareChart extends Component {
     let colorMode = store.getStore("theme");
     this.state = {
       options: {
-        tooltip: {
-          enabled: true,
-          shared: true,
-          intersect: false,
-          theme: colorMode,
+        theme: {
+          mode: colorMode,
         },
         dataLabels: {
           enabled: false,
@@ -48,6 +45,7 @@ class CompareChart extends Component {
         colors: [colors.cgGreen, colors.cgRed],
         chart: {
           id: "",
+          background: "rgba(0, 0, 0, 0.0)",
         },
         xaxis: {
           type: "datetime",
@@ -139,14 +137,15 @@ class CompareChart extends Component {
   }
 
   darkModeSwitchReturned = (theme) => {
-    console.log(this.state.options.tooltip.theme);
-    console.log(theme);
-    let colorMode = theme ? "light" : "dark";
-
-    let newOptions = { ...this.state.options };
-    newOptions.tooltip.theme = colorMode;
-    this.setState({ options: newOptions });
-    console.log(this.state.options);
+    let colorMode = theme ? "dark" : "light";
+    this.setState({
+      options: {
+        ...this.state.options,
+        theme: {
+          mode: colorMode,
+        },
+      },
+    });
   };
 
   coinDataReturned = (data) => {

@@ -90,7 +90,7 @@ function TabPanel(props) {
     >
       {value === index && (
         <Box p={3}>
-          <Typography>{children}</Typography>
+          <Typography component={"span"}>{children}</Typography>
         </Box>
       )}
     </div>
@@ -193,14 +193,14 @@ class Short extends Component {
 
     return (
       <Paper className={classes.rootTabs}>
-        <AppBar position="static" color="background">
+        <AppBar position="static" color="inherit">
           <Tabs
             value={valueTab}
             onChange={handleChangeTabs}
             aria-label="tool tabs"
             scrollButtons="auto"
-            indicatorColor="primary"
-            textColor="default"
+            indicatorColor="secondary"
+            textColor="secondary"
             centered
           >
             <Tab

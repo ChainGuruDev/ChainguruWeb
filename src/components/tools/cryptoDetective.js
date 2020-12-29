@@ -80,7 +80,7 @@ const styles = (theme) => ({
     justifyContent: "space-between",
     direction: "row",
     // alignItems: "stretch",
-    background: "rgba(255,255,255,0.25)",
+    background: "rgba(255,255,255,0.05)",
   },
   img: {
     margin: "auto",
@@ -393,7 +393,7 @@ class CryptoDetective extends Component {
               alignItems="stretch"
               spacing={3}
             >
-              <Grid item xs={3} spacing={3}>
+              <Grid item xs={3}>
                 <CoinSearchBar />
                 {dataLoaded && this.dataDisplaySide(coinData)}
               </Grid>

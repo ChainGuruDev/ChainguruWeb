@@ -207,7 +207,7 @@ class Long extends Component {
           </Grid>
           <Grid container spacing={3}>
             {chipData.map((bluechip) => (
-              <BlueChipCard data={bluechip} />
+              <BlueChipCard key={bluechip.id} data={bluechip} />
             ))}
           </Grid>
           {snackbarMessage && this.renderSnackbar()}
