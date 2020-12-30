@@ -12,6 +12,7 @@ import ENS from "ethjs-ens";
 import { withTranslation } from "react-i18next";
 
 import { ReactComponent as CGLogo } from "../../assets/logos/logo_chainguru.svg";
+import { ReactComponent as GASIcon } from "../../assets/gas.svg";
 
 import {
   CONNECTION_CONNECTED,
@@ -19,10 +20,13 @@ import {
   DB_GET_USERDATA,
   DARKMODE_SWITCH,
   DARKMODE_SWITCH_RETURN,
+  CHECK_GASPRICE,
+  GASPRICE_RETURNED,
 } from "../../constants";
 
 import Brightness2OutlinedIcon from "@material-ui/icons/Brightness2Outlined";
 import Brightness2RoundedIcon from "@material-ui/icons/Brightness2Rounded";
+import LocalGasStationOutlinedIcon from "@material-ui/icons/LocalGasStationOutlined";
 
 import UnlockModal from "../unlock/unlockModal.jsx";
 
@@ -95,7 +99,7 @@ const styles = (theme) => ({
   darkModeSwitch: {
     display: "flex",
     flex: "auto",
-    justifyContent: "flex-start",
+    justifyContent: "center",
     alignItems: "center",
   },
   walletAddress: {
@@ -110,6 +114,19 @@ const styles = (theme) => ({
       background: "rgba(47, 128, 237, 0.1)",
     },
   },
+  gasPrice: {
+    padding: "12px",
+    borderRadius: "50px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: "25px",
+    cursor: "pointer",
+    "&:hover": {
+      background: "rgba(47, 128, 237, 0.1)",
+    },
+  },
+
   walletTitle: {
     flex: 1,
     color: colors.darkGray,
@@ -144,13 +161,19 @@ class Header extends Component {
       theme: theme,
       darkModeBool: this.getMode(),
       modalOpen: false,
+      gasColor: colors.lightGray,
     };
   }
 
-  componentDidMount(screen) {
+  componentDidMount() {
     emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
     emitter.on(DARKMODE_SWITCH_RETURN, this.darkModeSwitchReturned);
+    emitter.on(GASPRICE_RETURNED, this.gasPriceReturned);
+    dispatcher.dispatch({
+      type: CHECK_GASPRICE,
+    });
+
     if (window.location.pathname === "/" + "short") {
       this.setState({ cgLogoColor: colors.cgOrange });
     } else if (window.location.pathname === "/" + "medium") {
@@ -179,7 +202,20 @@ class Header extends Component {
       this.connectionDisconnected
     );
     emitter.removeListener(DARKMODE_SWITCH_RETURN, this.darkModeSwitchReturned);
+    emitter.removeListener(GASPRICE_RETURNED, this.gasPriceReturned);
   }
+
+  gasPriceReturned = (payload) => {
+    let gasColor = colors.primary;
+    if (payload < 50) {
+      gasColor = colors.cgGreen;
+    } else if (payload < 100) {
+      gasColor = colors.cgYellow;
+    } else if (payload >= 100) {
+      gasColor = colors.cgRed;
+    }
+    this.setState({ gasPrice: payload, gasColor: gasColor });
+  };
 
   connectionConnected = () => {
     let _acc = store.getStore("account");
@@ -282,12 +318,25 @@ class Header extends Component {
                 }}
               />
             </div>
-
             <div className={classes.links}>
               {this.renderLink("short")}
               {this.renderLink("medium")}
               {this.renderLink("long")}
               {this.renderLink("market")}
+            </div>
+            <div
+              className={classes.gasPrice}
+              style={{ border: `2px solid ${this.state.gasColor}` }}
+            >
+              <LocalGasStationOutlinedIcon
+                style={{ color: this.state.gasColor }}
+                onClick={() => {
+                  dispatcher.dispatch({
+                    type: CHECK_GASPRICE,
+                  });
+                }}
+              />
+              <Typography variant={"h4"}>{this.state.gasPrice}</Typography>
             </div>
             <div className={classes.darkModeSwitch}>
               <FormGroup

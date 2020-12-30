@@ -109,7 +109,6 @@ class Market extends Component {
   }
 
   componentDidMount() {
-    console.log(this.state.web3context);
     emitter.on(ERROR, this.errorReturned);
     emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);

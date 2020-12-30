@@ -73,6 +73,8 @@ import {
   UNISWAP_TRADE,
   DARKMODE_SWITCH,
   DARKMODE_SWITCH_RETURN,
+  CHECK_GASPRICE,
+  GASPRICE_RETURNED,
 } from "../constants";
 
 import {
@@ -246,6 +248,9 @@ class Store {
             break;
           case DARKMODE_SWITCH:
             this.darkModeSwitch(payload);
+            break;
+          case CHECK_GASPRICE:
+            this.checkGasPrice(payload);
             break;
           default: {
             break;
@@ -990,6 +995,11 @@ class Store {
           callback(error);
         }
       });
+  };
+
+  checkGasPrice = async () => {
+    const gasPrice = await this._getGasPrice();
+    return emitter.emit(GASPRICE_RETURNED, gasPrice);
   };
 
   _getGasPrice = async () => {

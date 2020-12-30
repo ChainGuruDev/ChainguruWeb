@@ -12,6 +12,11 @@ import TrendingUpRoundedIcon from "@material-ui/icons/TrendingUpRounded";
 import GolfCourseRoundedIcon from "@material-ui/icons/GolfCourseRounded";
 import StoreIcon from "@material-ui/icons/Store";
 
+import { ReactComponent as FastIcon } from "../../assets/fast.svg";
+import { ReactComponent as MediumIcon } from "../../assets/medium.svg";
+import { ReactComponent as LongIcon } from "../../assets/long.svg";
+import { ReactComponent as MarketIcon } from "../../assets/market.svg";
+
 const styles = (theme) => ({
   root: {
     outline: "none",
@@ -45,8 +50,8 @@ const styles = (theme) => ({
   },
   //linear-gradient(to right, #FF512F 0%, #F09819 51%, #FF512F 100%)}
   short: {
-    background: "linear-gradient(to top, #d32f2f, #ffab13)",
-    backgroundSize: "auto 200%",
+    background: "linear-gradient(to bottom, #f79d6b, #602505)",
+    backgroundSize: "auto 175%",
     backgroundPosition: "0px 100%",
     "&:hover": {
       backgroundPosition: "0px 0%",
@@ -73,8 +78,8 @@ const styles = (theme) => ({
     },
   },
   mid: {
-    background: "linear-gradient(to top, #0ba360 0%, #3cba92 100%)",
-    backgroundSize: "auto 200%",
+    background: "linear-gradient(to bottom, #79d8a2 0%, #164B2D 100%)",
+    backgroundSize: "auto 175%",
     backgroundPosition: "0px 100%",
     "&:hover": {
       backgroundPosition: "0px 0%",
@@ -100,8 +105,8 @@ const styles = (theme) => ({
     },
   },
   long: {
-    background: "linear-gradient(to top, #209cff, #68e0cf)",
-    backgroundSize: "auto 200%",
+    background: "linear-gradient(to bottom, #9de2f9, #096989)",
+    backgroundSize: "auto 175%",
     backgroundPosition: "0px 100%",
     "&:hover": {
       backgroundPosition: "0px 0%",
@@ -128,8 +133,8 @@ const styles = (theme) => ({
     },
   },
   market: {
-    background: "linear-gradient(to top, #3cba92, #68efcf)",
-    backgroundSize: "auto 200%",
+    background: "linear-gradient(to bottom, #fcc98b, #6D3D03)",
+    backgroundSize: "auto 175%",
     backgroundPosition: "0px 100%",
     "&:hover": {
       backgroundPosition: "0px 0%",
@@ -190,6 +195,7 @@ const styles = (theme) => ({
     },
   },
   icon: {
+    maxHeight: "250px",
     fontSize: "60px",
     [theme.breakpoints.up("sm")]: {
       fontSize: "100px",
@@ -218,8 +224,7 @@ class Home extends Component {
             this.nav(location.pathname + "short");
           }}
         >
-          <AttachMoneyRoundedIcon className={`${classes.icon} icon`} />
-          <WhatshotRoundedIcon className={`${classes.icon} icon`} />
+          <FastIcon fill={colors.white} className={`${classes.icon} icon`} />
           <Typography variant={"h3"} className={`${classes.title} title`}>
             {t("Home.short")}
           </Typography>
@@ -231,8 +236,7 @@ class Home extends Component {
             this.nav(location.pathname + "medium");
           }}
         >
-          <AccountBalanceWalletRoundedIcon className={`${classes.icon} icon`} />
-          <GolfCourseRoundedIcon className={`${classes.icon} icon`} />
+          <MediumIcon fill={colors.white} className={`${classes.icon} icon`} />
 
           <Typography variant={"h3"} className={`${classes.title} title`}>
             {t("Home.medium")}
@@ -244,8 +248,7 @@ class Home extends Component {
             this.nav(location.pathname + "long");
           }}
         >
-          <AccountBalanceRoundedIcon className={`${classes.icon} icon`} />
-          <TrendingUpRoundedIcon className={`${classes.icon} icon`} />
+          <LongIcon stroke={colors.white} className={`${classes.icon} icon`} />
           <Typography variant={"h3"} className={`${classes.title} title`}>
             {t("Home.long")}
           </Typography>
@@ -257,7 +260,7 @@ class Home extends Component {
             this.nav(location.pathname + "market");
           }}
         >
-          <StoreIcon className={`${classes.icon} icon`} />
+          <MarketIcon fill={colors.white} className={`${classes.icon} icon`} />
           <Typography variant={"h3"} className={`${classes.title} title`}>
             {t("Home.market")}
           </Typography>
