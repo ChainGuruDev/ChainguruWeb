@@ -47,7 +47,8 @@ const dispatcher = Store.dispatcher;
 
 const styles = (theme) => ({
   root: {
-    backgroundColor: "rgba(255, 255, 255, 0.0);",
+    backgroundColor: "rgba(255, 255, 255, 0.0)",
+    maxHeight: "440",
   },
   tokenLogo: {
     maxHeight: 30,
@@ -282,7 +283,7 @@ class FavoriteList extends Component {
 
     if (formatedRows.length > 1) {
       return formatedRows.map((row) => (
-        <TableRow hover="true" key={row.name}>
+        <TableRow hover={true} key={row.name}>
           <TableCell component="th" scope="row">
             <img
               style={{ cursor: "pointer" }}

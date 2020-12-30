@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { withStyles } from "@material-ui/core/styles";
 import { Typography } from "@material-ui/core";
 import FormGroup from "@material-ui/core/FormGroup";
-import { Paper, Grid } from "@material-ui/core";
+import { Paper, Grid, Icon, SvgIcon } from "@material-ui/core";
 
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Checkbox from "@material-ui/core/Checkbox";
@@ -11,11 +11,14 @@ import { colors } from "../../theme";
 import ENS from "ethjs-ens";
 import { withTranslation } from "react-i18next";
 
+import { ReactComponent as CGLogo } from "../../assets/logos/logo_chainguru.svg";
+
 import {
   CONNECTION_CONNECTED,
   CONNECTION_DISCONNECTED,
   DB_GET_USERDATA,
   DARKMODE_SWITCH,
+  DARKMODE_SWITCH_RETURN,
 } from "../../constants";
 
 import Brightness2OutlinedIcon from "@material-ui/icons/Brightness2Outlined";
@@ -39,19 +42,20 @@ const styles = (theme) => ({
     width: "100%",
     display: "flex",
     borderBottom: "3px solid " + colors.cgOrange,
-    padding: "24px 32px",
-    alignItems: "center",
-    justifyContent: "center",
-    [theme.breakpoints.down("sm")]: {
-      justifyContent: "space-between",
-      padding: "16px 24px",
-    },
+    padding: "17px 24px",
   },
   icon: {
     display: "flex",
+    justifyContent: "flex-start",
     alignItems: "flex-start",
-    flex: 1,
     cursor: "pointer",
+    maxHeight: "50px",
+    maxWidth: "100px",
+  },
+  imageIcon: {
+    display: "flex",
+    maxWidth: "100%",
+    maxHeight: "inherit",
   },
   links: {
     display: "flex",
@@ -66,7 +70,7 @@ const styles = (theme) => ({
     cursor: "pointer",
     "&:hover": {
       paddingBottom: "9px",
-      borderBottom: "3px solid " + colors.compoundGreen,
+      borderBottom: "3px solid " + colors.cgGreen,
     },
   },
   title: {
@@ -77,7 +81,7 @@ const styles = (theme) => ({
     margin: "0px 12px",
     cursor: "pointer",
     paddingBottom: "9px",
-    borderBottom: "3px solid " + colors.green,
+    borderBottom: "3px solid " + colors.cgGreen,
   },
   account: {
     display: "flex",
@@ -91,8 +95,8 @@ const styles = (theme) => ({
   darkModeSwitch: {
     display: "flex",
     flex: "auto",
-    justifyContent: "flex-end",
-    alignItems: "flex-end",
+    justifyContent: "flex-start",
+    alignItems: "center",
   },
   walletAddress: {
     padding: "12px",
@@ -102,7 +106,7 @@ const styles = (theme) => ({
     alignItems: "center",
     cursor: "pointer",
     "&:hover": {
-      border: "2px solid " + colors.borderBlue,
+      border: "2px solid " + colors.cgOrange,
       background: "rgba(47, 128, 237, 0.1)",
     },
   },
@@ -111,7 +115,7 @@ const styles = (theme) => ({
     color: colors.darkGray,
   },
   connectedDot: {
-    background: colors.compoundGreen,
+    background: colors.cgGreen,
     opacity: "1",
     borderRadius: "10px",
     width: "10px",
@@ -129,18 +133,44 @@ const styles = (theme) => ({
 
 class Header extends Component {
   constructor(props) {
-    super();
+    super(props);
+
+    const account = store.getStore("account");
+    const theme = store.getStore("theme");
+    const darkModeBool = theme === "dark" ? true : false;
 
     this.state = {
-      account: store.getStore("account"),
+      account: account,
+      theme: theme,
+      darkModeBool: this.getMode(),
       modalOpen: false,
     };
   }
 
-  componentDidMount() {
+  componentDidMount(screen) {
     emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
+    emitter.on(DARKMODE_SWITCH_RETURN, this.darkModeSwitchReturned);
+    if (window.location.pathname === "/" + "short") {
+      this.setState({ cgLogoColor: colors.cgOrange });
+    } else if (window.location.pathname === "/" + "medium") {
+      this.setState({ cgLogoColor: colors.cgGreen });
+    } else if (window.location.pathname === "/" + "long") {
+      this.setState({ cgLogoColor: colors.cgBlue });
+    } else {
+      this.setState({ cgLogoColor: colors.cgRed });
+    }
   }
+
+  getMode = () => {
+    let savedmode;
+    try {
+      savedmode = JSON.parse(localStorage.getItem("dark"));
+      return savedmode || false;
+    } catch (err) {
+      return false;
+    }
+  };
 
   componentWillUnmount() {
     emitter.removeListener(CONNECTION_CONNECTED, this.connectionConnected);
@@ -148,6 +178,7 @@ class Header extends Component {
       CONNECTION_DISCONNECTED,
       this.connectionDisconnected
     );
+    emitter.removeListener(DARKMODE_SWITCH_RETURN, this.darkModeSwitchReturned);
   }
 
   connectionConnected = () => {
@@ -180,10 +211,19 @@ class Header extends Component {
     }
   };
 
+  darkModeSwitchReturned = (payload) => {
+    this.setState({ darkModeBool: payload });
+  };
+
   render() {
     const { classes, t } = this.props;
-
-    const { account, addressEnsName, modalOpen, darkMode } = this.state;
+    const {
+      account,
+      addressEnsName,
+      modalOpen,
+      darkMode,
+      darkModeBool,
+    } = this.state;
 
     var address = null;
     if (account.address) {
@@ -205,6 +245,25 @@ class Header extends Component {
       });
     };
 
+    // <div className={classes.icon}>
+    //   <img
+    //     alt=""
+    //     height={"40px"}
+    //     onClick={() => {
+    //       this.nav("");
+    //     }}
+    //   />
+    //   <Typography
+    //     variant={"h3"}
+    //     className={classes.name}
+    //     onClick={() => {
+    //       this.nav("");
+    //     }}
+    //   >
+    //     ChainGuru
+    //   </Typography>
+    // </div>
+
     return (
       <Paper className={classes.root}>
         <Grid
@@ -215,23 +274,15 @@ class Header extends Component {
         >
           <div className={classes.headerV2}>
             <div className={classes.icon}>
-              <img
-                alt=""
-                height={"40px"}
+              <CGLogo
+                className={classes.imageIcon}
+                fill={this.state.cgLogoColor}
                 onClick={() => {
                   this.nav("");
                 }}
               />
-              <Typography
-                variant={"h3"}
-                className={classes.name}
-                onClick={() => {
-                  this.nav("");
-                }}
-              >
-                ChainGuru
-              </Typography>
             </div>
+
             <div className={classes.links}>
               {this.renderLink("short")}
               {this.renderLink("medium")}
@@ -263,6 +314,7 @@ class Header extends Component {
                       checkedIcon={<Brightness2RoundedIcon fontSize="small" />}
                       name="darkModeSwitch"
                       onChange={handleChangeDarkMode}
+                      checked={darkModeBool}
                     />
                   }
                 />
@@ -300,6 +352,24 @@ class Header extends Component {
 
   renderLink = (screen) => {
     const { classes, t } = this.props;
+    if (window.location.pathname === "/" + "short") {
+      if (this.state.cgLogoColor !== colors.cgOrange) {
+        this.setState({ cgLogoColor: colors.cgOrange });
+      }
+    } else if (window.location.pathname === "/" + "medium") {
+      if (this.state.cgLogoColor !== colors.cgGreen) {
+        this.setState({ cgLogoColor: colors.cgGreen });
+      }
+    } else if (window.location.pathname === "/" + "long") {
+      if (this.state.cgLogoColor !== colors.cgBlue) {
+        this.setState({ cgLogoColor: colors.cgBlue });
+      }
+    } else {
+      if (this.state.cgLogoColor !== colors.cgRed) {
+        this.setState({ cgLogoColor: colors.cgRed });
+      }
+    }
+
     return (
       <div
         className={
@@ -320,7 +390,7 @@ class Header extends Component {
 
   nav = (screen) => {
     if (screen === "cover") {
-      window.open("https://longboardfamara.herokuapp.com/", "_blank");
+      window.open("https://chainguru.herokuapp.com/", "_blank");
       return;
     }
     this.props.history.push("/" + screen);

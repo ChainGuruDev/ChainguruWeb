@@ -1080,8 +1080,12 @@ class Store {
   };
 
   pingCoinGecko = async () => {
-    let data = await CoinGeckoClient.ping();
-    console.log(data.data);
+    try {
+      let data = await CoinGeckoClient.ping();
+      console.log(data.data);
+    } catch (err) {
+      return emitter.emit(ERROR, err.message);
+    }
   };
 
   getCoinList = async () => {

@@ -65,14 +65,25 @@ class App extends Component {
     //   }
     // });
     emitter.on(DARKMODE_SWITCH_RETURN, this.darkModeSwitch);
-    this.darkModeSwitch();
+    this.darkModeSwitch(this.getMode());
   }
 
   componentWillUnmount() {
     emitter.removeListener(DARKMODE_SWITCH_RETURN, this.darkModeSwitch);
   }
 
+  getMode = () => {
+    let savedmode;
+    try {
+      savedmode = JSON.parse(localStorage.getItem("dark"));
+      return savedmode || false;
+    } catch (err) {
+      return false;
+    }
+  };
+
   darkModeSwitch = (state) => {
+    localStorage.setItem("dark", JSON.stringify(state));
     const mainPrimaryColor = state ? colors.cgGreen : colors.cgGreen;
     const mainSecondaryColor = state ? colors.cgOrange : colors.cgOrange;
     const Roboto = {
@@ -367,6 +378,7 @@ class App extends Component {
                 <Header
                   setHeaderValue={this.setHeaderValue}
                   headerValue={headerValue}
+                  darkMode={darkMode}
                 />
                 <Short />
               </Route>
@@ -439,12 +451,11 @@ class App extends Component {
                 <Home />
               </Route>
             </Switch>
-            <Footer />
           </BrowserRouter>
         </div>
       </MuiThemeProvider>
     );
   }
 }
-
+//<Footer />
 export default App;
