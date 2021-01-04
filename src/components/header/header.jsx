@@ -225,7 +225,7 @@ class Header extends Component {
       address: _acc.address,
     });
 
-    //this.setAddressEnsName();
+    this.setAddressEnsName();
   };
 
   connectionDisconnected = () => {
@@ -242,6 +242,7 @@ class Header extends Component {
       const ens = new ENS({ provider, network });
       const addressEnsName = await ens.reverse(address).catch(() => {});
       if (addressEnsName) {
+        console.log(addressEnsName);
         this.setState({ addressEnsName });
       }
     }

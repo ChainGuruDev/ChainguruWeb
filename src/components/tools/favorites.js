@@ -14,6 +14,7 @@ import {
   Button,
   TextField,
   CircularProgress,
+  LinearProgress,
 } from "@material-ui/core";
 
 import Autocomplete from "@material-ui/lab/Autocomplete";
@@ -86,6 +87,7 @@ class Favorites extends Component {
       selectedID: "",
       validSelection: false,
       favList: [],
+      progressBar: 0,
     };
     if (account && account.address) {
       dispatcher.dispatch({
@@ -95,11 +97,28 @@ class Favorites extends Component {
     }
   }
 
+  updateFavorites() {
+    const account = store.getStore("account");
+    if (account && account.address) {
+      const newProgressBar = this.state.progressBar + 1;
+      this.setState({ progressBar: newProgressBar });
+      if (newProgressBar > 99) {
+        this.setState({ progressBar: 0 });
+        console.log("update favorites");
+        dispatcher.dispatch({
+          type: DB_GET_USERDATA,
+          address: account.address,
+        });
+      }
+    }
+  }
+
   componentDidMount() {
     emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
     emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
+    this.interval = setInterval(() => this.updateFavorites(), 750);
   }
 
   componentWillUnmount() {
@@ -110,6 +129,7 @@ class Favorites extends Component {
     );
     emitter.removeListener(COINLIST_RETURNED, this.coinlistReturned);
     emitter.removeListener(DB_USERDATA_RETURNED, this.dbUserDataReturned);
+    clearInterval(this.interval);
   }
 
   connectionConnected = () => {
@@ -123,7 +143,7 @@ class Favorites extends Component {
 
   coinlistReturned = (payload) => {
     console.log(payload);
-    this.setState({ loading: false, items: payload });
+    this.setState({ loading: false, items: payload, progressBar: 0 });
   };
 
   coinSelect = (newValue) => {
@@ -219,6 +239,10 @@ class Favorites extends Component {
                 </Grid>
               </Grid>
               <Grid item className={classes.favList} xs={12}>
+                <LinearProgress
+                  variant="determinate"
+                  value={this.state.progressBar}
+                />
                 <FavoriteList />
               </Grid>
             </Grid>

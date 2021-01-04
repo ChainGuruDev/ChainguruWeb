@@ -7,6 +7,7 @@ import "./i18n";
 import cgTheme from "./theme";
 import RobotoTTF from "typeface-roboto";
 import createBreakpoints from "@material-ui/core/styles/createBreakpoints";
+import Web3 from "web3";
 
 import Header from "./components/header";
 import Footer from "./components/footer";
@@ -23,7 +24,7 @@ import User from "./components/market/user/user";
 
 import { colors } from "./theme";
 
-//import { injected } from "./stores/connectors";
+import { injected } from "./stores/connectors";
 import { CONNECTION_CONNECTED, DARKMODE_SWITCH_RETURN } from "./constants";
 
 import Store from "./stores";
@@ -43,30 +44,31 @@ class App extends Component {
     this.setState({ headerValue: newValue });
   };
 
-  componentDidMount() {
-    // injected.isAuthorized().then((isAuthorized) => {
-    //   if (isAuthorized) {
-    //     injected
-    //       .activate()
-    //       .then((a) => {
-    //         console.log(a);
-    //
-    //         store.setStore({
-    //           account: { address: a.account },
-    //           web3context: { library: { provider: a.provider } },
-    //         });
-    //         emitter.emit(CONNECTION_CONNECTED);
-    //         console.log(a);
-    //       })
-    //       .catch((e) => {
-    //         console.log(e);
-    //       });
-    //   } else {
-    //   }
-    // });
+  componentDidMount = async () => {
+    let web3 = new Web3(Web3.givenProvider);
+
+    injected.isAuthorized().then(async (isAuthorized) => {
+      if (isAuthorized) {
+        injected
+          .activate()
+          .then((a) => {
+            // console.log(a);
+            store.setStore({
+              account: { address: web3.utils.toChecksumAddress(a.account) },
+              web3context: { library: { provider: a.provider } },
+            });
+            emitter.emit(CONNECTION_CONNECTED);
+            // console.log(a);
+          })
+          .catch((e) => {
+            console.log(e);
+          });
+      } else {
+      }
+    });
     emitter.on(DARKMODE_SWITCH_RETURN, this.darkModeSwitch);
     this.darkModeSwitch(this.getMode());
-  }
+  };
 
   componentWillUnmount() {
     emitter.removeListener(DARKMODE_SWITCH_RETURN, this.darkModeSwitch);
@@ -373,7 +375,6 @@ class App extends Component {
                 />
                 <Short tool="detective" />
               </Route>
-
               <Route path="/short/:tool/:coinID">
                 <Header
                   setHeaderValue={this.setHeaderValue}
@@ -382,7 +383,6 @@ class App extends Component {
                 />
                 <Short />
               </Route>
-
               <Route path="/short">
                 <Header
                   setHeaderValue={this.setHeaderValue}

@@ -179,6 +179,7 @@ class FavoriteList extends Component {
       );
       sort.push(sortData);
     });
+    console.log(sort);
     this.setState({ sortData: sort });
   };
 
@@ -425,7 +426,7 @@ class FavoriteList extends Component {
         size="small"
       >
         <Table className={classes.table} aria-label="favoritesList">
-          <TableHead style={{ backgroundColor: colors.cgOrange }}>
+          <TableHead>
             <TableRow>
               <TableCell></TableCell>
               <TableCell></TableCell>
