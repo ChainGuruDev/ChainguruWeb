@@ -193,7 +193,7 @@ class Short extends Component {
 
     return (
       <Paper className={classes.rootTabs}>
-        <AppBar position="static" color="inherit">
+        <AppBar position="static" color="default">
           <Tabs
             value={valueTab}
             onChange={handleChangeTabs}

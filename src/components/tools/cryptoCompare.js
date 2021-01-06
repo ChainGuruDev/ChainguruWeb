@@ -108,7 +108,6 @@ class CryptoCompare extends Component {
   }
 
   graphTimeframeChanged = (data) => {
-    console.log(data);
     this.setState({ timeFrame: data });
   };
 

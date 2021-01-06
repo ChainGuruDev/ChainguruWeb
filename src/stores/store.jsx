@@ -68,6 +68,10 @@ import {
   DB_DEL_FAVORITE_RETURNED,
   DB_GET_BLUECHIPS,
   DB_GET_BLUECHIPS_RETURNED,
+  DB_ADD_WALLET,
+  DB_DEL_WALLET,
+  DB_ADD_WALLET_RETURNED,
+  DB_DEL_WALLET_RETURNED,
   COINGECKO_ALLTIME_CHART_RETURNED,
   COINGECKO_GET_ALLTIME_CHART,
   UNISWAP_TRADE,
@@ -127,6 +131,7 @@ class Store {
       coinList: [],
       userData: {},
       theme: "light",
+      geckoOnline: false,
     };
 
     dispatcher.register(
@@ -227,6 +232,12 @@ class Store {
             break;
           case DB_GET_USERDATA:
             this.db_getUserData(payload);
+            break;
+          case DB_ADD_WALLET:
+            this.db_addWallet(payload);
+            break;
+          case DB_DEL_WALLET:
+            this.db_delWallet(payload);
             break;
           case DB_ADD_FAVORITE:
             this.db_addFavorite(payload);
@@ -1090,11 +1101,15 @@ class Store {
   };
 
   pingCoinGecko = async () => {
-    try {
-      let data = await CoinGeckoClient.ping();
-      console.log(data.data);
-    } catch (err) {
-      return emitter.emit(ERROR, err.message);
+    if (!this.store.geckoOnline) {
+      try {
+        let data = await CoinGeckoClient.ping();
+        this.store.geckoOnline = true;
+        console.log(data.data);
+      } catch (err) {
+        this.store.geckoOnline = false;
+        return emitter.emit(ERROR, err.message);
+      }
     }
   };
 
@@ -1141,9 +1156,16 @@ class Store {
   getCoinPriceChart = async (payload) => {
     let data;
     if (payload.content[2]) {
-      data = await CoinGeckoClient.coins.fetchMarketChart(payload.content[0], {
-        days: payload.content[2],
-      });
+      try {
+        data = await CoinGeckoClient.coins.fetchMarketChart(
+          payload.content[0],
+          {
+            days: payload.content[2],
+          }
+        );
+      } catch (err) {
+        console.log(err.message);
+      }
     } else {
       data = await CoinGeckoClient.coins.fetchMarketChart(payload.content[0], {
         days: "1",
@@ -1243,6 +1265,26 @@ class Store {
       { data: { tokenID: payload.content } }
     );
     emitter.emit(DB_DEL_FAVORITE_RETURNED, await _dbDelFav.data);
+  };
+
+  db_addWallet = async (payload) => {
+    const account = store.getStore("account");
+
+    let _dbAddWallet = await axios.put(
+      `https://chainguru-db.herokuapp.com/favorites/${account.address}`,
+      { address: payload.wallet }
+    );
+    emitter.emit(DB_ADD_WALLET_RETURNED, await _dbAddWallet.data);
+  };
+
+  db_delWallet = async (payload) => {
+    const account = store.getStore("account");
+
+    let _dbDelWallet = await axios.delete(
+      `https://chainguru-db.herokuapp.com/favorites/${account.address}`,
+      { data: { address: payload.wallet } }
+    );
+    emitter.emit(DB_DEL_WALLET_RETURNED, await _dbDelWallet.data);
   };
 
   db_getBluechips = async () => {

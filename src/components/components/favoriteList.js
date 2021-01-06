@@ -285,20 +285,27 @@ class FavoriteList extends Component {
     if (formatedRows.length > 1) {
       return formatedRows.map((row) => (
         <TableRow hover={true} key={row.name}>
-          <TableCell component="th" scope="row">
+          <TableCell
+            style={{ cursor: "pointer" }}
+            onClick={() => this.detective(row.id)}
+            component="th"
+            scope="row"
+          >
             <img
-              style={{ cursor: "pointer" }}
               className={classes.tokenLogo}
               alt="coin-icon"
               src={row.image}
-              onClick={() => this.detective(row.id)}
             />
           </TableCell>
-          <TableCell padding="none" align="left">
-            {row.symbol}
-          </TableCell>
-          <TableCell align="left">
-            <Typography variant={"h4"}>{row.name}</Typography>
+          <TableCell
+            style={{ cursor: "pointer" }}
+            onClick={() => this.detective(row.id)}
+            align="left"
+          >
+            <Typography variant={"h4"} onClick={() => this.detective(row.id)}>
+              {row.name}
+            </Typography>
+            <Typography variant="subtitle1">{row.symbol}</Typography>
           </TableCell>
           <TableCell align="right">
             <Typography variant={"h4"}>{row.current_price}</Typography>
@@ -364,18 +371,6 @@ class FavoriteList extends Component {
           <TableCell align="right">
             <Typography variant={"h4"}>{row.market_cap} </Typography>
           </TableCell>
-          <TableCell align="right">
-            <Typography
-              variant={"h4"}
-              color={
-                row.market_cap_change_percentage_24h > 0
-                  ? "primary"
-                  : "secondary"
-              }
-            >
-              {row.market_cap_change_percentage_24h}%
-            </Typography>
-          </TableCell>
           <TableCell align="center">
             <SparklineChart id={row.symbol} data={row.sparkline_in_7d} />
           </TableCell>
@@ -428,7 +423,6 @@ class FavoriteList extends Component {
         <Table className={classes.table} aria-label="favoritesList">
           <TableHead>
             <TableRow>
-              <TableCell></TableCell>
               <TableCell></TableCell>
               <TableCell onClick={() => this.sortBy("name")} align="left">
                 {this.state.sortBy === "name" &&
@@ -556,20 +550,6 @@ class FavoriteList extends Component {
                     <ArrowDropDownRoundedIcon align="right" />
                   )}
                 Marketcap
-              </TableCell>
-              <TableCell
-                onClick={() => this.sortBy("market_cap_change_percentage_24h")}
-                align="right"
-              >
-                {this.state.sortBy === "market_cap_change_percentage_24h" &&
-                  this.state.sortOrder === "asc" && (
-                    <ArrowDropUpRoundedIcon align="right" />
-                  )}
-                {this.state.sortBy === "market_cap_change_percentage_24h" &&
-                  this.state.sortOrder === "dsc" && (
-                    <ArrowDropDownRoundedIcon align="right" />
-                  )}
-                Marketcap 24hs
               </TableCell>
               <TableCell align="center">Chart (7d)</TableCell>
               <TableCell></TableCell>

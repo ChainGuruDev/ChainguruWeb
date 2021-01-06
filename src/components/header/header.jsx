@@ -225,7 +225,7 @@ class Header extends Component {
       address: _acc.address,
     });
 
-    this.setAddressEnsName();
+    //this.setAddressEnsName();
   };
 
   connectionDisconnected = () => {

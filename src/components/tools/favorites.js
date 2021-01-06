@@ -8,7 +8,6 @@ import FavoriteList from "../components/favoriteList.js";
 //IMPORT MaterialUI
 import {
   Card,
-  Typography,
   Grid,
   Divider,
   Button,
@@ -117,7 +116,7 @@ class Favorites extends Component {
     emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
-    emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
+    //emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
     this.interval = setInterval(() => this.updateFavorites(), 750);
   }
 
@@ -128,7 +127,7 @@ class Favorites extends Component {
       this.connectionDisconnected
     );
     emitter.removeListener(COINLIST_RETURNED, this.coinlistReturned);
-    emitter.removeListener(DB_USERDATA_RETURNED, this.dbUserDataReturned);
+    //emitter.removeListener(DB_USERDATA_RETURNED, this.dbUserDataReturned);
     clearInterval(this.interval);
   }
 
@@ -162,9 +161,9 @@ class Favorites extends Component {
     });
   };
 
-  dbUserDataReturned = (payload) => {
-    console.log(payload);
-  };
+  // dbUserDataReturned = (payload) => {
+  //   console.log(payload);
+  // };
 
   addFavorite = (tokenID) => {
     dispatcher.dispatch({

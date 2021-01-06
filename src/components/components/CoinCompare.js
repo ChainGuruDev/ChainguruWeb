@@ -60,10 +60,12 @@ class CoinCompare extends Component {
   graphTimeFrameChanged = (data) => {
     const { coinData, loading } = this.state;
 
-    dispatcher.dispatch({
-      type: GET_COIN_PRICECHART,
-      content: [coinData.id, this.props.id, data],
-    });
+    if (coinData.id) {
+      dispatcher.dispatch({
+        type: GET_COIN_PRICECHART,
+        content: [coinData.id, this.props.id, data],
+      });
+    }
   };
 
   coinDataReturned = (data) => {
