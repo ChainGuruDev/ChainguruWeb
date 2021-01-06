@@ -268,8 +268,6 @@ class Portfolio extends Component {
     wallets.forEach((item, i) => {
       console.log(item.wallet);
     });
-
-    return <div>"HOLA"</div>;
   };
 
   handleChange = (event) => {
