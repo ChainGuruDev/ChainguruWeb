@@ -1269,9 +1269,8 @@ class Store {
 
   db_addWallet = async (payload) => {
     const account = store.getStore("account");
-
     let _dbAddWallet = await axios.put(
-      `https://chainguru-db.herokuapp.com/favorites/${account.address}`,
+      `https://chainguru-db.herokuapp.com/wallets/${account.address}`,
       { address: payload.wallet }
     );
     emitter.emit(DB_ADD_WALLET_RETURNED, await _dbAddWallet.data);
@@ -1281,7 +1280,7 @@ class Store {
     const account = store.getStore("account");
 
     let _dbDelWallet = await axios.delete(
-      `https://chainguru-db.herokuapp.com/favorites/${account.address}`,
+      `https://chainguru-db.herokuapp.com/wallets/${account.address}`,
       { data: { address: payload.wallet } }
     );
     emitter.emit(DB_DEL_WALLET_RETURNED, await _dbDelWallet.data);

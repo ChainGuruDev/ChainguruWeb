@@ -313,13 +313,6 @@ class Portfolio extends Component {
         {!account.address && <div>CONNECT WALLET</div>}
         {account.address && (
           <Grid className={classes.portfolioGrid} spacing={3} container>
-            <Grid item xs={12}>
-              <Card className={classes.portfolioCard} elevation={3}>
-                <Grid item className={classes.warning} xs={12}>
-                  <Typography>Tool under Development</Typography>
-                </Grid>
-              </Card>
-            </Grid>
             <Grid item xs={3}>
               <Card className={classes.walletsCard} elevation={3}>
                 <Grid
