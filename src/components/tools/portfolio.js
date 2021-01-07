@@ -21,6 +21,7 @@ import {
   IconButton,
 } from "@material-ui/core";
 
+import RefreshRoundedIcon from "@material-ui/icons/RefreshRounded";
 import AddCircleRoundedIcon from "@material-ui/icons/AddCircleRounded";
 import BackspaceRoundedIcon from "@material-ui/icons/BackspaceRounded";
 
@@ -41,6 +42,8 @@ import {
   DB_ADD_WALLET_RETURNED,
   DB_DEL_WALLET,
   DB_DEL_WALLET_RETURNED,
+  DB_UPDATE_WALLET,
+  DB_UPDATE_WALLET_RETURNED,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -63,9 +66,11 @@ const styles = (theme) => ({
     direction: "row",
     alignItems: "stretch",
     background: "rgba(125,125,125,0.1)",
+    border: `2px solid ${colors.cgGreen}`,
   },
   walletsCard: {
     background: "rgba(125,125,125,0.1)",
+    border: `2px solid ${colors.cgGreen}`,
   },
 
   walletsGrid: {
@@ -113,6 +118,7 @@ class Portfolio extends Component {
       userWallets: [],
       errMsgWallet: "",
       errorWallet: false,
+      userBalance: [],
     };
     if (account && account.address) {
       dispatcher.dispatch({
@@ -145,6 +151,7 @@ class Portfolio extends Component {
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
     emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
     emitter.on(DB_ADD_WALLET_RETURNED, this.dbWalletReturned);
+    emitter.on(DB_UPDATE_WALLET_RETURNED, this.dbUpdateWalletReturned);
     emitter.on(DB_DEL_WALLET_RETURNED, this.dbWalletReturned);
     // this.interval = setInterval(() => this.updateFavorites(), 750);
   }
@@ -160,6 +167,11 @@ class Portfolio extends Component {
     emitter.removeListener(CHECK_ACCOUNT_RETURNED, this.checkAccountReturned);
     emitter.removeListener(DB_ADD_WALLET_RETURNED, this.dbWalletReturned);
     emitter.removeListener(DB_DEL_WALLET_RETURNED, this.dbWalletReturned);
+    emitter.removeListener(
+      DB_UPDATE_WALLET_RETURNED,
+      this.dbUpdateWalletReturned
+    );
+
     // clearInterval(this.interval);
   }
 
@@ -202,11 +214,32 @@ class Portfolio extends Component {
   };
 
   addWallet = (wallet) => {
+    if (wallet) {
+      dispatcher.dispatch({
+        type: DB_ADD_WALLET,
+        wallet: wallet,
+      });
+    } else {
+      this.setState({ errorWallet: true });
+    }
+  };
+
+  updateWallet = (wallet) => {
     dispatcher.dispatch({
-      type: DB_ADD_WALLET,
+      type: DB_UPDATE_WALLET,
       wallet: wallet,
     });
-    this.setState({ validSelection: false, selectedID: "" });
+  };
+
+  dbUpdateWalletReturned = (payload) => {
+    console.log(this.state.userWallets);
+    console.log(payload);
+    let newWallets = [...this.state.userWallets];
+    let objIndex = newWallets.findIndex((obj) => obj.wallet === payload.wallet);
+    let item = { ...newWallets[objIndex] };
+    item = payload;
+    newWallets[objIndex] = item;
+    this.setState({ userWallets: newWallets });
   };
 
   removeWALLET = (wallet) => {
@@ -217,7 +250,64 @@ class Portfolio extends Component {
   };
 
   walletClicked = (wallet) => {
-    console.log(wallet);
+    this.getBalance(wallet);
+  };
+
+  getBalance = (wallet) => {
+    if (wallet === "ALL") {
+      let newWallets = [...this.state.userWallets];
+      let displayBalance = [...newWallets[0].erc20Balance];
+      console.log(displayBalance);
+      let objIndex;
+      for (var i = 1; i < newWallets.length; i++) {
+        newWallets[i].erc20Balance.forEach((item, i) => {
+          if (item.tokenSymbol === "UNI-V2") {
+            displayBalance.push(item);
+            return;
+          }
+          objIndex = displayBalance.findIndex(
+            (obj) => obj.tokenName === item.tokenName
+          );
+          if (objIndex < 0) {
+            displayBalance.push(item);
+          } else {
+            let previousBalance = displayBalance[objIndex];
+            let newBalance = previousBalance.balance + item.balance;
+            displayBalance[objIndex].balance = newBalance;
+          }
+          console.log(objIndex);
+        });
+      }
+
+      // prevBalance.forEach((item, i) => {
+      //   if (displayBalance.length === 0) {
+      //     displayBalance = item.erc20Balance;
+      //   } else {
+      //     let objIndex;
+      //     item.erc20Balance.forEach((item, i) => {
+      //       objIndex = displayBalance.findIndex(
+      //         (obj) => obj.tokenName === item.tokenName
+      //       );
+      //       if (objIndex < 0) {
+      //         displayBalance.push(item);
+      //       } else {
+      //         let previousBalance = displayBalance[objIndex];
+      //         let newBalance = previousBalance.balance + item.balance;
+      //         displayBalance[objIndex].balance = newBalance;
+      //       }
+      //     });
+      //   }
+      // });
+      console.log("clicked ALL");
+      console.log(displayBalance);
+    } else {
+      console.log(`clicked ${wallet}`);
+      this.state.userWallets.forEach((item, i) => {
+        if (item.wallet === wallet) {
+          this.setState({ userBalance: item.erc20Balance });
+        }
+      });
+    }
   };
 
   userWalletList = (wallets) => {
@@ -250,17 +340,22 @@ class Portfolio extends Component {
                 </React.Fragment>
               }
             />
-            {this.state.account.address != wallet.wallet && (
-              <ListItemSecondaryAction>
+            <ListItemSecondaryAction>
+              <IconButton
+                aria-label="remove"
+                onClick={() => this.updateWallet(wallet.wallet)}
+              >
+                <RefreshRoundedIcon />
+              </IconButton>
+              {this.state.account.address != wallet.wallet && (
                 <IconButton
-                  edge="end"
                   aria-label="remove"
                   onClick={() => this.removeWALLET(wallet.wallet)}
                 >
                   <BackspaceRoundedIcon />
                 </IconButton>
-              </ListItemSecondaryAction>
-            )}
+              )}
+            </ListItemSecondaryAction>
           </ListItem>
         </div>
       ));

@@ -195,8 +195,8 @@ class Medium extends Component {
             onChange={handleChangeTabs}
             aria-label="tool tabs"
             scrollButtons="auto"
-            indicatorColor="secondary"
-            textColor="secondary"
+            indicatorColor="primary"
+            textColor="primary"
             centered
           >
             <Tab

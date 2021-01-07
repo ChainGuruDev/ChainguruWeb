@@ -72,6 +72,8 @@ import {
   DB_DEL_WALLET,
   DB_ADD_WALLET_RETURNED,
   DB_DEL_WALLET_RETURNED,
+  DB_UPDATE_WALLET,
+  DB_UPDATE_WALLET_RETURNED,
   COINGECKO_ALLTIME_CHART_RETURNED,
   COINGECKO_GET_ALLTIME_CHART,
   UNISWAP_TRADE,
@@ -244,6 +246,9 @@ class Store {
             break;
           case DB_DEL_FAVORITE:
             this.db_delFavorite(payload);
+            break;
+          case DB_UPDATE_WALLET:
+            this.db_updateWallet(payload);
             break;
           case DB_GET_BLUECHIPS:
             this.db_getBluechips();
@@ -1284,6 +1289,25 @@ class Store {
       { data: { address: payload.wallet } }
     );
     emitter.emit(DB_DEL_WALLET_RETURNED, await _dbDelWallet.data);
+  };
+
+  db_updateWallet = async (payload) => {
+    const account = store.getStore("account");
+
+    let _dbUpdateWalletBal;
+    let _dbUpdateWallet = await axios
+      .put(`https://chainguru-db.herokuapp.com/wallets/updateOne`, {
+        wallet: payload.wallet,
+      })
+      .then(
+        (_dbUpdateWalletBal = await axios.put(
+          `https://chainguru-db.herokuapp.com/wallets/balance`,
+          {
+            wallet: payload.wallet,
+          }
+        ))
+      );
+    emitter.emit(DB_UPDATE_WALLET_RETURNED, await _dbUpdateWalletBal.data);
   };
 
   db_getBluechips = async () => {
