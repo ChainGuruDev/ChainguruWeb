@@ -1129,7 +1129,7 @@ class Store {
       this.store.coinList = data.data;
       emitter.emit(COINLIST_RETURNED, this.store.coinList);
     }
-    console.log(this.store.coinList);
+    //console.log(this.store.coinList);
     //let data = await CoinGeckoClient.coins.list();
   };
 

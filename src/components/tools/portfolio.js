@@ -21,6 +21,8 @@ import {
   IconButton,
 } from "@material-ui/core";
 
+import BalanceList from "../components/balanceList.js";
+
 import RefreshRoundedIcon from "@material-ui/icons/RefreshRounded";
 import AddCircleRoundedIcon from "@material-ui/icons/AddCircleRounded";
 import BackspaceRoundedIcon from "@material-ui/icons/BackspaceRounded";
@@ -28,8 +30,6 @@ import BackspaceRoundedIcon from "@material-ui/icons/BackspaceRounded";
 import {
   CHECK_ACCOUNT_RETURNED,
   CHECK_ACCOUNT,
-  GET_COIN_LIST,
-  COINLIST_RETURNED,
   GET_COIN_DATA,
   DB_GET_USERDATA,
   DB_USERDATA_RETURNED,
@@ -114,6 +114,7 @@ class Portfolio extends Component {
       account: account,
       loading: false,
       selectedID: "",
+      selectedWallet: "",
       validSelection: false,
       userWallets: [],
       errMsgWallet: "",
@@ -148,7 +149,6 @@ class Portfolio extends Component {
     emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
     emitter.on(CHECK_ACCOUNT_RETURNED, this.checkAccountReturned);
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
-    emitter.on(COINLIST_RETURNED, this.coinlistReturned);
     emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
     emitter.on(DB_ADD_WALLET_RETURNED, this.dbWalletReturned);
     emitter.on(DB_UPDATE_WALLET_RETURNED, this.dbUpdateWalletReturned);
@@ -162,7 +162,6 @@ class Portfolio extends Component {
       CONNECTION_DISCONNECTED,
       this.connectionDisconnected
     );
-    emitter.removeListener(COINLIST_RETURNED, this.coinlistReturned);
     emitter.removeListener(DB_USERDATA_RETURNED, this.dbUserDataReturned);
     emitter.removeListener(CHECK_ACCOUNT_RETURNED, this.checkAccountReturned);
     emitter.removeListener(DB_ADD_WALLET_RETURNED, this.dbWalletReturned);
@@ -184,25 +183,12 @@ class Portfolio extends Component {
     this.setState({ account: store.getStore("account") });
   };
 
-  coinlistReturned = (payload) => {
-    console.log(payload);
-    this.setState({ loading: false, items: payload });
-  };
-
   coinSelect = (newValue) => {
     if (newValue) {
       this.setState({ validSelection: true, selectedID: newValue.id });
     } else {
       this.setState({ validSelection: false, selectedID: "" });
     }
-  };
-
-  openSearch = () => {
-    this.setState({ loading: true });
-    dispatcher.dispatch({
-      type: GET_COIN_LIST,
-      content: {},
-    });
   };
 
   dbUserDataReturned = (payload) => {
@@ -229,17 +215,17 @@ class Portfolio extends Component {
       type: DB_UPDATE_WALLET,
       wallet: wallet,
     });
+    this.setState({ selectedWallet: "updating" });
   };
 
   dbUpdateWalletReturned = (payload) => {
-    console.log(this.state.userWallets);
-    console.log(payload);
     let newWallets = [...this.state.userWallets];
     let objIndex = newWallets.findIndex((obj) => obj.wallet === payload.wallet);
     let item = { ...newWallets[objIndex] };
     item = payload;
     newWallets[objIndex] = item;
     this.setState({ userWallets: newWallets });
+    this.walletClicked(payload.wallet);
   };
 
   removeWALLET = (wallet) => {
@@ -257,11 +243,12 @@ class Portfolio extends Component {
     if (wallet === "ALL") {
       let newWallets = [...this.state.userWallets];
       let displayBalance = [...newWallets[0].erc20Balance];
-      console.log(displayBalance);
       let objIndex;
       for (var i = 1; i < newWallets.length; i++) {
         newWallets[i].erc20Balance.forEach((item, i) => {
           if (item.tokenSymbol === "UNI-V2") {
+            // agregar comparar el contract address
+            // para ver si son del mismo pool de uni y sumar los balances
             displayBalance.push(item);
             return;
           }
@@ -275,36 +262,16 @@ class Portfolio extends Component {
             let newBalance = previousBalance.balance + item.balance;
             displayBalance[objIndex].balance = newBalance;
           }
-          console.log(objIndex);
         });
       }
-
-      // prevBalance.forEach((item, i) => {
-      //   if (displayBalance.length === 0) {
-      //     displayBalance = item.erc20Balance;
-      //   } else {
-      //     let objIndex;
-      //     item.erc20Balance.forEach((item, i) => {
-      //       objIndex = displayBalance.findIndex(
-      //         (obj) => obj.tokenName === item.tokenName
-      //       );
-      //       if (objIndex < 0) {
-      //         displayBalance.push(item);
-      //       } else {
-      //         let previousBalance = displayBalance[objIndex];
-      //         let newBalance = previousBalance.balance + item.balance;
-      //         displayBalance[objIndex].balance = newBalance;
-      //       }
-      //     });
-      //   }
-      // });
-      console.log("clicked ALL");
-      console.log(displayBalance);
+      this.setState({ userBalance: displayBalance, selectedWallet: wallet });
     } else {
-      console.log(`clicked ${wallet}`);
       this.state.userWallets.forEach((item, i) => {
         if (item.wallet === wallet) {
-          this.setState({ userBalance: item.erc20Balance });
+          this.setState({
+            userBalance: item.erc20Balance,
+            selectedWallet: item.wallet,
+          });
         }
       });
     }
@@ -456,7 +423,10 @@ class Portfolio extends Component {
             </Grid>
             <Grid item xs={9}>
               <Card className={classes.portfolioCard} elevation={3}>
-                <Grid>BALANCE</Grid>
+                <BalanceList
+                  data={this.state.userBalance}
+                  selectedWallet={this.state.selectedWallet}
+                />
               </Card>
             </Grid>
           </Grid>
