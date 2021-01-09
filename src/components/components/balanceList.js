@@ -216,6 +216,7 @@ class BalanceList extends Component {
   };
 
   createData = (
+    contractAddress,
     image,
     name,
     id,
@@ -231,6 +232,7 @@ class BalanceList extends Component {
     sparkline_in_7d
   ) => {
     return {
+      contractAddress,
       image,
       name,
       id,
@@ -251,8 +253,10 @@ class BalanceList extends Component {
     let rows = [];
     let sort = [];
     data.forEach((item, i) => {
+      // console.log(item);
       if (item.geckoData) {
         let sortData = this.createData(
+          item.contractAddress,
           item.geckoData.image,
           item.geckoData.name,
           item.geckoData.id,
@@ -331,6 +335,7 @@ class BalanceList extends Component {
       sortedRows = rowData.sort(dynamicSort(sortBy));
       sortedRows.forEach((item, i) => {
         let _rowData = this.createData(
+          item.contractAddress,
           item.image,
           item.name,
           item.id,
@@ -351,6 +356,7 @@ class BalanceList extends Component {
       sortedRows = rowData.sort(dynamicSort(`-${sortBy}`));
       sortedRows.forEach((item, i) => {
         let _rowData = this.createData(
+          item.contractAddress,
           item.image,
           item.name,
           item.id,
@@ -371,7 +377,7 @@ class BalanceList extends Component {
 
     if (formatedRows.length > 1) {
       return formatedRows.map((row) => (
-        <TableRow hover={true} key={row.name}>
+        <TableRow hover={true} key={row.contractAddress}>
           <TableCell
             style={{ cursor: "pointer" }}
             onClick={() => this.detective(row.id)}

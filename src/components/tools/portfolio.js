@@ -193,6 +193,7 @@ class Portfolio extends Component {
 
   dbUserDataReturned = (payload) => {
     this.setState({ userWallets: payload.wallets });
+    this.getBalance("ALL");
   };
 
   dbWalletReturned = (payload) => {
