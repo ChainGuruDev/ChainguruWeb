@@ -13,6 +13,10 @@ import { withTranslation } from "react-i18next";
 
 import { ReactComponent as CGLogo } from "../../assets/logos/logo_chainguru.svg";
 import { ReactComponent as GASIcon } from "../../assets/gas.svg";
+import { ReactComponent as Usd } from "../../assets/dolar.svg";
+import { ReactComponent as Eur } from "../../assets/euro.svg";
+import { ReactComponent as Btc } from "../../assets/bitcoin.svg";
+import { ReactComponent as Eth } from "../../assets/ethereum.svg";
 
 import {
   CONNECTION_CONNECTED,
@@ -21,7 +25,9 @@ import {
   DARKMODE_SWITCH,
   DARKMODE_SWITCH_RETURN,
   CHECK_GASPRICE,
+  SWITCH_VS_COIN,
   GASPRICE_RETURNED,
+  SWITCH_VS_COIN_RETURNED,
 } from "../../constants";
 
 import Brightness2OutlinedIcon from "@material-ui/icons/Brightness2Outlined";
@@ -45,7 +51,6 @@ const styles = (theme) => ({
   headerV2: {
     width: "100%",
     display: "flex",
-    borderBottom: "3px solid " + colors.cgOrange,
     padding: "17px 24px",
   },
   icon: {
@@ -60,6 +65,14 @@ const styles = (theme) => ({
     display: "flex",
     maxWidth: "100%",
     maxHeight: "inherit",
+  },
+  iconVS: {
+    display: "flex",
+    cursor: "pointer",
+    maxHeight: "50px",
+  },
+  imageIconVS: {
+    maxHeight: "50px",
   },
   links: {
     display: "flex",
@@ -126,6 +139,18 @@ const styles = (theme) => ({
       background: "rgba(47, 128, 237, 0.1)",
     },
   },
+  vsCoinDIV: {
+    padding: "0px",
+    borderRadius: "50px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: "15px",
+    cursor: "pointer",
+    "&:hover": {
+      background: "rgba(47, 128, 237, 0.1)",
+    },
+  },
 
   walletTitle: {
     flex: 1,
@@ -162,6 +187,7 @@ class Header extends Component {
       darkModeBool: this.getMode(),
       modalOpen: false,
       gasColor: colors.lightGray,
+      vsCoin: "usd",
     };
   }
 
@@ -170,6 +196,10 @@ class Header extends Component {
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
     emitter.on(DARKMODE_SWITCH_RETURN, this.darkModeSwitchReturned);
     emitter.on(GASPRICE_RETURNED, this.gasPriceReturned);
+    emitter.on(SWITCH_VS_COIN_RETURNED, this.switchVsCoinReturned);
+
+    //this.getVsCoin();
+
     dispatcher.dispatch({
       type: CHECK_GASPRICE,
     });
@@ -184,6 +214,16 @@ class Header extends Component {
       this.setState({ cgLogoColor: colors.cgRed });
     }
   }
+
+  getVsCoin = () => {
+    let vsCoin;
+    try {
+      vsCoin = JSON.parse(localStorage.getItem("vsCoin"));
+      this.setState({ vsCoin: vsCoin });
+    } catch (err) {
+      this.setState({ vsCoin: "usd" });
+    }
+  };
 
   getMode = () => {
     let savedmode;
@@ -203,7 +243,13 @@ class Header extends Component {
     );
     emitter.removeListener(DARKMODE_SWITCH_RETURN, this.darkModeSwitchReturned);
     emitter.removeListener(GASPRICE_RETURNED, this.gasPriceReturned);
+    emitter.removeListener(SWITCH_VS_COIN_RETURNED, this.switchVsCoinReturned);
   }
+
+  switchVsCoinReturned = (vscoin) => {
+    localStorage.setItem("vsCoin", JSON.stringify(vscoin));
+    this.setState({ vsCoin: vscoin });
+  };
 
   gasPriceReturned = (payload) => {
     let gasColor = colors.primary;
@@ -252,8 +298,27 @@ class Header extends Component {
     this.setState({ darkModeBool: payload });
   };
 
+  vsCoinSwitch = (vsCoin) => {
+    switch (vsCoin) {
+      case "usd":
+        this.setState({ vsCoin: "usd" });
+        break;
+      case "eur":
+        this.setState({ vsCoin: "eur" });
+        break;
+      case "btc":
+        this.setState({ vsCoin: "btc" });
+        break;
+      case "eth":
+        this.setState({ vsCoin: "eth" });
+        break;
+      default:
+    }
+    return emitter.emit(SWITCH_VS_COIN_RETURNED, vsCoin);
+  };
+
   render() {
-    const { classes, t } = this.props;
+    const { classes, t, vsCoin } = this.props;
     const {
       account,
       addressEnsName,
@@ -309,7 +374,10 @@ class Header extends Component {
           justify="space-between"
           alignItems="center"
         >
-          <div className={classes.headerV2}>
+          <div
+            className={classes.headerV2}
+            style={{ borderBottom: `3px solid ${this.state.cgLogoColor}` }}
+          >
             <div className={classes.icon}>
               <CGLogo
                 className={classes.imageIcon}
@@ -324,6 +392,47 @@ class Header extends Component {
               {this.renderLink("medium")}
               {this.renderLink("long")}
               {this.renderLink("market")}
+            </div>
+            <div
+              className={classes.vsCoinDIV}
+              style={{ border: `2px solid ${this.state.cgLogoColor}` }}
+            >
+              {this.state.vsCoin == "usd" && (
+                <Usd
+                  className={classes.vsCoinIcon}
+                  fill={this.state.cgLogoColor}
+                  onClick={() => {
+                    this.vsCoinSwitch("eur");
+                  }}
+                />
+              )}
+              {this.state.vsCoin === "eur" && (
+                <Eur
+                  className={classes.vsCoinIcon}
+                  fill={this.state.cgLogoColor}
+                  onClick={() => {
+                    this.vsCoinSwitch("btc");
+                  }}
+                />
+              )}
+              {this.state.vsCoin === "btc" && (
+                <Btc
+                  className={classes.vsCoinIcon}
+                  fill={this.state.cgLogoColor}
+                  onClick={() => {
+                    this.vsCoinSwitch("eth");
+                  }}
+                />
+              )}
+              {this.state.vsCoin === "eth" && (
+                <Eth
+                  className={classes.vsCoinIcon}
+                  fill={this.state.cgLogoColor}
+                  onClick={() => {
+                    this.vsCoinSwitch("usd");
+                  }}
+                />
+              )}
             </div>
             <div
               className={classes.gasPrice}

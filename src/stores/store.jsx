@@ -81,6 +81,8 @@ import {
   DARKMODE_SWITCH_RETURN,
   CHECK_GASPRICE,
   GASPRICE_RETURNED,
+  SWITCH_VS_COIN,
+  SWITCH_VS_COIN_RETURNED,
 } from "../constants";
 
 import {
@@ -267,6 +269,9 @@ class Store {
             break;
           case CHECK_GASPRICE:
             this.checkGasPrice(payload);
+            break;
+          case SWITCH_VS_COIN:
+            this.switchVsCoin(payload);
             break;
           default: {
             break;
@@ -1143,12 +1148,42 @@ class Store {
     }
   };
 
+  switchVsCoin = (vsCoin) => {
+    let newVsCoin;
+    switch (vsCoin.vsCoin) {
+      case "usd":
+        newVsCoin = "eur";
+        store.setStore({ vsCoin: "eur" });
+        break;
+      case "eur":
+        newVsCoin = "btc";
+        store.setStore({ vsCoin: "btc" });
+
+        break;
+      case "btc":
+        newVsCoin = "eth";
+        store.setStore({ vsCoin: "eth" });
+
+        break;
+      case "eth":
+        newVsCoin = "usd";
+        store.setStore({ vsCoin: "usd" });
+
+        break;
+      default:
+    }
+    console.log(newVsCoin);
+  };
+
   geckoPopulateFavList = async (tokenIds) => {
     let data;
+    console.log(tokenIds);
+    console.log(tokenIds.versus);
+
     try {
       let data = await CoinGeckoClient.coins.markets({
         ids: tokenIds.tokenIDs,
-        vs_currency: "usd",
+        vs_currency: tokenIds.versus,
         sparkline: true,
         price_change_percentage: "1h,24h,7d,30d,1y",
       });

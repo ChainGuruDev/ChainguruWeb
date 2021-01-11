@@ -39,9 +39,12 @@ import {
   DB_DEL_FAVORITE_RETURNED,
   COINGECKO_POPULATE_FAVLIST,
   COINGECKO_POPULATE_FAVLIST_RETURNED,
+  SWITCH_VS_COIN_RETURNED,
+  SWITCH_VS_COIN,
 } from "../../constants";
 
 import Store from "../../stores";
+const store = Store.store;
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
 
@@ -78,6 +81,7 @@ class FavoriteList extends Component {
       COINGECKO_POPULATE_FAVLIST_RETURNED,
       this.geckoFavListDataReturned
     );
+    emitter.on(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
   }
 
   componentWillUnmount() {
@@ -96,14 +100,24 @@ class FavoriteList extends Component {
       COINGECKO_POPULATE_FAVLIST_RETURNED,
       this.geckoFavListDataReturned
     );
+    emitter.removeListener(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
   }
 
   coinDataReturned = (data) => {
     console.log(data);
   };
 
+  vsCoinReturned = (vsCoin) => {
+    dispatcher.dispatch({
+      type: COINGECKO_POPULATE_FAVLIST,
+      tokenIDs: this.state.tokenIDs,
+      versus: vsCoin,
+    });
+  };
+
   dbUserDataReturned = (data) => {
     if (data.favorites.tokenIDs.length > 0) {
+      this.setState({ tokenIDs: data.favorites.tokenIDs });
       dispatcher.dispatch({
         type: COINGECKO_POPULATE_FAVLIST,
         tokenIDs: data.favorites.tokenIDs,
@@ -179,7 +193,7 @@ class FavoriteList extends Component {
       );
       sort.push(sortData);
     });
-    console.log(sort);
+    //console.log(sort);
     this.setState({ sortData: sort });
   };
 
@@ -190,7 +204,45 @@ class FavoriteList extends Component {
     });
   };
 
-  formatMoney = (amount, decimalCount = 2, decimal = ".", thousands = ",") => {
+  formatMoney = (amount, decimalCount = 6, decimal = ".", thousands = ",") => {
+    try {
+      decimalCount = Math.abs(decimalCount);
+      decimalCount = isNaN(decimalCount) ? 4 : decimalCount;
+      const negativeSign = amount < 0 ? "-" : "";
+
+      let num = parseInt((amount = Math.abs(Number(amount) || 0)));
+      if (num > 0) {
+        decimalCount = 2;
+      } else {
+        decimalCount = 4;
+      }
+      let i = parseInt(
+        (amount = Math.abs(Number(amount) || 0).toFixed(decimalCount))
+      ).toString();
+      let j = i.length > 3 ? i.length % 3 : 0;
+
+      return (
+        negativeSign +
+        (j ? i.substr(0, j) + thousands : "") +
+        i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousands) +
+        (decimalCount
+          ? decimal +
+            Math.abs(amount - i)
+              .toFixed(decimalCount)
+              .slice(2)
+          : "")
+      );
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  formatMoneyMCAP = (
+    amount,
+    decimalCount = 2,
+    decimal = ".",
+    thousands = ","
+  ) => {
     try {
       decimalCount = Math.abs(decimalCount);
       decimalCount = isNaN(decimalCount) ? 2 : decimalCount;
@@ -248,13 +300,13 @@ class FavoriteList extends Component {
           item.name,
           item.id,
           item.symbol,
-          this.formatMoney(item.current_price, 2),
+          this.formatMoney(item.current_price),
           parseFloat(item.price_change_percentage_1h_in_currency).toFixed(2),
           parseFloat(item.price_change_percentage_24h).toFixed(2),
           parseFloat(item.price_change_percentage_7d_in_currency).toFixed(2),
           parseFloat(item.price_change_percentage_30d_in_currency).toFixed(2),
           parseFloat(item.price_change_percentage_1y_in_currency).toFixed(2),
-          this.formatMoney(item.market_cap, 0),
+          this.formatMoneyMCAP(item.market_cap, 0),
           parseFloat(item.market_cap_change_percentage_24h).toFixed(2),
           item.sparkline_in_7d
         );
@@ -268,13 +320,13 @@ class FavoriteList extends Component {
           item.name,
           item.id,
           item.symbol,
-          this.formatMoney(item.current_price, 2),
+          this.formatMoney(item.current_price),
           parseFloat(item.price_change_percentage_1h_in_currency).toFixed(2),
           parseFloat(item.price_change_percentage_24h).toFixed(2),
           parseFloat(item.price_change_percentage_7d_in_currency).toFixed(2),
           parseFloat(item.price_change_percentage_30d_in_currency).toFixed(2),
           parseFloat(item.price_change_percentage_1y_in_currency).toFixed(2),
-          this.formatMoney(item.market_cap, 0),
+          this.formatMoneyMCAP(item.market_cap, 0),
           parseFloat(item.market_cap_change_percentage_24h).toFixed(2),
           item.sparkline_in_7d
         );

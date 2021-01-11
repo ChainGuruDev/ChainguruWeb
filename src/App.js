@@ -25,17 +25,23 @@ import User from "./components/market/user/user";
 import { colors } from "./theme";
 
 import { injected } from "./stores/connectors";
-import { CONNECTION_CONNECTED, DARKMODE_SWITCH_RETURN } from "./constants";
+import {
+  CONNECTION_CONNECTED,
+  DARKMODE_SWITCH_RETURN,
+  SWITCH_VS_COIN_RETURNED,
+} from "./constants";
 
 import Store from "./stores";
 const emitter = Store.emitter;
 const store = Store.store;
+const dispatcher = Store.dispatcher;
 
 class App extends Component {
   state = {
     headerValue: null,
     darkMode: false,
     theme: createMuiTheme(),
+    vsCoin: "usd",
   };
 
   setHeaderValue = (newValue) => {
@@ -66,12 +72,15 @@ class App extends Component {
       } else {
       }
     });
+
     emitter.on(DARKMODE_SWITCH_RETURN, this.darkModeSwitch);
+
     this.darkModeSwitch(this.getMode());
+    this.setState({ vsCoin: this.getVsCoin() });
   };
 
   componentWillUnmount() {
-    emitter.removeListener(DARKMODE_SWITCH_RETURN, this.darkModeSwitch);
+    emitter.removeListener(DARKMODE_SWITCH_RETURN, this.darkModeSwitchReturned);
   }
 
   getMode = () => {
@@ -81,6 +90,16 @@ class App extends Component {
       return savedmode || false;
     } catch (err) {
       return false;
+    }
+  };
+
+  getVsCoin = () => {
+    let vsCoin;
+    try {
+      vsCoin = JSON.parse(localStorage.getItem("vsCoin"));
+      return vsCoin || "usd";
+    } catch (err) {
+      return "usd";
     }
   };
 
@@ -387,6 +406,8 @@ class App extends Component {
                 <Header
                   setHeaderValue={this.setHeaderValue}
                   headerValue={headerValue}
+                  darkMode={darkMode}
+                  vsCoin={this.state.vsCoin}
                 />
                 <Short />
               </Route>
@@ -394,6 +415,7 @@ class App extends Component {
                 <Header
                   setHeaderValue={this.setHeaderValue}
                   headerValue={headerValue}
+                  vsCoin={this.state.vsCoin}
                 />
                 <Medium />
               </Route>
@@ -401,6 +423,7 @@ class App extends Component {
                 <Header
                   setHeaderValue={this.setHeaderValue}
                   headerValue={headerValue}
+                  vsCoin={this.state.vsCoin}
                 />
                 <Long />
               </Route>
