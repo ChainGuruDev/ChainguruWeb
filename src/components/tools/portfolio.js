@@ -376,7 +376,7 @@ class Portfolio extends Component {
         {!account.address && <div>CONNECT WALLET</div>}
         {account.address && (
           <Grid className={classes.portfolioGrid} spacing={3} container>
-            <Grid item xs={3}>
+            <Grid item xs={2}>
               <Card className={classes.walletsCard} elevation={3}>
                 <Grid
                   className={classes.walletsGrid}
@@ -422,7 +422,7 @@ class Portfolio extends Component {
                 </Grid>
               </Card>
             </Grid>
-            <Grid item xs={9}>
+            <Grid item xs={10}>
               <Card className={classes.portfolioCard} elevation={3}>
                 <BalanceList
                   data={this.state.userBalance}

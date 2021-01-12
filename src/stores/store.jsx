@@ -1177,13 +1177,12 @@ class Store {
 
   geckoPopulateFavList = async (tokenIds) => {
     let data;
-    console.log(tokenIds);
-    console.log(tokenIds.versus);
+    let vsCoin = store.getStore("vsCoin");
 
     try {
       let data = await CoinGeckoClient.coins.markets({
         ids: tokenIds.tokenIDs,
-        vs_currency: tokenIds.versus,
+        vs_currency: vsCoin,
         sparkline: true,
         price_change_percentage: "1h,24h,7d,30d,1y",
       });

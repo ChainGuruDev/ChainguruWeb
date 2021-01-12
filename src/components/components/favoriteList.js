@@ -108,6 +108,7 @@ class FavoriteList extends Component {
   };
 
   vsCoinReturned = (vsCoin) => {
+    this.setState({ vsCoin: vsCoin });
     dispatcher.dispatch({
       type: COINGECKO_POPULATE_FAVLIST,
       tokenIDs: this.state.tokenIDs,
@@ -204,17 +205,17 @@ class FavoriteList extends Component {
     });
   };
 
-  formatMoney = (amount, decimalCount = 6, decimal = ".", thousands = ",") => {
+  formatMoney = (amount, decimalCount = 5, decimal = ".", thousands = ",") => {
     try {
       decimalCount = Math.abs(decimalCount);
-      decimalCount = isNaN(decimalCount) ? 4 : decimalCount;
+      decimalCount = isNaN(decimalCount) ? 5 : decimalCount;
       const negativeSign = amount < 0 ? "-" : "";
 
       let num = parseInt((amount = Math.abs(Number(amount) || 0)));
       if (num > 0) {
         decimalCount = 2;
       } else {
-        decimalCount = 4;
+        decimalCount = 5;
       }
       let i = parseInt(
         (amount = Math.abs(Number(amount) || 0).toFixed(decimalCount))

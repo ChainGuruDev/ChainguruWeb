@@ -41,6 +41,7 @@ import {
   COINGECKO_POPULATE_FAVLIST_RETURNED,
   GET_COIN_LIST,
   COINLIST_RETURNED,
+  SWITCH_VS_COIN_RETURNED,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -96,10 +97,11 @@ class BalanceList extends Component {
     emitter.on(COIN_DATA_RETURNED, this.coinDataReturned);
     emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
+    emitter.on(COINGECKO_POPULATE_FAVLIST_RETURNED, this.geckoPriceReturned);
+    emitter.on(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
     dispatcher.dispatch({
       type: GET_COIN_LIST,
     });
-    emitter.on(COINGECKO_POPULATE_FAVLIST_RETURNED, this.geckoPriceReturned);
   }
 
   componentWillUnmount() {
@@ -110,7 +112,12 @@ class BalanceList extends Component {
       COINGECKO_POPULATE_FAVLIST_RETURNED,
       this.geckoPriceReturned
     );
+    emitter.removeListener(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
   }
+
+  vsCoinReturned = () => {
+    this.getPortfolioValue(this.state.balanceList);
+  };
 
   getCoinIDs = async (data) => {
     if (this.state.coinList) {
@@ -140,7 +147,7 @@ class BalanceList extends Component {
                 if (objIndex2 > -1) {
                   item.id = coinList[objIndex2].id;
                 } else {
-                  console.log("token raros");
+                  console.log("token not yet supported");
                   console.log(item);
                 }
               }
@@ -172,8 +179,6 @@ class BalanceList extends Component {
         tokenIDs.push(item.id);
       }
     });
-    // console.log(tokenIDs);
-    // console.log(coinList);
     if (tokenIDs.length > 0) {
       let geckoData = await dispatcher.dispatch({
         type: COINGECKO_POPULATE_FAVLIST,
@@ -186,7 +191,6 @@ class BalanceList extends Component {
     let prevBalanceList = [...this.state.balanceList];
     let newBalanceList = [];
     //console.log(prevBalanceList);
-    //console.log(data);
     for (var i = 0; i < prevBalanceList.length; i++) {
       let item = { ...prevBalanceList[i] };
       let objIndex = data.findIndex((obj) => obj.id === item.id);
@@ -253,7 +257,6 @@ class BalanceList extends Component {
     let rows = [];
     let sort = [];
     data.forEach((item, i) => {
-      // console.log(item);
       if (item.geckoData) {
         let sortData = this.createData(
           item.contractAddress,
@@ -281,7 +284,45 @@ class BalanceList extends Component {
     this.setState({ sortData: sort, loadingPortfolio: false });
   };
 
-  formatMoney = (amount, decimalCount = 2, decimal = ".", thousands = ",") => {
+  formatMoney = (amount, decimalCount = 5, decimal = ".", thousands = ",") => {
+    try {
+      decimalCount = Math.abs(decimalCount);
+      decimalCount = isNaN(decimalCount) ? 5 : decimalCount;
+      const negativeSign = amount < 0 ? "-" : "";
+
+      let num = parseInt((amount = Math.abs(Number(amount) || 0)));
+      if (num > 0) {
+        decimalCount = 2;
+      } else {
+        decimalCount = 5;
+      }
+      let i = parseInt(
+        (amount = Math.abs(Number(amount) || 0).toFixed(decimalCount))
+      ).toString();
+      let j = i.length > 3 ? i.length % 3 : 0;
+
+      return (
+        negativeSign +
+        (j ? i.substr(0, j) + thousands : "") +
+        i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousands) +
+        (decimalCount
+          ? decimal +
+            Math.abs(amount - i)
+              .toFixed(decimalCount)
+              .slice(2)
+          : "")
+      );
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  formatMoneyMCAP = (
+    amount,
+    decimalCount = 2,
+    decimal = ".",
+    thousands = ","
+  ) => {
     try {
       decimalCount = Math.abs(decimalCount);
       decimalCount = isNaN(decimalCount) ? 2 : decimalCount;
@@ -346,7 +387,7 @@ class BalanceList extends Component {
           parseFloat(item.price_change_percentage_7d_in_currency).toFixed(2),
           parseFloat(item.price_change_percentage_30d_in_currency).toFixed(2),
           parseFloat(item.price_change_percentage_1y_in_currency).toFixed(2),
-          this.formatMoney(item.market_cap, 0),
+          this.formatMoneyMCAP(item.market_cap, 0),
           parseFloat(item.market_cap_change_percentage_24h).toFixed(2),
           item.sparkline_in_7d
         );

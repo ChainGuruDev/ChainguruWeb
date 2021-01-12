@@ -198,7 +198,7 @@ class Header extends Component {
     emitter.on(GASPRICE_RETURNED, this.gasPriceReturned);
     emitter.on(SWITCH_VS_COIN_RETURNED, this.switchVsCoinReturned);
 
-    //this.getVsCoin();
+    this.getVsCoin();
 
     dispatcher.dispatch({
       type: CHECK_GASPRICE,
@@ -219,8 +219,10 @@ class Header extends Component {
     let vsCoin;
     try {
       vsCoin = JSON.parse(localStorage.getItem("vsCoin"));
+      store.setStore({ vsCoin: vsCoin });
       this.setState({ vsCoin: vsCoin });
     } catch (err) {
+      store.setStore({ vsCoin: "usd" });
       this.setState({ vsCoin: "usd" });
     }
   };
@@ -249,6 +251,7 @@ class Header extends Component {
   switchVsCoinReturned = (vscoin) => {
     localStorage.setItem("vsCoin", JSON.stringify(vscoin));
     this.setState({ vsCoin: vscoin });
+    store.setStore({ vsCoin: vscoin });
   };
 
   gasPriceReturned = (payload) => {
