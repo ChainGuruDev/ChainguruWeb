@@ -225,7 +225,9 @@ class BalanceList extends Component {
     name,
     id,
     symbol,
+    balance,
     current_price,
+    value,
     price_change_percentage_1h_in_currency,
     price_change_percentage_24h,
     price_change_percentage_7d_in_currency,
@@ -241,7 +243,9 @@ class BalanceList extends Component {
       name,
       id,
       symbol,
+      balance,
       current_price,
+      value,
       price_change_percentage_1h_in_currency,
       price_change_percentage_24h,
       price_change_percentage_7d_in_currency,
@@ -258,13 +262,17 @@ class BalanceList extends Component {
     let sort = [];
     data.forEach((item, i) => {
       if (item.geckoData) {
+        let balance = item.balance / Math.pow(10, item.tokenDecimal);
+        let value = balance * item.geckoData.current_price;
         let sortData = this.createData(
           item.contractAddress,
           item.geckoData.image,
           item.geckoData.name,
           item.geckoData.id,
           item.geckoData.symbol,
+          balance,
           item.geckoData.current_price,
+          value,
           item.geckoData.price_change_percentage_1h_in_currency,
           item.geckoData.price_change_percentage_24h,
           item.geckoData.price_change_percentage_7d_in_currency,
@@ -381,7 +389,9 @@ class BalanceList extends Component {
           item.name,
           item.id,
           item.symbol,
+          this.formatMoney(item.balance, 2),
           this.formatMoney(item.current_price, 2),
+          this.formatMoney(item.value, 2),
           parseFloat(item.price_change_percentage_1h_in_currency).toFixed(2),
           parseFloat(item.price_change_percentage_24h).toFixed(2),
           parseFloat(item.price_change_percentage_7d_in_currency).toFixed(2),
@@ -402,7 +412,9 @@ class BalanceList extends Component {
           item.name,
           item.id,
           item.symbol,
+          this.formatMoney(item.balance, 2),
           this.formatMoney(item.current_price, 2),
+          this.formatMoney(item.value, 2),
           parseFloat(item.price_change_percentage_1h_in_currency).toFixed(2),
           parseFloat(item.price_change_percentage_24h).toFixed(2),
           parseFloat(item.price_change_percentage_7d_in_currency).toFixed(2),
@@ -442,7 +454,13 @@ class BalanceList extends Component {
             <Typography variant="subtitle1">{row.symbol}</Typography>
           </TableCell>
           <TableCell align="right">
+            <Typography variant={"h4"}>{row.balance}</Typography>
+          </TableCell>
+          <TableCell align="right">
             <Typography variant={"h4"}>{row.current_price}</Typography>
+          </TableCell>
+          <TableCell align="right">
+            <Typography variant={"h4"}>{row.value}</Typography>
           </TableCell>
           <TableCell align="right">
             <Typography
@@ -561,6 +579,17 @@ class BalanceList extends Component {
                   )}
                 Name
               </TableCell>
+              <TableCell onClick={() => this.sortBy("balance")} align="right">
+                {this.state.sortBy === "balance" &&
+                  this.state.sortOrder === "asc" && (
+                    <ArrowDropUpRoundedIcon align="right" />
+                  )}
+                {this.state.sortBy === "balance" &&
+                  this.state.sortOrder === "dsc" && (
+                    <ArrowDropDownRoundedIcon align="right" />
+                  )}
+                Balance
+              </TableCell>
               <TableCell
                 onClick={() => this.sortBy("current_price")}
                 align="right"
@@ -574,6 +603,17 @@ class BalanceList extends Component {
                     <ArrowDropDownRoundedIcon align="right" />
                   )}
                 Current Price
+              </TableCell>
+              <TableCell onClick={() => this.sortBy("value")} align="right">
+                {this.state.sortBy === "value" &&
+                  this.state.sortOrder === "asc" && (
+                    <ArrowDropUpRoundedIcon align="right" />
+                  )}
+                {this.state.sortBy === "value" &&
+                  this.state.sortOrder === "dsc" && (
+                    <ArrowDropDownRoundedIcon align="right" />
+                  )}
+                Value
               </TableCell>
               <TableCell
                 onClick={() =>
