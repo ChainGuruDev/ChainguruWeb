@@ -26,6 +26,7 @@ import {
   FormControlLabel,
   Switch,
   IconButton,
+  LinearProgress,
 } from "@material-ui/core";
 
 import DeleteIcon from "@material-ui/icons/Delete";
@@ -45,6 +46,7 @@ import {
 } from "../../constants";
 
 import Store from "../../stores";
+const store = Store.store;
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
 
@@ -55,6 +57,11 @@ const styles = (theme) => ({
   },
   tokenLogo: {
     maxHeight: 30,
+  },
+  balList: {
+    alignItems: "center",
+    textAlign: "center",
+    justifyContent: "center",
   },
 });
 
@@ -73,14 +80,17 @@ class BalanceList extends Component {
       balanceList: [],
       portfolioData: [],
       loadingPortfolio: false,
+      progressBar: 0,
     };
   }
 
   componentDidUpdate(prevProps) {
     if (this.props.selectedWallet === "updating") {
-      console.log("updating");
-      if (!this.state.loadingPortfolio) {
-        this.setState({ loadingPortfolio: true });
+      if (prevProps.selectedWallet !== this.props.selectedWallet) {
+        console.log("updating");
+        if (!this.state.loadingPortfolio) {
+          this.setState({ loadingPortfolio: true });
+        }
       }
       //agregar un state loading para poner cargador
     } else {
@@ -102,6 +112,7 @@ class BalanceList extends Component {
     dispatcher.dispatch({
       type: GET_COIN_LIST,
     });
+    this.interval = setInterval(() => this.updateList(), 750);
   }
 
   componentWillUnmount() {
@@ -113,11 +124,25 @@ class BalanceList extends Component {
       this.geckoPriceReturned
     );
     emitter.removeListener(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
+    clearInterval(this.interval);
   }
 
   vsCoinReturned = () => {
     this.getPortfolioValue(this.state.balanceList);
   };
+
+  updateList() {
+    const account = store.getStore("account");
+    if (account && account.address) {
+      const newProgressBar = this.state.progressBar + 1;
+      this.setState({ progressBar: newProgressBar });
+      if (newProgressBar > 99) {
+        this.setState({ progressBar: 0 });
+        // console.log("update List");
+        this.getPortfolioValue(this.state.balanceList);
+      }
+    }
+  }
 
   getCoinIDs = async (data) => {
     if (this.state.coinList) {
@@ -258,6 +283,8 @@ class BalanceList extends Component {
   };
 
   dataSorting = (data) => {
+    console.log("price update");
+
     let rows = [];
     let sort = [];
     data.forEach((item, i) => {
@@ -460,7 +487,7 @@ class BalanceList extends Component {
             <Typography variant={"h4"}>{row.current_price}</Typography>
           </TableCell>
           <TableCell align="right">
-            <Typography variant={"h4"}>{row.value}</Typography>
+            <Typography variant={"h4"}>$ {row.value}</Typography>
           </TableCell>
           <TableCell align="right">
             <Typography
@@ -545,7 +572,7 @@ class BalanceList extends Component {
   }
 
   nav = (screen) => {
-    console.log(screen);
+    // console.log(screen);
     this.props.history.push(screen);
   };
 
@@ -564,6 +591,11 @@ class BalanceList extends Component {
         elevation={2}
         size="small"
       >
+        <LinearProgress
+          variant="determinate"
+          value={this.state.progressBar}
+          className={classes.balList}
+        />
         <Table className={classes.table} aria-label="favoritesList">
           <TableHead>
             <TableRow>

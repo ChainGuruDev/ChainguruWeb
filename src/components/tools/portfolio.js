@@ -13,7 +13,6 @@ import {
   Button,
   TextField,
   CircularProgress,
-  LinearProgress,
   List,
   ListItem,
   ListItemText,
@@ -243,10 +242,14 @@ class Portfolio extends Component {
   getBalance = (wallet) => {
     if (wallet === "ALL") {
       let newWallets = [...this.state.userWallets];
-      let displayBalance = [...newWallets[0].erc20Balance];
+      let userWallet = { ...newWallets[0] };
+      let displayBalance = [...userWallet.erc20Balance];
+
       let objIndex;
       for (var i = 1; i < newWallets.length; i++) {
-        newWallets[i].erc20Balance.forEach((item, i) => {
+        let wallet = { ...newWallets[i] };
+        let erc20Balance = [...wallet.erc20Balance];
+        erc20Balance.forEach((item, i) => {
           if (item.tokenSymbol === "UNI-V2") {
             // agregar comparar el contract address
             // para ver si son del mismo pool de uni y sumar los balances
@@ -259,9 +262,13 @@ class Portfolio extends Component {
           if (objIndex < 0) {
             displayBalance.push(item);
           } else {
-            let previousBalance = displayBalance[objIndex];
-            let newBalance = previousBalance.balance + item.balance;
-            displayBalance[objIndex].balance = newBalance;
+            let previousBalance = { ...displayBalance[objIndex] };
+            let oldBalance = previousBalance.balance;
+
+            let newBalance = oldBalance + item.balance;
+
+            previousBalance.balance = newBalance;
+            displayBalance.splice(objIndex, 1, previousBalance);
           }
         });
       }
