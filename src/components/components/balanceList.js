@@ -4,6 +4,8 @@ import clsx from "clsx";
 import { withRouter, Link } from "react-router-dom";
 import { lighten, withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
+
+import CargaLineal from "../components/cargaLineal.js";
 import SparklineChart from "./SparklineChart.js";
 import ArrowDropDownRoundedIcon from "@material-ui/icons/ArrowDropDownRounded";
 import ArrowDropUpRoundedIcon from "@material-ui/icons/ArrowDropUpRounded";
@@ -27,6 +29,7 @@ import {
   Switch,
   IconButton,
   LinearProgress,
+  Grid,
 } from "@material-ui/core";
 
 import DeleteIcon from "@material-ui/icons/Delete";
@@ -43,6 +46,7 @@ import {
   GET_COIN_LIST,
   COINLIST_RETURNED,
   SWITCH_VS_COIN_RETURNED,
+  UPDATE_WAIT_COMPLETE,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -63,6 +67,9 @@ const styles = (theme) => ({
     textAlign: "center",
     justifyContent: "center",
   },
+  topBar: {
+    padding: 10,
+  },
 });
 
 class BalanceList extends Component {
@@ -81,6 +88,7 @@ class BalanceList extends Component {
       portfolioData: [],
       loadingPortfolio: false,
       progressBar: 0,
+      totalValue: 0,
     };
   }
 
@@ -105,6 +113,7 @@ class BalanceList extends Component {
 
   componentDidMount() {
     emitter.on(COIN_DATA_RETURNED, this.coinDataReturned);
+    emitter.on(UPDATE_WAIT_COMPLETE, this.updateWaitComplete);
     emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
     emitter.on(COINGECKO_POPULATE_FAVLIST_RETURNED, this.geckoPriceReturned);
@@ -112,7 +121,6 @@ class BalanceList extends Component {
     dispatcher.dispatch({
       type: GET_COIN_LIST,
     });
-    this.interval = setInterval(() => this.updateList(), 750);
   }
 
   componentWillUnmount() {
@@ -123,26 +131,18 @@ class BalanceList extends Component {
       COINGECKO_POPULATE_FAVLIST_RETURNED,
       this.geckoPriceReturned
     );
+    emitter.removeListener(UPDATE_WAIT_COMPLETE, this.updateWaitComplete);
+
     emitter.removeListener(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
-    clearInterval(this.interval);
   }
 
   vsCoinReturned = () => {
     this.getPortfolioValue(this.state.balanceList);
   };
 
-  updateList() {
-    const account = store.getStore("account");
-    if (account && account.address) {
-      const newProgressBar = this.state.progressBar + 1;
-      this.setState({ progressBar: newProgressBar });
-      if (newProgressBar > 99) {
-        this.setState({ progressBar: 0 });
-        // console.log("update List");
-        this.getPortfolioValue(this.state.balanceList);
-      }
-    }
-  }
+  updateWaitComplete = () => {
+    this.getPortfolioValue(this.state.balanceList);
+  };
 
   getCoinIDs = async (data) => {
     if (this.state.coinList) {
@@ -288,10 +288,13 @@ class BalanceList extends Component {
 
     let rows = [];
     let sort = [];
+    let totalValue = 0;
     data.forEach((item, i) => {
       if (item.geckoData) {
         let balance = item.balance / Math.pow(10, item.tokenDecimal);
         let value = balance * item.geckoData.current_price;
+        totalValue = totalValue + value;
+
         let sortData = this.createData(
           item.contractAddress,
           item.geckoData.image,
@@ -317,7 +320,11 @@ class BalanceList extends Component {
       }
     });
     //console.log(sort);
-    this.setState({ sortData: sort, loadingPortfolio: false });
+    this.setState({
+      sortData: sort,
+      totalValue: totalValue,
+      loadingPortfolio: false,
+    });
   };
 
   formatMoney = (amount, decimalCount = 5, decimal = ".", thousands = ",") => {
@@ -408,6 +415,7 @@ class BalanceList extends Component {
     }
     let sortedRows;
     let formatedRows = [];
+
     if (sortOrder === "asc") {
       sortedRows = rowData.sort(dynamicSort(sortBy));
       sortedRows.forEach((item, i) => {
@@ -454,6 +462,7 @@ class BalanceList extends Component {
         );
         formatedRows.push(_rowData);
       });
+      // console.log(this.props.selectedWallet);
     }
 
     if (formatedRows.length > 1) {
@@ -485,10 +494,10 @@ class BalanceList extends Component {
             <Typography variant={"h4"}>{row.balance}</Typography>
           </TableCell>
           <TableCell align="right">
-            <Typography variant={"h4"}>{row.current_price}</Typography>
+            <Typography variant={"h4"}>${row.current_price}</Typography>
           </TableCell>
           <TableCell align="right">
-            <Typography variant={"h4"}>$ {row.value}</Typography>
+            <Typography variant={"h4"}>${row.value}</Typography>
           </TableCell>
           <TableCell align="right">
             <Typography
@@ -586,179 +595,189 @@ class BalanceList extends Component {
     const { coinData, loading, rowData, sortData } = this.state;
 
     return (
-      <TableContainer
-        className={classes.root}
-        component={Paper}
-        elevation={2}
-        size="small"
-      >
-        <LinearProgress
-          variant="determinate"
-          value={this.state.progressBar}
-          className={classes.balList}
-        />
-        <Table className={classes.table} aria-label="favoritesList">
-          <TableHead>
-            <TableRow>
-              <TableCell></TableCell>
-              <TableCell onClick={() => this.sortBy("name")} align="left">
-                {this.state.sortBy === "name" &&
-                  this.state.sortOrder === "asc" && (
-                    <ArrowDropUpRoundedIcon align="right" />
-                  )}
-                {this.state.sortBy === "name" &&
-                  this.state.sortOrder === "dsc" && (
-                    <ArrowDropDownRoundedIcon align="right" />
-                  )}
-                Name
-              </TableCell>
-              <TableCell onClick={() => this.sortBy("balance")} align="right">
-                {this.state.sortBy === "balance" &&
-                  this.state.sortOrder === "asc" && (
-                    <ArrowDropUpRoundedIcon align="right" />
-                  )}
-                {this.state.sortBy === "balance" &&
-                  this.state.sortOrder === "dsc" && (
-                    <ArrowDropDownRoundedIcon align="right" />
-                  )}
-                Balance
-              </TableCell>
-              <TableCell
-                onClick={() => this.sortBy("current_price")}
-                align="right"
-              >
-                {this.state.sortBy === "current_price" &&
-                  this.state.sortOrder === "asc" && (
-                    <ArrowDropUpRoundedIcon align="right" />
-                  )}
-                {this.state.sortBy === "current_price" &&
-                  this.state.sortOrder === "dsc" && (
-                    <ArrowDropDownRoundedIcon align="right" />
-                  )}
-                Current Price
-              </TableCell>
-              <TableCell onClick={() => this.sortBy("value")} align="right">
-                {this.state.sortBy === "value" &&
-                  this.state.sortOrder === "asc" && (
-                    <ArrowDropUpRoundedIcon align="right" />
-                  )}
-                {this.state.sortBy === "value" &&
-                  this.state.sortOrder === "dsc" && (
-                    <ArrowDropDownRoundedIcon align="right" />
-                  )}
-                Value
-              </TableCell>
-              <TableCell
-                onClick={() =>
-                  this.sortBy("price_change_percentage_1h_in_currency")
-                }
-                align="right"
-              >
-                {this.state.sortBy ===
-                  "price_change_percentage_1h_in_currency" &&
-                  this.state.sortOrder === "asc" && (
-                    <ArrowDropUpRoundedIcon align="right" />
-                  )}
-                {this.state.sortBy ===
-                  "price_change_percentage_1h_in_currency" &&
-                  this.state.sortOrder === "dsc" && (
-                    <ArrowDropDownRoundedIcon align="right" />
-                  )}
-                Price 1h
-              </TableCell>
-              <TableCell
-                onClick={() => this.sortBy("price_change_percentage_24h")}
-                align="right"
-              >
-                {this.state.sortBy === "price_change_percentage_24h" &&
-                  this.state.sortOrder === "asc" && (
-                    <ArrowDropUpRoundedIcon align="right" />
-                  )}
-                {this.state.sortBy === "price_change_percentage_24h" &&
-                  this.state.sortOrder === "dsc" && (
-                    <ArrowDropDownRoundedIcon align="right" />
-                  )}
-                Price 24hs
-              </TableCell>
-              <TableCell
-                onClick={() =>
-                  this.sortBy("price_change_percentage_7d_in_currency")
-                }
-                align="right"
-              >
-                {this.state.sortBy ===
-                  "price_change_percentage_7d_in_currency" &&
-                  this.state.sortOrder === "asc" && (
-                    <ArrowDropUpRoundedIcon align="right" />
-                  )}
-                {this.state.sortBy ===
-                  "price_change_percentage_7d_in_currency" &&
-                  this.state.sortOrder === "dsc" && (
-                    <ArrowDropDownRoundedIcon align="right" />
-                  )}
-                Price 7d
-              </TableCell>
-              <TableCell
-                onClick={() =>
-                  this.sortBy("price_change_percentage_30d_in_currency")
-                }
-                align="right"
-              >
-                {this.state.sortBy ===
-                  "price_change_percentage_30d_in_currency" &&
-                  this.state.sortOrder === "asc" && (
-                    <ArrowDropUpRoundedIcon align="right" />
-                  )}
-                {this.state.sortBy ===
-                  "price_change_percentage_30d_in_currency" &&
-                  this.state.sortOrder === "dsc" && (
-                    <ArrowDropDownRoundedIcon align="right" />
-                  )}
-                Price 30d
-              </TableCell>
-              <TableCell
-                hover="true"
-                onClick={() =>
-                  this.sortBy("price_change_percentage_1y_in_currency")
-                }
-                align="right"
-              >
-                {this.state.sortBy ===
-                  "price_change_percentage_1y_in_currency" &&
-                  this.state.sortOrder === "asc" && (
-                    <ArrowDropUpRoundedIcon align="right" />
-                  )}
-                {this.state.sortBy ===
-                  "price_change_percentage_1y_in_currency" &&
-                  this.state.sortOrder === "dsc" && (
-                    <ArrowDropDownRoundedIcon align="right" />
-                  )}
-                Price 1y
-              </TableCell>
-              <TableCell
-                hover="true"
-                onClick={() => this.sortBy("market_cap")}
-                align="right"
-              >
-                {this.state.sortBy === "market_cap" &&
-                  this.state.sortOrder === "asc" && (
-                    <ArrowDropUpRoundedIcon align="right" />
-                  )}
-                {this.state.sortBy === "market_cap" &&
-                  this.state.sortOrder === "dsc" && (
-                    <ArrowDropDownRoundedIcon align="right" />
-                  )}
-                Marketcap
-              </TableCell>
-              <TableCell align="center">Chart (7d)</TableCell>
-            </TableRow>
-          </TableHead>
-          {!this.state.loadingPortfolio && (
-            <TableBody>{this.sortedList(sortData)}</TableBody>
-          )}
-          {this.state.loadingPortfolio && <div>Updating</div>}
-        </Table>
-      </TableContainer>
+      <Grid container spacing={3}>
+        {this.state.totalValue > 0 && (
+          <Grid item xs={12}>
+            <Paper className={classes.topBar} elevation={3}>
+              Total Value ${this.formatMoney(this.state.totalValue)}
+            </Paper>
+          </Grid>
+        )}
+        <Grid item xs={12}>
+          <TableContainer
+            className={classes.root}
+            component={Paper}
+            elevation={2}
+            size="small"
+          >
+            <CargaLineal />
+            <Table className={classes.table} aria-label="favoritesList">
+              <TableHead>
+                <TableRow>
+                  <TableCell></TableCell>
+                  <TableCell onClick={() => this.sortBy("name")} align="left">
+                    {this.state.sortBy === "name" &&
+                      this.state.sortOrder === "asc" && (
+                        <ArrowDropUpRoundedIcon align="right" />
+                      )}
+                    {this.state.sortBy === "name" &&
+                      this.state.sortOrder === "dsc" && (
+                        <ArrowDropDownRoundedIcon align="right" />
+                      )}
+                    Name
+                  </TableCell>
+                  <TableCell
+                    onClick={() => this.sortBy("balance")}
+                    align="right"
+                  >
+                    {this.state.sortBy === "balance" &&
+                      this.state.sortOrder === "asc" && (
+                        <ArrowDropUpRoundedIcon align="right" />
+                      )}
+                    {this.state.sortBy === "balance" &&
+                      this.state.sortOrder === "dsc" && (
+                        <ArrowDropDownRoundedIcon align="right" />
+                      )}
+                    Balance
+                  </TableCell>
+                  <TableCell
+                    onClick={() => this.sortBy("current_price")}
+                    align="right"
+                  >
+                    {this.state.sortBy === "current_price" &&
+                      this.state.sortOrder === "asc" && (
+                        <ArrowDropUpRoundedIcon align="right" />
+                      )}
+                    {this.state.sortBy === "current_price" &&
+                      this.state.sortOrder === "dsc" && (
+                        <ArrowDropDownRoundedIcon align="right" />
+                      )}
+                    Current Price
+                  </TableCell>
+                  <TableCell onClick={() => this.sortBy("value")} align="right">
+                    {this.state.sortBy === "value" &&
+                      this.state.sortOrder === "asc" && (
+                        <ArrowDropUpRoundedIcon align="right" />
+                      )}
+                    {this.state.sortBy === "value" &&
+                      this.state.sortOrder === "dsc" && (
+                        <ArrowDropDownRoundedIcon align="right" />
+                      )}
+                    Value
+                  </TableCell>
+                  <TableCell
+                    onClick={() =>
+                      this.sortBy("price_change_percentage_1h_in_currency")
+                    }
+                    align="right"
+                  >
+                    {this.state.sortBy ===
+                      "price_change_percentage_1h_in_currency" &&
+                      this.state.sortOrder === "asc" && (
+                        <ArrowDropUpRoundedIcon align="right" />
+                      )}
+                    {this.state.sortBy ===
+                      "price_change_percentage_1h_in_currency" &&
+                      this.state.sortOrder === "dsc" && (
+                        <ArrowDropDownRoundedIcon align="right" />
+                      )}
+                    Price 1h
+                  </TableCell>
+                  <TableCell
+                    onClick={() => this.sortBy("price_change_percentage_24h")}
+                    align="right"
+                  >
+                    {this.state.sortBy === "price_change_percentage_24h" &&
+                      this.state.sortOrder === "asc" && (
+                        <ArrowDropUpRoundedIcon align="right" />
+                      )}
+                    {this.state.sortBy === "price_change_percentage_24h" &&
+                      this.state.sortOrder === "dsc" && (
+                        <ArrowDropDownRoundedIcon align="right" />
+                      )}
+                    Price 24hs
+                  </TableCell>
+                  <TableCell
+                    onClick={() =>
+                      this.sortBy("price_change_percentage_7d_in_currency")
+                    }
+                    align="right"
+                  >
+                    {this.state.sortBy ===
+                      "price_change_percentage_7d_in_currency" &&
+                      this.state.sortOrder === "asc" && (
+                        <ArrowDropUpRoundedIcon align="right" />
+                      )}
+                    {this.state.sortBy ===
+                      "price_change_percentage_7d_in_currency" &&
+                      this.state.sortOrder === "dsc" && (
+                        <ArrowDropDownRoundedIcon align="right" />
+                      )}
+                    Price 7d
+                  </TableCell>
+                  <TableCell
+                    onClick={() =>
+                      this.sortBy("price_change_percentage_30d_in_currency")
+                    }
+                    align="right"
+                  >
+                    {this.state.sortBy ===
+                      "price_change_percentage_30d_in_currency" &&
+                      this.state.sortOrder === "asc" && (
+                        <ArrowDropUpRoundedIcon align="right" />
+                      )}
+                    {this.state.sortBy ===
+                      "price_change_percentage_30d_in_currency" &&
+                      this.state.sortOrder === "dsc" && (
+                        <ArrowDropDownRoundedIcon align="right" />
+                      )}
+                    Price 30d
+                  </TableCell>
+                  <TableCell
+                    hover="true"
+                    onClick={() =>
+                      this.sortBy("price_change_percentage_1y_in_currency")
+                    }
+                    align="right"
+                  >
+                    {this.state.sortBy ===
+                      "price_change_percentage_1y_in_currency" &&
+                      this.state.sortOrder === "asc" && (
+                        <ArrowDropUpRoundedIcon align="right" />
+                      )}
+                    {this.state.sortBy ===
+                      "price_change_percentage_1y_in_currency" &&
+                      this.state.sortOrder === "dsc" && (
+                        <ArrowDropDownRoundedIcon align="right" />
+                      )}
+                    Price 1y
+                  </TableCell>
+                  <TableCell
+                    hover="true"
+                    onClick={() => this.sortBy("market_cap")}
+                    align="right"
+                  >
+                    {this.state.sortBy === "market_cap" &&
+                      this.state.sortOrder === "asc" && (
+                        <ArrowDropUpRoundedIcon align="right" />
+                      )}
+                    {this.state.sortBy === "market_cap" &&
+                      this.state.sortOrder === "dsc" && (
+                        <ArrowDropDownRoundedIcon align="right" />
+                      )}
+                    Marketcap
+                  </TableCell>
+                  <TableCell align="center">Chart (7d)</TableCell>
+                </TableRow>
+              </TableHead>
+              {!this.state.loadingPortfolio && (
+                <TableBody>{this.sortedList(sortData)}</TableBody>
+              )}
+              {this.state.loadingPortfolio && <div>Updating</div>}
+            </Table>
+          </TableContainer>
+        </Grid>
+      </Grid>
     );
   }
 }

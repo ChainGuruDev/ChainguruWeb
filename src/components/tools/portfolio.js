@@ -99,6 +99,11 @@ const styles = (theme) => ({
   walletList: {
     maxWidth: "100%",
   },
+  list: {
+    "&:hover": {
+      background: colors.cgGreen,
+    },
+  },
 });
 
 class Portfolio extends Component {
@@ -294,7 +299,9 @@ class Portfolio extends Component {
           <ListItem
             key={wallet._id}
             button
+            selected={this.state.selectedWallet === wallet.wallet}
             onClick={() => this.walletClicked(wallet.wallet)}
+            className={classes.list}
           >
             <ListItemText
               primary={
@@ -420,7 +427,9 @@ class Portfolio extends Component {
                     <ListItem
                       key={"_ALL"}
                       button
+                      selected={this.state.selectedWallet === "ALL"}
                       onClick={() => this.walletClicked("ALL")}
+                      className={classes.list}
                     >
                       <ListItemText primary="All assets" />
                     </ListItem>
