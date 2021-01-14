@@ -1263,7 +1263,7 @@ class Store {
     try {
       let _userExists = await axios.get(
         `https://chainguru-db.herokuapp.com/users/${payload.address}`
-        // `https://localhost:3001/users/${payload.address}`
+        // `http://localhost:3001/users/${payload.address}`
       );
       if (await _userExists) {
         emitter.emit(DB_USERDATA_RETURNED, _userExists.data);
@@ -1272,7 +1272,7 @@ class Store {
       try {
         let _newUser = await axios.put(
           `https://chainguru-db.herokuapp.com/users/${payload.address}`
-          // `https://localhost:3001/users/${payload.address}`
+          // `http://localhost:3001/users/${payload.address}`
         );
         if (await _newUser) {
           dispatcher.dispatch({

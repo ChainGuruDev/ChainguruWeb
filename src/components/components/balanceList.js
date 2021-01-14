@@ -194,6 +194,7 @@ class BalanceList extends Component {
       }
       this.setState({ balanceList: newBalanceList });
       this.getPortfolioValue(newBalanceList);
+      console.log(newBalanceList);
     }
   };
 
