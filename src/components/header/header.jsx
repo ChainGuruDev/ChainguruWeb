@@ -223,12 +223,10 @@ class Header extends Component {
         vsCoin = "usd";
         localStorage.setItem("vsCoin", JSON.stringify(vsCoin));
       }
-      console.log(vsCoin);
       store.setStore({ vsCoin: vsCoin });
       this.setState({ vsCoin: vsCoin });
     } catch (err) {
       vsCoin = "usd";
-      console.log(vsCoin);
       localStorage.setItem("vsCoin", JSON.stringify(vsCoin));
       store.setStore({ vsCoin: vsCoin });
       this.setState({ vsCoin: vsCoin });

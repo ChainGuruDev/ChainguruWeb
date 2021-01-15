@@ -262,7 +262,7 @@ class Portfolio extends Component {
             return;
           }
           objIndex = displayBalance.findIndex(
-            (obj) => obj.tokenName === item.tokenName
+            (obj) => obj.contractAddress === item.contractAddress
           );
           if (objIndex < 0) {
             displayBalance.push(item);

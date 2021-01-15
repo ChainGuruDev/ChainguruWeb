@@ -21,7 +21,7 @@ export default function CargaLineal() {
     const timer = setInterval(() => {
       setProgress((oldProgress) => {
         if (oldProgress === 100) {
-          console.log("espera carga completada");
+          // console.log("espera carga completada");
           emitter.emit(UPDATE_WAIT_COMPLETE);
 
           return 0;

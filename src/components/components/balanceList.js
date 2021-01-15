@@ -103,7 +103,7 @@ class BalanceList extends Component {
       //agregar un state loading para poner cargador
     } else {
       if (prevProps.selectedWallet !== this.props.selectedWallet) {
-        console.log("new Data");
+        // console.log("new Data");
         this.getCoinIDs(this.props.data);
 
         //cambier el state loading para terminar el cargador
@@ -172,8 +172,8 @@ class BalanceList extends Component {
                 if (objIndex2 > -1) {
                   item.id = coinList[objIndex2].id;
                 } else {
-                  console.log("token not yet supported");
-                  console.log(item);
+                  // console.log("token not yet supported");
+                  // console.log(item);
                 }
               }
               newBalanceList.push(item);
@@ -194,12 +194,12 @@ class BalanceList extends Component {
       }
       this.setState({ balanceList: newBalanceList });
       this.getPortfolioValue(newBalanceList);
-      console.log(newBalanceList);
     }
   };
 
   getPortfolioValue = async (coinList) => {
     let tokenIDs = [];
+    // console.log(coinList);
     coinList.forEach((item, i) => {
       if (item.id) {
         tokenIDs.push(item.id);
@@ -238,11 +238,11 @@ class BalanceList extends Component {
   };
 
   coinDataReturned = (data) => {
-    console.log(data);
+    // console.log(data);
   };
 
   dbUserDataReturned = (data) => {
-    console.log(data);
+    // console.log(data);
   };
 
   createData = (
@@ -284,8 +284,6 @@ class BalanceList extends Component {
   };
 
   dataSorting = (data) => {
-    console.log("price update");
-
     let rows = [];
     let sort = [];
     let totalValue = 0;
@@ -773,7 +771,13 @@ class BalanceList extends Component {
               {!this.state.loadingPortfolio && (
                 <TableBody>{this.sortedList(sortData)}</TableBody>
               )}
-              {this.state.loadingPortfolio && <div>Updating</div>}
+              {this.state.loadingPortfolio && (
+                <TableBody>
+                  <TableRow>
+                    <TableCell align="center">Updating</TableCell>
+                  </TableRow>
+                </TableBody>
+              )}
             </Table>
           </TableContainer>
         </Grid>
