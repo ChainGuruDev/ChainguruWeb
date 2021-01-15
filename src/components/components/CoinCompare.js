@@ -12,9 +12,11 @@ import {
   COIN_DATA_RETURNED,
   GET_COIN_PRICECHART,
   GRAPH_TIMEFRAME_CHANGED,
+  SWITCH_VS_COIN_RETURNED,
 } from "../../constants";
 
 import Store from "../../stores";
+const store = Store.store;
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
 
@@ -43,27 +45,65 @@ const styles = (theme) => ({
 class CoinCompare extends Component {
   constructor(props) {
     super();
-
-    this.state = { coinData: [], loading: true };
+    let vsCoin = store.getStore("vsCoin");
+    this.state = { coinData: [], loading: true, vs: vsCoin, timeFrame: 7 };
   }
 
   componentDidMount() {
     emitter.on(COIN_DATA_RETURNED, this.coinDataReturned);
     emitter.on(GRAPH_TIMEFRAME_CHANGED, this.graphTimeFrameChanged);
+    emitter.on(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
+    if (!this.state.vs) {
+      this.getVsCoin();
+    }
   }
 
   componentWillUnmount() {
     emitter.removeListener(COIN_DATA_RETURNED, this.coinDataReturned);
     emitter.removeListener(GRAPH_TIMEFRAME_CHANGED, this.graphTimeFrameChanged);
+    emitter.removeListener(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
   }
 
-  graphTimeFrameChanged = (data) => {
-    const { coinData, loading } = this.state;
+  getVsCoin = () => {
+    let vsCoin;
+    try {
+      vsCoin = JSON.parse(localStorage.getItem("vsCoin"));
+      if (!vsCoin) {
+        vsCoin = "usd";
+      }
+      this.setState({ vs: vsCoin });
+    } catch (err) {
+      vsCoin = "usd";
+      this.setState({ vs: vsCoin });
+    }
+  };
 
+  vsCoinReturned = (vsCoin) => {
+    var x = document.getElementById("cryptoCompSmall");
+    if (window.getComputedStyle(x).display !== "none") {
+      console.log("triggered");
+      if (this.state.coinData.id) {
+        dispatcher.dispatch({
+          type: GET_COIN_PRICECHART,
+          content: [
+            this.state.coinData.id,
+            this.props.id,
+            this.state.timeFrame,
+            vsCoin,
+          ],
+        });
+      }
+    }
+    this.setState({ vs: vsCoin });
+  };
+
+  graphTimeFrameChanged = (data) => {
+    const { coinData, loading, vs } = this.state;
+    this.setState({ timeFrame: data });
     if (coinData.id) {
       dispatcher.dispatch({
         type: GET_COIN_PRICECHART,
-        content: [coinData.id, this.props.id, data],
+        content: [coinData.id, this.props.id, data, vs],
       });
     }
   };
@@ -76,7 +116,7 @@ class CoinCompare extends Component {
   };
 
   nav = (screen) => {
-    console.log(screen);
+    // console.log(screen);
     this.props.history.push(screen);
   };
 
@@ -86,7 +126,7 @@ class CoinCompare extends Component {
 
   render() {
     const { classes, t } = this.props;
-    const { coinData, loading } = this.state;
+    const { coinData, loading, vs } = this.state;
 
     const handleClick = (timeFrame) => {
       return emitter.emit(GRAPH_TIMEFRAME_CHANGED, timeFrame);
@@ -152,7 +192,7 @@ class CoinCompare extends Component {
                   align="right"
                   variant="h2"
                 >
-                  {coinData.market_data.current_price.usd}
+                  {coinData.market_data.current_price[vs]}
                 </Typography>
                 <Typography
                   color="textPrimary"
@@ -160,26 +200,27 @@ class CoinCompare extends Component {
                   variant="subtitle1"
                   component={"span"}
                 >
-                  USD
+                  {vs}
                 </Typography>
               </Grid>
               <Grid container alignItems="center" justify="center" item xs={12}>
                 <Chip
                   variant="outlined"
                   color={
-                    coinData.market_data.market_cap_change_percentage_24h > 0
+                    coinData.market_data
+                      .market_cap_change_percentage_24h_in_currency[vs] > 0
                       ? "primary"
                       : "secondary"
                   }
                   icon={
-                    coinData.market_data.market_cap_change_percentage_24h >
-                    0 ? (
+                    coinData.market_data
+                      .market_cap_change_percentage_24h_in_currency[vs] > 0 ? (
                       <ArrowDropUpRoundedIcon />
                     ) : (
                       <ArrowDropDownRoundedIcon />
                     )
                   }
-                  label={`${coinData.market_data.market_cap_change_percentage_24h}% - Marketcap 24hs`}
+                  label={`${coinData.market_data.market_cap_change_percentage_24h_in_currency[vs]}% - Marketcap 24hs`}
                 />
               </Grid>
               <Grid
@@ -201,19 +242,20 @@ class CoinCompare extends Component {
                       <Chip
                         variant="outlined"
                         color={
-                          coinData.market_data.price_change_percentage_24h > 0
+                          coinData.market_data
+                            .price_change_percentage_24h_in_currency[vs] > 0
                             ? "primary"
                             : "secondary"
                         }
                         icon={
-                          coinData.market_data.price_change_percentage_24h >
-                          0 ? (
+                          coinData.market_data
+                            .price_change_percentage_24h_in_currency[vs] > 0 ? (
                             <ArrowDropUpRoundedIcon />
                           ) : (
                             <ArrowDropDownRoundedIcon />
                           )
                         }
-                        label={`${coinData.market_data.price_change_percentage_24h}%`}
+                        label={`${coinData.market_data.price_change_percentage_24h_in_currency[vs]}%`}
                         onClick={() => {
                           handleClick(1);
                         }}
@@ -229,19 +271,20 @@ class CoinCompare extends Component {
                       <Chip
                         variant="outlined"
                         color={
-                          coinData.market_data.price_change_percentage_7d > 0
+                          coinData.market_data
+                            .price_change_percentage_7d_in_currency[vs] > 0
                             ? "primary"
                             : "secondary"
                         }
                         icon={
-                          coinData.market_data.price_change_percentage_7d >
-                          0 ? (
+                          coinData.market_data
+                            .price_change_percentage_7d_in_currency[vs] > 0 ? (
                             <ArrowDropUpRoundedIcon />
                           ) : (
                             <ArrowDropDownRoundedIcon />
                           )
                         }
-                        label={`${coinData.market_data.price_change_percentage_7d}%`}
+                        label={`${coinData.market_data.price_change_percentage_7d_in_currency[vs]}%`}
                         onClick={() => {
                           handleClick(7);
                         }}
@@ -259,19 +302,20 @@ class CoinCompare extends Component {
                       <Chip
                         variant="outlined"
                         color={
-                          coinData.market_data.price_change_percentage_30d > 0
+                          coinData.market_data
+                            .price_change_percentage_30d_in_currency[vs] > 0
                             ? "primary"
                             : "secondary"
                         }
                         icon={
-                          coinData.market_data.price_change_percentage_30d >
-                          0 ? (
+                          coinData.market_data
+                            .price_change_percentage_30d_in_currency[vs] > 0 ? (
                             <ArrowDropUpRoundedIcon />
                           ) : (
                             <ArrowDropDownRoundedIcon />
                           )
                         }
-                        label={`${coinData.market_data.price_change_percentage_30d}%`}
+                        label={`${coinData.market_data.price_change_percentage_30d_in_currency[vs]}%`}
                         onClick={() => {
                           handleClick(30);
                         }}
@@ -281,7 +325,12 @@ class CoinCompare extends Component {
                 </Grid>
               </Grid>
               <Grid item xs={12}>
-                <PriceChart id={this.props.id} coinID={coinData.id} />
+                <PriceChart
+                  id={this.props.id}
+                  coinID={coinData.id}
+                  vsCoin={vs}
+                  timeFrame={this.state.timeFrame}
+                />
               </Grid>
             </Grid>
           </Grid>

@@ -55,7 +55,7 @@ class CompareChart extends Component {
         yaxis: [
           {
             seriesName: this.props.coinIDA,
-            decimalsInFloat: 2,
+            decimalsInFloat: 4,
             forceNiceScale: true,
             axisBorder: {
               show: true,
@@ -75,7 +75,7 @@ class CompareChart extends Component {
           },
           {
             seriesName: this.props.coinIDB,
-            decimalsInFloat: 2,
+            decimalsInFloat: 4,
             forceNiceScale: true,
             opposite: true,
             axisBorder: {
@@ -115,13 +115,23 @@ class CompareChart extends Component {
     if (this.props.coinIDA) {
       dispatcher.dispatch({
         type: GET_COIN_PRICECHART,
-        content: [this.props.coinIDA, this.props.idA, this.props.timeFrame],
+        content: [
+          this.props.coinIDA,
+          this.props.idA,
+          this.props.timeFrame,
+          this.props.vsCoin,
+        ],
       });
     }
     if (this.props.coinIDB) {
       dispatcher.dispatch({
         type: GET_COIN_PRICECHART,
-        content: [this.props.coinIDB, this.props.idB, this.props.timeFrame],
+        content: [
+          this.props.coinIDB,
+          this.props.idB,
+          this.props.timeFrame,
+          this.props.vsCoin,
+        ],
       });
     }
     emitter.on(DARKMODE_SWITCH_RETURN, this.darkModeSwitchReturned);
@@ -152,12 +162,22 @@ class CompareChart extends Component {
     if (data[1] === this.props.idA) {
       dispatcher.dispatch({
         type: GET_COIN_PRICECHART,
-        content: [this.props.coinIDA, this.props.idA],
+        content: [
+          this.props.coinIDA,
+          this.props.idA,
+          this.props.timeFrame,
+          this.props.vsCoin,
+        ],
       });
     } else if (data[1] === this.props.idB) {
       dispatcher.dispatch({
         type: GET_COIN_PRICECHART,
-        content: [this.props.coinIDB, this.props.idB],
+        content: [
+          this.props.coinIDB,
+          this.props.idB,
+          this.props.timeFrame,
+          this.props.vsCoin,
+        ],
       });
     }
   };
@@ -199,7 +219,7 @@ class CompareChart extends Component {
           yaxis: [
             {
               seriesName: this.props.coinIDA,
-              decimalsInFloat: 2,
+              decimalsInFloat: 4,
               min: min - min / 50,
               max: max + max / 100,
               forceNiceScale: true,
@@ -222,7 +242,7 @@ class CompareChart extends Component {
             },
             {
               seriesName: this.props.coinIDB,
-              decimalsInFloat: 2,
+              decimalsInFloat: 4,
               min: this.state.options.yaxis[1].min,
               max: this.state.options.yaxis[1].max,
               forceNiceScale: true,
@@ -284,7 +304,7 @@ class CompareChart extends Component {
           yaxis: [
             {
               seriesName: this.props.coinIDA,
-              decimalsInFloat: 2,
+              decimalsInFloat: 4,
               min: this.state.options.yaxis[0].min,
               max: this.state.options.yaxis[0].max,
               forceNiceScale: true,
@@ -307,7 +327,7 @@ class CompareChart extends Component {
             },
             {
               seriesName: this.props.coinIDB,
-              decimalsInFloat: 2,
+              decimalsInFloat: 4,
               min: min - min / 50,
               max: max + max / 100,
               forceNiceScale: true,

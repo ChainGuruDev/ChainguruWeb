@@ -17,11 +17,14 @@ import {
   COINLIST_RETURNED,
   COIN_DATA_RETURNED,
   GRAPH_TIMEFRAME_CHANGED,
+  SWITCH_VS_COIN_RETURNED,
+  GET_COIN_PRICECHART,
 } from "../../constants";
 
 import Store from "../../stores";
 const emitter = Store.emitter;
 const store = Store.store;
+const dispatcher = Store.dispatch;
 
 const styles = (theme) => ({
   root: {
@@ -81,6 +84,8 @@ class CryptoCompare extends Component {
   constructor() {
     super();
 
+    let vsCoin = store.getStore("vsCoin");
+
     const account = store.getStore("account");
     this.state = {
       account: account,
@@ -93,19 +98,63 @@ class CryptoCompare extends Component {
       selectA: false,
       selectB: false,
       timeFrame: 7,
+      vs: vsCoin,
     };
   }
   componentDidMount() {
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
     emitter.on(COIN_DATA_RETURNED, this.coinDataReturned);
     emitter.on(GRAPH_TIMEFRAME_CHANGED, this.graphTimeframeChanged);
+    emitter.on(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
+    if (!this.state.vs) {
+      this.getVsCoin();
+    }
   }
 
   componentWillUnmount() {
     emitter.removeListener(COINLIST_RETURNED, this.coinlistReturned);
     emitter.removeListener(COIN_DATA_RETURNED, this.coinDataReturned);
     emitter.removeListener(GRAPH_TIMEFRAME_CHANGED, this.graphTimeframeChanged);
+    emitter.removeListener(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
   }
+
+  getVsCoin = () => {
+    let vsCoin;
+    try {
+      vsCoin = JSON.parse(localStorage.getItem("vsCoin"));
+      if (!vsCoin) {
+        vsCoin = "usd";
+      }
+      this.setState({ vs: vsCoin });
+    } catch (err) {
+      vsCoin = "usd";
+      this.setState({ vs: vsCoin });
+    }
+  };
+
+  vsCoinReturned = (vsCoin) => {
+    this.setState({ vs: vsCoin });
+    // if (this.state.bigChart) {
+    //   dispatcher.dispatch({
+    //     type: GET_COIN_PRICECHART,
+    //     content: [
+    //       this.state.coinDataA.coinID,
+    //       "A",
+    //       this.state.timeFrame,
+    //       vsCoin,
+    //     ],
+    //   });
+    //   dispatcher.dispatch({
+    //     type: GET_COIN_PRICECHART,
+    //     content: [
+    //       this.state.coinDataB.coinID,
+    //       "B",
+    //       this.state.timeFrame,
+    //       vsCoin,
+    //     ],
+    //   });
+    // }
+  };
 
   graphTimeframeChanged = (data) => {
     this.setState({ timeFrame: data });
@@ -142,6 +191,7 @@ class CryptoCompare extends Component {
           }}
           spacing={3}
           container
+          id="cryptoCompSmall"
         >
           <Card className={classes.compareCard} elevation={3}>
             <Grid item xs={6} style={{ marginRight: 10 }}>
@@ -185,6 +235,7 @@ class CryptoCompare extends Component {
                   coinDataA={this.state.coinDataA}
                   coinDataB={this.state.coinDataB}
                   timeFrame={this.state.timeFrame}
+                  vsCoin={this.state.vs}
                 />
               </Grid>
               <Grid item style={{ padding: 10 }}>

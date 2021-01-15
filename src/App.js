@@ -87,6 +87,7 @@ class App extends Component {
     let savedmode;
     try {
       savedmode = JSON.parse(localStorage.getItem("dark"));
+      store.setStore({ theme: savedmode ? "dark" : "light" });
       return savedmode || false;
     } catch (err) {
       return false;

@@ -1200,6 +1200,7 @@ class Store {
           payload.content[0],
           {
             days: payload.content[2],
+            vs_currency: payload.content[3],
           }
         );
       } catch (err) {
@@ -1207,7 +1208,8 @@ class Store {
       }
     } else {
       data = await CoinGeckoClient.coins.fetchMarketChart(payload.content[0], {
-        days: "1",
+        days: "7",
+        vs_currency: payload.content[3],
       });
     }
 

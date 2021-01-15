@@ -40,6 +40,7 @@ class SparklineChart extends Component {
           curve: "straight",
         },
         tooltip: {
+          enabled: false,
           fixed: {
             enabled: false,
           },

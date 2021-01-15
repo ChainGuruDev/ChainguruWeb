@@ -9,6 +9,7 @@ import {
   COIN_PRICECHART_RETURNED,
   GET_COIN_PRICECHART,
   DARKMODE_SWITCH_RETURN,
+  SWITCH_VS_COIN_RETURNED,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -34,6 +35,7 @@ class PriceChart extends Component {
     }
 
     const tema = store.getStore("theme");
+    console.log(tema);
 
     this.state = {
       options: {
@@ -73,9 +75,15 @@ class PriceChart extends Component {
     emitter.on(COIN_DATA_RETURNED, this.coinDataReturned);
     emitter.on(COIN_PRICECHART_RETURNED, this.coinPriceChartReturned);
     emitter.on(DARKMODE_SWITCH_RETURN, this.darkModeSwitchReturned);
+    emitter.on(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
     dispatcher.dispatch({
       type: GET_COIN_PRICECHART,
-      content: [this.props.coinID, this.props.id],
+      content: [
+        this.props.coinID,
+        this.props.id,
+        this.props.timeFrame,
+        this.props.vsCoin,
+      ],
     });
   }
 
@@ -86,6 +94,7 @@ class PriceChart extends Component {
       this.coinPriceChartReturned
     );
     emitter.removeListener(DARKMODE_SWITCH_RETURN, this.darkModeSwitchReturned);
+    emitter.removeListener(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
   }
 
   darkModeSwitchReturned = (theme) => {
@@ -100,11 +109,36 @@ class PriceChart extends Component {
     });
   };
 
+  vsCoinReturned = (vsCoin) => {
+    function myFunction() {
+      var x = document.getElementById("cryptoCompSmall");
+      if (window.getComputedStyle(x).display !== "none") {
+        console.log("triggered");
+        if (this.props.id) {
+          dispatcher.dispatch({
+            type: GET_COIN_PRICECHART,
+            content: [
+              this.props.coinID,
+              this.props.id,
+              this.props.timeFrame,
+              vsCoin,
+            ],
+          });
+        }
+      }
+    }
+  };
+
   coinDataReturned = (data) => {
     if (data[1] === this.props.id) {
       dispatcher.dispatch({
         type: GET_COIN_PRICECHART,
-        content: [this.props.coinID, this.props.id],
+        content: [
+          this.props.coinID,
+          this.props.id,
+          this.props.timeFrame,
+          this.props.vsCoin,
+        ],
       });
     }
   };

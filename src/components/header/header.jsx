@@ -179,6 +179,8 @@ class Header extends Component {
 
     const account = store.getStore("account");
     const theme = store.getStore("theme");
+    const vsCoin = store.getStore("vsCoin");
+
     const darkModeBool = theme === "dark" ? true : false;
 
     this.state = {
@@ -187,7 +189,7 @@ class Header extends Component {
       darkModeBool: this.getMode(),
       modalOpen: false,
       gasColor: colors.lightGray,
-      vsCoin: "usd",
+      vsCoin: vsCoin,
     };
   }
 

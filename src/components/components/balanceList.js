@@ -54,6 +54,9 @@ const store = Store.store;
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
 
+const CoinGecko = require("coingecko-api");
+const CoinGeckoClient = new CoinGecko();
+
 const styles = (theme) => ({
   root: {
     backgroundColor: "rgba(255, 255, 255, 0.0)",
@@ -159,21 +162,47 @@ class BalanceList extends Component {
             item.id = "sora";
             newBalanceList.push(item);
           } else {
+            //CHECK IF THEREs a positive balance in the wallet for `item`
             if (item.balance > 0) {
+              //CHECK IF `item.name` is a match in coingecko coin list IDs
               let objIndex = this.state.coinList.findIndex(
                 (obj) => obj.name === item.tokenName
               );
               if (objIndex > -1) {
                 item.id = coinList[objIndex].id;
               } else {
-                let objIndex2 = this.state.coinList.findIndex(
+                //IF name is not a match look for match in item.symbol
+                //check for more than 1 token with same symbol
+                let symbolRepeats = this.state.coinList.filter(
                   (obj) => obj.symbol === item.tokenSymbol.toLowerCase()
-                );
-                if (objIndex2 > -1) {
-                  item.id = coinList[objIndex2].id;
+                ).length;
+
+                if (symbolRepeats === 1) {
+                  objIndex = this.state.coinList.findIndex(
+                    (obj) => obj.symbol === item.tokenSymbol.toLowerCase()
+                  );
+                  if (objIndex > -1) {
+                    item.id = coinList[objIndex].id;
+                  }
                 } else {
-                  // console.log("token not yet supported");
-                  // console.log(item);
+                  if (symbolRepeats === 0) {
+                    // HERE ENDS LIQUIDITY POOLS, STAKING, AND SCAM SHITCOINS
+                    // ADD LOGIC FOR CONNECTING WITHw LPs, STAKING TOKENS
+                    // console.log("missing from geckoList");
+                    // console.log(item);
+                  }
+                  if (symbolRepeats > 1) {
+                    // console.log("repeated item in geckoList");
+                    // console.log(item);
+                    //LOOK TOKEN DATA USING CONTRACT ADDRESS
+                    let zrx = item.contractAddress;
+                    let data = await CoinGeckoClient.coins.fetchCoinContractInfo(
+                      zrx
+                    );
+                    if (data) {
+                      item.id = data.data.id;
+                    }
+                  }
                 }
               }
               newBalanceList.push(item);
