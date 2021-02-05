@@ -29,6 +29,7 @@ import {
   CONNECTION_CONNECTED,
   DARKMODE_SWITCH_RETURN,
   SWITCH_VS_COIN_RETURNED,
+  accountsChanged,
 } from "./constants";
 
 import Store from "./stores";
@@ -373,7 +374,23 @@ class App extends Component {
   };
 
   render() {
+    let web3 = new Web3(Web3.givenProvider);
+
     const { headerValue, darkMode, theme } = this.state;
+
+    window.ethereum.on("accountsChanged", function (accounts) {
+      // Time to reload your interface with accounts[0]!
+      store.setStore({
+        account: { address: web3.utils.toChecksumAddress(accounts[0]) },
+      });
+      emitter.emit(CONNECTION_CONNECTED);
+    });
+
+    window.ethereum.on("networkChanged", function (networkId) {
+      // Time to reload your interface with the new networkId
+      emitter.emit(CONNECTION_CONNECTED);
+    });
+
     return (
       <MuiThemeProvider theme={theme}>
         <CssBaseline />

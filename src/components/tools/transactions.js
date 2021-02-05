@@ -4,7 +4,8 @@ import { withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
 
-//IMPORT MaterialUI
+import TransactionList from "../components/transactionList.js";
+
 import {
   Card,
   Typography,
@@ -18,37 +19,44 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   IconButton,
+  Table,
+  TableCell,
+  TableRow,
+  TableBody,
+  TableHead,
 } from "@material-ui/core";
-
-import BalanceList from "../components/balanceList.js";
 
 import RefreshRoundedIcon from "@material-ui/icons/RefreshRounded";
 import AddCircleRoundedIcon from "@material-ui/icons/AddCircleRounded";
 import BackspaceRoundedIcon from "@material-ui/icons/BackspaceRounded";
 
 import {
-  CHECK_ACCOUNT_RETURNED,
-  CHECK_ACCOUNT,
-  GET_COIN_DATA,
   DB_GET_USERDATA,
   DB_USERDATA_RETURNED,
+  DB_ADD_WALLET,
+  DB_DEL_WALLET,
+  DB_ADD_WALLET_RETURNED,
+  DB_DEL_WALLET_RETURNED,
   CONNECTION_CONNECTED,
   CONNECTION_DISCONNECTED,
-  COIN_DATA_RETURNED,
-  DB_ADD_FAVORITE,
-  DB_ADD_FAVORITE_RETURNED,
-  DB_ADD_WALLET,
-  DB_ADD_WALLET_RETURNED,
-  DB_DEL_WALLET,
-  DB_DEL_WALLET_RETURNED,
-  DB_UPDATE_WALLET,
-  DB_UPDATE_WALLET_RETURNED,
+  CHECK_ACCOUNT,
+  CHECK_ACCOUNT_RETURNED,
+  DB_UPDATE_WALLET_MOVEMENTS,
+  DB_UPDATE_WALLET_MOVEMENTS_RETURNED,
+  COINLIST_RETURNED,
+  GET_COIN_LIST,
+  COINGECKO_POPULATE_TXLIST,
+  COINGECKO_POPULATE_TXLIST_RETURNED,
+  DB_UPDATE_ONE_MOV_RETURNED,
 } from "../../constants";
 
 import Store from "../../stores";
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
 const store = Store.store;
+
+const CoinGecko = require("coingecko-api");
+const CoinGeckoClient = new CoinGecko();
 
 const styles = (theme) => ({
   root: {
@@ -58,7 +66,7 @@ const styles = (theme) => ({
     minHeight: "100%",
     justifyContent: "space-around",
   },
-  portfolioCard: {
+  txCard: {
     padding: 10,
     display: "flex",
     flex: 1,
@@ -76,53 +84,28 @@ const styles = (theme) => ({
     flex: 1,
     alignItems: "stretch",
   },
-  warning: {
-    padding: 5,
-    direction: "row",
-    alignItems: "center",
-    textAlign: "center",
-    justifyContent: "center",
-  },
-  favList: {
-    alignItems: "center",
-    textAlign: "center",
-    justifyContent: "center",
-  },
   button: {
     margin: 15,
   },
-  inline: {
-    maxWidth: "10%",
-    display: "inline",
-  },
-  walletList: {
-    maxWidth: "100%",
-  },
-  list: {
-    "&:hover": {
-      background: colors.cgGreen,
-    },
-  },
 });
 
-class Portfolio extends Component {
+class Transactions extends Component {
   constructor() {
     super();
 
     const account = store.getStore("account");
     this.state = {
-      items: [],
-      open: false,
-      loadingBar: this.open && this.items.length === 0,
       account: account,
       loading: false,
-      selectedID: "",
-      selectedWallet: "",
-      validSelection: false,
+      selectedWallet: "updating",
+      updatingWallet: "",
       userWallets: [],
+      userMovements: [],
+      filteredMovements: [],
       errMsgWallet: "",
       errorWallet: false,
       userBalance: [],
+      coinList: [],
     };
     if (account && account.address) {
       dispatcher.dispatch({
@@ -132,31 +115,23 @@ class Portfolio extends Component {
     }
   }
 
-  // updateFavorites() {
-  //   const account = store.getStore("account");
-  //   if (account && account.address) {
-  //     const newProgressBar = this.state.progressBar + 1;
-  //     this.setState({ progressBar: newProgressBar });
-  //     if (newProgressBar > 99) {
-  //       this.setState({ progressBar: 0 });
-  //       console.log("update favorites");
-  //       dispatcher.dispatch({
-  //         type: DB_GET_USERDATA,
-  //         address: account.address,
-  //       });
-  //     }
-  //   }
-  // }
-
   componentDidMount() {
     emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
-    emitter.on(CHECK_ACCOUNT_RETURNED, this.checkAccountReturned);
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
     emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
+    emitter.on(CHECK_ACCOUNT_RETURNED, this.checkAccountReturned);
     emitter.on(DB_ADD_WALLET_RETURNED, this.dbWalletReturned);
-    emitter.on(DB_UPDATE_WALLET_RETURNED, this.dbUpdateWalletReturned);
     emitter.on(DB_DEL_WALLET_RETURNED, this.dbWalletReturned);
-    // this.interval = setInterval(() => this.updateFavorites(), 750);
+    emitter.on(DB_UPDATE_ONE_MOV_RETURNED, this.dbUpdateOneReturned);
+    emitter.on(
+      DB_UPDATE_WALLET_MOVEMENTS_RETURNED,
+      this.dbUpdateWalletMovementsReturned
+    );
+    emitter.on(COINLIST_RETURNED, this.coinlistReturned);
+    emitter.on(COINGECKO_POPULATE_TXLIST_RETURNED, this.populateTxListReturned);
+    dispatcher.dispatch({
+      type: GET_COIN_LIST,
+    });
   }
 
   componentWillUnmount() {
@@ -170,11 +145,18 @@ class Portfolio extends Component {
     emitter.removeListener(DB_ADD_WALLET_RETURNED, this.dbWalletReturned);
     emitter.removeListener(DB_DEL_WALLET_RETURNED, this.dbWalletReturned);
     emitter.removeListener(
-      DB_UPDATE_WALLET_RETURNED,
-      this.dbUpdateWalletReturned
+      DB_UPDATE_ONE_MOV_RETURNED,
+      this.dbUpdateOneReturned
     );
-
-    // clearInterval(this.interval);
+    emitter.removeListener(
+      DB_UPDATE_WALLET_MOVEMENTS_RETURNED,
+      this.dbUpdateWalletMovementsReturned
+    );
+    emitter.removeListener(COINLIST_RETURNED, this.coinlistReturned);
+    emitter.removeListener(
+      COINGECKO_POPULATE_TXLIST_RETURNED,
+      this.populateTxListReturned
+    );
   }
 
   connectionConnected = () => {
@@ -186,21 +168,25 @@ class Portfolio extends Component {
     this.setState({ account: store.getStore("account") });
   };
 
-  coinSelect = (newValue) => {
-    if (newValue) {
-      this.setState({ validSelection: true, selectedID: newValue.id });
-    } else {
-      this.setState({ validSelection: false, selectedID: "" });
-    }
-  };
-
   dbUserDataReturned = (payload) => {
-    this.setState({ userWallets: payload.wallets });
-    this.getBalance("ALL");
+    this.setState({
+      userWallets: payload.wallets,
+      userMovements: payload.movements.movements,
+    });
+    this.getCoinIDs(payload.movements.movements);
+    //this.getMovements("ALL");
   };
 
   dbWalletReturned = (payload) => {
     this.setState({ userWallets: payload.wallets });
+  };
+
+  dbUpdateOneReturned = (payload) => {
+    console.log(payload);
+  };
+
+  coinlistReturned = (data) => {
+    this.setState({ coinList: data });
   };
 
   addWallet = (wallet) => {
@@ -216,77 +202,75 @@ class Portfolio extends Component {
 
   updateWallet = (wallet) => {
     dispatcher.dispatch({
-      type: DB_UPDATE_WALLET,
+      type: DB_UPDATE_WALLET_MOVEMENTS,
       wallet: wallet,
     });
     this.setState({ selectedWallet: "updating" });
   };
 
-  dbUpdateWalletReturned = (payload) => {
-    let newWallets = [...this.state.userWallets];
-    let objIndex = newWallets.findIndex((obj) => obj.wallet === payload.wallet);
-    let item = { ...newWallets[objIndex] };
-    item = payload;
-    newWallets[objIndex] = item;
-    this.setState({ userWallets: newWallets });
-    this.walletClicked(payload.wallet);
+  dbUpdateWalletMovementsReturned = (payload) => {
+    this.setState({
+      userMovements: payload[0],
+    });
+    this.getMovements(payload[1]);
   };
 
-  removeWALLET = (wallet) => {
-    dispatcher.dispatch({
-      type: DB_DEL_WALLET,
-      wallet: wallet,
-    });
+  handleChange = (event) => {
+    switch (event.target.id) {
+      case "walletAdd":
+        this.setState({ addWallet: event.target.value });
+        this.setState({ errorWallet: false });
+        dispatcher.dispatch({
+          type: CHECK_ACCOUNT,
+          content: event.target.value,
+        });
+        break;
+
+      default:
+        break;
+    }
+  };
+
+  checkAccountReturned = (_isAccount) => {
+    if (!_isAccount) {
+      this.setState({ errMsgAccount: "Not a valid ethereum address" });
+      this.setState({ errorWallet: true });
+    } else {
+      this.setState({ errMsgAccount: "" });
+      this.setState({ errorWallet: false });
+    }
+    this.setState({ errorAccount: !_isAccount });
   };
 
   walletClicked = (wallet) => {
-    this.getBalance(wallet);
+    this.getMovements(wallet);
   };
 
-  getBalance = (wallet) => {
+  getMovements = (wallet) => {
+    const { userMovements } = this.state;
+    let newMovements;
     if (wallet === "ALL") {
-      let newWallets = [...this.state.userWallets];
-      let userWallet = { ...newWallets[0] };
-      let displayBalance = [...userWallet.erc20Balance];
-
-      let objIndex;
-      for (var i = 1; i < newWallets.length; i++) {
-        let wallet = { ...newWallets[i] };
-        let erc20Balance = [...wallet.erc20Balance];
-        erc20Balance.forEach((item, i) => {
-          if (item.tokenSymbol === "UNI-V2") {
-            // agregar comparar el contract address
-            // para ver si son del mismo pool de uni y sumar los balances
-            displayBalance.push(item);
-            return;
-          }
-          objIndex = displayBalance.findIndex(
-            (obj) => obj.contractAddress === item.contractAddress
-          );
-          if (objIndex < 0) {
-            displayBalance.push(item);
-          } else {
-            let previousBalance = { ...displayBalance[objIndex] };
-            let oldBalance = previousBalance.balance;
-
-            let newBalance = oldBalance + item.balance;
-
-            previousBalance.balance = newBalance;
-            displayBalance.splice(objIndex, 1, previousBalance);
-          }
-        });
-      }
-      this.setState({ userBalance: displayBalance, selectedWallet: wallet });
+      newMovements = userMovements;
     } else {
-      this.state.userWallets.forEach((item, i) => {
-        if (item.wallet === wallet) {
-          this.setState({
-            userBalance: item.erc20Balance,
-            selectedWallet: item.wallet,
-          });
-        }
-      });
+      if (userMovements) {
+        const result = userMovements.filter((item) => item.wallet === wallet);
+        newMovements = result;
+      }
     }
+    console.log(newMovements);
+    dispatcher.dispatch({
+      type: COINGECKO_POPULATE_TXLIST,
+      data: newMovements,
+    });
+
+    this.setState({ filteredMovements: newMovements, updatingWallet: wallet });
+  };
+
+  populateTxListReturned = (txList) => {
+    this.setState({
+      geckoData: txList,
+      selectedWallet: this.state.updatingWallet,
+    });
   };
 
   userWalletList = (wallets) => {
@@ -346,43 +330,72 @@ class Portfolio extends Component {
     });
   };
 
-  handleChange = (event) => {
-    switch (event.target.id) {
-      case "walletAdd":
-        this.setState({ addWallet: event.target.value });
-        this.setState({ errorWallet: false });
-        dispatcher.dispatch({
-          type: CHECK_ACCOUNT,
-          content: event.target.value,
-        });
-        break;
-
-      default:
-        break;
+  getCoinIDs = async (data) => {
+    if (this.state.coinList) {
+      let coinList = [...this.state.coinList];
+      let prevTxList = data;
+      let newTxList = [];
+      for (var i = 0; i < prevTxList.length; i++) {
+        let item = { ...prevTxList[i] };
+        if (item.tokenSymbol === "EWTB") {
+          item.tokenID = "energy-web-token";
+          newTxList.push(item);
+        } else if (item.tokenSymbol === "XOR") {
+          item.tokenID = "sora";
+          newTxList.push(item);
+        } else {
+          let objIndex = this.state.coinList.findIndex(
+            (obj) => obj.name === item.tokenName
+          );
+          if (objIndex > -1) {
+            item.tokenID = coinList[objIndex].id;
+          } else {
+            //IF name is not a match look for match in item.symbol
+            //check for more than 1 token with same symbol
+            let symbolRepeats = this.state.coinList.filter(
+              (obj) => obj.symbol === item.tokenSymbol.toLowerCase()
+            ).length;
+            if (symbolRepeats === 1) {
+              objIndex = this.state.coinList.findIndex(
+                (obj) => obj.symbol === item.tokenSymbol.toLowerCase()
+              );
+              if (objIndex > -1) {
+                item.id = coinList[objIndex].id;
+              }
+            } else {
+              if (symbolRepeats === 0) {
+                // HERE ENDS LIQUIDITY POOLS, STAKING, AND SCAM SHITCOINS
+                // ADD LOGIC FOR CONNECTING WITHw LPs, STAKING TOKENS
+                // console.log("missing from geckoList");
+                // console.log(item);
+                // console.log("missing from geckoList");
+                // console.log(item);
+              }
+              if (symbolRepeats > 1) {
+                // console.log("repeated item in geckoList");
+                // console.log(item);
+                //LOOK TOKEN DATA USING CONTRACT ADDRESS
+                let zrx = item.tokenContract;
+                let data = await CoinGeckoClient.coins.fetchCoinContractInfo(
+                  zrx
+                );
+                if (data) {
+                  item.id = data.data.id;
+                }
+              }
+            }
+          }
+        }
+        newTxList.push(item);
+      }
+      this.setState({ userMovements: newTxList });
+      this.getMovements("ALL");
     }
-  };
-
-  checkAccountReturned = (_isAccount) => {
-    if (!_isAccount) {
-      this.setState({ errMsgAccount: "Not a valid ethereum address" });
-      this.setState({ errorWallet: true });
-    } else {
-      this.setState({ errMsgAccount: "" });
-      this.setState({ errorWallet: false });
-    }
-    this.setState({ errorAccount: !_isAccount });
   };
 
   render() {
     const { classes, t } = this.props;
-    const {
-      account,
-      loading,
-      favList,
-      selectedID,
-      userWallets,
-      addWallet,
-    } = this.state;
+    const { account, loading, addWallet, userWallets } = this.state;
 
     return (
       <div className={classes.root}>
@@ -438,9 +451,10 @@ class Portfolio extends Component {
               </Card>
             </Grid>
             <Grid item xs={10}>
-              <Card className={classes.portfolioCard} elevation={3}>
-                <BalanceList
-                  data={this.state.userBalance}
+              <Card className={classes.txCard} elevation={3}>
+                <TransactionList
+                  geckoData={this.state.geckoData}
+                  txData={this.state.filteredMovements}
                   selectedWallet={this.state.selectedWallet}
                 />
               </Card>
@@ -450,9 +464,15 @@ class Portfolio extends Component {
       </div>
     );
   }
+
   nav = (screen) => {
     this.props.history.push(screen);
   };
 }
 
-export default withRouter(withStyles(styles)(Portfolio));
+export default withRouter(withStyles(styles)(Transactions));
+
+// <TxList
+//   data={this.state.userTXs}
+//   selectedWallet={this.state.selectedWallet}
+// />

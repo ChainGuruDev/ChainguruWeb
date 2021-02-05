@@ -8,10 +8,12 @@ import { colors } from "../../theme";
 
 import BusinessCenterRoundedIcon from "@material-ui/icons/BusinessCenterRounded";
 import SearchIcon from "@material-ui/icons/Search";
+import SyncAltRoundedIcon from "@material-ui/icons/SyncAltRounded";
 
 //Load Tools
 import Portfolio from "../tools/portfolio";
 import CryptoDetective from "../tools/cryptoDetective";
+import Transactions from "../tools/transactions";
 
 import {
   PING_COINGECKO,
@@ -205,9 +207,14 @@ class Medium extends Component {
               {...a11yProps(0)}
             />
             <Tab
+              label="Transactions"
+              icon={<SyncAltRoundedIcon />}
+              {...a11yProps(1)}
+            />
+            <Tab
               label="Crypto Detective"
               icon={<SearchIcon />}
-              {...a11yProps(1)}
+              {...a11yProps(2)}
             />
           </Tabs>
         </AppBar>
@@ -215,6 +222,9 @@ class Medium extends Component {
           <Portfolio />
         </TabPanel>
         <TabPanel value={valueTab} index={1}>
+          <Transactions />
+        </TabPanel>
+        <TabPanel value={valueTab} index={2}>
           {coinID && <CryptoDetective coinID={coinID} />}
           {!coinID && <CryptoDetective />}
         </TabPanel>

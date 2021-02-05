@@ -98,7 +98,6 @@ class BalanceList extends Component {
   componentDidUpdate(prevProps) {
     if (this.props.selectedWallet === "updating") {
       if (prevProps.selectedWallet !== this.props.selectedWallet) {
-        console.log("updating");
         if (!this.state.loadingPortfolio) {
           this.setState({ loadingPortfolio: true });
         }
@@ -108,7 +107,6 @@ class BalanceList extends Component {
       if (prevProps.selectedWallet !== this.props.selectedWallet) {
         // console.log("new Data");
         this.getCoinIDs(this.props.data);
-
         //cambier el state loading para terminar el cargador
       }
     }
@@ -151,6 +149,7 @@ class BalanceList extends Component {
     if (this.state.coinList) {
       let coinList = { ...this.state.coinList };
       const prevBalanceList = this.props.data;
+      console.log(prevBalanceList);
       let newBalanceList = [];
       if (this.state.hideLowBalanceCoins) {
         for (var i = 0; i < prevBalanceList.length; i++) {
@@ -221,6 +220,7 @@ class BalanceList extends Component {
           newBalanceList.push(item);
         }
       }
+      console.log(newBalanceList);
       this.setState({ balanceList: newBalanceList });
       this.getPortfolioValue(newBalanceList);
     }

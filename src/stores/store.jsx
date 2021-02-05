@@ -44,6 +44,8 @@ import {
   PING_COINGECKO,
   COINGECKO_POPULATE_FAVLIST,
   COINGECKO_POPULATE_FAVLIST_RETURNED,
+  COINGECKO_POPULATE_TXLIST,
+  COINGECKO_POPULATE_TXLIST_RETURNED,
   GET_COIN_LIST,
   COINLIST_RETURNED,
   GET_COIN_DATA,
@@ -74,6 +76,8 @@ import {
   DB_DEL_WALLET_RETURNED,
   DB_UPDATE_WALLET,
   DB_UPDATE_WALLET_RETURNED,
+  DB_UPDATE_WALLET_MOVEMENTS,
+  DB_UPDATE_WALLET_MOVEMENTS_RETURNED,
   COINGECKO_ALLTIME_CHART_RETURNED,
   COINGECKO_GET_ALLTIME_CHART,
   UNISWAP_TRADE,
@@ -83,6 +87,8 @@ import {
   GASPRICE_RETURNED,
   SWITCH_VS_COIN,
   SWITCH_VS_COIN_RETURNED,
+  DB_UPDATE_ONE_MOV,
+  DB_UPDATE_ONE_MOV_RETURNED,
 } from "../constants";
 
 import {
@@ -252,11 +258,20 @@ class Store {
           case DB_UPDATE_WALLET:
             this.db_updateWallet(payload);
             break;
+          case DB_UPDATE_WALLET_MOVEMENTS:
+            this.db_updateWalletMovements(payload);
+            break;
+          case DB_UPDATE_ONE_MOV:
+            this.db_updateOneMov(payload);
+            break;
           case DB_GET_BLUECHIPS:
             this.db_getBluechips();
             break;
           case COINGECKO_POPULATE_FAVLIST:
             this.geckoPopulateFavList(payload);
+            break;
+          case COINGECKO_POPULATE_TXLIST:
+            this.geckoPopulateTxList(payload);
             break;
           case COINGECKO_GET_ALLTIME_CHART:
             this.coingeckoGetAllTimeChart(payload);
@@ -1192,6 +1207,30 @@ class Store {
     }
   };
 
+  geckoPopulateTxList = async (payload) => {
+    let data;
+    let vsCoin = store.getStore("vsCoin");
+    let itemIDs = [];
+    for (var i = 0; i < payload.data.length; i++) {
+      let newItem = payload.data[i].tokenID;
+      if (newItem) {
+        if (itemIDs.indexOf(newItem) === -1) {
+          itemIDs.push(newItem);
+        }
+      }
+    }
+
+    try {
+      let data = await CoinGeckoClient.coins.markets({
+        ids: itemIDs,
+        vs_currency: vsCoin,
+      });
+      emitter.emit(COINGECKO_POPULATE_TXLIST_RETURNED, await data.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   getCoinPriceChart = async (payload) => {
     let data;
     if (payload.content[2]) {
@@ -1344,6 +1383,48 @@ class Store {
         ))
       );
     emitter.emit(DB_UPDATE_WALLET_RETURNED, await _dbUpdateWalletBal.data);
+  };
+
+  db_updateOneMov = async (payload) => {
+    const account = store.getStore("account");
+    console.log(payload);
+    let _dbUpdateWallet = await axios.put(
+      `https://chainguru-db.herokuapp.com/movements/updateOne`,
+      {
+        userID: account.address,
+        oldMovementId: payload.content._id,
+        updatedMovement: {
+          _id: payload.content._id,
+          id: payload.content.id,
+          image: payload.content.image,
+          operation: payload.content.operation,
+          timeStamp: payload.content.timeStamp,
+          value: payload.content.value,
+          wallet: payload.content.wallet,
+          current_price: payload.content.current_price,
+          buyPrice: payload.content.buyPrice,
+          gasUsed: payload.content.gasUsed,
+          gasPrice: payload.content.gasPrice,
+          tokenSymbol: payload.content.tokenSymbol,
+          tokenName: payload.content.tokenName,
+          tokenDecimal: payload.content.tokenDecimal,
+        },
+      }
+    );
+    emitter.emit(DB_UPDATE_ONE_MOV_RETURNED, await _dbUpdateWallet);
+  };
+
+  db_updateWalletMovements = async (payload) => {
+    const account = store.getStore("account");
+    let _dbUpdateWallet = await axios.put(
+      `https://chainguru-db.herokuapp.com/movements/auto`,
+      {
+        user: account.address,
+        wallet: payload.wallet,
+      }
+    );
+    const returnData = [await _dbUpdateWallet.data.movements, payload.wallet];
+    emitter.emit(DB_UPDATE_WALLET_MOVEMENTS_RETURNED, await returnData);
   };
 
   db_getBluechips = async () => {
