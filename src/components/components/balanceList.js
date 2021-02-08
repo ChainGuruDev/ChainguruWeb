@@ -78,6 +78,7 @@ const styles = (theme) => ({
 class BalanceList extends Component {
   constructor(props) {
     super();
+    this._isMounted = false;
 
     this.state = {
       coinData: [],
@@ -99,7 +100,7 @@ class BalanceList extends Component {
     if (this.props.selectedWallet === "updating") {
       if (prevProps.selectedWallet !== this.props.selectedWallet) {
         if (!this.state.loadingPortfolio) {
-          this.setState({ loadingPortfolio: true });
+          this._isMounted && this.setState({ loadingPortfolio: true });
         }
       }
       //agregar un state loading para poner cargador
@@ -113,15 +114,17 @@ class BalanceList extends Component {
   }
 
   componentDidMount() {
+    this._isMounted = true;
     emitter.on(COIN_DATA_RETURNED, this.coinDataReturned);
     emitter.on(UPDATE_WAIT_COMPLETE, this.updateWaitComplete);
     emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
     emitter.on(COINGECKO_POPULATE_FAVLIST_RETURNED, this.geckoPriceReturned);
     emitter.on(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
-    dispatcher.dispatch({
-      type: GET_COIN_LIST,
-    });
+    this._isMounted &&
+      dispatcher.dispatch({
+        type: GET_COIN_LIST,
+      });
   }
 
   componentWillUnmount() {
@@ -135,6 +138,7 @@ class BalanceList extends Component {
     emitter.removeListener(UPDATE_WAIT_COMPLETE, this.updateWaitComplete);
 
     emitter.removeListener(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
+    this._isMounted = false;
   }
 
   vsCoinReturned = () => {
@@ -221,7 +225,7 @@ class BalanceList extends Component {
         }
       }
       console.log(newBalanceList);
-      this.setState({ balanceList: newBalanceList });
+      this._isMounted && this.setState({ balanceList: newBalanceList });
       this.getPortfolioValue(newBalanceList);
     }
   };
@@ -263,7 +267,7 @@ class BalanceList extends Component {
   };
 
   coinlistReturned = (data) => {
-    this.setState({ coinList: data });
+    this._isMounted && this.setState({ coinList: data });
   };
 
   coinDataReturned = (data) => {
@@ -347,11 +351,12 @@ class BalanceList extends Component {
       }
     });
     //console.log(sort);
-    this.setState({
-      sortData: sort,
-      totalValue: totalValue,
-      loadingPortfolio: false,
-    });
+    this._isMounted &&
+      this.setState({
+        sortData: sort,
+        totalValue: totalValue,
+        loadingPortfolio: false,
+      });
   };
 
   formatMoney = (amount, decimalCount = 5, decimal = ".", thousands = ",") => {
@@ -599,12 +604,12 @@ class BalanceList extends Component {
     let _prevSortBy = this.state.sortBy;
     if (_prevSortBy === _sortBy) {
       if (this.state.sortOrder === "asc") {
-        this.setState({ sortBy: _sortBy, sortOrder: "dsc" });
+        this._isMounted && this.setState({ sortBy: _sortBy, sortOrder: "dsc" });
       } else {
-        this.setState({ sortBy: _sortBy, sortOrder: "asc" });
+        this._isMounted && this.setState({ sortBy: _sortBy, sortOrder: "asc" });
       }
     } else {
-      this.setState({ sortBy: _sortBy, sortOrder: "dsc" });
+      this._isMounted && this.setState({ sortBy: _sortBy, sortOrder: "dsc" });
     }
   }
 

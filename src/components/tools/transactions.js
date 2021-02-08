@@ -93,6 +93,7 @@ class Transactions extends Component {
   constructor() {
     super();
 
+    this._isMounted = false;
     const account = store.getStore("account");
     this.state = {
       account: account,
@@ -116,6 +117,7 @@ class Transactions extends Component {
   }
 
   componentDidMount() {
+    this._isMounted = true;
     emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
     emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
@@ -129,9 +131,10 @@ class Transactions extends Component {
     );
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
     emitter.on(COINGECKO_POPULATE_TXLIST_RETURNED, this.populateTxListReturned);
-    dispatcher.dispatch({
-      type: GET_COIN_LIST,
-    });
+    this._isMounted &&
+      dispatcher.dispatch({
+        type: GET_COIN_LIST,
+      });
   }
 
   componentWillUnmount() {
@@ -157,6 +160,7 @@ class Transactions extends Component {
       COINGECKO_POPULATE_TXLIST_RETURNED,
       this.populateTxListReturned
     );
+    this._isMounted = false;
   }
 
   connectionConnected = () => {
@@ -169,61 +173,72 @@ class Transactions extends Component {
   };
 
   dbUserDataReturned = (payload) => {
-    this.setState({
-      userWallets: payload.wallets,
-      userMovements: payload.movements.movements,
-    });
+    this._isMounted &&
+      this.setState({
+        userWallets: payload.wallets,
+        userMovements: payload.movements.movements,
+      });
     this.getCoinIDs(payload.movements.movements);
-    //this.getMovements("ALL");
+    this._isMounted && this.getMovements("ALL");
+    console.log(payload);
   };
 
   dbWalletReturned = (payload) => {
-    this.setState({ userWallets: payload.wallets });
+    this._isMounted && this.setState({ userWallets: payload.wallets });
   };
 
   dbUpdateOneReturned = (payload) => {
     console.log(payload);
+    this._isMounted &&
+      this.setState({
+        userMovements: payload[0],
+      });
+    this._isMounted && this.getMovements(this.state.selectedWallet);
   };
 
   coinlistReturned = (data) => {
-    this.setState({ coinList: data });
+    this._isMounted && this.setState({ coinList: data });
   };
 
   addWallet = (wallet) => {
     if (wallet) {
-      dispatcher.dispatch({
-        type: DB_ADD_WALLET,
-        wallet: wallet,
-      });
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: DB_ADD_WALLET,
+          wallet: wallet,
+        });
     } else {
-      this.setState({ errorWallet: true });
+      this._isMounted && this.setState({ errorWallet: true });
     }
   };
 
   updateWallet = (wallet) => {
-    dispatcher.dispatch({
-      type: DB_UPDATE_WALLET_MOVEMENTS,
-      wallet: wallet,
-    });
-    this.setState({ selectedWallet: "updating" });
+    this._isMounted &&
+      dispatcher.dispatch({
+        type: DB_UPDATE_WALLET_MOVEMENTS,
+        wallet: wallet,
+      });
+    this._isMounted && this.setState({ selectedWallet: "updating" });
   };
 
   dbUpdateWalletMovementsReturned = (payload) => {
-    this.setState({
-      userMovements: payload[0],
-    });
-    this.getMovements(payload[1]);
+    console.log(payload);
+    this._isMounted &&
+      this.setState({
+        userMovements: payload[0],
+      });
+    this._isMounted && this.getMovements(payload[1]);
   };
 
   handleChange = (event) => {
     switch (event.target.id) {
       case "walletAdd":
-        this.setState({ addWallet: event.target.value });
-        this.setState({ errorWallet: false });
-        dispatcher.dispatch({
-          type: CHECK_ACCOUNT,
-          content: event.target.value,
-        });
+        this.setState({ addWallet: event.target.value, errorWallet: false });
+        this._isMounted &&
+          dispatcher.dispatch({
+            type: CHECK_ACCOUNT,
+            content: event.target.value,
+          });
         break;
 
       default:
@@ -233,13 +248,14 @@ class Transactions extends Component {
 
   checkAccountReturned = (_isAccount) => {
     if (!_isAccount) {
-      this.setState({ errMsgAccount: "Not a valid ethereum address" });
-      this.setState({ errorWallet: true });
+      this.setState({
+        errMsgAccount: "Not a valid ethereum address",
+        errorWallet: true,
+      });
     } else {
-      this.setState({ errMsgAccount: "" });
-      this.setState({ errorWallet: false });
+      this.setState({ errMsgAccount: "", errorWallet: false });
     }
-    this.setState({ errorAccount: !_isAccount });
+    this._isMounted && this.setState({ errorAccount: !_isAccount });
   };
 
   walletClicked = (wallet) => {
@@ -248,6 +264,10 @@ class Transactions extends Component {
 
   getMovements = (wallet) => {
     const { userMovements } = this.state;
+
+    console.log(userMovements);
+    console.log(wallet);
+
     let newMovements;
     if (wallet === "ALL") {
       newMovements = userMovements;
@@ -258,19 +278,25 @@ class Transactions extends Component {
       }
     }
     console.log(newMovements);
-    dispatcher.dispatch({
-      type: COINGECKO_POPULATE_TXLIST,
-      data: newMovements,
-    });
+    this._isMounted &&
+      dispatcher.dispatch({
+        type: COINGECKO_POPULATE_TXLIST,
+        data: newMovements,
+      });
 
-    this.setState({ filteredMovements: newMovements, updatingWallet: wallet });
+    this._isMounted &&
+      this.setState({
+        filteredMovements: newMovements,
+        updatingWallet: wallet,
+      });
   };
 
   populateTxListReturned = (txList) => {
-    this.setState({
-      geckoData: txList,
-      selectedWallet: this.state.updatingWallet,
-    });
+    this._isMounted &&
+      this.setState({
+        geckoData: txList,
+        selectedWallet: this.state.updatingWallet,
+      });
   };
 
   userWalletList = (wallets) => {
@@ -339,10 +365,10 @@ class Transactions extends Component {
         let item = { ...prevTxList[i] };
         if (item.tokenSymbol === "EWTB") {
           item.tokenID = "energy-web-token";
-          newTxList.push(item);
+          // newTxList.push(item);
         } else if (item.tokenSymbol === "XOR") {
           item.tokenID = "sora";
-          newTxList.push(item);
+          // newTxList.push(item);
         } else {
           let objIndex = this.state.coinList.findIndex(
             (obj) => obj.name === item.tokenName
@@ -360,7 +386,7 @@ class Transactions extends Component {
                 (obj) => obj.symbol === item.tokenSymbol.toLowerCase()
               );
               if (objIndex > -1) {
-                item.id = coinList[objIndex].id;
+                item.tokenID = coinList[objIndex].id;
               }
             } else {
               if (symbolRepeats === 0) {
@@ -376,11 +402,17 @@ class Transactions extends Component {
                 // console.log(item);
                 //LOOK TOKEN DATA USING CONTRACT ADDRESS
                 let zrx = item.tokenContract;
-                let data = await CoinGeckoClient.coins.fetchCoinContractInfo(
-                  zrx
-                );
-                if (data) {
-                  item.id = data.data.id;
+                try {
+                  let data = await CoinGeckoClient.coins.fetchCoinContractInfo(
+                    zrx
+                  );
+                  if (await data) {
+                    item.tokenID = data.data.id;
+                  }
+                } catch (err) {
+                  if (err) {
+                    console.log(err.message);
+                  }
                 }
               }
             }
@@ -388,7 +420,7 @@ class Transactions extends Component {
         }
         newTxList.push(item);
       }
-      this.setState({ userMovements: newTxList });
+      this._isMounted && this.setState({ userMovements: newTxList });
       this.getMovements("ALL");
     }
   };

@@ -25,13 +25,14 @@ import {
   Switch,
   IconButton,
   LinearProgress,
+  CircularProgress,
   Grid,
 } from "@material-ui/core";
 
 import DeleteIcon from "@material-ui/icons/Delete";
 import RefreshRoundedIcon from "@material-ui/icons/RefreshRounded";
 
-import { DB_UPDATE_ONE_MOV } from "../../constants";
+import { DB_UPDATE_ONE_MOV, DB_UPDATE_ONE_MOV_RETURNED } from "../../constants";
 
 import Store from "../../stores";
 const store = Store.store;
@@ -63,6 +64,7 @@ class TransactionList extends Component {
     this.state = {
       rowData: [],
       loadingTx: false,
+      loadingItems: [],
     };
   }
 
@@ -86,9 +88,16 @@ class TransactionList extends Component {
     }
   }
 
-  componentDidMount() {}
+  componentDidMount() {
+    emitter.on(DB_UPDATE_ONE_MOV_RETURNED, this.dbUpdateOneReturned);
+  }
 
-  componentWillUnmount() {}
+  componentWillUnmount() {
+    emitter.removeListener(
+      DB_UPDATE_ONE_MOV_RETURNED,
+      this.dbUpdateOneReturned
+    );
+  }
 
   createData = (
     _id,
@@ -149,7 +158,6 @@ class TransactionList extends Component {
         rows.push(rowData);
       }
     });
-    console.log(rows);
     this.setState({ rowData: rows });
   };
 
@@ -199,8 +207,16 @@ class TransactionList extends Component {
     this.props.history.push(screen);
   };
 
+  dbUpdateOneReturned = (token) => {
+    const { loadingItems } = this.state;
+    loadingItems.pop(token[1]);
+  };
+
   updateBuyPrice = async (tokenData) => {
+    const { loadingItems } = this.state;
     let prices = {};
+    loadingItems.push(tokenData._id);
+    this.setState({ loadingItems: loadingItems });
     let vsCoin = ["usd", "eur", "btc", "eth"];
     const from = parseInt(tokenData.timeStamp) - 100;
     const to = parseInt(tokenData.timeStamp) + 10000;
@@ -224,7 +240,6 @@ class TransactionList extends Component {
         eth: await geckoETH.data.prices[0][1],
       };
       tokenData.buyPrice = await prices;
-      console.log(tokenData);
       dispatcher.dispatch({
         type: DB_UPDATE_ONE_MOV,
         content: tokenData,
@@ -232,17 +247,18 @@ class TransactionList extends Component {
       return await tokenData;
     } catch (err) {
       console.log(err.message);
+      loadingItems.pop(tokenData._id);
+      this.setState({ loadingItems: loadingItems });
       return tokenData;
     }
   };
 
   sortedList = (rowData) => {
-    console.log(rowData);
     const { classes } = this.props;
     // style={{ cursor: "pointer" }}
     if (rowData.length > 1) {
       return rowData.map((row) => (
-        <TableRow hover={true} key={row.contractAddress}>
+        <TableRow hover={true} key={row._id}>
           <TableCell component="th" scope="row">
             <img
               className={classes.tokenLogo}
@@ -277,13 +293,18 @@ class TransactionList extends Component {
                 alignItems="center"
               >
                 <Typography variant={"subtitle1"}>Price</Typography>
-                <IconButton
-                  onClick={() => this.updateBuyPrice(row)}
-                  color="primary"
-                  aria-label="updatePrice"
-                >
-                  <RefreshRoundedIcon />
-                </IconButton>
+                {this.state.loadingItems.includes(row._id) && (
+                  <CircularProgress />
+                )}
+                {!this.state.loadingItems.includes(row._id) && (
+                  <IconButton
+                    onClick={() => this.updateBuyPrice(row)}
+                    color="primary"
+                    aria-label="updatePrice"
+                  >
+                    <RefreshRoundedIcon />
+                  </IconButton>
+                )}
               </Grid>
               {row.buyPrice && (
                 <Typography variant={"h4"}>
@@ -329,8 +350,7 @@ class TransactionList extends Component {
 
   render() {
     const { classes, t } = this.props;
-    const { rowData } = this.state;
-
+    const { rowData, loadingItems } = this.state;
     return (
       <Table className={classes.table} aria-label="favoritesList">
         <TableBody>{this.sortedList(rowData)}</TableBody>

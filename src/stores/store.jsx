@@ -1370,48 +1370,64 @@ class Store {
     const account = store.getStore("account");
 
     let _dbUpdateWalletBal;
-    let _dbUpdateWallet = await axios
-      .put(`https://chainguru-db.herokuapp.com/wallets/updateOne`, {
-        wallet: payload.wallet,
-      })
-      .then(
-        (_dbUpdateWalletBal = await axios.put(
-          `https://chainguru-db.herokuapp.com/wallets/balance`,
-          {
-            wallet: payload.wallet,
-          }
-        ))
-      );
-    emitter.emit(DB_UPDATE_WALLET_RETURNED, await _dbUpdateWalletBal.data);
+    try {
+      let _dbUpdateWallet = await axios
+        .put(`https://chainguru-db.herokuapp.com/wallets/updateOne`, {
+          wallet: payload.wallet,
+        })
+        .then(
+          (_dbUpdateWalletBal = await axios.put(
+            `https://chainguru-db.herokuapp.com/wallets/balance`,
+            {
+              wallet: payload.wallet,
+            }
+          ))
+        );
+      emitter.emit(DB_UPDATE_WALLET_RETURNED, await _dbUpdateWalletBal.data);
+    } catch (err) {
+      if (err) {
+        console.log(err.message);
+      }
+    }
   };
 
   db_updateOneMov = async (payload) => {
     const account = store.getStore("account");
-    console.log(payload);
-    let _dbUpdateWallet = await axios.put(
-      `https://chainguru-db.herokuapp.com/movements/updateOne`,
-      {
-        userID: account.address,
-        oldMovementId: payload.content._id,
-        updatedMovement: {
-          _id: payload.content._id,
-          id: payload.content.id,
-          image: payload.content.image,
-          operation: payload.content.operation,
-          timeStamp: payload.content.timeStamp,
-          value: payload.content.value,
-          wallet: payload.content.wallet,
-          current_price: payload.content.current_price,
-          buyPrice: payload.content.buyPrice,
-          gasUsed: payload.content.gasUsed,
-          gasPrice: payload.content.gasPrice,
-          tokenSymbol: payload.content.tokenSymbol,
-          tokenName: payload.content.tokenName,
-          tokenDecimal: payload.content.tokenDecimal,
-        },
+    try {
+      let _dbUpdateWallet = await axios.put(
+        `https://chainguru-db.herokuapp.com/movements/updateOne`,
+        // `http://localhost:3001/movements/updateOne`,
+
+        {
+          userID: account.address,
+          oldMovementId: payload.content._id,
+          updatedMovement: {
+            _id: payload.content._id,
+            id: payload.content.id,
+            image: payload.content.image,
+            operation: payload.content.operation,
+            timeStamp: payload.content.timeStamp,
+            value: payload.content.value,
+            wallet: payload.content.wallet,
+            current_price: payload.content.current_price,
+            buyPrice: payload.content.buyPrice,
+            gasUsed: payload.content.gasUsed,
+            gasPrice: payload.content.gasPrice,
+            tokenSymbol: payload.content.tokenSymbol,
+            tokenName: payload.content.tokenName,
+            tokenDecimal: payload.content.tokenDecimal,
+          },
+        }
+      );
+      emitter.emit(DB_UPDATE_ONE_MOV_RETURNED, [
+        await _dbUpdateWallet.data.movements,
+        payload.content._id,
+      ]);
+    } catch (err) {
+      if (err) {
+        console.log(err.message);
       }
-    );
-    emitter.emit(DB_UPDATE_ONE_MOV_RETURNED, await _dbUpdateWallet);
+    }
   };
 
   db_updateWalletMovements = async (payload) => {
