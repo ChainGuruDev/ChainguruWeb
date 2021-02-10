@@ -65,27 +65,42 @@ class TransactionList extends Component {
       rowData: [],
       loadingTx: false,
       loadingItems: [],
+      loadingData: false,
     };
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.selectedWallet === "updating") {
-      if (prevProps.selectedWallet !== this.props.selectedWallet) {
-        if (!this.state.loadingData) {
-          this.setState({ loadingData: true });
-        }
-      }
-      //agregar un state loading para poner cargador
-    } else {
-      if (prevProps.selectedWallet !== this.props.selectedWallet) {
-        // console.log("new Data");
-        let data = {
-          geckoData: this.props.geckoData,
-          txData: this.props.txData,
-        };
-        this.mergeTableData(data);
+    if (prevProps.list !== this.props.list) {
+      this.setState({ rowData: this.props.list });
+    }
+    if (prevProps.selectedWallet !== this.props.selectedWallet) {
+      if (this.props.selectedWallet === "updating") {
+        this.setState({ loadingData: true });
+        console.log("UPDATING WALLET");
+      } else {
+        console.log("update ready");
+
+        this.setState({ loadingData: false });
       }
     }
+
+    // if (this.props.selectedWallet === "updating") {
+    //   if (prevProps.selectedWallet !== this.props.selectedWallet) {
+    //     if (!this.state.loadingData) {
+    //       this.setState({ loadingData: true });
+    //     }
+    //   }
+    //   //agregar un state loading para poner cargador
+    // } else {
+    //   if (prevProps.selectedWallet !== this.props.selectedWallet) {
+    //     // console.log("new Data");
+    //     let data = {
+    //       geckoData: this.props.geckoData,
+    //       txData: this.props.txData,
+    //     };
+    //     this.mergeTableData(data);
+    //   }
+    // }
   }
 
   componentDidMount() {
@@ -98,68 +113,6 @@ class TransactionList extends Component {
       this.dbUpdateOneReturned
     );
   }
-
-  createData = (
-    _id,
-    id,
-    image,
-    operation,
-    timeStamp,
-    value,
-    wallet,
-    current_price,
-    buyPrice,
-    gasUsed,
-    gasPrice,
-    tokenSymbol,
-    tokenName,
-    tokenDecimal
-  ) => {
-    return {
-      _id,
-      id,
-      image,
-      operation,
-      timeStamp,
-      value,
-      wallet,
-      current_price,
-      buyPrice,
-      gasUsed,
-      gasPrice,
-      tokenSymbol,
-      tokenName,
-      tokenDecimal,
-    };
-  };
-
-  mergeTableData = (data) => {
-    let rows = [];
-    console.log(data);
-    data.txData.forEach((item, i) => {
-      let objIndex = data.geckoData.findIndex((obj) => obj.id === item.tokenID);
-      if (objIndex > -1) {
-        let rowData = this.createData(
-          item._id,
-          data.geckoData[objIndex].id,
-          data.geckoData[objIndex].image,
-          item.operation,
-          item.timeStamp,
-          item.value,
-          item.wallet,
-          data.geckoData[objIndex].current_price,
-          item.buyPrice,
-          item.gasUsed,
-          item.gasPrice,
-          item.tokenSymbol,
-          data.geckoData[objIndex].name,
-          item.tokenDecimal
-        );
-        rows.push(rowData);
-      }
-    });
-    this.setState({ rowData: rows });
-  };
 
   getReadableTime = (timeStamp) => {
     const date = new Date(timeStamp * 1000);
@@ -210,6 +163,7 @@ class TransactionList extends Component {
   dbUpdateOneReturned = (token) => {
     const { loadingItems } = this.state;
     loadingItems.pop(token[1]);
+    this.setState({ loadingItems: loadingItems });
   };
 
   updateBuyPrice = async (tokenData) => {
@@ -254,6 +208,7 @@ class TransactionList extends Component {
   };
 
   sortedList = (rowData) => {
+    console.log(rowData);
     const { classes } = this.props;
     // style={{ cursor: "pointer" }}
     if (rowData.length > 1) {
@@ -350,10 +305,19 @@ class TransactionList extends Component {
 
   render() {
     const { classes, t } = this.props;
-    const { rowData, loadingItems } = this.state;
+    const { rowData, loadingItems, loadingData } = this.state;
     return (
       <Table className={classes.table} aria-label="favoritesList">
-        <TableBody>{this.sortedList(rowData)}</TableBody>
+        <TableBody>
+          {!loadingData && this.sortedList(rowData)}
+          {loadingData && (
+            <TableRow hover={true} key={"loading"}>
+              <TableCell component="th" scope="row">
+                <LinearProgress />
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
       </Table>
     );
   }

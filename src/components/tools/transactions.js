@@ -3,6 +3,7 @@ import { withRouter, Link } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
+import Bottleneck from "bottleneck";
 
 import TransactionList from "../components/transactionList.js";
 
@@ -43,6 +44,8 @@ import {
   CHECK_ACCOUNT_RETURNED,
   DB_UPDATE_WALLET_MOVEMENTS,
   DB_UPDATE_WALLET_MOVEMENTS_RETURNED,
+  DB_UPDATE_WALLET_MOVEMENTS_PRICES,
+  DB_UPDATE_WALLET_MOVEMENTS_PRICES_RETURNED,
   COINLIST_RETURNED,
   GET_COIN_LIST,
   COINGECKO_POPULATE_TXLIST,
@@ -54,9 +57,20 @@ import Store from "../../stores";
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
 const store = Store.store;
+const axios = require("axios").default;
 
 const CoinGecko = require("coingecko-api");
 const CoinGeckoClient = new CoinGecko();
+
+const limiter = new Bottleneck({
+  reservoir: 50, // initial value
+  reservoirRefreshAmount: 50,
+  reservoirRefreshInterval: 60 * 1100, // must be divisible by 250
+
+  // also use maxConcurrent and/or minTime for safety
+  maxConcurrent: 1,
+  minTime: 1100, // pick a value that makes sense for your use case
+});
 
 const styles = (theme) => ({
   root: {
@@ -107,6 +121,7 @@ class Transactions extends Component {
       errorWallet: false,
       userBalance: [],
       coinList: [],
+      list: [],
     };
     if (account && account.address) {
       dispatcher.dispatch({
@@ -129,6 +144,10 @@ class Transactions extends Component {
       DB_UPDATE_WALLET_MOVEMENTS_RETURNED,
       this.dbUpdateWalletMovementsReturned
     );
+    emitter.on(
+      DB_UPDATE_WALLET_MOVEMENTS_PRICES_RETURNED,
+      this.dbUpdateMovPriceReturned
+    );
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
     emitter.on(COINGECKO_POPULATE_TXLIST_RETURNED, this.populateTxListReturned);
     this._isMounted &&
@@ -150,6 +169,10 @@ class Transactions extends Component {
     emitter.removeListener(
       DB_UPDATE_ONE_MOV_RETURNED,
       this.dbUpdateOneReturned
+    );
+    emitter.removeListener(
+      DB_UPDATE_WALLET_MOVEMENTS_PRICES_RETURNED,
+      this.dbUpdateMovPriceReturned
     );
     emitter.removeListener(
       DB_UPDATE_WALLET_MOVEMENTS_RETURNED,
@@ -177,10 +200,10 @@ class Transactions extends Component {
       this.setState({
         userWallets: payload.wallets,
         userMovements: payload.movements.movements,
+        selectedWallet: "ALL",
       });
     this.getCoinIDs(payload.movements.movements);
-    this._isMounted && this.getMovements("ALL");
-    console.log(payload);
+    // this._isMounted && this.getMovements("ALL");
   };
 
   dbWalletReturned = (payload) => {
@@ -194,6 +217,10 @@ class Transactions extends Component {
         userMovements: payload[0],
       });
     this._isMounted && this.getMovements(this.state.selectedWallet);
+  };
+
+  dbUpdateMovPriceReturned = (payload) => {
+    console.log(payload);
   };
 
   coinlistReturned = (data) => {
@@ -222,12 +249,11 @@ class Transactions extends Component {
   };
 
   dbUpdateWalletMovementsReturned = (payload) => {
-    console.log(payload);
     this._isMounted &&
       this.setState({
-        userMovements: payload[0],
+        selectedWallet: payload[1],
       });
-    this._isMounted && this.getMovements(payload[1]);
+    this.getCoinIDs(payload[0]);
   };
 
   handleChange = (event) => {
@@ -259,6 +285,7 @@ class Transactions extends Component {
   };
 
   walletClicked = (wallet) => {
+    this.setState({ selectedWallet: "updating" });
     this.getMovements(wallet);
   };
 
@@ -291,12 +318,157 @@ class Transactions extends Component {
       });
   };
 
+  createData = (
+    _id,
+    id,
+    image,
+    operation,
+    timeStamp,
+    value,
+    wallet,
+    current_price,
+    buyPrice,
+    gasUsed,
+    gasPrice,
+    tokenSymbol,
+    tokenName,
+    tokenDecimal
+  ) => {
+    return {
+      _id,
+      id,
+      image,
+      operation,
+      timeStamp,
+      value,
+      wallet,
+      current_price,
+      buyPrice,
+      gasUsed,
+      gasPrice,
+      tokenSymbol,
+      tokenName,
+      tokenDecimal,
+    };
+  };
+
   populateTxListReturned = (txList) => {
-    this._isMounted &&
+    const movements = this.state.filteredMovements;
+    let rows = [];
+    movements.forEach((item, i) => {
+      let objIndex = txList.findIndex((obj) => obj.id === item.tokenID);
+      if (objIndex > -1) {
+        let rowData = this.createData(
+          item._id,
+          txList[objIndex].id,
+          txList[objIndex].image,
+          item.operation,
+          item.timeStamp,
+          item.value,
+          item.wallet,
+          txList[objIndex].current_price,
+          item.buyPrice,
+          item.gasUsed,
+          item.gasPrice,
+          item.tokenSymbol,
+          txList[objIndex].name,
+          item.tokenDecimal
+        );
+        rows.push(rowData);
+      }
+    });
+    // this.setState({ rowData: rows, loadingData: false });
+    if (this.state.updatingWallet !== "ALL") {
+      this.getAllResults(rows);
+    } else {
+      this._isMounted &&
+        this.setState({
+          list: rows,
+          selectedWallet: this.state.updatingWallet,
+        });
+    }
+    // this._isMounted &&
+    //   this.setState({
+    //     geckoData: txList,
+    //     selectedWallet: this.state.updatingWallet,
+    //   });
+  };
+
+  updateBuyPrice = async (tokenData) => {
+    const { loadingItems } = this.state;
+    let prices = {};
+    let vsCoin = ["usd", "eur", "btc", "eth"];
+    const from = parseInt(tokenData.timeStamp) - 100;
+    const to = parseInt(tokenData.timeStamp) + 10000;
+    try {
+      if (tokenData.buyPrice) {
+        console.log("token already has price");
+        return tokenData;
+      } else {
+        let date = new Date(parseInt(tokenData.timeStamp) * 1000);
+        const queryDate = `${date.getDate()}-${date.getMonth()}-${date.getFullYear()}`;
+        const _urlUSD = await `https://api.coingecko.com/api/v3/coins/${tokenData.id}/market_chart/range?vs_currency=${vsCoin[0]}&from=${from}&to=${to}`;
+        const _urlEUR = await `https://api.coingecko.com/api/v3/coins/${tokenData.id}/market_chart/range?vs_currency=${vsCoin[1]}&from=${from}&to=${to}`;
+        const _urlBTC = await `https://api.coingecko.com/api/v3/coins/${tokenData.id}/market_chart/range?vs_currency=${vsCoin[2]}&from=${from}&to=${to}`;
+        const _urlETH = await `https://api.coingecko.com/api/v3/coins/${tokenData.id}/market_chart/range?vs_currency=${vsCoin[3]}&from=${from}&to=${to}`;
+
+        const geckoUSD = await axios.get(_urlUSD);
+        const geckoEUR = await axios.get(_urlEUR);
+        const geckoBTC = await axios.get(_urlBTC);
+        const geckoETH = await axios.get(_urlETH);
+
+        prices = {
+          usd: await geckoUSD.data.prices[0][1],
+          eur: await geckoEUR.data.prices[0][1],
+          btc: await geckoBTC.data.prices[0][1],
+          eth: await geckoETH.data.prices[0][1],
+        };
+        tokenData.buyPrice = await prices;
+
+        return await tokenData;
+      }
+    } catch (err) {
+      console.log(err.message);
+      return tokenData;
+    }
+  };
+
+  limitedUpdatePrices = limiter.wrap(this.updateBuyPrice);
+
+  getAllResults = async (data) => {
+    console.log(data);
+    const newMovements = [];
+    const allThePromises = data.map((item) => {
+      return this.limitedUpdatePrices(item);
+    });
+    try {
+      const results = await Promise.all(allThePromises);
       this.setState({
-        geckoData: txList,
+        list: results,
         selectedWallet: this.state.updatingWallet,
       });
+      dispatcher.dispatch({
+        type: DB_UPDATE_WALLET_MOVEMENTS_PRICES,
+        newMovements: results,
+        selectedWallet: this.state.updatingWallet,
+      });
+    } catch (err) {
+      console.log(err);
+    }
+    // for (let i = 0; i < count; i++) {
+    //   sourceIds.push({
+    //     id: i,
+    //   });
+    // } // Map over all the results and call our pretend API, stashing the promises in a new array
+    // const allThePromises = sourceIds.map((item) => {
+    //   return throttledGetMyData(item);
+    // });
+    // try {
+    //   const results = await Promise.all(allThePromises);
+    //   console.log(results);
+    // } catch (err) {
+    //   console.log(err);
+    // }
   };
 
   userWalletList = (wallets) => {
@@ -394,8 +566,6 @@ class Transactions extends Component {
                 // ADD LOGIC FOR CONNECTING WITHw LPs, STAKING TOKENS
                 // console.log("missing from geckoList");
                 // console.log(item);
-                // console.log("missing from geckoList");
-                // console.log(item);
               }
               if (symbolRepeats > 1) {
                 // console.log("repeated item in geckoList");
@@ -421,7 +591,7 @@ class Transactions extends Component {
         newTxList.push(item);
       }
       this._isMounted && this.setState({ userMovements: newTxList });
-      this.getMovements("ALL");
+      this.getMovements(this.state.selectedWallet);
     }
   };
 
@@ -485,8 +655,7 @@ class Transactions extends Component {
             <Grid item xs={10}>
               <Card className={classes.txCard} elevation={3}>
                 <TransactionList
-                  geckoData={this.state.geckoData}
-                  txData={this.state.filteredMovements}
+                  list={this.state.list}
                   selectedWallet={this.state.selectedWallet}
                 />
               </Card>

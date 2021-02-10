@@ -78,6 +78,8 @@ import {
   DB_UPDATE_WALLET_RETURNED,
   DB_UPDATE_WALLET_MOVEMENTS,
   DB_UPDATE_WALLET_MOVEMENTS_RETURNED,
+  DB_UPDATE_WALLET_MOVEMENTS_PRICES,
+  DB_UPDATE_WALLET_MOVEMENTS_PRICES_RETURNED,
   COINGECKO_ALLTIME_CHART_RETURNED,
   COINGECKO_GET_ALLTIME_CHART,
   UNISWAP_TRADE,
@@ -287,6 +289,9 @@ class Store {
             break;
           case SWITCH_VS_COIN:
             this.switchVsCoin(payload);
+            break;
+          case DB_UPDATE_WALLET_MOVEMENTS_PRICES:
+            this.dbUpdateMovementPrices(payload);
             break;
           default: {
             break;
@@ -1225,9 +1230,10 @@ class Store {
         ids: itemIDs,
         vs_currency: vsCoin,
       });
+      console.log(await data);
       emitter.emit(COINGECKO_POPULATE_TXLIST_RETURNED, await data.data);
     } catch (err) {
-      console.log(err);
+      console.log(err.message);
     }
   };
 
@@ -1432,15 +1438,58 @@ class Store {
 
   db_updateWalletMovements = async (payload) => {
     const account = store.getStore("account");
-    let _dbUpdateWallet = await axios.put(
-      `https://chainguru-db.herokuapp.com/movements/auto`,
-      {
-        user: account.address,
-        wallet: payload.wallet,
+    let _dbUpdateWalletTX;
+
+    try {
+      let _dbUpdateWallet = await axios
+        .put(`https://chainguru-db.herokuapp.com/wallets/updateOne`, {
+          wallet: payload.wallet,
+        })
+        .then(
+          (_dbUpdateWalletTX = await axios.put(
+            `https://chainguru-db.herokuapp.com/movements/auto`,
+            {
+              user: account.address,
+              wallet: payload.wallet,
+            }
+          ))
+        );
+      const returnData = [
+        await _dbUpdateWalletTX.data.movements,
+        payload.wallet,
+      ];
+      emitter.emit(DB_UPDATE_WALLET_MOVEMENTS_RETURNED, await returnData);
+    } catch (err) {
+      if (err) {
+        console.log(err.message);
       }
-    );
-    const returnData = [await _dbUpdateWallet.data.movements, payload.wallet];
-    emitter.emit(DB_UPDATE_WALLET_MOVEMENTS_RETURNED, await returnData);
+    }
+  };
+
+  dbUpdateMovementPrices = async (payload) => {
+    const account = store.getStore("account");
+    console.log(account.address);
+    console.log(payload.selectedWallet);
+    console.log(payload.newMovements);
+    try {
+      let _dbUpdateWallet = await axios.put(
+        `http://localhost:3001/movements/updateWallet`,
+        {
+          userID: account.address,
+          wallet: payload.selectedWallet,
+          newMovements: payload.newMovements,
+        }
+      );
+      emitter.emit(
+        DB_UPDATE_WALLET_MOVEMENTS_PRICES_RETURNED,
+        await _dbUpdateWallet
+      );
+      console.log(await _dbUpdateWallet);
+    } catch (err) {
+      if (err) {
+        console.log(err.message);
+      }
+    }
   };
 
   db_getBluechips = async () => {
