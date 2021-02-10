@@ -1473,7 +1473,7 @@ class Store {
     console.log(payload.newMovements);
     try {
       let _dbUpdateWallet = await axios.put(
-        `http://localhost:3001/movements/updateWallet`,
+        `https://chainguru-db.herokuapp.com/movements/updateWallet`,
         {
           userID: account.address,
           wallet: payload.selectedWallet,
