@@ -4,7 +4,8 @@ import clsx from "clsx";
 import { withRouter, Link } from "react-router-dom";
 import { lighten, withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
-
+import Menu from "@material-ui/core/Menu";
+import MenuItem from "@material-ui/core/MenuItem";
 import CargaLineal from "../components/cargaLineal.js";
 import SparklineChart from "./SparklineChart.js";
 import ArrowDropDownRoundedIcon from "@material-ui/icons/ArrowDropDownRounded";
@@ -25,6 +26,7 @@ import {
   Paper,
   Checkbox,
   Tooltip,
+  FormGroup,
   FormControlLabel,
   Switch,
   IconButton,
@@ -35,6 +37,7 @@ import {
 import DeleteIcon from "@material-ui/icons/Delete";
 import FilterListIcon from "@material-ui/icons/FilterList";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
+import RestoreFromTrashRoundedIcon from "@material-ui/icons/RestoreFromTrashRounded";
 
 import {
   COIN_DATA_RETURNED,
@@ -98,6 +101,7 @@ class BalanceList extends Component {
       loadingPortfolio: false,
       progressBar: 0,
       totalValue: 0,
+      anchorMenu: null,
     };
   }
 
@@ -164,91 +168,90 @@ class BalanceList extends Component {
     const { userBlacklist } = this.state;
     if (this.state.coinList) {
       let coinList = { ...this.state.coinList };
-      const prevBalanceList = this.props.data;
-      console.log(prevBalanceList);
+      const prevBalanceList = [...this.props.data];
+
       let newBalanceList = [];
 
       if (this.state.hideBlacklisted) {
-        prevBalanceList.forEach((item, i) => {
-          if (userBlacklist.tokenIDs.includes(item.contractAddress)) {
+        for (var i = 0; i < prevBalanceList.length; i++) {
+          if (
+            userBlacklist.tokenIDs.includes(prevBalanceList[i].contractAddress)
+          ) {
             let blacklistedIndex = prevBalanceList.findIndex(
-              (obj) => obj.contractAddress === item.contractAddress
+              (obj) =>
+                obj.contractAddress === prevBalanceList[i].contractAddress
             );
             prevBalanceList.splice(blacklistedIndex, 1);
-            return;
+            i--;
           }
-        });
+        }
       }
 
       if (this.state.hideLowBalanceCoins) {
         for (var i = 0; i < prevBalanceList.length; i++) {
-          let item = { ...prevBalanceList[i] };
-          if (item.tokenSymbol === "EWTB") {
-            item.id = "energy-web-token";
-            newBalanceList.push(item);
-          } else if (item.tokenSymbol === "XOR") {
-            item.id = "sora";
-            newBalanceList.push(item);
-          } else {
-            //CHECK IF THEREs a positive balance in the wallet for `item`
-            if (item.balance > 0) {
-              //CHECK IF `item.name` is a match in coingecko coin list IDs
-              let objIndex = this.state.coinList.findIndex(
-                (obj) => obj.name === item.tokenName
-              );
-              if (objIndex > -1) {
-                item.id = coinList[objIndex].id;
-              } else {
-                //IF name is not a match look for match in item.symbol
-                //check for more than 1 token with same symbol
-                let symbolRepeats = this.state.coinList.filter(
-                  (obj) => obj.symbol === item.tokenSymbol.toLowerCase()
-                ).length;
-
-                if (symbolRepeats === 1) {
-                  objIndex = this.state.coinList.findIndex(
-                    (obj) => obj.symbol === item.tokenSymbol.toLowerCase()
-                  );
-                  if (objIndex > -1) {
-                    item.id = coinList[objIndex].id;
-                  }
-                } else {
-                  if (symbolRepeats === 0) {
-                    // HERE ENDS LIQUIDITY POOLS, STAKING, AND SCAM SHITCOINS
-                    // ADD LOGIC FOR CONNECTING WITHw LPs, STAKING TOKENS
-                    // console.log("missing from geckoList");
-                    // console.log(item);
-                  }
-                  if (symbolRepeats > 1) {
-                    // console.log("repeated item in geckoList");
-                    // console.log(item);
-                    //LOOK TOKEN DATA USING CONTRACT ADDRESS
-                    let zrx = item.contractAddress;
-                    let data = await CoinGeckoClient.coins.fetchCoinContractInfo(
-                      zrx
-                    );
-                    if (data) {
-                      item.id = data.data.id;
-                    }
-                  }
-                }
-              }
-              newBalanceList.push(item);
-            }
+          if (!prevBalanceList[i].balance > 0) {
+            let blacklistedIndex = prevBalanceList.findIndex(
+              (obj) =>
+                obj.contractAddress === prevBalanceList[i].contractAddress
+            );
+            prevBalanceList.splice(blacklistedIndex, 1);
+            i--;
           }
         }
-      } else {
-        for (var i = 0; i < prevBalanceList.length; i++) {
-          let item = { ...prevBalanceList[i] };
+      }
+
+      for (var i = 0; i < prevBalanceList.length; i++) {
+        let item = { ...prevBalanceList[i] };
+        if (item.tokenSymbol === "EWTB") {
+          item.id = "energy-web-token";
+        } else if (item.tokenSymbol === "XOR") {
+          item.id = "sora";
+        } else {
+          //CHECK IF `item.name` is a match in coingecko coin list IDs
           let objIndex = this.state.coinList.findIndex(
-            (obj) => obj.symbol === item.tokenSymbol.toLowerCase()
+            (obj) => obj.name === item.tokenName
           );
           if (objIndex > -1) {
             item.id = coinList[objIndex].id;
+          } else {
+            //IF name is not a match look for match in item.symbol
+            //check for more than 1 token with same symbol
+            let symbolRepeats = this.state.coinList.filter(
+              (obj) => obj.symbol === item.tokenSymbol.toLowerCase()
+            ).length;
+
+            if (symbolRepeats === 1) {
+              objIndex = this.state.coinList.findIndex(
+                (obj) => obj.symbol === item.tokenSymbol.toLowerCase()
+              );
+              if (objIndex > -1) {
+                item.id = coinList[objIndex].id;
+              }
+            } else {
+              if (symbolRepeats === 0) {
+                // HERE ENDS LIQUIDITY POOLS, STAKING, AND SCAM SHITCOINS
+                // ADD LOGIC FOR CONNECTING WITHw LPs, STAKING TOKENS
+                // console.log("missing from geckoList");
+                // console.log(item);
+              }
+              if (symbolRepeats > 1) {
+                // console.log("repeated item in geckoList");
+                // console.log(item);
+                //LOOK TOKEN DATA USING CONTRACT ADDRESS
+                let zrx = item.contractAddress;
+                let data = await CoinGeckoClient.coins.fetchCoinContractInfo(
+                  zrx
+                );
+                if (data) {
+                  item.id = data.data.id;
+                }
+              }
+            }
           }
-          newBalanceList.push(item);
         }
+        newBalanceList.push(item);
       }
+
       console.log(newBalanceList);
       this._isMounted && this.setState({ balanceList: newBalanceList });
       this.getPortfolioValue(newBalanceList);
@@ -256,19 +259,18 @@ class BalanceList extends Component {
   };
 
   dbBlacklistReturned = (data) => {
-    console.log(data);
     this.setState({ userBlacklist: data });
     this.getCoinIDs(this.props.data);
   };
 
   getPortfolioValue = async (coinList) => {
     let tokenIDs = [];
-    // console.log(coinList);
     coinList.forEach((item, i) => {
       if (item.id) {
         tokenIDs.push(item.id);
       }
     });
+
     if (tokenIDs.length > 0) {
       let geckoData = await dispatcher.dispatch({
         type: COINGECKO_POPULATE_FAVLIST,
@@ -280,7 +282,7 @@ class BalanceList extends Component {
   geckoPriceReturned = async (data) => {
     let prevBalanceList = [...this.state.balanceList];
     let newBalanceList = [];
-    //console.log(prevBalanceList);
+
     for (var i = 0; i < prevBalanceList.length; i++) {
       let item = { ...prevBalanceList[i] };
       let objIndex = data.findIndex((obj) => obj.id === item.id);
@@ -293,7 +295,6 @@ class BalanceList extends Component {
       // console.log(data[i]);
       // console.log(newBalanceList[i]);
     }
-    //console.log(newBalanceList);
     this.dataSorting(newBalanceList);
   };
 
@@ -381,7 +382,6 @@ class BalanceList extends Component {
         // console.log(item);
       }
     });
-    //console.log(sort);
     this._isMounted &&
       this.setState({
         sortData: sort,
@@ -527,10 +527,9 @@ class BalanceList extends Component {
       });
       // console.log(this.props.selectedWallet);
     }
-
-    if (formatedRows.length > 1) {
+    if (formatedRows.length > 0) {
       return formatedRows.map((row) => (
-        <TableRow hover={true} key={row.contractAddress}>
+        <TableRow hover={true} key={row.id}>
           <TableCell
             style={{ cursor: "pointer" }}
             onClick={() => this.detective(row.id)}
@@ -627,12 +626,28 @@ class BalanceList extends Component {
             <SparklineChart id={row.symbol} data={row.sparkline_in_7d} />
           </TableCell>
           <TableCell align="center">
-            <IconButton
-              aria-label="delete"
-              onClick={(e) => this.addItemToBlacklist(row.contractAddress, e)}
-            >
-              <DeleteIcon />
-            </IconButton>
+            {this.state.userBlacklist.tokenIDs.includes(
+              row.contractAddress
+            ) && (
+              <IconButton
+                aria-label="restore"
+                onClick={(e) =>
+                  this.removeItemFromBlacklist(row.contractAddress, e)
+                }
+              >
+                <RestoreFromTrashRoundedIcon />
+              </IconButton>
+            )}
+            {!this.state.userBlacklist.tokenIDs.includes(
+              row.contractAddress
+            ) && (
+              <IconButton
+                aria-label="delete"
+                onClick={(e) => this.addItemToBlacklist(row.contractAddress, e)}
+              >
+                <DeleteIcon />
+              </IconButton>
+            )}
           </TableCell>
         </TableRow>
       ));
@@ -647,7 +662,6 @@ class BalanceList extends Component {
   };
 
   removeItemFromBlacklist = (tokenID) => {
-    console.log(tokenID);
     dispatcher.dispatch({
       type: DB_DEL_BLACKLIST,
       content: tokenID,
@@ -676,9 +690,32 @@ class BalanceList extends Component {
     this.nav("/short/detective/" + id);
   };
 
+  handleClose = () => {
+    this.setState({ anchorMenu: null });
+  };
+
   render() {
     const { classes, t } = this.props;
     const { coinData, loading, rowData, sortData } = this.state;
+
+    const openMenu = (event) => {
+      this.setState({ anchorMenu: event.currentTarget });
+    };
+    const switchBlacklisted = () => {
+      this.setState({ hideBlacklisted: !this.state.hideBlacklisted }, () => {
+        this.getCoinIDs(this.props.data);
+      });
+    };
+    const switchLowBalance = async () => {
+      const newState = await this.setState(
+        {
+          hideLowBalanceCoins: !this.state.hideLowBalanceCoins,
+        },
+        () => {
+          this.getCoinIDs(this.props.data);
+        }
+      );
+    };
 
     return (
       <Grid container spacing={3}>
@@ -855,12 +892,45 @@ class BalanceList extends Component {
                   </TableCell>
                   <TableCell align="center">Chart (7d)</TableCell>
                   <TableCell align="center">
-                    <IconButton
-                      aria-label="menu"
-                      onClick={(e) => console.log("boton menu")}
-                    >
+                    <IconButton aria-label="menu" onClick={openMenu}>
                       <MoreHorizIcon />
                     </IconButton>
+                    <Menu
+                      id="simple-menu"
+                      anchorEl={this.state.anchorMenu}
+                      keepMounted
+                      open={Boolean(this.state.anchorMenu)}
+                      onClose={this.handleClose}
+                    >
+                      <MenuItem>
+                        <FormGroup row>
+                          <FormControlLabel
+                            control={
+                              <Switch
+                                checked={this.state.hideBlacklisted}
+                                onChange={switchBlacklisted}
+                                name="checkedBlacklist"
+                              />
+                            }
+                            label="Hide Blacklisted"
+                          />
+                        </FormGroup>
+                      </MenuItem>
+                      <MenuItem>
+                        <FormGroup row>
+                          <FormControlLabel
+                            control={
+                              <Switch
+                                checked={this.state.hideLowBalanceCoins}
+                                onChange={switchLowBalance}
+                                name="checkedLowCost"
+                              />
+                            }
+                            label="Hide Low balance"
+                          />
+                        </FormGroup>
+                      </MenuItem>
+                    </Menu>
                   </TableCell>
                 </TableRow>
               </TableHead>
