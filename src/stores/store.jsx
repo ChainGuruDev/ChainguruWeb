@@ -68,6 +68,9 @@ import {
   DB_ADD_FAVORITE_RETURNED,
   DB_DEL_FAVORITE,
   DB_DEL_FAVORITE_RETURNED,
+  DB_ADD_BLACKLIST,
+  DB_DEL_BLACKLIST,
+  DB_ADDDEL_BLACKLIST_RETURNED,
   DB_GET_BLUECHIPS,
   DB_GET_BLUECHIPS_RETURNED,
   DB_ADD_WALLET,
@@ -256,6 +259,12 @@ class Store {
             break;
           case DB_DEL_FAVORITE:
             this.db_delFavorite(payload);
+            break;
+          case DB_ADD_BLACKLIST:
+            this.db_addBlacklist(payload);
+            break;
+          case DB_DEL_BLACKLIST:
+            this.db_delBlacklist(payload);
             break;
           case DB_UPDATE_WALLET:
             this.db_updateWallet(payload);
@@ -1351,6 +1360,26 @@ class Store {
       { data: { tokenID: payload.content } }
     );
     emitter.emit(DB_DEL_FAVORITE_RETURNED, await _dbDelFav.data);
+  };
+
+  db_addBlacklist = async (payload) => {
+    const account = store.getStore("account");
+
+    let _dbAddBl = await axios.put(
+      `https://chainguru-db.herokuapp.com/blacklist/${account.address}`,
+      { tokenID: payload.content }
+    );
+    emitter.emit(DB_ADDDEL_BLACKLIST_RETURNED, await _dbAddBl.data);
+  };
+
+  db_delBlacklist = async (payload) => {
+    const account = store.getStore("account");
+
+    let _dbDelBl = await axios.delete(
+      `https://chainguru-db.herokuapp.com/blacklist/${account.address}`,
+      { data: { tokenID: payload.content } }
+    );
+    emitter.emit(DB_ADDDEL_BLACKLIST_RETURNED, await _dbDelBl.data);
   };
 
   db_addWallet = async (payload) => {

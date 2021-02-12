@@ -117,7 +117,7 @@ class Portfolio extends Component {
       account: account,
       loading: false,
       selectedID: "",
-      selectedWallet: "",
+      selectedWallet: "updating",
       validSelection: false,
       userWallets: [],
       errMsgWallet: "",
@@ -195,7 +195,11 @@ class Portfolio extends Component {
   };
 
   dbUserDataReturned = (payload) => {
-    this.setState({ userWallets: payload.wallets });
+    console.log(payload);
+
+    this.setState({
+      userWallets: payload.wallets,
+    });
     this.getBalance("ALL");
   };
 
@@ -253,7 +257,7 @@ class Portfolio extends Component {
       for (var i = 1; i < newWallets.length; i++) {
         let wallet = { ...newWallets[i] };
         let erc20Balance = [...wallet.erc20Balance];
-        erc20Balance.forEach((item, i) => {
+        erc20Balance.forEach((item, x) => {
           if (item.tokenSymbol === "UNI-V2") {
             // agregar comparar el contract address
             // para ver si son del mismo pool de uni y sumar los balances
@@ -276,6 +280,7 @@ class Portfolio extends Component {
           }
         });
       }
+      console.log(displayBalance);
       this.setState({ userBalance: displayBalance, selectedWallet: wallet });
     } else {
       this.state.userWallets.forEach((item, i) => {

@@ -34,6 +34,7 @@ import {
 
 import DeleteIcon from "@material-ui/icons/Delete";
 import FilterListIcon from "@material-ui/icons/FilterList";
+import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 
 import {
   COIN_DATA_RETURNED,
@@ -41,6 +42,9 @@ import {
   DB_ADD_FAVORITE_RETURNED,
   DB_DEL_FAVORITE,
   DB_DEL_FAVORITE_RETURNED,
+  DB_DEL_BLACKLIST,
+  DB_ADD_BLACKLIST,
+  DB_ADDDEL_BLACKLIST_RETURNED,
   COINGECKO_POPULATE_FAVLIST,
   COINGECKO_POPULATE_FAVLIST_RETURNED,
   GET_COIN_LIST,
@@ -77,7 +81,7 @@ const styles = (theme) => ({
 
 class BalanceList extends Component {
   constructor(props) {
-    super();
+    super(props);
     this._isMounted = false;
 
     this.state = {
@@ -87,6 +91,7 @@ class BalanceList extends Component {
       sortBy: "marketcap",
       sortOrder: "dsc",
       sortData: [],
+      hideBlacklisted: true,
       hideLowBalanceCoins: true,
       balanceList: [],
       portfolioData: [],
@@ -106,8 +111,9 @@ class BalanceList extends Component {
       //agregar un state loading para poner cargador
     } else {
       if (prevProps.selectedWallet !== this.props.selectedWallet) {
-        // console.log("new Data");
-        this.getCoinIDs(this.props.data);
+        if (this.state.userBlacklist) {
+          this.getCoinIDs(this.props.data);
+        }
         //cambier el state loading para terminar el cargador
       }
     }
@@ -121,6 +127,7 @@ class BalanceList extends Component {
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
     emitter.on(COINGECKO_POPULATE_FAVLIST_RETURNED, this.geckoPriceReturned);
     emitter.on(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
+    emitter.on(DB_ADDDEL_BLACKLIST_RETURNED, this.dbBlacklistReturned);
     this._isMounted &&
       dispatcher.dispatch({
         type: GET_COIN_LIST,
@@ -136,6 +143,10 @@ class BalanceList extends Component {
       this.geckoPriceReturned
     );
     emitter.removeListener(UPDATE_WAIT_COMPLETE, this.updateWaitComplete);
+    emitter.removeListener(
+      DB_ADDDEL_BLACKLIST_RETURNED,
+      this.dbBlacklistReturned
+    );
 
     emitter.removeListener(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
     this._isMounted = false;
@@ -150,11 +161,25 @@ class BalanceList extends Component {
   };
 
   getCoinIDs = async (data) => {
+    const { userBlacklist } = this.state;
     if (this.state.coinList) {
       let coinList = { ...this.state.coinList };
       const prevBalanceList = this.props.data;
       console.log(prevBalanceList);
       let newBalanceList = [];
+
+      if (this.state.hideBlacklisted) {
+        prevBalanceList.forEach((item, i) => {
+          if (userBlacklist.tokenIDs.includes(item.contractAddress)) {
+            let blacklistedIndex = prevBalanceList.findIndex(
+              (obj) => obj.contractAddress === item.contractAddress
+            );
+            prevBalanceList.splice(blacklistedIndex, 1);
+            return;
+          }
+        });
+      }
+
       if (this.state.hideLowBalanceCoins) {
         for (var i = 0; i < prevBalanceList.length; i++) {
           let item = { ...prevBalanceList[i] };
@@ -230,6 +255,12 @@ class BalanceList extends Component {
     }
   };
 
+  dbBlacklistReturned = (data) => {
+    console.log(data);
+    this.setState({ userBlacklist: data });
+    this.getCoinIDs(this.props.data);
+  };
+
   getPortfolioValue = async (coinList) => {
     let tokenIDs = [];
     // console.log(coinList);
@@ -275,7 +306,7 @@ class BalanceList extends Component {
   };
 
   dbUserDataReturned = (data) => {
-    // console.log(data);
+    this.setState({ userBlacklist: data.blacklist });
   };
 
   createData = (
@@ -595,9 +626,32 @@ class BalanceList extends Component {
           <TableCell align="center">
             <SparklineChart id={row.symbol} data={row.sparkline_in_7d} />
           </TableCell>
+          <TableCell align="center">
+            <IconButton
+              aria-label="delete"
+              onClick={(e) => this.addItemToBlacklist(row.contractAddress, e)}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </TableCell>
         </TableRow>
       ));
     }
+  };
+
+  addItemToBlacklist = (tokenID) => {
+    dispatcher.dispatch({
+      type: DB_ADD_BLACKLIST,
+      content: tokenID,
+    });
+  };
+
+  removeItemFromBlacklist = (tokenID) => {
+    console.log(tokenID);
+    dispatcher.dispatch({
+      type: DB_DEL_BLACKLIST,
+      content: tokenID,
+    });
   };
 
   sortBy(_sortBy) {
@@ -800,6 +854,14 @@ class BalanceList extends Component {
                     Marketcap
                   </TableCell>
                   <TableCell align="center">Chart (7d)</TableCell>
+                  <TableCell align="center">
+                    <IconButton
+                      aria-label="menu"
+                      onClick={(e) => console.log("boton menu")}
+                    >
+                      <MoreHorizIcon />
+                    </IconButton>
+                  </TableCell>
                 </TableRow>
               </TableHead>
               {!this.state.loadingPortfolio && (
