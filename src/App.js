@@ -15,6 +15,7 @@ import Home from "./components/home";
 import Short from "./components/short";
 import Medium from "./components/medium";
 import Long from "./components/long";
+import PortfolioManagement from "./components/portfolio";
 import Market from "./components/market";
 import AdminPanel from "./components/adminPanel";
 import NewEdit from "./components/market/edition/new";
@@ -446,6 +447,14 @@ class App extends Component {
                   vsCoin={this.state.vsCoin}
                 />
                 <Long />
+              </Route>
+              <Route path="/portfolio">
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  vsCoin={this.state.vsCoin}
+                />
+                <PortfolioManagement />
               </Route>
               <Route path="/market/adminPanel">
                 <Header

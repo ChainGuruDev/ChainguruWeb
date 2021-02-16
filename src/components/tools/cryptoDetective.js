@@ -9,8 +9,9 @@ import ReactHtmlParser, {
 
 //IMPORT COMPONENTS
 import CoinSearchBar from "../components/CoinSearchBar.js";
+import PriceChart from "../components/Chart.js";
 
-//IMPORT MaterialUI
+//IMPORT MaterialUI elements
 import {
   Card,
   Grid,
@@ -24,7 +25,6 @@ import {
 } from "@material-ui/core";
 
 //IMPORT ICONS
-import BigChart from "../components/BigChart.js";
 import SwapHorizIcon from "@material-ui/icons/SwapHoriz";
 import AspectRatioRoundedIcon from "@material-ui/icons/AspectRatioRounded";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
@@ -35,6 +35,9 @@ import {
   COINLIST_RETURNED,
   COIN_DATA_RETURNED,
   GET_COIN_DATA,
+  GRAPH_TIMEFRAME_CHANGED,
+  SWITCH_VS_COIN_RETURNED,
+  GET_COIN_PRICECHART,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -99,6 +102,7 @@ const styles = (theme) => ({
 class CryptoDetective extends Component {
   constructor(props) {
     super(props);
+    let vsCoin = store.getStore("vsCoin");
 
     const account = store.getStore("account");
     this.state = {
@@ -107,22 +111,33 @@ class CryptoDetective extends Component {
       coinList: [],
       valueTab: 0,
       dataLoaded: false,
+      vs: vsCoin,
+      timeFrame: "max",
+      coinData: [],
     };
   }
   componentDidMount() {
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
     emitter.on(COIN_DATA_RETURNED, this.coinDataReturned);
+    emitter.on(GRAPH_TIMEFRAME_CHANGED, this.graphTimeFrameChanged);
+    emitter.on(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
+
     if (this.props.coinID) {
       dispatcher.dispatch({
         type: GET_COIN_DATA,
         content: this.props.coinID,
       });
     }
+    if (!this.state.vs) {
+      this.getVsCoin();
+    }
   }
 
   componentWillUnmount() {
     emitter.removeListener(COINLIST_RETURNED, this.coinlistReturned);
     emitter.removeListener(COIN_DATA_RETURNED, this.coinDataReturned);
+    emitter.removeListener(GRAPH_TIMEFRAME_CHANGED, this.graphTimeFrameChanged);
+    emitter.removeListener(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
   }
 
   coinlistReturned = (payload) => {
@@ -134,9 +149,53 @@ class CryptoDetective extends Component {
     this.setState({ coinData: data[0], dataLoaded: true });
   };
 
+  getVsCoin = () => {
+    let vsCoin;
+    try {
+      vsCoin = JSON.parse(localStorage.getItem("vsCoin"));
+      if (!vsCoin) {
+        vsCoin = "usd";
+      }
+      this.setState({ vs: vsCoin });
+    } catch (err) {
+      vsCoin = "usd";
+      this.setState({ vs: vsCoin });
+    }
+  };
+
+  vsCoinReturned = (vsCoin) => {
+    var x = document.getElementById("coinChart");
+    if (window.getComputedStyle(x).display !== "none") {
+      console.log("triggered");
+      if (this.state.coinData.id) {
+        dispatcher.dispatch({
+          type: GET_COIN_PRICECHART,
+          content: [
+            this.state.coinData.id,
+            this.props.id,
+            this.state.timeFrame,
+            vsCoin,
+          ],
+        });
+      }
+    }
+    this.setState({ vs: vsCoin });
+  };
+
+  graphTimeFrameChanged = (data) => {
+    const { coinData, loading, vs } = this.state;
+    this.setState({ timeFrame: data });
+    if (coinData.id) {
+      dispatcher.dispatch({
+        type: GET_COIN_PRICECHART,
+        content: [coinData.id, this.props.id, data, vs],
+      });
+    }
+  };
+
   dataDisplaySide = () => {
     const { classes } = this.props;
-    const { bigChart, selectA, selectB, dataLoaded, coinData } = this.state;
+    const { selectA, dataLoaded, coinData } = this.state;
 
     return (
       <div>
@@ -349,10 +408,18 @@ class CryptoDetective extends Component {
 
   dataDisplayMain = () => {
     const { classes } = this.props;
-    const { bigChart, selectA, selectB, dataLoaded, coinData } = this.state;
+    const { selectA, dataLoaded, coinData, vs } = this.state;
 
     return (
       <div>
+        <Grid item xs={12} id="coinChart">
+          <PriceChart
+            id={this.props.id}
+            coinID={coinData.id}
+            vsCoin={vs}
+            timeFrame={this.state.timeFrame}
+          />
+        </Grid>
         <Accordion>
           <AccordionSummary
             expandIcon={<ExpandMoreIcon />}
@@ -367,7 +434,7 @@ class CryptoDetective extends Component {
                 {ReactHtmlParser(
                   coinData.description.es.replaceAll(
                     "https://www.coingecko.com/en/coins/",
-                    "http://chainguru.herokuapp.com/short/detective/"
+                    "http://chainguru.app/short/detective/"
                   )
                 )}
               </div>
@@ -380,7 +447,7 @@ class CryptoDetective extends Component {
 
   render() {
     const { classes } = this.props;
-    const { bigChart, selectA, selectB, dataLoaded, coinData } = this.state;
+    const { selectA, dataLoaded, coinData } = this.state;
 
     return (
       <div className={classes.background}>

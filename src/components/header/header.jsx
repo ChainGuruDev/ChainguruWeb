@@ -212,6 +212,8 @@ class Header extends Component {
       this.setState({ cgLogoColor: colors.cgGreen });
     } else if (window.location.pathname === "/" + "long") {
       this.setState({ cgLogoColor: colors.cgBlue });
+    } else if (window.location.pathname === "/" + "portfolio") {
+      this.setState({ cgLogoColor: colors.cgGreen });
     } else {
       this.setState({ cgLogoColor: colors.cgRed });
     }

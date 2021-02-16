@@ -14,9 +14,8 @@ import CompareArrowsIcon from "@material-ui/icons/CompareArrows";
 
 //Load Tools
 import CryptoDetective from "../tools/cryptoDetective";
-import CryptoCompare from "../tools/cryptoCompare";
-import Favorites from "../tools/favorites";
 import Transactions from "../tools/transactions";
+import Portfolio from "../tools/portfolio";
 
 import {
   PING_COINGECKO,
@@ -116,7 +115,7 @@ function a11yProps(index) {
   };
 }
 
-class Medium extends Component {
+class PortfolioManagement extends Component {
   constructor(props) {
     super(props);
 
@@ -205,27 +204,22 @@ class Medium extends Component {
             centered
           >
             <Tab
-              label="Crypto Compare"
+              label="Portfolio"
               icon={<CompareArrowsIcon />}
               {...a11yProps(0)}
             />
-            <Tab label="Favorites" icon={<FlashOnIcon />} {...a11yProps(1)} />
             <Tab
-              label="Crypto Detective"
-              icon={<SearchIcon />}
-              {...a11yProps(2)}
+              label="Transactions"
+              icon={<FlashOnIcon />}
+              {...a11yProps(1)}
             />
           </Tabs>
         </AppBar>
         <TabPanel value={valueTab} index={0}>
-          <CryptoCompare />
+          <Portfolio />
         </TabPanel>
         <TabPanel value={valueTab} index={1}>
-          <Favorites />
-        </TabPanel>
-        <TabPanel value={valueTab} index={2}>
-          {coinID && <CryptoDetective coinID={coinID} />}
-          {!coinID && <CryptoDetective />}
+          <Transactions />
         </TabPanel>
       </Paper>
     );
@@ -236,4 +230,6 @@ class Medium extends Component {
   };
 }
 
-export default withTranslation()(withRouter(withStyles(styles)(Medium)));
+export default withTranslation()(
+  withRouter(withStyles(styles)(PortfolioManagement))
+);
