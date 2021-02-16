@@ -48,8 +48,8 @@ const styles = (theme) => ({
     justifyContent: "space-around",
   },
   compareGrid: {
-    maxWidth: "75%",
-    minHeight: "100%",
+    maxWidth: "95%",
+    maxHeight: "80%",
     textAlign: "center",
     justifyContent: "space-evenly",
   },
@@ -179,8 +179,16 @@ class CryptoCompare extends Component {
   };
 
   render() {
-    const { classes } = this.props;
-    const { bigChart, selectA, selectB, timeFrame } = this.state;
+    const { classes, toolTimeframe } = this.props;
+    const {
+      bigChart,
+      selectA,
+      selectB,
+      coinDataA,
+      coinDataB,
+      timeFrame,
+      vs,
+    } = this.state;
 
     return (
       <div className={classes.background}>
@@ -195,10 +203,10 @@ class CryptoCompare extends Component {
         >
           <Card className={classes.compareCard} elevation={3}>
             <Grid item xs={6} style={{ marginRight: 10 }}>
-              <CoinCompare id={"A"} />
+              <CoinCompare id={"A"} toolTimeframe={toolTimeframe} />
             </Grid>
             <Grid item xs={6}>
-              <CoinCompare id={"B"} />
+              <CoinCompare id={"B"} toolTimeframe={toolTimeframe} />
             </Grid>
             <Grid item style={{ padding: 10 }}>
               <IconButton className={classes.swapBTN} aria-label="swap">
@@ -232,10 +240,10 @@ class CryptoCompare extends Component {
                 <BigChart
                   idA={"A"}
                   idB={"B"}
-                  coinDataA={this.state.coinDataA}
-                  coinDataB={this.state.coinDataB}
-                  timeFrame={this.state.timeFrame}
-                  vsCoin={this.state.vs}
+                  coinDataA={coinDataA}
+                  coinDataB={coinDataB}
+                  timeFrame={timeFrame}
+                  vsCoin={vs}
                 />
               </Grid>
               <Grid item style={{ padding: 10 }}>

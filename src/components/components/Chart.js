@@ -20,6 +20,9 @@ const store = Store.store;
 const styles = (theme) => ({
   root: {
     marginTop: 10,
+    display: "flexGrow",
+    minHeight: "50vh",
+    marginBottom: 20,
   },
 });
 
@@ -159,16 +162,13 @@ class PriceChart extends Component {
     const { classes } = this.props;
     return (
       <div className={classes.root}>
-        <div className="row">
-          <div className="chart">
-            <Chart
-              options={this.state.options}
-              series={this.state.series}
-              type="line"
-              width="100%"
-            />
-          </div>
-        </div>
+        <Chart
+          options={this.state.options}
+          series={this.state.series}
+          type="line"
+          width="100%"
+          height="100%"
+        />
       </div>
     );
   }

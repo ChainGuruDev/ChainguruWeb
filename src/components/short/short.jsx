@@ -217,7 +217,7 @@ class Short extends Component {
           </Tabs>
         </AppBar>
         <TabPanel value={valueTab} index={0}>
-          <CryptoCompare />
+          <CryptoCompare toolTimeframe={"short"} />
         </TabPanel>
         <TabPanel value={valueTab} index={1}>
           <Favorites />

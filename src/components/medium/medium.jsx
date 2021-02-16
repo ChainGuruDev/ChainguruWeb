@@ -218,7 +218,7 @@ class Medium extends Component {
           </Tabs>
         </AppBar>
         <TabPanel value={valueTab} index={0}>
-          <CryptoCompare />
+          <CryptoCompare toolTimeframe={"medium"} />
         </TabPanel>
         <TabPanel value={valueTab} index={1}>
           <Favorites />

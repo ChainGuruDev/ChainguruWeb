@@ -415,6 +415,14 @@ class App extends Component {
                 />
                 <Short tool="detective" />
               </Route>
+              <Route path="/short/:tool/:coinID/:coinID_B">
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+                <Short />
+              </Route>
               <Route path="/short/:tool/:coinID">
                 <Header
                   setHeaderValue={this.setHeaderValue}
@@ -431,6 +439,22 @@ class App extends Component {
                   vsCoin={this.state.vsCoin}
                 />
                 <Short />
+              </Route>
+              <Route path="/medium/:tool/:coinID/:coinID_B">
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+                <Medium />
+              </Route>
+              <Route path="/medium/:tool/:coinID">
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+                <Medium />
               </Route>
               <Route path="/medium">
                 <Header
