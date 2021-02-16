@@ -378,18 +378,20 @@ class App extends Component {
 
     const { headerValue, darkMode, theme } = this.state;
 
-    window.ethereum.on("accountsChanged", function (accounts) {
-      // Time to reload your interface with accounts[0]!
-      store.setStore({
-        account: { address: web3.utils.toChecksumAddress(accounts[0]) },
+    if (window.ethereum) {
+      window.ethereum.on("accountsChanged", function (accounts) {
+        // Time to reload your interface with accounts[0]!
+        store.setStore({
+          account: { address: web3.utils.toChecksumAddress(accounts[0]) },
+        });
+        emitter.emit(CONNECTION_CONNECTED);
       });
-      emitter.emit(CONNECTION_CONNECTED);
-    });
 
-    window.ethereum.on("networkChanged", function (networkId) {
-      // Time to reload your interface with the new networkId
-      emitter.emit(CONNECTION_CONNECTED);
-    });
+      window.ethereum.on("networkChanged", function (networkId) {
+        // Time to reload your interface with the new networkId
+        emitter.emit(CONNECTION_CONNECTED);
+      });
+    }
 
     return (
       <MuiThemeProvider theme={theme}>

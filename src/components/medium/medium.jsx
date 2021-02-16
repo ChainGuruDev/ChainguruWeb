@@ -13,6 +13,8 @@ import SyncAltRoundedIcon from "@material-ui/icons/SyncAltRounded";
 //Load Tools
 import Portfolio from "../tools/portfolio";
 import CryptoDetective from "../tools/cryptoDetective";
+import CryptoCompare from "../tools/cryptoCompare";
+import Favorites from "../tools/favorites";
 import Transactions from "../tools/transactions";
 
 import {

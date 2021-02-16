@@ -240,12 +240,14 @@ class Transactions extends Component {
   };
 
   updateWallet = (wallet) => {
-    this._isMounted &&
-      dispatcher.dispatch({
-        type: DB_UPDATE_WALLET_MOVEMENTS,
-        wallet: wallet,
-      });
-    this._isMounted && this.setState({ selectedWallet: "updating" });
+    this.getAllResults(this.state.list);
+
+    // this._isMounted &&
+    //   dispatcher.dispatch({
+    //     type: DB_UPDATE_WALLET_MOVEMENTS,
+    //     wallet: wallet,
+    //   });
+    // this._isMounted && this.setState({ selectedWallet: "updating" });
   };
 
   dbUpdateWalletMovementsReturned = (payload) => {
@@ -378,24 +380,25 @@ class Transactions extends Component {
       }
     });
     // this.setState({ rowData: rows, loadingData: false });
-    if (this.state.updatingWallet !== "ALL") {
-      this.getAllResults(rows);
-    } else {
-      this._isMounted &&
-        this.setState({
-          list: rows,
-          selectedWallet: this.state.updatingWallet,
-        });
-    }
-    // this._isMounted &&
-    //   this.setState({
-    //     geckoData: txList,
-    //     selectedWallet: this.state.updatingWallet,
-    //   });
+
+    // if (this.state.updatingWallet !== "ALL") {
+    //   this.getAllResults(rows);
+    // } else {
+    //   this._isMounted &&
+    //     this.setState({
+    //       list: rows,
+    //       selectedWallet: this.state.updatingWallet,
+    //     });
+    // }
+
+    this._isMounted &&
+      this.setState({
+        list: rows,
+        selectedWallet: this.state.updatingWallet,
+      });
   };
 
   updateBuyPrice = async (tokenData) => {
-    const { loadingItems } = this.state;
     let prices = {};
     let vsCoin = ["usd", "eur", "btc", "eth"];
     const from = parseInt(tokenData.timeStamp) - 100;
@@ -433,25 +436,47 @@ class Transactions extends Component {
     }
   };
 
+  updateBuyPriceMany = async (tokenData) => {
+    console.log(tokenData);
+    let itemIds = [];
+    tokenData.forEach((item, i) => {
+      if (itemIds.indexOf(item.id) === -1) {
+        itemIds.push(item.id);
+      }
+    });
+    console.log(itemIds);
+  };
+
   limitedUpdatePrices = limiter.wrap(this.updateBuyPrice);
+  //limitedUpdatePrices = this.updateBuyPriceMany;
 
   getAllResults = async (data) => {
     console.log(data);
     const newMovements = [];
+    this.updateBuyPriceMany(data);
     const allThePromises = data.map((item) => {
-      return this.limitedUpdatePrices(item);
+      if (!item.buyPrice) {
+        return this.limitedUpdatePrices(item);
+      } else {
+        console.log("token already has price");
+        return item;
+      }
     });
     try {
       const results = await Promise.all(allThePromises);
-      this.setState({
-        list: results,
-        selectedWallet: this.state.updatingWallet,
-      });
-      dispatcher.dispatch({
-        type: DB_UPDATE_WALLET_MOVEMENTS_PRICES,
-        newMovements: results,
-        selectedWallet: this.state.updatingWallet,
-      });
+      this.setState(
+        {
+          list: results,
+          selectedWallet: this.state.updatingWallet,
+        },
+        () => {
+          dispatcher.dispatch({
+            type: DB_UPDATE_WALLET_MOVEMENTS_PRICES,
+            newMovements: results,
+            selectedWallet: this.state.updatingWallet,
+          });
+        }
+      );
     } catch (err) {
       console.log(err);
     }
@@ -505,7 +530,7 @@ class Transactions extends Component {
             />
             <ListItemSecondaryAction>
               <IconButton
-                aria-label="remove"
+                aria-label="updateTX"
                 onClick={() => this.updateWallet(wallet.wallet)}
               >
                 <RefreshRoundedIcon />

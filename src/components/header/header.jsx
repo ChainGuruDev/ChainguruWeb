@@ -358,25 +358,6 @@ class Header extends Component {
       });
     };
 
-    // <div className={classes.icon}>
-    //   <img
-    //     alt=""
-    //     height={"40px"}
-    //     onClick={() => {
-    //       this.nav("");
-    //     }}
-    //   />
-    //   <Typography
-    //     variant={"h3"}
-    //     className={classes.name}
-    //     onClick={() => {
-    //       this.nav("");
-    //     }}
-    //   >
-    //     ChainGuru
-    //   </Typography>
-    // </div>
-
     return (
       <Paper className={classes.root}>
         <Grid
@@ -402,6 +383,7 @@ class Header extends Component {
               {this.renderLink("short")}
               {this.renderLink("medium")}
               {this.renderLink("long")}
+              {this.renderLink("portfolio")}
               {this.renderLink("market")}
             </div>
             <div
@@ -534,6 +516,10 @@ class Header extends Component {
       if (this.state.cgLogoColor !== colors.cgBlue) {
         this.setState({ cgLogoColor: colors.cgBlue });
       }
+    } else if (window.location.pathname === "/" + "portfolio") {
+      if (this.state.cgLogoColor !== colors.cgGreen) {
+        this.setState({ cgLogoColor: colors.cgGreen });
+      }
     } else {
       if (this.state.cgLogoColor !== colors.cgRed) {
         this.setState({ cgLogoColor: colors.cgRed });
@@ -560,7 +546,7 @@ class Header extends Component {
 
   nav = (screen) => {
     if (screen === "cover") {
-      window.open("https://chainguru.herokuapp.com/", "_blank");
+      window.open("https://chainguru.app/", "_blank");
       return;
     }
     this.props.history.push("/" + screen);
