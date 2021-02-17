@@ -34,7 +34,7 @@ const styles = (theme) => ({
   },
   chart: {
     minHeight: "100px",
-    maxHeight: "45vh",
+    maxHeight: "60vh",
   },
   img: {
     margin: "auto",
@@ -138,7 +138,6 @@ class CoinCompare extends Component {
     const handleClick = (newTimeframe) => {
       return emitter.emit(GRAPH_TIMEFRAME_CHANGED, newTimeframe);
     };
-    console.log("GETTING BUTTONS");
     let timeFrameAvailable = [];
 
     const shortTimeframe = () => {
@@ -259,98 +258,146 @@ class CoinCompare extends Component {
             direction="row"
             container
             justify="space-around"
-            alignItems="flex-start"
+            alignItems="center"
             item
           >
             <Grid item>
-              <Grid direction="column" container>
-                <Grid item>
-                  <Typography variant="subtitle2">60d</Typography>
+              {coinData.market_data.price_change_percentage_60d !== 0 && (
+                <Grid direction="column" container>
+                  <Grid item>
+                    <Typography variant="subtitle2">60d</Typography>
+                  </Grid>
+                  <Grid item>
+                    <Chip
+                      variant="outlined"
+                      color={
+                        coinData.market_data
+                          .price_change_percentage_60d_in_currency[vs] > 0
+                          ? "primary"
+                          : "secondary"
+                      }
+                      icon={
+                        coinData.market_data
+                          .price_change_percentage_60d_in_currency[vs] > 0 ? (
+                          <ArrowDropUpRoundedIcon />
+                        ) : (
+                          <ArrowDropDownRoundedIcon />
+                        )
+                      }
+                      label={`${coinData.market_data.price_change_percentage_60d_in_currency[vs]}%`}
+                      onClick={() => {
+                        handleClick(60);
+                      }}
+                    />
+                  </Grid>
                 </Grid>
-                <Grid item>
-                  <Chip
-                    variant="outlined"
-                    color={
-                      coinData.market_data
-                        .price_change_percentage_60d_in_currency[vs] > 0
-                        ? "primary"
-                        : "secondary"
-                    }
-                    icon={
-                      coinData.market_data
-                        .price_change_percentage_60d_in_currency[vs] > 0 ? (
-                        <ArrowDropUpRoundedIcon />
-                      ) : (
-                        <ArrowDropDownRoundedIcon />
-                      )
-                    }
-                    label={`${coinData.market_data.price_change_percentage_60d_in_currency[vs]}%`}
-                    onClick={() => {
-                      handleClick(60);
-                    }}
-                  />
+              )}
+              {coinData.market_data.price_change_percentage_60d === 0 && (
+                <Grid direction="column" container>
+                  <Grid item>
+                    <Chip
+                      variant="outlined"
+                      color={"primary"}
+                      label={`60 days`}
+                      onClick={() => {
+                        handleClick(60);
+                      }}
+                    />
+                  </Grid>
                 </Grid>
-              </Grid>
+              )}
             </Grid>
             <Divider light orientation="vertical" flexItem />
             <Grid item>
-              <Grid direction="column" container>
-                <Typography variant="subtitle2">200d</Typography>
-                <Grid item>
-                  <Chip
-                    variant="outlined"
-                    color={
-                      coinData.market_data
-                        .price_change_percentage_200d_in_currency[vs] > 0
-                        ? "primary"
-                        : "secondary"
-                    }
-                    icon={
-                      coinData.market_data
-                        .price_change_percentage_200d_in_currency[vs] > 0 ? (
-                        <ArrowDropUpRoundedIcon />
-                      ) : (
-                        <ArrowDropDownRoundedIcon />
-                      )
-                    }
-                    label={`${coinData.market_data.price_change_percentage_200d_in_currency[vs]}%`}
-                    onClick={() => {
-                      handleClick(200);
-                    }}
-                  />
+              {coinData.market_data.price_change_percentage_200d !== 0 && (
+                <Grid direction="column" container>
+                  <Typography variant="subtitle2">200d</Typography>
+                  <Grid item>
+                    <Chip
+                      variant="outlined"
+                      color={
+                        coinData.market_data
+                          .price_change_percentage_200d_in_currency[vs] > 0
+                          ? "primary"
+                          : "secondary"
+                      }
+                      icon={
+                        coinData.market_data
+                          .price_change_percentage_200d_in_currency[vs] > 0 ? (
+                          <ArrowDropUpRoundedIcon />
+                        ) : (
+                          <ArrowDropDownRoundedIcon />
+                        )
+                      }
+                      label={`${coinData.market_data.price_change_percentage_200d_in_currency[vs]}%`}
+                      onClick={() => {
+                        handleClick(200);
+                      }}
+                    />
+                  </Grid>
                 </Grid>
-              </Grid>
+              )}
+              {coinData.market_data.price_change_percentage_200d === 0 && (
+                <Grid direction="column" container>
+                  <Grid item>
+                    <Chip
+                      variant="outlined"
+                      color={"primary"}
+                      label={`200 days`}
+                      onClick={() => {
+                        handleClick(200);
+                      }}
+                    />
+                  </Grid>
+                </Grid>
+              )}
             </Grid>
             <Divider light flexItem orientation="vertical" />
             <Grid item>
-              <Grid direction="column" container>
-                <Grid item>
-                  <Typography variant="subtitle2">1Y</Typography>
+              {coinData.market_data.price_change_percentage_1y !== 0 && (
+                <Grid direction="column" container>
+                  <Grid item>
+                    <Typography variant="subtitle2">1Y</Typography>
+                  </Grid>
+                  <Grid item>
+                    <Chip
+                      variant="outlined"
+                      color={
+                        coinData.market_data
+                          .price_change_percentage_1y_in_currency[vs] > 0
+                          ? "primary"
+                          : "secondary"
+                      }
+                      icon={
+                        coinData.market_data
+                          .price_change_percentage_1y_in_currency[vs] > 0 ? (
+                          <ArrowDropUpRoundedIcon />
+                        ) : (
+                          <ArrowDropDownRoundedIcon />
+                        )
+                      }
+                      label={`${coinData.market_data.price_change_percentage_1y_in_currency[vs]}%`}
+                      onClick={() => {
+                        handleClick(360);
+                      }}
+                    />
+                  </Grid>
                 </Grid>
-                <Grid item>
-                  <Chip
-                    variant="outlined"
-                    color={
-                      coinData.market_data
-                        .price_change_percentage_1y_in_currency[vs] > 0
-                        ? "primary"
-                        : "secondary"
-                    }
-                    icon={
-                      coinData.market_data
-                        .price_change_percentage_1y_in_currency[vs] > 0 ? (
-                        <ArrowDropUpRoundedIcon />
-                      ) : (
-                        <ArrowDropDownRoundedIcon />
-                      )
-                    }
-                    label={`${coinData.market_data.price_change_percentage_1y_in_currency[vs]}%`}
-                    onClick={() => {
-                      handleClick(360);
-                    }}
-                  />
+              )}
+              {coinData.market_data.price_change_percentage_1y === 0 && (
+                <Grid direction="column" container>
+                  <Grid item>
+                    <Chip
+                      variant="outlined"
+                      color={"primary"}
+                      label={`1 Year`}
+                      onClick={() => {
+                        handleClick(360);
+                      }}
+                    />
+                  </Grid>
                 </Grid>
-              </Grid>
+              )}
             </Grid>
           </Grid>
         </div>

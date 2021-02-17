@@ -24,7 +24,7 @@ export const walletconnect = new WalletConnectConnector({
 
 export const walletlink = new WalletLinkConnector({
   url: RPC_URLS[1],
-  appName: "LongboardFamara",
+  appName: "Chainguru",
 });
 
 export const ledger = new LedgerConnector({
@@ -38,7 +38,7 @@ export const trezor = new TrezorConnector({
   url: RPC_URLS[1],
   pollingInterval: POLLING_INTERVAL,
   manifestEmail: "dummy@abc.xyz",
-  manifestAppUrl: "https://8rg3h.csb.app/",
+  manifestAppUrl: "https://chainguru.app/",
 });
 
 export const frame = new FrameConnector({ supportedChainIds: [1] });

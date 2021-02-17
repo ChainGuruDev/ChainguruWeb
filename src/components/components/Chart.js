@@ -38,7 +38,7 @@ class PriceChart extends Component {
     }
 
     const tema = store.getStore("theme");
-    console.log(tema);
+    //console.log(tema);
 
     this.state = {
       options: {
@@ -60,6 +60,18 @@ class PriceChart extends Component {
           tickAmount: 1,
         },
         yaxis: {
+          crosshairs: {
+            show: true,
+            position: "back",
+            stroke: {
+              color: colors.cgOrange,
+              width: 2,
+              dashArray: 1,
+            },
+          },
+          tooltip: {
+            enabled: true,
+          },
           type: "numeric",
           decimalsInFloat: 4,
           forceNiceScale: true,

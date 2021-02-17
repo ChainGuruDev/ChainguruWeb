@@ -22,6 +22,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Paper,
 } from "@material-ui/core";
 
 //IMPORT ICONS
@@ -67,7 +68,7 @@ const styles = (theme) => ({
     justifyContent: "space-around",
   },
   compareGrid: {
-    maxWidth: "75%",
+    maxWidth: "85%",
     minHeight: "100%",
     textAlign: "center",
     justifyContent: "space-evenly",
@@ -96,6 +97,13 @@ const styles = (theme) => ({
     minHeight: "90%",
     display: "flex",
     margin: 5,
+  },
+  MarketcapChips: {
+    marginTop: 10,
+    minWidth: "100%",
+    paddingBottom: 20,
+    paddingTop: 20,
+    borderRadius: 10,
   },
 });
 
@@ -256,24 +264,120 @@ class CryptoDetective extends Component {
             alignItems="stretch"
             direction="row"
           >
-            <Grid container alignItems="center" justify="center" item xs={12}>
-              <Chip
-                variant="outlined"
-                color={
-                  coinData.market_data.market_cap_change_percentage_24h > 0
-                    ? "primary"
-                    : "secondary"
-                }
-                icon={
-                  coinData.market_data.market_cap_change_percentage_24h > 0 ? (
-                    <ArrowDropUpRoundedIcon />
-                  ) : (
-                    <ArrowDropDownRoundedIcon />
-                  )
-                }
-                label={`${coinData.market_data.market_cap_change_percentage_24h}% - Marketcap 24hs`}
-              />
-            </Grid>
+            <Paper
+              className={classes.MarketcapChips}
+              elevation={1}
+              variant="outlined"
+            >
+              <Grid container alignItems="center" justify="center" item xs={12}>
+                <Chip
+                  variant="outlined"
+                  color={
+                    coinData.market_data.market_cap_change_percentage_24h > 0
+                      ? "primary"
+                      : "secondary"
+                  }
+                  icon={
+                    coinData.market_data.market_cap_change_percentage_24h >
+                    0 ? (
+                      <ArrowDropUpRoundedIcon />
+                    ) : (
+                      <ArrowDropDownRoundedIcon />
+                    )
+                  }
+                  label={`${coinData.market_data.market_cap_change_percentage_24h}% - Marketcap 24hs`}
+                />
+
+                <Grid
+                  style={{
+                    marginTop: 10,
+                  }}
+                  direction="row"
+                  container
+                  justify="space-around"
+                  alignItems="flex-start"
+                  item
+                  xs={12}
+                >
+                  <Grid item>
+                    <Grid direction="column" container>
+                      <Grid item>
+                        <Typography variant="subtitle2">24hs</Typography>
+                      </Grid>
+                      <Grid item>
+                        <Chip
+                          variant="outlined"
+                          color={
+                            coinData.market_data.price_change_percentage_24h > 0
+                              ? "primary"
+                              : "secondary"
+                          }
+                          icon={
+                            coinData.market_data.price_change_percentage_24h >
+                            0 ? (
+                              <ArrowDropUpRoundedIcon />
+                            ) : (
+                              <ArrowDropDownRoundedIcon />
+                            )
+                          }
+                          label={`${coinData.market_data.price_change_percentage_24h}%`}
+                        />
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                  <Grid item>
+                    <Grid direction="column" container>
+                      <Typography variant="subtitle2">7d</Typography>
+                      <Grid item>
+                        <Chip
+                          variant="outlined"
+                          color={
+                            coinData.market_data.price_change_percentage_7d > 0
+                              ? "primary"
+                              : "secondary"
+                          }
+                          icon={
+                            coinData.market_data.price_change_percentage_7d >
+                            0 ? (
+                              <ArrowDropUpRoundedIcon />
+                            ) : (
+                              <ArrowDropDownRoundedIcon />
+                            )
+                          }
+                          label={`${coinData.market_data.price_change_percentage_7d}%`}
+                        />
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                  <Grid item>
+                    <Grid direction="column" container>
+                      <Grid item>
+                        <Typography variant="subtitle2">30d</Typography>
+                      </Grid>
+                      <Grid item>
+                        <Chip
+                          variant="outlined"
+                          color={
+                            coinData.market_data.price_change_percentage_30d > 0
+                              ? "primary"
+                              : "secondary"
+                          }
+                          icon={
+                            coinData.market_data.price_change_percentage_30d >
+                            0 ? (
+                              <ArrowDropUpRoundedIcon />
+                            ) : (
+                              <ArrowDropDownRoundedIcon />
+                            )
+                          }
+                          label={`${coinData.market_data.price_change_percentage_30d}%`}
+                        />
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                </Grid>
+              </Grid>
+            </Paper>
             <Grid
               direction="row"
               container
@@ -281,95 +385,7 @@ class CryptoDetective extends Component {
               alignItems="flex-start"
               item
             >
-              <Grid
-                style={{
-                  marginTop: 10,
-                }}
-                direction="column"
-                container
-                justify="space-around"
-                alignItems="flex-start"
-                item
-                xs={6}
-              >
-                <Grid item>
-                  <Grid direction="column" container>
-                    <Grid item>
-                      <Typography variant="subtitle2">24hs</Typography>
-                    </Grid>
-                    <Grid item>
-                      <Chip
-                        variant="outlined"
-                        color={
-                          coinData.market_data.price_change_percentage_24h > 0
-                            ? "primary"
-                            : "secondary"
-                        }
-                        icon={
-                          coinData.market_data.price_change_percentage_24h >
-                          0 ? (
-                            <ArrowDropUpRoundedIcon />
-                          ) : (
-                            <ArrowDropDownRoundedIcon />
-                          )
-                        }
-                        label={`${coinData.market_data.price_change_percentage_24h}%`}
-                      />
-                    </Grid>
-                  </Grid>
-                </Grid>
-                <Grid item>
-                  <Grid direction="column" container>
-                    <Typography variant="subtitle2">7d</Typography>
-                    <Grid item>
-                      <Chip
-                        variant="outlined"
-                        color={
-                          coinData.market_data.price_change_percentage_7d > 0
-                            ? "primary"
-                            : "secondary"
-                        }
-                        icon={
-                          coinData.market_data.price_change_percentage_7d >
-                          0 ? (
-                            <ArrowDropUpRoundedIcon />
-                          ) : (
-                            <ArrowDropDownRoundedIcon />
-                          )
-                        }
-                        label={`${coinData.market_data.price_change_percentage_7d}%`}
-                      />
-                    </Grid>
-                  </Grid>
-                </Grid>
-                <Grid item>
-                  <Grid direction="column" container>
-                    <Grid item>
-                      <Typography variant="subtitle2">30d</Typography>
-                    </Grid>
-                    <Grid item>
-                      <Chip
-                        variant="outlined"
-                        color={
-                          coinData.market_data.price_change_percentage_30d > 0
-                            ? "primary"
-                            : "secondary"
-                        }
-                        icon={
-                          coinData.market_data.price_change_percentage_30d >
-                          0 ? (
-                            <ArrowDropUpRoundedIcon />
-                          ) : (
-                            <ArrowDropDownRoundedIcon />
-                          )
-                        }
-                        label={`${coinData.market_data.price_change_percentage_30d}%`}
-                      />
-                    </Grid>
-                  </Grid>
-                </Grid>
-              </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12}>
                 <Grid
                   direction="column"
                   spacing={1}
