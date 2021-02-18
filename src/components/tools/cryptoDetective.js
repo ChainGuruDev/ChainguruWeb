@@ -15,7 +15,7 @@ import PriceChart from "../components/Chart.js";
 import {
   Card,
   Grid,
-  IconButton,
+  Button,
   Divider,
   Typography,
   Chip,
@@ -23,6 +23,7 @@ import {
   AccordionSummary,
   AccordionDetails,
   Paper,
+  Link,
 } from "@material-ui/core";
 
 //IMPORT ICONS
@@ -31,6 +32,15 @@ import AspectRatioRoundedIcon from "@material-ui/icons/AspectRatioRounded";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ArrowDropUpRoundedIcon from "@material-ui/icons/ArrowDropUpRounded";
 import ArrowDropDownRoundedIcon from "@material-ui/icons/ArrowDropDownRounded";
+import DoubleArrowIcon from "@material-ui/icons/DoubleArrow";
+
+//WEB LINKS ICONS
+import TelegramIcon from "@material-ui/icons/Telegram";
+import TwitterIcon from "@material-ui/icons/Twitter";
+import RedditIcon from "@material-ui/icons/Reddit";
+import CompassCalibrationIcon from "@material-ui/icons/CompassCalibration";
+import GitHubIcon from "@material-ui/icons/GitHub";
+import ChatIcon from "@material-ui/icons/Chat";
 
 import {
   COINLIST_RETURNED,
@@ -99,11 +109,10 @@ const styles = (theme) => ({
     margin: 5,
   },
   MarketcapChips: {
-    marginTop: 10,
     minWidth: "100%",
-    paddingBottom: 20,
-    paddingTop: 20,
     borderRadius: 10,
+    padding: 10,
+    background: "rgba(255,255,255,0.00)",
   },
 });
 
@@ -203,52 +212,71 @@ class CryptoDetective extends Component {
 
   dataDisplaySide = () => {
     const { classes } = this.props;
-    const { selectA, dataLoaded, coinData } = this.state;
+    const { selectA, dataLoaded, coinData, vs } = this.state;
+    const preventDefault = (event) => event.preventDefault();
 
     return (
       <div>
         <Grid
           container
-          direction="row"
-          justify="space-around"
-          alignItems="flex-start"
-          style={{ marginTop: 10 }}
+          direction="column"
+          justify="flex-start"
+          alignItems="stretch"
         >
-          <Grid item xs={2}>
-            <div className={classes.image}>
-              <img
-                className={classes.img}
-                alt="coin-icon"
-                src={coinData.image.small}
-              />
-            </div>
-          </Grid>
-          <Grid item xs={6}>
-            <Grid
-              container
-              direction="column"
-              alignItems="flex-start"
-              item
-              xs={12}
-            >
-              <Typography variant="body1">{coinData.name}</Typography>
-              <Typography variant="subtitle1">{coinData.symbol}</Typography>
-            </Grid>
-          </Grid>
           <Grid
-            item
             container
             direction="row"
-            justify="flex-end"
-            alignItems="flex-end"
-            xs={2}
+            justify="space-between"
+            alignItems="flex-start"
+            style={{
+              marginTop: 10,
+              marginBottom: 10,
+            }}
           >
-            <Typography color="textSecondary" align="right" variant="h2">
-              {coinData.market_data.current_price.usd}
-            </Typography>
-            <Typography color="textPrimary" align="right" variant="subtitle1">
-              USD
-            </Typography>
+            <Grid item container direction="row" xs={6}>
+              <Grid item xs={6}>
+                <div className={classes.image}>
+                  <img
+                    className={classes.img}
+                    alt="coin-icon"
+                    src={coinData.image.small}
+                  />
+                </div>
+              </Grid>
+              <Grid item xs={6}>
+                <Grid
+                  container
+                  direction="column"
+                  alignItems="flex-start"
+                  item
+                  xs={12}
+                >
+                  <Typography variant="body1">{coinData.name}</Typography>
+                  <Typography variant="subtitle1">{coinData.symbol}</Typography>
+                </Grid>
+              </Grid>
+            </Grid>
+            <Grid item container direction="row" xs={12} sm={6}>
+              <Grid item xs={11}>
+                <Typography
+                  color="textSecondary"
+                  align="right"
+                  noWrap
+                  variant="h2"
+                >
+                  {coinData.market_data.current_price[vs]}
+                </Typography>
+              </Grid>
+              <Grid item xs={1}>
+                <Typography
+                  color="textPrimary"
+                  align="right"
+                  variant="subtitle1"
+                >
+                  {vs}
+                </Typography>
+              </Grid>
+            </Grid>
           </Grid>
         </Grid>
         <Grid
@@ -258,126 +286,261 @@ class CryptoDetective extends Component {
           alignItems="stretch"
         >
           <Grid
-            style={{ marginTop: 10 }}
             container
             justify="space-evenly"
             alignItems="stretch"
             direction="row"
           >
-            <Paper
+            <Card
               className={classes.MarketcapChips}
               elevation={1}
               variant="outlined"
             >
-              <Grid container alignItems="center" justify="center" item xs={12}>
-                <Chip
-                  variant="outlined"
-                  color={
-                    coinData.market_data.market_cap_change_percentage_24h > 0
-                      ? "primary"
-                      : "secondary"
-                  }
-                  icon={
-                    coinData.market_data.market_cap_change_percentage_24h >
-                    0 ? (
-                      <ArrowDropUpRoundedIcon />
-                    ) : (
-                      <ArrowDropDownRoundedIcon />
-                    )
-                  }
-                  label={`${coinData.market_data.market_cap_change_percentage_24h}% - Marketcap 24hs`}
-                />
-
-                <Grid
-                  style={{
-                    marginTop: 10,
-                  }}
-                  direction="row"
-                  container
-                  justify="space-around"
-                  alignItems="flex-start"
-                  item
-                  xs={12}
-                >
-                  <Grid item>
-                    <Grid direction="column" container>
-                      <Grid item>
-                        <Typography variant="subtitle2">24hs</Typography>
-                      </Grid>
-                      <Grid item>
-                        <Chip
-                          variant="outlined"
-                          color={
-                            coinData.market_data.price_change_percentage_24h > 0
-                              ? "primary"
-                              : "secondary"
-                          }
-                          icon={
-                            coinData.market_data.price_change_percentage_24h >
-                            0 ? (
-                              <ArrowDropUpRoundedIcon />
-                            ) : (
-                              <ArrowDropDownRoundedIcon />
-                            )
-                          }
-                          label={`${coinData.market_data.price_change_percentage_24h}%`}
-                        />
-                      </Grid>
+              <Grid
+                container
+                direction="column"
+                justify="flex-start"
+                alignItems="stretch"
+                item
+                xs={12}
+              >
+                <Grid item>
+                  <Typography variant="subtitle1">Market Data</Typography>
+                  <Grid
+                    style={{
+                      marginTop: 10,
+                      marginBottom: 10,
+                    }}
+                    container
+                    direction="column"
+                    justify="flex-start"
+                    alignItems="stretch"
+                    item
+                    xs={12}
+                    padding={5}
+                  >
+                    <Grid item container direction="row">
+                      <Typography>Marketcap: </Typography>
+                      <Typography variant="subtitle1">
+                        {coinData.market_data.market_cap[vs]} {[vs]}
+                      </Typography>
+                    </Grid>
+                    <Grid item container direction="row">
+                      <Typography>Fully diluted: </Typography>
+                      <Typography variant="subtitle1">
+                        {coinData.market_data.fully_diluted_valuation[vs]}{" "}
+                        {[vs]}
+                      </Typography>
+                    </Grid>
+                    <Grid item container direction="row">
+                      <Typography>Max Supply: </Typography>
+                      <Typography variant="subtitle1">
+                        {coinData.market_data.max_supply}
+                      </Typography>
+                    </Grid>
+                    <Grid item container direction="row">
+                      <Typography>Circulating Supply: </Typography>
+                      <Typography variant="subtitle1">
+                        {parseFloat(
+                          coinData.market_data.circulating_supply
+                        ).toFixed(4)}
+                      </Typography>
                     </Grid>
                   </Grid>
-                  <Grid item>
-                    <Grid direction="column" container>
-                      <Typography variant="subtitle2">7d</Typography>
-                      <Grid item>
-                        <Chip
-                          variant="outlined"
-                          color={
-                            coinData.market_data.price_change_percentage_7d > 0
-                              ? "primary"
-                              : "secondary"
-                          }
-                          icon={
-                            coinData.market_data.price_change_percentage_7d >
-                            0 ? (
-                              <ArrowDropUpRoundedIcon />
-                            ) : (
-                              <ArrowDropDownRoundedIcon />
-                            )
-                          }
-                          label={`${coinData.market_data.price_change_percentage_7d}%`}
-                        />
-                      </Grid>
-                    </Grid>
+                  <Grid
+                    style={{
+                      marginTop: 10,
+                      marginBottom: 10,
+                    }}
+                    direction="row"
+                    container
+                    justify="space-around"
+                    alignItems="flex-start"
+                    item
+                    xs={12}
+                    padding={5}
+                  >
+                    <Chip
+                      variant="outlined"
+                      color={
+                        coinData.market_data
+                          .market_cap_change_percentage_24h_in_currency[vs] > 0
+                          ? "primary"
+                          : "secondary"
+                      }
+                      icon={
+                        coinData.market_data
+                          .market_cap_change_percentage_24h_in_currency[vs] >
+                        0 ? (
+                          <ArrowDropUpRoundedIcon />
+                        ) : (
+                          <ArrowDropDownRoundedIcon />
+                        )
+                      }
+                      label={`${coinData.market_data.market_cap_change_percentage_24h_in_currency[vs]} % 24hs`}
+                    />
+                    <Chip
+                      variant="outlined"
+                      color={
+                        coinData.market_data.market_cap_rank > 0
+                          ? "primary"
+                          : "secondary"
+                      }
+                      icon={
+                        coinData.market_data.market_cap_rank > 0 ? (
+                          <ArrowDropUpRoundedIcon />
+                        ) : (
+                          <ArrowDropDownRoundedIcon />
+                        )
+                      }
+                      label={`Rank ${coinData.market_data.market_cap_rank}`}
+                    />
                   </Grid>
-                  <Grid item>
-                    <Grid direction="column" container>
-                      <Grid item>
-                        <Typography variant="subtitle2">30d</Typography>
-                      </Grid>
-                      <Grid item>
-                        <Chip
-                          variant="outlined"
-                          color={
-                            coinData.market_data.price_change_percentage_30d > 0
-                              ? "primary"
-                              : "secondary"
-                          }
-                          icon={
-                            coinData.market_data.price_change_percentage_30d >
-                            0 ? (
-                              <ArrowDropUpRoundedIcon />
-                            ) : (
-                              <ArrowDropDownRoundedIcon />
-                            )
-                          }
-                          label={`${coinData.market_data.price_change_percentage_30d}%`}
-                        />
-                      </Grid>
+                </Grid>
+              </Grid>
+            </Card>
+            <Card
+              style={{ marginTop: 10 }}
+              className={classes.MarketcapChips}
+              elevation={1}
+              variant="outlined"
+            >
+              <Grid
+                container
+                direction="column"
+                justify="flex-start"
+                alignItems="stretch"
+                item
+                xs={12}
+                padding={3}
+              >
+                <Grid item>
+                  <Typography variant="subtitle1">Links</Typography>
+                  <Grid
+                    style={{
+                      marginTop: 10,
+                      marginBottom: 10,
+                    }}
+                    container
+                    direction="column"
+                    justify="flex-start"
+                    alignItems="stretch"
+                    item
+                    xs={12}
+                    padding={5}
+                  >
+                    <Grid
+                      container
+                      direction="row"
+                      justify="center"
+                      alignItems="center"
+                      spacing={1}
+                    >
+                      {coinData.links.homepage[0] && (
+                        <Grid item>
+                          <Typography variant="subtitle1">
+                            <Link
+                              target="_blank"
+                              href={coinData.links.homepage[0]}
+                            >
+                              <Button
+                                variant="outlined"
+                                color="primary"
+                                size="small"
+                                className={classes.button}
+                                startIcon={<CompassCalibrationIcon />}
+                              >
+                                Homepage
+                              </Button>
+                            </Link>
+                          </Typography>
+                        </Grid>
+                      )}
+                      {coinData.links.announcement_url[0] && (
+                        <Grid item>
+                          <Typography variant="subtitle1">
+                            <Link
+                              target="_blank"
+                              href={coinData.links.announcement_url[0]}
+                            >
+                              <Button
+                                variant="outlined"
+                                color="primary"
+                                size="small"
+                                className={classes.button}
+                                startIcon={<CompassCalibrationIcon />}
+                              >
+                                Blog
+                              </Button>
+                            </Link>
+                          </Typography>
+                        </Grid>
+                      )}
+                      {coinData.links.blockchain_site[0] && (
+                        <Grid item>
+                          <Typography variant="subtitle1">
+                            <Link
+                              target="_blank"
+                              href={coinData.links.blockchain_site[0]}
+                            >
+                              <Button
+                                variant="outlined"
+                                color="primary"
+                                size="small"
+                                className={classes.button}
+                                startIcon={<CompassCalibrationIcon />}
+                              >
+                                Blockchain
+                              </Button>
+                            </Link>
+                          </Typography>
+                        </Grid>
+                      )}
+                      {coinData.links.repos_url.github[0] && (
+                        <Grid item>
+                          <Typography variant="subtitle1">
+                            <Link
+                              target="_blank"
+                              href={coinData.links.repos_url.github[0]}
+                            >
+                              <Button
+                                variant="outlined"
+                                color="primary"
+                                size="small"
+                                className={classes.button}
+                                startIcon={<GitHubIcon />}
+                              >
+                                GitHub
+                              </Button>
+                            </Link>
+                          </Typography>
+                        </Grid>
+                      )}
+                      {coinData.links.chat_url[0] && (
+                        <Grid item>
+                          <Typography variant="subtitle1">
+                            <Link
+                              target="_blank"
+                              href={coinData.links.chat_url[0]}
+                            >
+                              <Button
+                                variant="outlined"
+                                color="primary"
+                                size="small"
+                                className={classes.button}
+                                startIcon={<ChatIcon />}
+                              >
+                                Chat
+                              </Button>
+                            </Link>
+                          </Typography>
+                        </Grid>
+                      )}
                     </Grid>
                   </Grid>
                 </Grid>
               </Grid>
-            </Paper>
+            </Card>
             <Grid
               direction="row"
               container
@@ -428,6 +591,176 @@ class CryptoDetective extends Component {
 
     return (
       <div>
+        <Grid item xs={12}>
+          <Card
+            className={classes.MarketcapChips}
+            elevation={1}
+            variant="outlined"
+          >
+            <Grid
+              container
+              direction="column"
+              justify="flex-start"
+              alignItems="stretch"
+              item
+              xs={12}
+            >
+              <Grid item>
+                <Typography variant="subtitle1">Price Performance</Typography>
+                <Grid
+                  style={{
+                    marginTop: 10,
+                  }}
+                  direction="row"
+                  container
+                  justify="space-around"
+                  alignItems="flex-start"
+                  item
+                  xs={12}
+                >
+                  <Grid item>
+                    <Grid direction="column" container>
+                      <Grid item>
+                        <Typography variant="subtitle2">24hs</Typography>
+                      </Grid>
+                      <Grid item>
+                        <Chip
+                          variant="outlined"
+                          color={
+                            coinData.market_data
+                              .price_change_percentage_24h_in_currency[vs] > 0
+                              ? "primary"
+                              : "secondary"
+                          }
+                          icon={
+                            coinData.market_data
+                              .price_change_percentage_24h_in_currency[vs] >
+                            0 ? (
+                              <ArrowDropUpRoundedIcon />
+                            ) : (
+                              <ArrowDropDownRoundedIcon />
+                            )
+                          }
+                          label={`${coinData.market_data.price_change_percentage_24h_in_currency[vs]}%`}
+                        />
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                  <Grid item>
+                    <Grid direction="column" container>
+                      <Typography variant="subtitle2">7d</Typography>
+                      <Grid item>
+                        <Chip
+                          variant="outlined"
+                          color={
+                            coinData.market_data
+                              .price_change_percentage_7d_in_currency[vs] > 0
+                              ? "primary"
+                              : "secondary"
+                          }
+                          icon={
+                            coinData.market_data
+                              .price_change_percentage_7d_in_currency[vs] >
+                            0 ? (
+                              <ArrowDropUpRoundedIcon />
+                            ) : (
+                              <ArrowDropDownRoundedIcon />
+                            )
+                          }
+                          label={`${coinData.market_data.price_change_percentage_7d_in_currency[vs]}%`}
+                        />
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                  <Grid item>
+                    <Grid direction="column" container>
+                      <Grid item>
+                        <Typography variant="subtitle2">30d</Typography>
+                      </Grid>
+                      <Grid item>
+                        <Chip
+                          variant="outlined"
+                          color={
+                            coinData.market_data
+                              .price_change_percentage_30d_in_currency[vs] > 0
+                              ? "primary"
+                              : "secondary"
+                          }
+                          icon={
+                            coinData.market_data
+                              .price_change_percentage_30d_in_currency[vs] >
+                            0 ? (
+                              <ArrowDropUpRoundedIcon />
+                            ) : (
+                              <ArrowDropDownRoundedIcon />
+                            )
+                          }
+                          label={`${coinData.market_data.price_change_percentage_30d_in_currency[vs]}%`}
+                        />
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                  <Grid item>
+                    <Grid direction="column" container>
+                      <Grid item>
+                        <Typography variant="subtitle2">60d</Typography>
+                      </Grid>
+                      <Grid item>
+                        <Chip
+                          variant="outlined"
+                          color={
+                            coinData.market_data
+                              .price_change_percentage_60d_in_currency[vs] > 0
+                              ? "primary"
+                              : "secondary"
+                          }
+                          icon={
+                            coinData.market_data
+                              .price_change_percentage_60d_in_currency[vs] >
+                            0 ? (
+                              <ArrowDropUpRoundedIcon />
+                            ) : (
+                              <ArrowDropDownRoundedIcon />
+                            )
+                          }
+                          label={`${coinData.market_data.price_change_percentage_60d_in_currency[vs]}%`}
+                        />
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                  <Grid item>
+                    <Grid direction="column" container>
+                      <Grid item>
+                        <Typography variant="subtitle2">1Y</Typography>
+                      </Grid>
+                      <Grid item>
+                        <Chip
+                          variant="outlined"
+                          color={
+                            coinData.market_data
+                              .price_change_percentage_1y_in_currency[vs] > 0
+                              ? "primary"
+                              : "secondary"
+                          }
+                          icon={
+                            coinData.market_data
+                              .price_change_percentage_1y_in_currency[vs] >
+                            0 ? (
+                              <ArrowDropUpRoundedIcon />
+                            ) : (
+                              <ArrowDropDownRoundedIcon />
+                            )
+                          }
+                          label={`${coinData.market_data.price_change_percentage_1y_in_currency[vs]}%`}
+                        />
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                </Grid>
+              </Grid>
+            </Grid>
+          </Card>
+        </Grid>
         <Grid item xs={12} id="coinChart">
           <PriceChart
             id={this.props.id}
