@@ -177,7 +177,9 @@ class App extends Component {
           MozOsxFontSmoothing: "grayscale",
         },
       },
-      type: "light",
+      palette: {
+        type: "light",
+      },
       overrides: {
         MuiCssBaseline: {
           "@global": {
@@ -463,6 +465,14 @@ class App extends Component {
                   vsCoin={this.state.vsCoin}
                 />
                 <Medium />
+              </Route>
+              <Route path="/long/:toolID">
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  vsCoin={this.state.vsCoin}
+                />
+                <Long />
               </Route>
               <Route path="/long">
                 <Header

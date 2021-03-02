@@ -122,11 +122,6 @@ class CoinCompare extends Component {
     }
   };
 
-  nav = (screen) => {
-    // console.log(screen);
-    this.props.history.push(screen);
-  };
-
   detective = (id) => {
     this.nav("/short/detective/" + id);
   };

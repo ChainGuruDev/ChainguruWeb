@@ -119,7 +119,9 @@ const cgTheme = {
       MozOsxFontSmoothing: "grayscale",
     },
   },
-  type: "light",
+  palette: {
+    type: "light",
+  },
   overrides: {
     MuiCssBaseline: {
       "@global": {

@@ -8,9 +8,20 @@ import {
   Grid,
   ButtonBase,
   Button,
+  Box,
+  AppBar,
+  Tabs,
+  Tab,
 } from "@material-ui/core";
 import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
+import PropTypes from "prop-types";
+
+//Import ICONS
+import ShowChartIcon from "@material-ui/icons/ShowChart";
+import CheckCircleIcon from "@material-ui/icons/CheckCircle";
+
+import DollarCostAverage from "../tools/dollarCostAverage.js";
 import BlueChipCard from "../components/BlueChipCard.js";
 import Snackbar from "../snackbar";
 
@@ -27,20 +38,25 @@ const store = Store.store;
 
 const styles = (theme) => ({
   background: {
-    flexGrow: 1,
-    width: "100%",
     background: "linear-gradient(to top, #2F80ED, #56CCF2)",
     justifyContent: "center",
     alignItems: "center",
+    margin: 0,
+    flexGrow: 1,
+    width: "100%",
+    padding: 0,
   },
   root: {
     padding: theme.spacing(2),
     justifyContent: "center",
     alignItems: "center",
-    maxWidth: "1920px",
-    width: "85%",
-    marginLeft: "auto",
-    marginRight: "auto",
+    flexGrow: 1,
+    width: "100%",
+  },
+  rootTabs: {
+    flexGrow: 1,
+    width: "100%",
+    borderRadius: 0,
   },
   paper: {
     padding: theme.spacing(2),
@@ -66,11 +82,52 @@ const styles = (theme) => ({
   },
 });
 
+function TabPanel(props) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box p={3}>
+          <Typography component={"span"}>{children}</Typography>
+        </Box>
+      )}
+    </div>
+  );
+}
+
+TabPanel.propTypes = {
+  children: PropTypes.node,
+  index: PropTypes.any.isRequired,
+  value: PropTypes.any.isRequired,
+};
+
+function a11yProps(index) {
+  return {
+    id: `simple-tab-${index}`,
+    "aria-controls": `simple-tabpanel-${index}`,
+  };
+}
+
 class Long extends Component {
   constructor(props) {
     super();
 
-    this.state = { chipData: [], snackbarMessage: "" };
+    let newTab = 0;
+
+    if (props.match.params.toolID === "bluechips") {
+      newTab = 0;
+    } else if (props.match.params.toolID === "dca") {
+      newTab = 1;
+    }
+
+    this.state = { chipData: [], snackbarMessage: "", valueTab: newTab };
   }
 
   componentDidMount() {
@@ -193,30 +250,61 @@ class Long extends Component {
 
   render() {
     const { classes, t, location } = this.props;
-    const { chipData, snackbarMessage } = this.state;
+    const { chipData, snackbarMessage, valueTab } = this.state;
+    const handleChangeTabs = (event, newValueTab) => {
+      this.setState({ valueTab: newValueTab });
+    };
 
     return (
-      <div className={classes.background}>
-        <div className={classes.root}>
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Paper className={classes.paper} elevation={3}>
-                <Typography variant="h2">BlueChips to hodl</Typography>
-              </Paper>
+      <Paper className={classes.rootTabs}>
+        <AppBar position="static" color="default">
+          <Tabs
+            value={valueTab}
+            onChange={handleChangeTabs}
+            aria-label="tool tabs"
+            scrollButtons="auto"
+            indicatorColor="secondary"
+            textColor="secondary"
+            centered
+          >
+            <Tab
+              label="BlueChips"
+              icon={<CheckCircleIcon />}
+              {...a11yProps(0)}
+            />
+            <Tab
+              label="Dollar Cost Average"
+              icon={<ShowChartIcon />}
+              {...a11yProps(1)}
+            />
+          </Tabs>
+        </AppBar>
+        <TabPanel className={classes.background} value={valueTab} index={0}>
+          <div className={classes.root}>
+            <Grid container spacing={3}>
+              <Grid item xs={12}>
+                <Paper className={classes.paper} elevation={3}>
+                  <Typography variant="h2">BlueChips to hodl</Typography>
+                </Paper>
+              </Grid>
             </Grid>
-          </Grid>
-          <Grid container spacing={3}>
-            {chipData.map((bluechip) => (
-              <BlueChipCard key={bluechip.id} data={bluechip} />
-            ))}
-          </Grid>
-          {snackbarMessage && this.renderSnackbar()}
-        </div>
-      </div>
+            <Grid container spacing={3}>
+              {chipData.map((bluechip) => (
+                <BlueChipCard key={bluechip.id} data={bluechip} />
+              ))}
+            </Grid>
+            {snackbarMessage && this.renderSnackbar()}
+          </div>
+        </TabPanel>
+        <TabPanel value={valueTab} index={1}>
+          <DollarCostAverage />
+        </TabPanel>
+      </Paper>
     );
   }
 
   nav = (screen) => {
+    console.log(screen);
     this.props.history.push(screen);
   };
 

@@ -205,7 +205,7 @@ class PortfolioManagement extends Component {
           >
             <Tab
               label="Portfolio"
-              icon={<CompareArrowsIcon />}
+              icon={<BusinessCenterRoundedIcon />}
               {...a11yProps(0)}
             />
             <Tab
