@@ -224,10 +224,6 @@ class App extends Component {
         },
         MuiOutlinedInput: {
           input: {
-            "&::placeholder": {
-              color: colors.text,
-            },
-            color: colors.text,
             padding: "14px",
             borderRadius: "10px",
           },

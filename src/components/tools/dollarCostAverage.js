@@ -47,7 +47,6 @@ const styles = (theme) => ({
     marginBottom: 10,
     display: "flex",
     flex: 1,
-    direction: "row",
     alignItems: "stretch",
     background: "rgba(255,255,255,0.05)",
   },
@@ -69,7 +68,11 @@ const styles = (theme) => ({
     margin: 0,
   },
   graphCard: {
-    maxWidth: "100%",
+    display: "flex",
+  },
+  dcaGraph: {
+    maxWidth: "inherit",
+    flexGrow: 1,
   },
 });
 
@@ -288,7 +291,13 @@ class DollarCostAverage extends Component {
           {content}
         </Typography>
         <Card className={classes.dcaCard} elevation={3}>
-          <Grid container padding={3} spacing={3}>
+          <Grid
+            container
+            justify="center"
+            alignItems="stretch"
+            padding={3}
+            spacing={3}
+          >
             <Grid
               container
               direction="column"
@@ -373,32 +382,68 @@ class DollarCostAverage extends Component {
               </Button>
             </Grid>
             <Divider orientation="vertical" flexItem />
-            <Grid className={classes.graphCard} item xs={7} padding={3}>
+            <Grid className={classes.dcaGraph} item xs={7} padding={3}>
               {totals[0] && (
-                <Grid container item direction="column">
-                  <DCAchart data={graphData} />
+                <Grid container justify="center" item direction="row">
+                  <Grid item direction="column" xs={12}>
+                    <DCAchart data={graphData} />
+                  </Grid>
+                  <Grid
+                    item
+                    container
+                    direction="column"
+                    justify="center"
+                    alignItems="center"
+                    xs={6}
+                  >
+                    <Typography>Total invested in USD </Typography>
+                    <Typography color={"primary"} variant={"h3"}>
+                      ${Math.round(totals[1])}
+                    </Typography>
+                  </Grid>
+                  <Grid
+                    item
+                    container
+                    direction="column"
+                    justify="center"
+                    alignItems="center"
+                    xs={6}
+                  >
+                    <Typography>End Total in USD</Typography>
+                    <Typography color={"primary"} variant={"h3"}>
+                      ${Math.round(totals[2])}
+                    </Typography>
+                  </Grid>
+                  <Grid
+                    item
+                    container
+                    direction="column"
+                    justify="center"
+                    alignItems="center"
+                    xs={6}
+                  >
+                    <Typography>Total gain in USD</Typography>
+                    <Typography color={"primary"} variant={"h3"}>
+                      ${Math.round(totals[3])}
+                    </Typography>
+                  </Grid>
+                  <Grid
+                    item
+                    container
+                    direction="column"
+                    justify="center"
+                    alignItems="center"
+                    xs={6}
+                  >
+                    <Typography>Percent Gained</Typography>
+                    <Typography color={"primary"} variant={"h3"}>
+                      {Math.round(totals[4])}%
+                    </Typography>
+                  </Grid>
                   <Typography>
                     Total amount in coin
                     <Typography color={"primary"} variant={"h3"}>
                       {totals[0]}
-                    </Typography>
-                  </Typography>
-                  <Typography>Total invested in USD </Typography>
-                  <Typography color={"primary"} variant={"h3"}>
-                    ${Math.round(totals[1])}
-                  </Typography>
-                  <Typography>End Total in USD</Typography>
-                  <Typography color={"primary"} variant={"h3"}>
-                    ${Math.round(totals[2])}
-                  </Typography>
-                  <Typography>Total gain in USD</Typography>
-                  <Typography color={"primary"} variant={"h3"}>
-                    ${Math.round(totals[3])}
-                  </Typography>
-                  <Typography>
-                    Percent Gained
-                    <Typography color={"primary"} variant={"h3"}>
-                      {Math.round(totals[4])}%
                     </Typography>
                   </Typography>
                 </Grid>
