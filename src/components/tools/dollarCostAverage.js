@@ -4,6 +4,7 @@ import { withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
 import dayjs from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
+import { colors } from "../../theme";
 
 //Import UI elements
 import {
@@ -49,6 +50,17 @@ const styles = (theme) => ({
     flex: 1,
     alignItems: "stretch",
     background: "rgba(255,255,255,0.05)",
+    border: `2px solid ${colors.cgBlue}`,
+  },
+  dcaCardLight: {
+    padding: 10,
+    marginTop: 10,
+    marginBottom: 10,
+    display: "flex",
+    flex: 1,
+    alignItems: "stretch",
+    background: "rgba(157,226,249,0.25)",
+    border: `2px solid ${colors.cgBlue}`,
   },
   row: {
     display: "flex",
@@ -70,9 +82,8 @@ const styles = (theme) => ({
   graphCard: {
     display: "flex",
   },
-  dcaGraph: {
-    maxWidth: "inherit",
-    flexGrow: 1,
+  divColor: {
+    backgroundColor: colors.cgBlue,
   },
 });
 
@@ -232,6 +243,7 @@ class DollarCostAverage extends Component {
 
   render() {
     const { classes, t } = this.props;
+    const darkMode = store.getStore("theme") === "dark" ? true : false;
     const {
       coinData,
       error,
@@ -290,10 +302,13 @@ class DollarCostAverage extends Component {
         >
           {content}
         </Typography>
-        <Card className={classes.dcaCard} elevation={3}>
+        <Card
+          className={darkMode ? classes.dcaCard : classes.dcaCardLight}
+          elevation={3}
+        >
           <Grid
             container
-            justify="center"
+            justify="space-evenly"
             alignItems="stretch"
             padding={3}
             spacing={3}
@@ -370,19 +385,36 @@ class DollarCostAverage extends Component {
                   marginTop: 15,
                 }}
               />
-              <Button
-                style={{
-                  marginTop: 15,
-                }}
-                variant="contained"
-                color="primary"
-                onClick={this.getDCA}
-              >
-                Calculate
-              </Button>
+              {darkMode && (
+                <Button
+                  style={{
+                    marginTop: 15,
+                    border: `1px solid ${colors.cgBlue}`,
+                  }}
+                  variant="outlined"
+                  onClick={this.getDCA}
+                >
+                  Calculate
+                </Button>
+              )}
+              {!darkMode && (
+                <Button
+                  style={{
+                    marginTop: 15,
+                    background: colors.cgBlue,
+                  }}
+                  onClick={this.getDCA}
+                >
+                  Calculate
+                </Button>
+              )}
             </Grid>
-            <Divider orientation="vertical" flexItem />
-            <Grid className={classes.dcaGraph} item xs={7} padding={3}>
+            <Divider
+              className={classes.divColor}
+              orientation="vertical"
+              flexItem
+            />
+            <Grid item xs={7} padding={3}>
               {totals[0] && (
                 <Grid container justify="center" item direction="row">
                   <Grid item direction="column" xs={12}>
