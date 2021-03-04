@@ -38,7 +38,15 @@ const styles = (theme) => ({
     padding: theme.spacing(2),
     textAlign: "center",
     color: theme.palette.text.primary,
-    backgroundColor: "rgba(255, 255, 255, 0.3);",
+    backgroundColor: `${colors.cgBlue}85`,
+    border: `2px solid ${colors.cgBlue}`,
+  },
+  paperDark: {
+    padding: theme.spacing(2),
+    textAlign: "center",
+    color: theme.palette.text.primary,
+    backgroundColor: `${colors.cgBlue}52`,
+    border: `2px solid ${colors.cgBlue}`,
   },
   img: {
     margin: "auto",
@@ -89,10 +97,15 @@ class BlueChipCard extends Component {
   render() {
     const { classes, t, location, data } = this.props;
     const { loadingChart, chartData } = this.state;
+    const darkMode = store.getStore("theme") === "dark" ? true : false;
+
     let id = data.id;
     return (
       <Grid item xs={6}>
-        <Paper className={classes.paper} elevation={10}>
+        <Paper
+          className={darkMode ? classes.paperDark : classes.paper}
+          elevation={10}
+        >
           <Grid container direction="row" spacing={2}>
             <Grid item xs={2}>
               <img className={classes.img} alt="coin-icon" src={data.image} />

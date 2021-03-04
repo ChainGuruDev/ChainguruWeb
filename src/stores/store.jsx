@@ -1,5 +1,6 @@
 import config from "../config";
 import Web3 from "web3";
+import Bottleneck from "bottleneck";
 
 import {
   ERROR,
@@ -104,6 +105,15 @@ import {
   trezor,
   frame,
 } from "./connectors";
+
+const limiterGecko = new Bottleneck({
+  reservoir: 50, // initial value
+  reservoirRefreshAmount: 50,
+  reservoirRefreshInterval: 60 * 1100, // must be divisible by 250
+  // also use maxConcurrent and/or minTime for safety
+  maxConcurrent: 5,
+  minTime: 1100, // pick a value that makes sense for your use case
+});
 
 const rp = require("request-promise");
 
@@ -276,7 +286,7 @@ class Store {
             this.db_updateOneMov(payload);
             break;
           case DB_GET_BLUECHIPS:
-            this.db_getBluechips();
+            this.limitedGetChips();
             break;
           case COINGECKO_POPULATE_FAVLIST:
             this.geckoPopulateFavList(payload);
@@ -1534,6 +1544,8 @@ class Store {
       console.log(err);
     }
   };
+
+  limitedGetChips = limiterGecko.wrap(this.db_getBluechips);
 
   coingeckoGetAllTimeChart = async (payload) => {
     emitter.emit(COINGECKO_ALLTIME_CHART_RETURNED, payload.payload);
