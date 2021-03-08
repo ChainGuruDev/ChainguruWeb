@@ -1,4 +1,6 @@
 const config = {
+  infuraProviderMain: "",
+
   infuraProvider:
     "https://rinkeby.infura.io/v3/da08cbb0e0604f3ab2f57742f776c115",
 

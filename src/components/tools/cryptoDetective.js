@@ -589,6 +589,14 @@ class CryptoDetective extends Component {
     const { classes } = this.props;
     const { selectA, dataLoaded, coinData, vs } = this.state;
 
+    const handleClick = (timeFrame) => {
+      dispatcher.dispatch({
+        type: GET_COIN_PRICECHART,
+        content: [coinData.id, , timeFrame, vs],
+      });
+      this.setState({ timeFrame: timeFrame });
+    };
+
     return (
       <div>
         <Grid item xs={12}>
@@ -614,7 +622,7 @@ class CryptoDetective extends Component {
                   direction="row"
                   container
                   justify="space-around"
-                  alignItems="flex-start"
+                  alignItems="flex-end"
                   item
                   xs={12}
                 >
@@ -641,6 +649,9 @@ class CryptoDetective extends Component {
                               <ArrowDropDownRoundedIcon />
                             )
                           }
+                          onClick={() => {
+                            handleClick(1);
+                          }}
                           label={`${coinData.market_data.price_change_percentage_24h_in_currency[vs]}%`}
                         />
                       </Grid>
@@ -667,6 +678,9 @@ class CryptoDetective extends Component {
                               <ArrowDropDownRoundedIcon />
                             )
                           }
+                          onClick={() => {
+                            handleClick(7);
+                          }}
                           label={`${coinData.market_data.price_change_percentage_7d_in_currency[vs]}%`}
                         />
                       </Grid>
@@ -695,6 +709,9 @@ class CryptoDetective extends Component {
                               <ArrowDropDownRoundedIcon />
                             )
                           }
+                          onClick={() => {
+                            handleClick(30);
+                          }}
                           label={`${coinData.market_data.price_change_percentage_30d_in_currency[vs]}%`}
                         />
                       </Grid>
@@ -723,6 +740,9 @@ class CryptoDetective extends Component {
                               <ArrowDropDownRoundedIcon />
                             )
                           }
+                          onClick={() => {
+                            handleClick(60);
+                          }}
                           label={`${coinData.market_data.price_change_percentage_60d_in_currency[vs]}%`}
                         />
                       </Grid>
@@ -751,7 +771,24 @@ class CryptoDetective extends Component {
                               <ArrowDropDownRoundedIcon />
                             )
                           }
+                          onClick={() => {
+                            handleClick(365);
+                          }}
                           label={`${coinData.market_data.price_change_percentage_1y_in_currency[vs]}%`}
+                        />
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                  <Grid item>
+                    <Grid direction="column" container>
+                      <Grid item>
+                        <Chip
+                          variant="outlined"
+                          color={"primary"}
+                          onClick={() => {
+                            handleClick("max");
+                          }}
+                          label={"All"}
                         />
                       </Grid>
                     </Grid>

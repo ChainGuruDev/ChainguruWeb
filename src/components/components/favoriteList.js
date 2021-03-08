@@ -15,6 +15,7 @@ import {
   TableCell,
   TableContainer,
   TableHead,
+  TableFooter,
   TablePagination,
   TableRow,
   TableSortLabel,
@@ -30,6 +31,11 @@ import {
 
 import DeleteIcon from "@material-ui/icons/Delete";
 import FilterListIcon from "@material-ui/icons/FilterList";
+
+import FirstPageIcon from "@material-ui/icons/FirstPage";
+import KeyboardArrowLeft from "@material-ui/icons/KeyboardArrowLeft";
+import KeyboardArrowRight from "@material-ui/icons/KeyboardArrowRight";
+import LastPageIcon from "@material-ui/icons/LastPage";
 
 import {
   COIN_DATA_RETURNED,
@@ -56,6 +62,10 @@ const styles = (theme) => ({
   tokenLogo: {
     maxHeight: 30,
   },
+  footer: {
+    flexShrink: 0,
+    marginLeft: theme.spacing(2.5),
+  },
 });
 
 class FavoriteList extends Component {
@@ -69,6 +79,10 @@ class FavoriteList extends Component {
       sortBy: "marketcap",
       sortOrder: "dsc",
       sortData: [],
+      page: 0,
+      rows: 10,
+      rowsPerPage: 10,
+      formatedRows: [],
     };
   }
 
@@ -273,7 +287,7 @@ class FavoriteList extends Component {
 
   sortedList = (rowData) => {
     const { classes } = this.props;
-    const { sortBy, sortOrder } = this.state;
+    const { sortBy, sortOrder, rowsPerPage, page, formatedRows } = this.state;
 
     function dynamicSort(property) {
       var sortOrder = 1;
@@ -292,7 +306,7 @@ class FavoriteList extends Component {
       };
     }
     let sortedRows;
-    let formatedRows = [];
+    let newRows = [];
     if (sortOrder === "asc") {
       sortedRows = rowData.sort(dynamicSort(sortBy));
       sortedRows.forEach((item, i) => {
@@ -311,7 +325,7 @@ class FavoriteList extends Component {
           parseFloat(item.market_cap_change_percentage_24h).toFixed(2),
           item.sparkline_in_7d
         );
-        formatedRows.push(_rowData);
+        newRows.push(_rowData);
       });
     } else {
       sortedRows = rowData.sort(dynamicSort(`-${sortBy}`));
@@ -331,12 +345,18 @@ class FavoriteList extends Component {
           parseFloat(item.market_cap_change_percentage_24h).toFixed(2),
           item.sparkline_in_7d
         );
-        formatedRows.push(_rowData);
+        newRows.push(_rowData);
       });
     }
 
-    if (formatedRows.length > 1) {
-      return formatedRows.map((row) => (
+    if (newRows.length > 1) {
+      if (newRows.length != formatedRows.length) {
+        this.setState({ formatedRows: newRows });
+      }
+      return (rowsPerPage > 0
+        ? newRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+        : newRows
+      ).map((row) => (
         <TableRow hover={true} key={row.name}>
           <TableCell
             style={{ cursor: "pointer" }}
@@ -462,9 +482,88 @@ class FavoriteList extends Component {
     this.nav("/short/detective/" + id);
   };
 
+  TablePaginationActions = (props) => {
+    const { classes, t } = this.props;
+    const { formatedRows, page, rowsPerPage, onChangePage } = this.state;
+    const count = formatedRows.length;
+
+    const handleFirstPageButtonClick = (event) => {
+      this.setState({ page: 0 });
+    };
+
+    const handleBackButtonClick = (event) => {
+      console.log(event);
+      console.log(count);
+      this.setState({ page: page - 1 });
+    };
+
+    const handleNextButtonClick = (event) => {
+      this.setState({ page: page + 1 });
+    };
+
+    const handleLastPageButtonClick = (event) => {
+      this.setState({ page: Math.max(0, Math.ceil(count / rowsPerPage) - 1) });
+    };
+
+    return (
+      <div className={classes.footer}>
+        <IconButton
+          onClick={handleFirstPageButtonClick}
+          disabled={page === 0}
+          aria-label="first page"
+        >
+          {<FirstPageIcon />}
+        </IconButton>
+        <IconButton
+          onClick={handleBackButtonClick}
+          disabled={page === 0}
+          aria-label="previous page"
+        >
+          {<KeyboardArrowLeft />}
+        </IconButton>
+        <IconButton
+          onClick={handleNextButtonClick}
+          disabled={page >= Math.ceil(count / rowsPerPage) - 1}
+          aria-label="next page"
+        >
+          {<KeyboardArrowRight />}
+        </IconButton>
+        <IconButton
+          onClick={handleLastPageButtonClick}
+          disabled={page >= Math.ceil(count / rowsPerPage) - 1}
+          aria-label="last page"
+        >
+          {<LastPageIcon />}
+        </IconButton>
+      </div>
+    );
+  };
+
   render() {
     const { classes, t } = this.props;
-    const { coinData, loading, rowData, sortData } = this.state;
+    const {
+      coinData,
+      loading,
+      rowData,
+      sortData,
+      page,
+      rows,
+      rowsPerPage,
+      formatedRows,
+      count,
+    } = this.state;
+
+    const handleChangePage = (newPage) => {
+      console.log(newPage);
+      this.setState({ page: newPage });
+    };
+
+    const handleChangeRowsPerPage = (event) => {
+      this.setState({ rowsPerPage: parseInt(event.target.value, 10), page: 0 });
+    };
+
+    const emptyRows =
+      rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
 
     return (
       <TableContainer
@@ -609,6 +708,25 @@ class FavoriteList extends Component {
             </TableRow>
           </TableHead>
           <TableBody>{this.sortedList(sortData)}</TableBody>
+
+          <TableFooter>
+            <TableRow>
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25, { label: "All", value: -1 }]}
+                colSpan={3}
+                count={formatedRows.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                SelectProps={{
+                  inputProps: { "aria-label": "rows per page" },
+                  native: true,
+                }}
+                onChangePage={handleChangePage}
+                onChangeRowsPerPage={handleChangeRowsPerPage}
+                ActionsComponent={this.TablePaginationActions}
+              />
+            </TableRow>
+          </TableFooter>
         </Table>
       </TableContainer>
     );
