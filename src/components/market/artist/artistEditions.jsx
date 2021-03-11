@@ -22,11 +22,11 @@ const styles = (theme) => ({
   root: {
     width: 325,
     minHeight: 325,
-    padding: theme.spacing(1),
     margin: theme.spacing(2),
     display: "flex",
     flexDirection: "column",
-    backgroundColor: colors.cardBackground,
+    background: "rgba(125,125,125,0.2)",
+    border: `2px solid ${colors.cgOrange}`,
   },
   description: {},
 });

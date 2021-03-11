@@ -60,13 +60,12 @@ class App extends Component {
         injected
           .activate()
           .then((a) => {
-            // console.log(a);
             store.setStore({
               account: { address: web3.utils.toChecksumAddress(a.account) },
               web3context: { library: { provider: a.provider } },
+              chainId: a.provider.chainId,
             });
             emitter.emit(CONNECTION_CONNECTED);
-            // console.log(a);
           })
           .catch((e) => {
             console.log(e);
@@ -82,7 +81,7 @@ class App extends Component {
   };
 
   componentWillUnmount() {
-    emitter.removeListener(DARKMODE_SWITCH_RETURN, this.darkModeSwitchReturned);
+    emitter.removeListener(DARKMODE_SWITCH_RETURN, this.darkModeSwitch);
   }
 
   getMode = () => {
@@ -381,13 +380,21 @@ class App extends Component {
       window.ethereum.on("accountsChanged", function (accounts) {
         // Time to reload your interface with accounts[0]!
         store.setStore({
-          account: { address: web3.utils.toChecksumAddress(accounts[0]) },
+          account: {
+            address: web3.utils.toChecksumAddress(accounts[0]),
+          },
+          chainId: window.ethereum.chainId,
+          web3context: { library: { provider: window.ethereum } },
         });
+        console.log(window.ethereum);
         emitter.emit(CONNECTION_CONNECTED);
       });
 
       window.ethereum.on("networkChanged", function (networkId) {
         // Time to reload your interface with the new networkId
+        store.setStore({ chainId: networkId });
+        console.log(networkId);
+
         emitter.emit(CONNECTION_CONNECTED);
       });
     }
@@ -395,146 +402,136 @@ class App extends Component {
     return (
       <MuiThemeProvider theme={theme}>
         <CssBaseline />
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            minHeight: "100vh",
-            alignItems: "center",
-            background: "#f9fafb",
-          }}
-        >
-          <BrowserRouter>
-            <Switch>
-              <Route path="/coins/:coinID">
-                <Header
-                  setHeaderValue={this.setHeaderValue}
-                  headerValue={headerValue}
-                />
-                <Short tool="detective" />
-              </Route>
-              <Route path="/short/:tool/:coinID/:coinID_B">
-                <Header
-                  setHeaderValue={this.setHeaderValue}
-                  headerValue={headerValue}
-                  darkMode={darkMode}
-                />
-                <Short />
-              </Route>
-              <Route path="/short/:tool/:coinID">
-                <Header
-                  setHeaderValue={this.setHeaderValue}
-                  headerValue={headerValue}
-                  darkMode={darkMode}
-                />
-                <Short />
-              </Route>
-              <Route path="/short">
-                <Header
-                  setHeaderValue={this.setHeaderValue}
-                  headerValue={headerValue}
-                  darkMode={darkMode}
-                  vsCoin={this.state.vsCoin}
-                />
-                <Short />
-              </Route>
-              <Route path="/medium/:tool/:coinID/:coinID_B">
-                <Header
-                  setHeaderValue={this.setHeaderValue}
-                  headerValue={headerValue}
-                  darkMode={darkMode}
-                />
-                <Medium />
-              </Route>
-              <Route path="/medium/:tool/:coinID">
-                <Header
-                  setHeaderValue={this.setHeaderValue}
-                  headerValue={headerValue}
-                  darkMode={darkMode}
-                />
-                <Medium />
-              </Route>
-              <Route path="/medium">
-                <Header
-                  setHeaderValue={this.setHeaderValue}
-                  headerValue={headerValue}
-                  vsCoin={this.state.vsCoin}
-                />
-                <Medium />
-              </Route>
-              <Route path="/long/:toolID">
-                <Header
-                  setHeaderValue={this.setHeaderValue}
-                  headerValue={headerValue}
-                  vsCoin={this.state.vsCoin}
-                />
-                <Long />
-              </Route>
-              <Route path="/long">
-                <Header
-                  setHeaderValue={this.setHeaderValue}
-                  headerValue={headerValue}
-                  vsCoin={this.state.vsCoin}
-                />
-                <Long />
-              </Route>
-              <Route path="/portfolio">
-                <Header
-                  setHeaderValue={this.setHeaderValue}
-                  headerValue={headerValue}
-                  vsCoin={this.state.vsCoin}
-                />
-                <PortfolioManagement />
-              </Route>
-              <Route path="/market/adminPanel">
-                <Header
-                  setHeaderValue={this.setHeaderValue}
-                  headerValue={headerValue}
-                />
-                <AdminPanel />
-              </Route>
-              <Route path="/market">
-                <Header
-                  setHeaderValue={this.setHeaderValue}
-                  headerValue={headerValue}
-                />
-                <Market />
-              </Route>
-              <Route path="/artist/:artistAccount">
-                <Header
-                  setHeaderValue={this.setHeaderValue}
-                  headerValue={headerValue}
-                />
-                <Artist />
-              </Route>
-              <Route path="/user/:userAccount">
-                <Header
-                  setHeaderValue={this.setHeaderValue}
-                  headerValue={headerValue}
-                />
-                <User />
-              </Route>
+        <BrowserRouter>
+          <Switch>
+            <Route path="/coins/:coinID">
+              <Header
+                setHeaderValue={this.setHeaderValue}
+                headerValue={headerValue}
+              />
+              <Short tool="detective" />
+            </Route>
+            <Route path="/short/:tool/:coinID/:coinID_B">
+              <Header
+                setHeaderValue={this.setHeaderValue}
+                headerValue={headerValue}
+                darkMode={darkMode}
+              />
+              <Short />
+            </Route>
+            <Route path="/short/:tool/:coinID">
+              <Header
+                setHeaderValue={this.setHeaderValue}
+                headerValue={headerValue}
+                darkMode={darkMode}
+              />
+              <Short />
+            </Route>
+            <Route path="/short">
+              <Header
+                setHeaderValue={this.setHeaderValue}
+                headerValue={headerValue}
+                darkMode={darkMode}
+                vsCoin={this.state.vsCoin}
+              />
+              <Short />
+            </Route>
+            <Route path="/medium/:tool/:coinID/:coinID_B">
+              <Header
+                setHeaderValue={this.setHeaderValue}
+                headerValue={headerValue}
+                darkMode={darkMode}
+              />
+              <Medium />
+            </Route>
+            <Route path="/medium/:tool/:coinID">
+              <Header
+                setHeaderValue={this.setHeaderValue}
+                headerValue={headerValue}
+                darkMode={darkMode}
+              />
+              <Medium />
+            </Route>
+            <Route path="/medium">
+              <Header
+                setHeaderValue={this.setHeaderValue}
+                headerValue={headerValue}
+                vsCoin={this.state.vsCoin}
+              />
+              <Medium />
+            </Route>
+            <Route path="/long/:toolID">
+              <Header
+                setHeaderValue={this.setHeaderValue}
+                headerValue={headerValue}
+                vsCoin={this.state.vsCoin}
+              />
+              <Long />
+            </Route>
+            <Route path="/long">
+              <Header
+                setHeaderValue={this.setHeaderValue}
+                headerValue={headerValue}
+                vsCoin={this.state.vsCoin}
+              />
+              <Long />
+            </Route>
+            <Route path="/portfolio">
+              <Header
+                setHeaderValue={this.setHeaderValue}
+                headerValue={headerValue}
+                vsCoin={this.state.vsCoin}
+              />
+              <PortfolioManagement />
+            </Route>
+            <Route path="/market/adminPanel">
+              <Header
+                setHeaderValue={this.setHeaderValue}
+                headerValue={headerValue}
+              />
+              <AdminPanel />
+            </Route>
+            <Route path="/market/artist/:artistAccount">
+              <Header
+                setHeaderValue={this.setHeaderValue}
+                headerValue={headerValue}
+              />
+              <Artist />
+            </Route>
+            <Route path="/market/user/:userAccount">
+              <Header
+                setHeaderValue={this.setHeaderValue}
+                headerValue={headerValue}
+              />
+              <User />
+            </Route>
 
-              <Route path="/edition/new">
-                <Header
-                  setHeaderValue={this.setHeaderValue}
-                  headerValue={headerValue}
-                />
-                <NewEdit />
-              </Route>
-              <Route path="/edition/:editionNumber">
-                <Header
-                  setHeaderValue={this.setHeaderValue}
-                  headerValue={headerValue}
-                />
-                <Show />
-              </Route>
-              <Route path="/">
-                <Home />
-              </Route>
-            </Switch>
-          </BrowserRouter>
-        </div>
+            <Route path="/market/edition/new">
+              <Header
+                setHeaderValue={this.setHeaderValue}
+                headerValue={headerValue}
+              />
+              <NewEdit />
+            </Route>
+            <Route path="/market/edition/:editionNumber">
+              <Header
+                setHeaderValue={this.setHeaderValue}
+                headerValue={headerValue}
+              />
+              <Show />
+            </Route>
+            <Route path="/market">
+              <Header
+                setHeaderValue={this.setHeaderValue}
+                headerValue={headerValue}
+              />
+              <Market />
+            </Route>
+            <Route path="/">
+              <Home />
+            </Route>
+          </Switch>
+        </BrowserRouter>
       </MuiThemeProvider>
     );
   }

@@ -2,7 +2,7 @@ import React, { Component, useEffect } from "react";
 import PropTypes from "prop-types";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import { Typography, AppBar, Tabs, Tab, Box, Paper } from "@material-ui/core";
+import { Typography, AppBar, Tabs, Tab, Box, Grid } from "@material-ui/core";
 import { withTranslation } from "react-i18next";
 
 import FlashOnIcon from "@material-ui/icons/FlashOn";
@@ -192,7 +192,7 @@ class Short extends Component {
     };
 
     return (
-      <Paper className={classes.rootTabs}>
+      <Grid className={classes.rootTabs}>
         <AppBar position="static" color="default">
           <Tabs
             value={valueTab}
@@ -226,7 +226,7 @@ class Short extends Component {
           {coinID && <CryptoDetective coinID={coinID} />}
           {!coinID && <CryptoDetective />}
         </TabPanel>
-      </Paper>
+      </Grid>
     );
   }
 

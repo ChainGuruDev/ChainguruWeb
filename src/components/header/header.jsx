@@ -219,6 +219,23 @@ class Header extends Component {
     }
   }
 
+  componentDidUpdate(prevProps) {
+    console.log(this.props.match.path);
+    if (prevProps.match.path !== this.props.match.path) {
+      if (this.props.match.path === "/" + "short") {
+        this.setState({ cgLogoColor: colors.cgOrange });
+      } else if (this.props.match.path === "/" + "medium") {
+        this.setState({ cgLogoColor: colors.cgGreen });
+      } else if (this.props.match.path === "/" + "long") {
+        this.setState({ cgLogoColor: colors.cgBlue });
+      } else if (this.props.match.path === "/" + "portfolio") {
+        this.setState({ cgLogoColor: colors.cgGreen });
+      } else {
+        this.setState({ cgLogoColor: colors.cgRed });
+      }
+    }
+  }
+
   getVsCoin = () => {
     let vsCoin;
     try {
@@ -506,27 +523,27 @@ class Header extends Component {
 
   renderLink = (screen) => {
     const { classes, t } = this.props;
-    if (window.location.pathname === "/" + "short") {
-      if (this.state.cgLogoColor !== colors.cgOrange) {
-        this.setState({ cgLogoColor: colors.cgOrange });
-      }
-    } else if (window.location.pathname === "/" + "medium") {
-      if (this.state.cgLogoColor !== colors.cgGreen) {
-        this.setState({ cgLogoColor: colors.cgGreen });
-      }
-    } else if (window.location.pathname === "/" + "long") {
-      if (this.state.cgLogoColor !== colors.cgBlue) {
-        this.setState({ cgLogoColor: colors.cgBlue });
-      }
-    } else if (window.location.pathname === "/" + "portfolio") {
-      if (this.state.cgLogoColor !== colors.cgGreen) {
-        this.setState({ cgLogoColor: colors.cgGreen });
-      }
-    } else {
-      if (this.state.cgLogoColor !== colors.cgRed) {
-        this.setState({ cgLogoColor: colors.cgRed });
-      }
-    }
+    // if (window.location.pathname === "/" + "short") {
+    //   if (this.state.cgLogoColor !== colors.cgOrange) {
+    //     this.setState({ cgLogoColor: colors.cgOrange });
+    //   }
+    // } else if (window.location.pathname === "/" + "medium") {
+    //   if (this.state.cgLogoColor !== colors.cgGreen) {
+    //     this.setState({ cgLogoColor: colors.cgGreen });
+    //   }
+    // } else if (window.location.pathname === "/" + "long") {
+    //   if (this.state.cgLogoColor !== colors.cgBlue) {
+    //     this.setState({ cgLogoColor: colors.cgBlue });
+    //   }
+    // } else if (window.location.pathname === "/" + "portfolio") {
+    //   if (this.state.cgLogoColor !== colors.cgGreen) {
+    //     this.setState({ cgLogoColor: colors.cgGreen });
+    //   }
+    // } else {
+    //   if (this.state.cgLogoColor !== colors.cgRed) {
+    //     this.setState({ cgLogoColor: colors.cgRed });
+    //   }
+    // }
 
     return (
       <div

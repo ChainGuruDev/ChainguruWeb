@@ -25,7 +25,8 @@ const styles = (theme) => ({
     margin: theme.spacing(2),
     display: "flex",
     flexDirection: "column",
-    backgroundColor: colors.cardBackground,
+    background: "rgba(125,125,125,0.2)",
+    border: `2px solid ${colors.cgOrange}`,
   },
   description: {},
 });
@@ -128,7 +129,7 @@ class RenderEditions extends Component {
 
   editionClicked = () => {
     let _editNumber = this.props.editionNum;
-    this.nav(`/edition/${_editNumber}`);
+    this.nav(`/market/edition/${_editNumber}`);
   };
 
   render(props) {

@@ -21,6 +21,9 @@ class AlltimeChart extends Component {
     this.state = {
       options: {
         chart: {
+          animations: {
+            enabled: false,
+          },
           type: "line",
           sparkline: {
             enabled: true,

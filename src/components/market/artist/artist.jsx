@@ -15,6 +15,7 @@ import {
   ListItemIcon,
   Divider,
   Link,
+  Card,
 } from "@material-ui/core";
 
 import Loader from "../../loader";
@@ -44,29 +45,26 @@ const styles = (theme) => ({
     flex: 1,
     display: "flex",
     flexDirection: "column",
-    width: "100%",
+    minWidth: "100%",
+    Width: "100%",
     minHeight: "100%",
     alignItems: "center",
-    background: "linear-gradient(to top, #3cba92, #68efcf)",
   },
   root: {
     maxWidth: "1920px",
     width: "90%",
     alignItems: "center",
+    display: "flex",
   },
-
   gridList: {
     display: "flex",
     flex: 1,
     justifyContent: "end",
-    padding: 50,
-
-    // Promote the list into his own layer on Chrome. This cost memory but helps keeping high FPS.
+    padding: 20,
   },
   gridContainer: {
-    display: "flex",
-    flex: 1,
     justifyContent: "center",
+    flex: 1,
   },
   menuBar: {
     minWidth: 200,
@@ -75,8 +73,8 @@ const styles = (theme) => ({
     padding: 15,
     alignItems: "center",
     textAlign: "left",
-
-    background: colors.cardBackground,
+    background: "rgba(125,125,125,0.2)",
+    border: `2px solid ${colors.cgOrange}`,
   },
   divider: {
     margin: 15,
@@ -84,6 +82,12 @@ const styles = (theme) => ({
   button: {
     marginRight: 15,
     marginBottom: 15,
+  },
+  rootMenu: {
+    marginTop: 15,
+    width: "100%",
+    maxWidth: 360,
+    minWidth: 200,
   },
 });
 
@@ -281,19 +285,15 @@ class ArtistShow extends Component {
     const { classes, t } = this.props;
     const { loading, modalOpen, snackbarMessage, artistName } = this.state;
     return (
-      <div className={classes.background}>
-        <div className={classes.root}>
-          {this.state.account.address && (
-            <Grid className={classes.gridList}>
-              <GridList
-                xs={9}
-                cellHeight={200}
-                className={classes.gridContainer}
-              >
-                {this.renderEditions(this.state.editionDetails)}
-              </GridList>
-              <Grid className={classes.menuBar} item xs={3}>
-                <Paper className={classes.menuItems} elevation={3}>
+      <Grid className={classes.background}>
+        {this.state.account.address && (
+          <Grid className={classes.gridList} container>
+            <GridList xs={9} cellHeight={200} className={classes.gridContainer}>
+              {this.renderEditions(this.state.editionDetails)}
+            </GridList>
+            <Grid item xs={3}>
+              <div className={classes.rootMenu}>
+                <Card className={classes.menuItems} elevation={3}>
                   <Typography variant="subtitle2">Name:</Typography>
                   <Typography variant="h6">
                     {this.state.tokenURI.artistName}
@@ -319,17 +319,15 @@ class ArtistShow extends Component {
                   >
                     Market
                   </Button>
-                </Paper>
-              </Grid>
+                </Card>
+              </div>
             </Grid>
-          )}
-          {!this.state.account.address && (
-            <div>{t("Wallet.PleaseConnect")}</div>
-          )}
+          </Grid>
+        )}
+        {!this.state.account.address && <div>{t("Wallet.PleaseConnect")}</div>}
 
-          {snackbarMessage && this.renderSnackbar()}
-        </div>
-      </div>
+        {snackbarMessage && this.renderSnackbar()}
+      </Grid>
     );
   }
 

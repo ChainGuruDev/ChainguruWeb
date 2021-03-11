@@ -3,6 +3,7 @@ import { withRouter, Link } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
+import Bottleneck from "bottleneck";
 
 //Import UI elements
 import {
@@ -52,6 +53,15 @@ const styles = (theme) => ({
     border: `2px solid ${colors.cgBlue}`,
     marginBottom: 10,
   },
+});
+
+const limiterChips = new Bottleneck({
+  reservoir: 50, // initial value
+  reservoirRefreshAmount: 50,
+  reservoirRefreshInterval: 60 * 1100, // must be divisible by 250
+  // also use maxConcurrent and/or minTime for safety
+  maxConcurrent: 5,
+  minTime: 1100, // pick a value that makes sense for your use case
 });
 
 class BlueChips extends Component {

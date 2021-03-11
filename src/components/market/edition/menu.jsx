@@ -82,7 +82,8 @@ const styles = (theme) => ({
     alignItems: "center",
     textAlign: "left",
 
-    background: colors.cardBackground,
+    background: "rgba(125,125,125,0.2)",
+    border: `2px solid ${colors.cgOrange}`,
   },
   divider: {
     margin: 15,
@@ -105,7 +106,6 @@ class Show extends Component {
     }
   }
 
-
   componentDidMount() {
     const account = store.getStore("account");
 
@@ -122,98 +122,75 @@ class Show extends Component {
     }
   }
 
-
-
   render() {
     const { classes, t } = this.props;
-    const {
-      loading,
-      editionToken,
-      editionDetails,
-    } = this.state;
+    const { loading, editionToken, editionDetails } = this.state;
 
     return (
-<Paper className={classes.menuItems} elevation={3}>
-  <Typography variant="subtitle2">Name:</Typography>
-  <Typography variant="h6">{editionToken.name}</Typography>
-  <Divider className={classes.divider} />
-  <Typography variant="subtitle2">Description:</Typography>
-  <Typography variant="body2">
-    {editionToken.description}
-  </Typography>
-  <Divider className={classes.divider} />
-  <Typography variant="subtitle2">Artist:</Typography>
+      <Paper className={classes.menuItems} elevation={3}>
+        <Typography variant="subtitle2">Name:</Typography>
+        <Typography variant="h6">{editionToken.name}</Typography>
+        <Divider className={classes.divider} />
+        <Typography variant="subtitle2">Description:</Typography>
+        <Typography variant="body2">{editionToken.description}</Typography>
+        <Divider className={classes.divider} />
+        <Typography variant="subtitle2">Artist:</Typography>
 
-  <Typography variant="h6">
-    {editionToken.artistName}
-  </Typography>
-  <Divider className={classes.divider} />
-  <Typography variant="subtitle2">
-    Artist Commission:
-  </Typography>
-  <Typography variant="h6">
-    {editionDetails._artistCommission}
-  </Typography>
-  <Divider className={classes.divider} />
-  <Typography variant="subtitle2">Edition:</Typography>
-  <Typography variant="h6">
-    {this.state.editionNumber}
-  </Typography>
-  <Divider className={classes.divider} />
-  <Typography variant="subtitle2">Price in Eth:</Typography>
-  <Typography variant="h6">
-    {editionDetails._priceInWei / 1000000000000000000}
-  </Typography>
-  <Divider className={classes.divider} />
-  {editionDetails._maxAvailable -
-    editionDetails._circulatingSupply !=
-    0 && (
-      <Button
-        variant="outlined"
-        disabled={loading}
-        onClick={this.buyEdition}
-        size="small"
-        color="primary"
-        className={classes.button}
-      >
-        {loading && <CircularProgress size={24} />}
-        {!loading &&
-          editionDetails._maxAvailable -
-          editionDetails._circulatingSupply >
-          0 &&
-          "Buy for " +
-          editionDetails._priceInWei / 1000000000000000000 +
-        " eth"}
-      </Button>
-    )}
-  {editionDetails._maxAvailable -
-    editionDetails._circulatingSupply ===
-    0 && (
-      <Button
-        variant="outlined"
-        disabled={loading}
-        size="small"
-        color="primary"
-        className={classes.button}
-      >
-        Sold Out
-      </Button>
-    )}
-  <Button
-    variant="outlined"
-    disabled
-    size="small"
-    className={classes.button}
-  >
-    {editionDetails._maxAvailable -
-    editionDetails._circulatingSupply}
-    {" / "}
-    {editionDetails._maxAvailable} remaining
-  </Button>
-</Paper>
+        <Typography variant="h6">{editionToken.artistName}</Typography>
+        <Divider className={classes.divider} />
+        <Typography variant="subtitle2">Artist Commission:</Typography>
+        <Typography variant="h6">{editionDetails._artistCommission}</Typography>
+        <Divider className={classes.divider} />
+        <Typography variant="subtitle2">Edition:</Typography>
+        <Typography variant="h6">{this.state.editionNumber}</Typography>
+        <Divider className={classes.divider} />
+        <Typography variant="subtitle2">Price in Eth:</Typography>
+        <Typography variant="h6">
+          {editionDetails._priceInWei / 1000000000000000000}
+        </Typography>
+        <Divider className={classes.divider} />
+        {editionDetails._maxAvailable - editionDetails._circulatingSupply !=
+          0 && (
+          <Button
+            variant="outlined"
+            disabled={loading}
+            onClick={this.buyEdition}
+            size="small"
+            color="primary"
+            className={classes.button}
+          >
+            {loading && <CircularProgress size={24} />}
+            {!loading &&
+              editionDetails._maxAvailable - editionDetails._circulatingSupply >
+                0 &&
+              "Buy for " +
+                editionDetails._priceInWei / 1000000000000000000 +
+                " eth"}
+          </Button>
         )}
-
-
+        {editionDetails._maxAvailable - editionDetails._circulatingSupply ===
+          0 && (
+          <Button
+            variant="outlined"
+            disabled={loading}
+            size="small"
+            color="primary"
+            className={classes.button}
+          >
+            Sold Out
+          </Button>
+        )}
+        <Button
+          variant="outlined"
+          disabled
+          size="small"
+          className={classes.button}
+        >
+          {editionDetails._maxAvailable - editionDetails._circulatingSupply}
+          {" / "}
+          {editionDetails._maxAvailable} remaining
+        </Button>
+      </Paper>
     );
   }
 
@@ -223,7 +200,6 @@ class Show extends Component {
   stopLoading = () => {
     this.setState({ loading: false });
   };
-
 }
 
 export default withTranslation()(withRouter(withStyles(styles)(Show)));

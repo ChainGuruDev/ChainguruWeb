@@ -156,7 +156,7 @@ class Long extends Component {
     };
 
     return (
-      <Paper className={classes.rootTabs}>
+      <Grid className={classes.rootTabs}>
         <AppBar position="static" color="default">
           <Tabs
             value={valueTab}
@@ -186,7 +186,7 @@ class Long extends Component {
           <DollarCostAverage />
         </TabPanel>
         {snackbarMessage && this.renderSnackbar()}
-      </Paper>
+      </Grid>
     );
   }
 

@@ -49,7 +49,6 @@ const styles = (theme) => ({
     width: "100%",
     minHeight: "100%",
     alignItems: "center",
-    background: "linear-gradient(to top, #3cba92, #68efcf)",
   },
   root: {
     maxWidth: "1920px",
@@ -266,7 +265,7 @@ class User extends Component {
     const { classes, t } = this.props;
     const { loading, modalOpen, snackbarMessage } = this.state;
     return (
-      <div className={classes.background}>
+      <Grid className={classes.background}>
         <div className={classes.root}>
           {!this.state.userTokens.isEmpty && (
             <Grid className={classes.gridList}>
@@ -285,7 +284,7 @@ class User extends Component {
 
           {snackbarMessage && this.renderSnackbar()}
         </div>
-      </div>
+      </Grid>
     );
   }
 

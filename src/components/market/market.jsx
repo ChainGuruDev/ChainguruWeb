@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 
-import { Grid, GridList, Button } from "@material-ui/core";
+import { Grid, GridList, Button, Paper } from "@material-ui/core";
 
 //import ItemCard from "../components/itemCard";
 import RenderEditions from "./renderEditions";
@@ -45,19 +45,19 @@ const styles = (theme) => ({
     Width: "100%",
     minHeight: "100%",
     alignItems: "center",
-    background: "linear-gradient(to top, #3cba92, #68efcf)",
   },
   root: {
     maxWidth: "1920px",
     width: "90%",
     alignItems: "center",
+    display: "flex",
   },
 
   gridList: {
     display: "flex",
     flex: 1,
     justifyContent: "end",
-    padding: 40,
+    padding: 20,
   },
   connect: {
     minWidth: "100%",
@@ -73,25 +73,27 @@ const styles = (theme) => ({
   },
 });
 
-const validChainId = 4; //ONLY VALID FOR RINKEBY FOR NOW
+const validChainId = ["0x4", "4"]; //ONLY VALID FOR RINKEBY FOR NOW
 
 class Market extends Component {
   constructor() {
     super();
-
     const account = store.getStore("account");
     const web3 = store.getStore("web3context");
+    const chainId = store.getStore("chainId");
+    this._isMounted = false;
 
     this.state = {
       editionsDetails: [],
       account: account,
-      loading: false,
+      loading: true,
       tJSON: {},
       curEdit: "",
       maxEditSize: "",
       web3context: web3,
+      chainId: chainId,
     };
-    if (account && account.address && web3.chainId === validChainId) {
+    if (account && account.address && validChainId.includes(chainId)) {
       dispatcher.dispatch({ type: GET_CURRENTEDITION, content: {} });
       dispatcher.dispatch({ type: GET_MAX_EDITIONSIZE, content: {} });
       dispatcher.dispatch({ type: GET_AVAILABLE_ITEMS, content: {} });
@@ -109,16 +111,21 @@ class Market extends Component {
   }
 
   componentDidMount() {
-    emitter.on(ERROR, this.errorReturned);
-    emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
-    emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
-    emitter.on(EDITION_RETURNED, this.editionReturned);
-    emitter.on(EDITIONS_DETAILS_RETURNED, this.editionDetailsReturned);
-    emitter.on(BUY_RETURNED, this.buyReturned);
-    emitter.on(MAX_EDIT_SIZE_RETURNED, this.maxEditSize);
+    this._isMounted = true;
+    this._isMounted && emitter.on(ERROR, this.errorReturned);
+    this._isMounted &&
+      emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
+    this._isMounted &&
+      emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
+    this._isMounted && emitter.on(EDITION_RETURNED, this.editionReturned);
+    this._isMounted &&
+      emitter.on(EDITIONS_DETAILS_RETURNED, this.editionDetailsReturned);
+    this._isMounted && emitter.on(BUY_RETURNED, this.buyReturned);
+    this._isMounted && emitter.on(MAX_EDIT_SIZE_RETURNED, this.maxEditSize);
   }
 
   componentWillUnmount() {
+    this._isMounted = false;
     emitter.removeListener(ERROR, this.errorReturned);
     emitter.removeListener(CONNECTION_CONNECTED, this.connectionConnected);
     emitter.removeListener(
@@ -135,11 +142,11 @@ class Market extends Component {
   }
 
   maxEditSize = (payload) => {
-    this.setState({ maxEditSize: payload });
+    this._isMounted && this.setState({ maxEditSize: payload });
   };
 
   editionReturned = (curEdit) => {
-    this.setState({ curEdit: curEdit });
+    this._isMounted && this.setState({ curEdit: curEdit, loading: false });
     let editions = [];
     for (var i = 0; i < this.state.curEdit; i++) {
       editions.push(i);
@@ -159,58 +166,69 @@ class Market extends Component {
         snackbarMessage: "Edition Bought",
         snackbarType: "Info",
       };
-      that.setState(snackbarObj);
+      that.setState({ snackbarObj, loading: false });
     });
   };
 
   editionDetailsReturned = (editions) => {
-    this.setState({ editionsDetails: editions });
+    this._isMounted &&
+      this.setState({ editionsDetails: editions, loading: false });
   };
 
   connectionConnected = () => {
     const { t } = this.props;
 
-    this.setState({ account: store.getStore("account") });
-    this.setState({ web3context: store.getStore("web3context") });
-    let web3 = store.getStore("web3context");
-    if (web3.chainId === validChainId) {
-      dispatcher.dispatch({ type: GET_MAX_EDITIONSIZE, content: {} });
-      dispatcher.dispatch({ type: GET_CURRENTEDITION, content: {} });
-      dispatcher.dispatch({ type: GET_AVAILABLE_ITEMS, content: {} });
-      dispatcher.dispatch({ type: GET_ITEMS_CIRCULATING, content: {} });
-      dispatcher.dispatch({ type: GET_SALES_VALUE, content: {} });
-      dispatcher.dispatch({
-        type: GET_ACCOUNT_ROLES,
-        content: {},
-      });
-      dispatcher.dispatch({
-        type: IS_ALLOWED_ARTIST,
-        content: {},
-      });
+    this.setState({
+      account: store.getStore("account"),
+      web3context: store.getStore("web3context"),
+      chainId: store.getStore("chainId"),
+    });
+    let chainId = store.getStore("chainId");
+    console.log(chainId);
+    if (chainId != null) {
+      console.log("llegamos");
+      if (validChainId.includes(chainId)) {
+        dispatcher.dispatch({ type: GET_MAX_EDITIONSIZE, content: {} });
+        dispatcher.dispatch({ type: GET_CURRENTEDITION, content: {} });
+        dispatcher.dispatch({ type: GET_AVAILABLE_ITEMS, content: {} });
+        dispatcher.dispatch({ type: GET_ITEMS_CIRCULATING, content: {} });
+        dispatcher.dispatch({ type: GET_SALES_VALUE, content: {} });
+        dispatcher.dispatch({
+          type: GET_ACCOUNT_ROLES,
+          content: {},
+        });
+        dispatcher.dispatch({
+          type: IS_ALLOWED_ARTIST,
+          content: {},
+        });
 
-      const that = this;
-      setTimeout(() => {
-        const snackbarObj = {
-          snackbarMessage: t("Unlock.WalletConnected"),
-          snackbarType: "Info",
-        };
-        that.setState(snackbarObj);
-      });
-    } else {
-      const that = this;
-      setTimeout(() => {
-        const snackbarObj = {
-          snackbarMessage: "PLEASE SWITCH TO RINKEBY TESTNET AND RECONNECT",
-          snackbarType: "Info",
-        };
-        that.setState(snackbarObj);
-      });
+        const that = this;
+        setTimeout(() => {
+          const snackbarObj = {
+            snackbarMessage: t("Unlock.WalletConnected"),
+            snackbarType: "Info",
+          };
+          that.setState(snackbarObj);
+        });
+      } else {
+        const that = this;
+        setTimeout(() => {
+          const snackbarObj = {
+            snackbarMessage: "PLEASE SWITCH TO RINKEBY TESTNET AND RECONNECT",
+            snackbarType: "Info",
+          };
+          that.setState(snackbarObj);
+        });
+      }
     }
   };
 
   connectionDisconnected = () => {
-    this.setState({ account: store.getStore("account") });
-    this.setState({ web3context: store.getStore("web3context") });
+    this.setState({
+      account: store.getStore("account"),
+      web3context: store.getStore("web3context"),
+      chainId: store.getStore("chainId"),
+    });
 
     dispatcher.dispatch({
       type: GET_ACCOUNT_ROLES,
@@ -235,8 +253,7 @@ class Market extends Component {
 
   errorReturned = (error) => {
     const snackbarObj = { snackbarMessage: null, snackbarType: null };
-    this.setState(snackbarObj);
-    this.setState({ loading: false });
+    this.setState({ snackbarObj: snackbarObj, loading: false });
     const that = this;
     setTimeout(() => {
       const snackbarObj = {
@@ -263,44 +280,62 @@ class Market extends Component {
     const { classes, t } = this.props;
     const { loading, modalOpen, snackbarMessage } = this.state;
 
-    return (
-      <div className={classes.background}>
-        <div className={classes.root}>
-          {this.state.account.address &&
-            this.state.web3context.chainId === validChainId && (
-              <Grid className={classes.gridList} container>
-                <GridList
-                  xs={9}
-                  cellHeight={200}
-                  className={classes.gridContainer}
-                >
-                  {this.renderEditions()}
-                </GridList>
-                <Grid item xs={3}>
-                  <MarketBar edition={this.state.curEdit} />
-                </Grid>
-              </Grid>
-            )}
-          {this.state.account.address &&
-            this.state.web3context.chainId != validChainId && (
-              <div className={classes.connect}>
-                PLEASE SWITCH TO RINKEBY TESTNET AND RECONNECT
-              </div>
-            )}
-          {!this.state.account.address && (
-            <div className={classes.connect}>{t("Wallet.PleaseConnect")}</div>
-          )}
+    const account = store.getStore("account");
+    const web3context = store.getStore("web3context");
+    const chainId = store.getStore("chainId");
 
-          {loading && <Loader />}
-          {modalOpen && this.renderModal()}
-          {snackbarMessage && this.renderSnackbar()}
-        </div>
-      </div>
+    if (this.state.account.address != null) {
+      if (validChainId.includes(chainId) === true) {
+        if (this.state.loading) {
+          dispatcher.dispatch({ type: GET_CURRENTEDITION, content: {} });
+          dispatcher.dispatch({ type: GET_MAX_EDITIONSIZE, content: {} });
+          dispatcher.dispatch({ type: GET_AVAILABLE_ITEMS, content: {} });
+          dispatcher.dispatch({ type: GET_ITEMS_CIRCULATING, content: {} });
+          dispatcher.dispatch({ type: GET_SALES_VALUE, content: {} });
+          dispatcher.dispatch({
+            type: GET_ACCOUNT_ROLES,
+            content: {},
+          });
+          dispatcher.dispatch({
+            type: IS_ALLOWED_ARTIST,
+            content: {},
+          });
+        }
+      }
+    }
+    return (
+      <Grid className={classes.background}>
+        {this.state.account.address != null && validChainId.includes(chainId) && (
+          <Grid className={classes.gridList} container>
+            <GridList xs={9} cellHeight={200} className={classes.gridContainer}>
+              {this.renderEditions()}
+            </GridList>
+            <Grid item xs={3}>
+              <MarketBar edition={this.state.curEdit} />
+            </Grid>
+          </Grid>
+        )}
+        {this.state.account.address != null &&
+          !validChainId.includes(chainId) && (
+            <div className={classes.connect}>
+              PLEASE SWITCH TO RINKEBY TESTNET AND RECONNECT
+            </div>
+          )}
+        {!this.state.account.address && (
+          <div className={classes.connect}>{t("Wallet.PleaseConnect")}</div>
+        )}
+
+        {loading && <Loader />}
+        {modalOpen && this.renderModal()}
+        {snackbarMessage && this.renderSnackbar()}
+      </Grid>
     );
   }
 
   startLoading = () => {
-    this.setState({ loading: true });
+    if (!this.state.loading) {
+      this.setState({ loading: true });
+    }
   };
   stopLoading = () => {
     this.setState({ loading: false });

@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { withStyles } from "@material-ui/core/styles";
 import { withRouter, Link } from "react-router-dom";
 
-import { Paper, Typography, Button, Divider } from "@material-ui/core";
+import { Paper, Typography, Button, Divider, Card } from "@material-ui/core";
 import { colors } from "../../theme";
 import {
   AVAILABLE_ITEMS_RETURNED,
@@ -27,8 +27,6 @@ const styles = (theme) => ({
     width: "100%",
     maxWidth: 360,
     minWidth: 200,
-
-    backgroundColor: colors.cardBackground,
   },
   marketBar: {
     flex: 1,
@@ -44,8 +42,8 @@ const styles = (theme) => ({
     padding: 15,
     alignItems: "center",
     textAlign: "left",
-
-    background: colors.cardBackground,
+    background: "rgba(125,125,125,0.2)",
+    border: `2px solid ${colors.cgOrange}`,
   },
   divider: {
     margin: 15,
@@ -149,7 +147,7 @@ class MarketBar extends Component {
     const { userAccount, snackbarMessage } = this.state;
     return (
       <div className={classes.root}>
-        <Paper className={classes.menuItems} elevation={3}>
+        <Card className={classes.menuItems} elevation={3}>
           <Typography className={classes.header}>Total editions</Typography>
           <Typography variant="h3" className={classes.header}>
             {this.props.edition}
@@ -181,7 +179,7 @@ class MarketBar extends Component {
             className={classes.button}
             color="primary"
             onClick={() => {
-              this.nav(`/user/${this.state.account.address}`);
+              this.nav(`../market/user/${this.state.account.address}`);
             }}
           >
             My Items
@@ -194,7 +192,7 @@ class MarketBar extends Component {
             color="primary"
             className={classes.button}
             onClick={() => {
-              this.nav("/edition/new");
+              this.nav("../market/edition/new");
             }}
           >
             New Edition
@@ -207,7 +205,7 @@ class MarketBar extends Component {
             color="secondary"
             className={classes.button}
             onClick={() => {
-              this.nav("/edition/new");
+              this.nav("../market/edition/new");
             }}
           >
             Admin New Edition
@@ -220,12 +218,12 @@ class MarketBar extends Component {
             color="secondary"
             className={classes.button}
             onClick={() => {
-              this.nav("/market/adminPanel");
+              this.nav("../market/adminPanel");
             }}
           >
             Admin Panel
           </Button>
-        </Paper>
+        </Card>
       </div>
     );
   }

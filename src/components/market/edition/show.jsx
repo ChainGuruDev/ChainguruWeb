@@ -44,51 +44,54 @@ const store = Store.store;
 
 const styles = (theme) => ({
   background: {
-    flex: 1,
+    flexGrow: 1,
     display: "flex",
-    flexDirection: "column",
-    width: "100%",
-    minHeight: "100%",
-    background: "linear-gradient(to top, #3cba92, #68efcf)",
-    alignItems: "center",
+    justifyContent: "center",
   },
   root: {
     flex: 1,
     display: "flex",
+    alignItems: "center",
     flexDirection: "column",
     maxWidth: "1920px",
     width: "90%",
     minHeight: "100%",
   },
-
   gridList: {
-    display: "flex",
-    flex: 1,
-    justifyContent: "center",
-    padding: 50,
-
-    // Promote the list into his own layer on Chrome. This cost memory but helps keeping high FPS.
-  },
-  imageContainer: {
-    display: "flex",
-    flex: 1,
+    flexDirection: "row",
+    maxWidth: "1920px",
+    width: "90%",
+    minHeight: "100%",
+    margin: "25px",
     justifyContent: "center",
     alignItems: "flex-start",
   },
+  imageContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
   image: {
-    display: "flex",
-    flex: 1,
-    maxWidth: "80%",
+    maxWidth: "-moz-available",
+    maxHeight: "500px",
   },
   menuBar: {
     minWidth: 200,
   },
   menuItems: {
     padding: 15,
-    alignItems: "center",
+    alignItems: "flex-start",
     textAlign: "left",
-
-    background: colors.cardBackground,
+    background: "rgba(125,125,125,0.2)",
+    border: `2px solid ${colors.cgOrange}`,
+  },
+  nftContainer: {
+    padding: 15,
+    alignItems: "center",
+    justifyContent: "center",
+    display: "flex",
+    textAlign: "left",
+    background: "rgba(125,125,125,0.2)",
+    border: `2px solid ${colors.cgOrange}`,
   },
   divider: {
     margin: 15,
@@ -298,131 +301,127 @@ class Show extends Component {
     } = this.state;
 
     return (
-      <div className={classes.background}>
+      <Grid className={classes.background}>
         {this.state.account.address && (
-          <div className={classes.root}>
-            <Grid className={classes.gridList} container>
-              <Grid className={classes.imageContainer} item xs={9}>
+          <Grid className={classes.gridList} container spacing={3}>
+            <Grid className={classes.imageContainer} item xs={9}>
+              <Paper className={classes.nftContainer} elevation={3}>
                 <img
                   className={classes.image}
                   alt={editionToken.image}
                   src={editionToken.image}
                 ></img>
-              </Grid>
-              <Grid className={classes.menuBar} item xs={3}>
-                <Paper className={classes.menuItems} elevation={3}>
-                  <Typography variant="subtitle2">Name:</Typography>
-                  <Typography variant="h6">{editionToken.name}</Typography>
-                  <Divider className={classes.divider} />
-                  <Typography variant="subtitle2">Description:</Typography>
-                  <Typography variant="body2">
-                    {editionToken.description}
-                  </Typography>
-                  <Divider className={classes.divider} />
-                  <Typography variant="subtitle2">Artist:</Typography>
-                  <ListItem
-                    button
-                    disableGutters
-                    onClick={() => {
-                      this.nav(`../artist/${editionDetails._artistAccount}`);
-                    }}
-                  >
-                    <Typography variant="h6">
-                      {editionToken.artistName}
-                    </Typography>
-                  </ListItem>
-                  <Divider className={classes.divider} />
-                  <Typography variant="subtitle2">
-                    Artist Commission:
-                  </Typography>
-                  <Typography variant="h6">
-                    {editionDetails._artistCommission} %
-                  </Typography>
-                  <Divider className={classes.divider} />
-                  <Typography variant="subtitle2">Edition:</Typography>
-                  <Typography variant="h6">
-                    {this.state.editionNumber}
-                  </Typography>
-                  <Divider className={classes.divider} />
-                  <Typography variant="subtitle2">Price:</Typography>
-                  <Typography variant="h6">
-                    {editionDetails._priceInWei / 1000000000000000000} eth
-                  </Typography>
-                  <Divider className={classes.divider} />
-                  {editionDetails._maxAvailable -
-                    editionDetails._circulatingSupply !=
-                    0 && (
-                    <Button
-                      variant="contained"
-                      disabled={loading}
-                      onClick={() => {
-                        this.buyEdition(
-                          this.state.editionNumber,
-                          editionDetails._priceInWei
-                        );
-                      }}
-                      size="small"
-                      color="primary"
-                      className={classes.button}
-                    >
-                      {loading && <CircularProgress size={24} />}
-                      {!loading &&
-                        editionDetails._maxAvailable -
-                          editionDetails._circulatingSupply >
-                          0 &&
-                        "Buy"}
-                    </Button>
-                  )}
-                  {userOwned && (
-                    <Button
-                      variant="contained"
-                      disabled={loading}
-                      onClick={this.giftEdition}
-                      size="small"
-                      color="primary"
-                      className={classes.button}
-                    >
-                      {loading && <CircularProgress size={24} />}
-                      {!loading && "Gift"}
-                    </Button>
-                  )}
-                  {editionDetails._maxAvailable -
-                    editionDetails._circulatingSupply ===
-                    0 && (
-                    <Button
-                      variant="contained"
-                      disabled={loading}
-                      size="small"
-                      color="primary"
-                      className={classes.button}
-                    >
-                      Sold Out
-                    </Button>
-                  )}
-                  {editionDetails._maxAvailable -
-                    editionDetails._circulatingSupply !=
-                    0 && (
-                    <Button
-                      variant="contained"
-                      disabled
-                      size="small"
-                      className={classes.button}
-                    >
-                      {editionDetails._maxAvailable -
-                        editionDetails._circulatingSupply}
-                      {" / "}
-                      {editionDetails._maxAvailable} remaining
-                    </Button>
-                  )}
-                </Paper>
-              </Grid>
+              </Paper>
             </Grid>
-          </div>
+            <Grid className={classes.menuBar} item xs={3}>
+              <Paper className={classes.menuItems} elevation={3}>
+                <Typography variant="subtitle2">Name:</Typography>
+                <Typography variant="h6">{editionToken.name}</Typography>
+                <Divider className={classes.divider} />
+                <Typography variant="subtitle2">Description:</Typography>
+                <Typography variant="body2">
+                  {editionToken.description}
+                </Typography>
+                <Divider className={classes.divider} />
+                <Typography variant="subtitle2">Artist:</Typography>
+                <ListItem
+                  button
+                  disableGutters
+                  onClick={() => {
+                    this.nav(`/market/artist/${editionDetails._artistAccount}`);
+                  }}
+                >
+                  <Typography variant="h6">
+                    {editionToken.artistName}
+                  </Typography>
+                </ListItem>
+                <Divider className={classes.divider} />
+                <Typography variant="subtitle2">Artist Commission:</Typography>
+                <Typography variant="h6">
+                  {editionDetails._artistCommission} %
+                </Typography>
+                <Divider className={classes.divider} />
+                <Typography variant="subtitle2">Edition:</Typography>
+                <Typography variant="h6">{this.state.editionNumber}</Typography>
+                <Divider className={classes.divider} />
+                <Typography variant="subtitle2">Price:</Typography>
+                <Typography variant="h6">
+                  {editionDetails._priceInWei / 1000000000000000000} eth
+                </Typography>
+                <Divider className={classes.divider} />
+                {editionDetails._maxAvailable -
+                  editionDetails._circulatingSupply !=
+                  0 && (
+                  <Button
+                    variant="contained"
+                    disabled={loading}
+                    onClick={() => {
+                      this.buyEdition(
+                        this.state.editionNumber,
+                        editionDetails._priceInWei
+                      );
+                    }}
+                    size="small"
+                    color="primary"
+                    className={classes.button}
+                  >
+                    {loading && <CircularProgress size={24} />}
+                    {!loading &&
+                      editionDetails._maxAvailable -
+                        editionDetails._circulatingSupply >
+                        0 &&
+                      "Buy"}
+                  </Button>
+                )}
+                {userOwned && (
+                  <Button
+                    variant="contained"
+                    disabled={loading}
+                    onClick={this.giftEdition}
+                    size="small"
+                    color="primary"
+                    className={classes.button}
+                  >
+                    {loading && <CircularProgress size={24} />}
+                    {!loading && "Gift"}
+                  </Button>
+                )}
+                {editionDetails._maxAvailable -
+                  editionDetails._circulatingSupply ===
+                  0 && (
+                  <Button
+                    variant="contained"
+                    disabled={loading}
+                    size="small"
+                    color="primary"
+                    className={classes.button}
+                  >
+                    Sold Out
+                  </Button>
+                )}
+                {editionDetails._maxAvailable -
+                  editionDetails._circulatingSupply !=
+                  0 && (
+                  <Button
+                    variant="contained"
+                    disabled
+                    size="small"
+                    className={classes.button}
+                  >
+                    {editionDetails._maxAvailable -
+                      editionDetails._circulatingSupply}
+                    {" / "}
+                    {editionDetails._maxAvailable} remaining
+                  </Button>
+                )}
+              </Paper>
+            </Grid>
+          </Grid>
         )}
         {!this.state.account.address && <div>{t("Wallet.PleaseConnect")}</div>}
         {modalOpen && this.renderModal()}
         {snackbarMessage && this.renderSnackbar()}
-      </div>
+      </Grid>
     );
   }
   giftEdition = () => {

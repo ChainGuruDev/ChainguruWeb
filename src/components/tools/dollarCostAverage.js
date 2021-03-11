@@ -293,7 +293,7 @@ class DollarCostAverage extends Component {
     }
 
     return (
-      <Card>
+      <Grid>
         <Typography
           color="textPrimary"
           align="center"
@@ -486,7 +486,7 @@ class DollarCostAverage extends Component {
             </Grid>
           </Grid>
         </Card>
-      </Card>
+      </Grid>
     );
   }
 

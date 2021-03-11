@@ -2,7 +2,7 @@ import React, { Component, useEffect } from "react";
 import PropTypes from "prop-types";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import { Paper, AppBar, Tabs, Tab, Box, Typography } from "@material-ui/core";
+import { Grid, AppBar, Tabs, Tab, Box, Typography } from "@material-ui/core";
 import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
 
@@ -193,7 +193,7 @@ class Medium extends Component {
     };
 
     return (
-      <Paper className={classes.rootTabs}>
+      <Grid className={classes.rootTabs}>
         <AppBar position="static" color="default">
           <Tabs
             value={valueTab}
@@ -227,7 +227,7 @@ class Medium extends Component {
           {coinID && <CryptoDetective coinID={coinID} />}
           {!coinID && <CryptoDetective />}
         </TabPanel>
-      </Paper>
+      </Grid>
     );
   }
 
