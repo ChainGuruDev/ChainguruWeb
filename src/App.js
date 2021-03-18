@@ -33,10 +33,24 @@ import {
   accountsChanged,
 } from "./constants";
 
+import {
+  GET_PROTOCOL_NAMES,
+  GET_PROTOCOL_BALANCE,
+  GET_PROTOCOLS_BALANCES,
+  GET_CONTRACT_ABI,
+  GET_TOKEN_COMPONENTS,
+} from "./constants/defiSDK.js";
+
 import Store from "./stores";
+import DefiSDKStore from "./stores/defiSDK_store.js";
+
 const emitter = Store.emitter;
 const store = Store.store;
 const dispatcher = Store.dispatcher;
+
+const emitterDefi = DefiSDKStore.emitter;
+const storeDefi = DefiSDKStore.store;
+const dispatcherDefi = DefiSDKStore.dispatcher;
 
 class App extends Component {
   state = {
@@ -54,6 +68,22 @@ class App extends Component {
 
   componentDidMount = async () => {
     let web3 = new Web3(Web3.givenProvider);
+
+    // dispatcherDefi.dispatch({
+    //   type: GET_PROTOCOL_NAMES,
+    // });
+    // dispatcherDefi.dispatch({
+    //   type: GET_PROTOCOLS_BALANCES,
+    // });
+    // // dispatcherDefi.dispatch({
+    // //   type: GET_PROTOCOL_BALANCE,
+    // // });
+    // dispatcherDefi.dispatch({
+    //   type: GET_CONTRACT_ABI,
+    // });
+    // dispatcherDefi.dispatch({
+    //   type: GET_TOKEN_COMPONENTS,
+    // });
 
     injected.isAuthorized().then(async (isAuthorized) => {
       if (isAuthorized) {
@@ -475,6 +505,14 @@ class App extends Component {
                 vsCoin={this.state.vsCoin}
               />
               <Long />
+            </Route>
+            <Route path="/portfolio/:toolID">
+              <Header
+                setHeaderValue={this.setHeaderValue}
+                headerValue={headerValue}
+                vsCoin={this.state.vsCoin}
+              />
+              <PortfolioManagement />
             </Route>
             <Route path="/portfolio">
               <Header

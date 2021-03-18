@@ -220,7 +220,6 @@ class Header extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    console.log(this.props.match.path);
     if (prevProps.match.path !== this.props.match.path) {
       if (this.props.match.path === "/" + "short") {
         this.setState({ cgLogoColor: colors.cgOrange });

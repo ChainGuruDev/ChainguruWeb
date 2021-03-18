@@ -1,0 +1,1275 @@
+{
+  "contractName": "AdapterRegistry",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event",
+      "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "protocolName",
+          "type": "string"
+        },
+        {
+          "internalType": "address[]",
+          "name": "adapters",
+          "type": "address[]"
+        },
+        {
+          "internalType": "address[][]",
+          "name": "tokens",
+          "type": "address[][]"
+        }
+      ],
+      "name": "addProtocolAdapters",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xbefe43a3"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string[]",
+          "name": "protocolNames",
+          "type": "string[]"
+        },
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "description",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "websiteURL",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "iconURL",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "version",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct ProtocolMetadata[]",
+          "name": "metadata",
+          "type": "tuple[]"
+        },
+        {
+          "internalType": "address[][]",
+          "name": "adapters",
+          "type": "address[][]"
+        },
+        {
+          "internalType": "address[][][]",
+          "name": "tokens",
+          "type": "address[][][]"
+        }
+      ],
+      "name": "addProtocols",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x83c0a76e"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string[]",
+          "name": "tokenAdapterNames",
+          "type": "string[]"
+        },
+        {
+          "internalType": "address[]",
+          "name": "adapters",
+          "type": "address[]"
+        }
+      ],
+      "name": "addTokenAdapters",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x70be4eda"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "adapter",
+          "type": "address"
+        },
+        {
+          "internalType": "address[]",
+          "name": "tokens",
+          "type": "address[]"
+        }
+      ],
+      "name": "getAdapterBalance",
+      "outputs": [
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "address",
+                  "name": "adapterAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "string",
+                  "name": "adapterType",
+                  "type": "string"
+                }
+              ],
+              "internalType": "struct AdapterMetadata",
+              "name": "metadata",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "components": [
+                    {
+                      "components": [
+                        {
+                          "internalType": "address",
+                          "name": "token",
+                          "type": "address"
+                        },
+                        {
+                          "internalType": "string",
+                          "name": "name",
+                          "type": "string"
+                        },
+                        {
+                          "internalType": "string",
+                          "name": "symbol",
+                          "type": "string"
+                        },
+                        {
+                          "internalType": "uint8",
+                          "name": "decimals",
+                          "type": "uint8"
+                        }
+                      ],
+                      "internalType": "struct TokenMetadata",
+                      "name": "metadata",
+                      "type": "tuple"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "amount",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct TokenBalance",
+                  "name": "base",
+                  "type": "tuple"
+                },
+                {
+                  "components": [
+                    {
+                      "components": [
+                        {
+                          "internalType": "address",
+                          "name": "token",
+                          "type": "address"
+                        },
+                        {
+                          "internalType": "string",
+                          "name": "name",
+                          "type": "string"
+                        },
+                        {
+                          "internalType": "string",
+                          "name": "symbol",
+                          "type": "string"
+                        },
+                        {
+                          "internalType": "uint8",
+                          "name": "decimals",
+                          "type": "uint8"
+                        }
+                      ],
+                      "internalType": "struct TokenMetadata",
+                      "name": "metadata",
+                      "type": "tuple"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "amount",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct TokenBalance[]",
+                  "name": "underlying",
+                  "type": "tuple[]"
+                }
+              ],
+              "internalType": "struct FullTokenBalance[]",
+              "name": "balances",
+              "type": "tuple[]"
+            }
+          ],
+          "internalType": "struct AdapterBalance",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x4bf9649b"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        },
+        {
+          "internalType": "address[]",
+          "name": "adapters",
+          "type": "address[]"
+        }
+      ],
+      "name": "getAdapterBalances",
+      "outputs": [
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "address",
+                  "name": "adapterAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "string",
+                  "name": "adapterType",
+                  "type": "string"
+                }
+              ],
+              "internalType": "struct AdapterMetadata",
+              "name": "metadata",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "components": [
+                    {
+                      "components": [
+                        {
+                          "internalType": "address",
+                          "name": "token",
+                          "type": "address"
+                        },
+                        {
+                          "internalType": "string",
+                          "name": "name",
+                          "type": "string"
+                        },
+                        {
+                          "internalType": "string",
+                          "name": "symbol",
+                          "type": "string"
+                        },
+                        {
+                          "internalType": "uint8",
+                          "name": "decimals",
+                          "type": "uint8"
+                        }
+                      ],
+                      "internalType": "struct TokenMetadata",
+                      "name": "metadata",
+                      "type": "tuple"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "amount",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct TokenBalance",
+                  "name": "base",
+                  "type": "tuple"
+                },
+                {
+                  "components": [
+                    {
+                      "components": [
+                        {
+                          "internalType": "address",
+                          "name": "token",
+                          "type": "address"
+                        },
+                        {
+                          "internalType": "string",
+                          "name": "name",
+                          "type": "string"
+                        },
+                        {
+                          "internalType": "string",
+                          "name": "symbol",
+                          "type": "string"
+                        },
+                        {
+                          "internalType": "uint8",
+                          "name": "decimals",
+                          "type": "uint8"
+                        }
+                      ],
+                      "internalType": "struct TokenMetadata",
+                      "name": "metadata",
+                      "type": "tuple"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "amount",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct TokenBalance[]",
+                  "name": "underlying",
+                  "type": "tuple[]"
+                }
+              ],
+              "internalType": "struct FullTokenBalance[]",
+              "name": "balances",
+              "type": "tuple[]"
+            }
+          ],
+          "internalType": "struct AdapterBalance[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0xa2aef46d"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "getBalances",
+      "outputs": [
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "string",
+                  "name": "name",
+                  "type": "string"
+                },
+                {
+                  "internalType": "string",
+                  "name": "description",
+                  "type": "string"
+                },
+                {
+                  "internalType": "string",
+                  "name": "websiteURL",
+                  "type": "string"
+                },
+                {
+                  "internalType": "string",
+                  "name": "iconURL",
+                  "type": "string"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "version",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct ProtocolMetadata",
+              "name": "metadata",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "components": [
+                    {
+                      "internalType": "address",
+                      "name": "adapterAddress",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "string",
+                      "name": "adapterType",
+                      "type": "string"
+                    }
+                  ],
+                  "internalType": "struct AdapterMetadata",
+                  "name": "metadata",
+                  "type": "tuple"
+                },
+                {
+                  "components": [
+                    {
+                      "components": [
+                        {
+                          "components": [
+                            {
+                              "internalType": "address",
+                              "name": "token",
+                              "type": "address"
+                            },
+                            {
+                              "internalType": "string",
+                              "name": "name",
+                              "type": "string"
+                            },
+                            {
+                              "internalType": "string",
+                              "name": "symbol",
+                              "type": "string"
+                            },
+                            {
+                              "internalType": "uint8",
+                              "name": "decimals",
+                              "type": "uint8"
+                            }
+                          ],
+                          "internalType": "struct TokenMetadata",
+                          "name": "metadata",
+                          "type": "tuple"
+                        },
+                        {
+                          "internalType": "uint256",
+                          "name": "amount",
+                          "type": "uint256"
+                        }
+                      ],
+                      "internalType": "struct TokenBalance",
+                      "name": "base",
+                      "type": "tuple"
+                    },
+                    {
+                      "components": [
+                        {
+                          "components": [
+                            {
+                              "internalType": "address",
+                              "name": "token",
+                              "type": "address"
+                            },
+                            {
+                              "internalType": "string",
+                              "name": "name",
+                              "type": "string"
+                            },
+                            {
+                              "internalType": "string",
+                              "name": "symbol",
+                              "type": "string"
+                            },
+                            {
+                              "internalType": "uint8",
+                              "name": "decimals",
+                              "type": "uint8"
+                            }
+                          ],
+                          "internalType": "struct TokenMetadata",
+                          "name": "metadata",
+                          "type": "tuple"
+                        },
+                        {
+                          "internalType": "uint256",
+                          "name": "amount",
+                          "type": "uint256"
+                        }
+                      ],
+                      "internalType": "struct TokenBalance[]",
+                      "name": "underlying",
+                      "type": "tuple[]"
+                    }
+                  ],
+                  "internalType": "struct FullTokenBalance[]",
+                  "name": "balances",
+                  "type": "tuple[]"
+                }
+              ],
+              "internalType": "struct AdapterBalance[]",
+              "name": "adapterBalances",
+              "type": "tuple[]"
+            }
+          ],
+          "internalType": "struct ProtocolBalance[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0xc84aae17"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "tokenType",
+          "type": "string"
+        },
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        }
+      ],
+      "name": "getFinalFullTokenBalance",
+      "outputs": [
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "components": [
+                    {
+                      "internalType": "address",
+                      "name": "token",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "string",
+                      "name": "name",
+                      "type": "string"
+                    },
+                    {
+                      "internalType": "string",
+                      "name": "symbol",
+                      "type": "string"
+                    },
+                    {
+                      "internalType": "uint8",
+                      "name": "decimals",
+                      "type": "uint8"
+                    }
+                  ],
+                  "internalType": "struct TokenMetadata",
+                  "name": "metadata",
+                  "type": "tuple"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "amount",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct TokenBalance",
+              "name": "base",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "components": [
+                    {
+                      "internalType": "address",
+                      "name": "token",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "string",
+                      "name": "name",
+                      "type": "string"
+                    },
+                    {
+                      "internalType": "string",
+                      "name": "symbol",
+                      "type": "string"
+                    },
+                    {
+                      "internalType": "uint8",
+                      "name": "decimals",
+                      "type": "uint8"
+                    }
+                  ],
+                  "internalType": "struct TokenMetadata",
+                  "name": "metadata",
+                  "type": "tuple"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "amount",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct TokenBalance[]",
+              "name": "underlying",
+              "type": "tuple[]"
+            }
+          ],
+          "internalType": "struct FullTokenBalance",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0xa81d9a09"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "tokenType",
+          "type": "string"
+        },
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        }
+      ],
+      "name": "getFullTokenBalance",
+      "outputs": [
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "components": [
+                    {
+                      "internalType": "address",
+                      "name": "token",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "string",
+                      "name": "name",
+                      "type": "string"
+                    },
+                    {
+                      "internalType": "string",
+                      "name": "symbol",
+                      "type": "string"
+                    },
+                    {
+                      "internalType": "uint8",
+                      "name": "decimals",
+                      "type": "uint8"
+                    }
+                  ],
+                  "internalType": "struct TokenMetadata",
+                  "name": "metadata",
+                  "type": "tuple"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "amount",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct TokenBalance",
+              "name": "base",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "components": [
+                    {
+                      "internalType": "address",
+                      "name": "token",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "string",
+                      "name": "name",
+                      "type": "string"
+                    },
+                    {
+                      "internalType": "string",
+                      "name": "symbol",
+                      "type": "string"
+                    },
+                    {
+                      "internalType": "uint8",
+                      "name": "decimals",
+                      "type": "uint8"
+                    }
+                  ],
+                  "internalType": "struct TokenMetadata",
+                  "name": "metadata",
+                  "type": "tuple"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "amount",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct TokenBalance[]",
+              "name": "underlying",
+              "type": "tuple[]"
+            }
+          ],
+          "internalType": "struct FullTokenBalance",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x56098b38"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "protocolName",
+          "type": "string"
+        }
+      ],
+      "name": "getProtocolAdapters",
+      "outputs": [
+        {
+          "internalType": "address[]",
+          "name": "",
+          "type": "address[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0xeff70322"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        },
+        {
+          "internalType": "string[]",
+          "name": "protocolNames",
+          "type": "string[]"
+        }
+      ],
+      "name": "getProtocolBalances",
+      "outputs": [
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "string",
+                  "name": "name",
+                  "type": "string"
+                },
+                {
+                  "internalType": "string",
+                  "name": "description",
+                  "type": "string"
+                },
+                {
+                  "internalType": "string",
+                  "name": "websiteURL",
+                  "type": "string"
+                },
+                {
+                  "internalType": "string",
+                  "name": "iconURL",
+                  "type": "string"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "version",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct ProtocolMetadata",
+              "name": "metadata",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "components": [
+                    {
+                      "internalType": "address",
+                      "name": "adapterAddress",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "string",
+                      "name": "adapterType",
+                      "type": "string"
+                    }
+                  ],
+                  "internalType": "struct AdapterMetadata",
+                  "name": "metadata",
+                  "type": "tuple"
+                },
+                {
+                  "components": [
+                    {
+                      "components": [
+                        {
+                          "components": [
+                            {
+                              "internalType": "address",
+                              "name": "token",
+                              "type": "address"
+                            },
+                            {
+                              "internalType": "string",
+                              "name": "name",
+                              "type": "string"
+                            },
+                            {
+                              "internalType": "string",
+                              "name": "symbol",
+                              "type": "string"
+                            },
+                            {
+                              "internalType": "uint8",
+                              "name": "decimals",
+                              "type": "uint8"
+                            }
+                          ],
+                          "internalType": "struct TokenMetadata",
+                          "name": "metadata",
+                          "type": "tuple"
+                        },
+                        {
+                          "internalType": "uint256",
+                          "name": "amount",
+                          "type": "uint256"
+                        }
+                      ],
+                      "internalType": "struct TokenBalance",
+                      "name": "base",
+                      "type": "tuple"
+                    },
+                    {
+                      "components": [
+                        {
+                          "components": [
+                            {
+                              "internalType": "address",
+                              "name": "token",
+                              "type": "address"
+                            },
+                            {
+                              "internalType": "string",
+                              "name": "name",
+                              "type": "string"
+                            },
+                            {
+                              "internalType": "string",
+                              "name": "symbol",
+                              "type": "string"
+                            },
+                            {
+                              "internalType": "uint8",
+                              "name": "decimals",
+                              "type": "uint8"
+                            }
+                          ],
+                          "internalType": "struct TokenMetadata",
+                          "name": "metadata",
+                          "type": "tuple"
+                        },
+                        {
+                          "internalType": "uint256",
+                          "name": "amount",
+                          "type": "uint256"
+                        }
+                      ],
+                      "internalType": "struct TokenBalance[]",
+                      "name": "underlying",
+                      "type": "tuple[]"
+                    }
+                  ],
+                  "internalType": "struct FullTokenBalance[]",
+                  "name": "balances",
+                  "type": "tuple[]"
+                }
+              ],
+              "internalType": "struct AdapterBalance[]",
+              "name": "adapterBalances",
+              "type": "tuple[]"
+            }
+          ],
+          "internalType": "struct ProtocolBalance[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x85c6a793"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "protocolName",
+          "type": "string"
+        }
+      ],
+      "name": "getProtocolMetadata",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "description",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "websiteURL",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "iconURL",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "version",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct ProtocolMetadata",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0xd857da49"
+    },
+    {
+      "inputs": [],
+      "name": "getProtocolNames",
+      "outputs": [
+        {
+          "internalType": "string[]",
+          "name": "",
+          "type": "string[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x3b692f52"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "adapter",
+          "type": "address"
+        }
+      ],
+      "name": "getSupportedTokens",
+      "outputs": [
+        {
+          "internalType": "address[]",
+          "name": "",
+          "type": "address[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x07526acf"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "tokenAdapterName",
+          "type": "string"
+        }
+      ],
+      "name": "getTokenAdapter",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x54fa3382"
+    },
+    {
+      "inputs": [],
+      "name": "getTokenAdapterNames",
+      "outputs": [
+        {
+          "internalType": "string[]",
+          "name": "",
+          "type": "string[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0xc0680cd3"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "protocolName",
+          "type": "string"
+        }
+      ],
+      "name": "isValidProtocol",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0xcb874d33"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "tokenAdapterName",
+          "type": "string"
+        }
+      ],
+      "name": "isValidTokenAdapter",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0xe9dd5f25"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x8da5cb5b"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "protocolName",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "adapterIndices",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "removeProtocolAdapters",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x00778353"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string[]",
+          "name": "protocolNames",
+          "type": "string[]"
+        }
+      ],
+      "name": "removeProtocols",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x657ea762"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string[]",
+          "name": "tokenAdapterNames",
+          "type": "string[]"
+        }
+      ],
+      "name": "removeTokenAdapters",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x9d392fa0"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_owner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xf2fde38b"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "protocolName",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "index",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "newAdapterAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "address[]",
+          "name": "newSupportedTokens",
+          "type": "address[]"
+        }
+      ],
+      "name": "updateProtocolAdapter",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xdeebabcc"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "protocolName",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "websiteURL",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "iconURL",
+          "type": "string"
+        }
+      ],
+      "name": "updateProtocolMetadata",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xb2c687d0"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "tokenAdapterName",
+          "type": "string"
+        },
+        {
+          "internalType": "address",
+          "name": "adapter",
+          "type": "address"
+        }
+      ],
+      "name": "updateTokenAdapter",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x2dc909f6"
+    }
+  ]
+}

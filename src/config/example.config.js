@@ -1,5 +1,6 @@
 const config = {
-  infuraProviderMain: "",
+  infuraProviderMain:
+    "https://mainnet.infura.io/v3/da08cbb0e0604f3ab2f57742f776c115",
 
   infuraProvider:
     "https://rinkeby.infura.io/v3/da08cbb0e0604f3ab2f57742f776c115",
@@ -14,27 +15,6 @@ const config = {
   selfServiceEditionCurationContract:
     "0x201B7FbA1739Cfb7b08d93860bDB66E86F9908f6",
   tokenMarketplaceContract: "0xdD9Ba9ab355b35F3C33DF8E460EcE4bB4ea1f7Fb",
-
-  // lfOriginalsContract: "0x18a704cE592CC6E1609f253715DA629F517d0850",
-  // artistAcceptingBidsContract: "0xCC6C77ED6b61A6719f3Fe3af6e67Ae6e65205696",
-  // artistEditionControlsContract: "0x655bC370E4AD7276b178C2eb976c92467522b565",
-  // selfServiceAccessControlsContract:
-  //   "0x8474abe3177B9E4f8B3569A4eF49DEc6b3a31382",
-  // selfServiceEditionCurationContract:
-  //   "0xb5F689ec76F13676949Cc1D9FDfBFf1dE4497407",
-  // selfServiceFrequencyControlsContract:
-  //   "0x7d178d906FAEEC30A7A1dd686e444927EF3568c8",
-  // tokenMarketplaceContract: "0x211D24E111e25a3FAD2A4B6E0899655Ccd771162",
-
-  //infuraProvider: "http://127.0.0.1:9545/",
-  //infuraProvider: "https://rinkeby.infura.io/v3/da08cbb0e0604f3ab2f57742f776c115",
-
-  //lfOriginalsContractGanache: "0x18a704cE592CC6E1609f253715DA629F517d0850",
-
-  //lfOriginalsContractKovan: "0x85f8CDf1A693cDa94C0297c2c64eE54e713A4598",
-
-  //lfOriginalsContractRinkeby: "0xa91F7Cbd319a294E38e6Cb912BE6163b33898d2C",
-  //lfOriginalsContractRinkebyv2: "0x0c78941edA624511DAF3C05b082cb19c0e6c7C0d",
 
   LFOriginalsABI: [
     {
@@ -5359,6 +5339,27 @@ const config = {
       type: "function",
     },
   ],
+
+  // lfOriginalsContract: "0x18a704cE592CC6E1609f253715DA629F517d0850",
+  // artistAcceptingBidsContract: "0xCC6C77ED6b61A6719f3Fe3af6e67Ae6e65205696",
+  // artistEditionControlsContract: "0x655bC370E4AD7276b178C2eb976c92467522b565",
+  // selfServiceAccessControlsContract:
+  //   "0x8474abe3177B9E4f8B3569A4eF49DEc6b3a31382",
+  // selfServiceEditionCurationContract:
+  //   "0xb5F689ec76F13676949Cc1D9FDfBFf1dE4497407",
+  // selfServiceFrequencyControlsContract:
+  //   "0x7d178d906FAEEC30A7A1dd686e444927EF3568c8",
+  // tokenMarketplaceContract: "0x211D24E111e25a3FAD2A4B6E0899655Ccd771162",
+
+  //infuraProvider: "http://127.0.0.1:9545/",
+  //infuraProvider: "https://rinkeby.infura.io/v3/da08cbb0e0604f3ab2f57742f776c115",
+
+  //lfOriginalsContractGanache: "0x18a704cE592CC6E1609f253715DA629F517d0850",
+
+  //lfOriginalsContractKovan: "0x85f8CDf1A693cDa94C0297c2c64eE54e713A4598",
+
+  //lfOriginalsContractRinkeby: "0xa91F7Cbd319a294E38e6Cb912BE6163b33898d2C",
+  //lfOriginalsContractRinkebyv2: "0x0c78941edA624511DAF3C05b082cb19c0e6c7C0d",
 };
 
 export default config;

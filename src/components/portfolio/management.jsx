@@ -11,11 +11,13 @@ import SearchIcon from "@material-ui/icons/Search";
 import SyncAltRoundedIcon from "@material-ui/icons/SyncAltRounded";
 import FlashOnIcon from "@material-ui/icons/FlashOn";
 import CompareArrowsIcon from "@material-ui/icons/CompareArrows";
+import ViewQuiltIcon from "@material-ui/icons/ViewQuilt";
 
 //Load Tools
 import CryptoDetective from "../tools/cryptoDetective";
 import Transactions from "../tools/transactions";
 import Portfolio from "../tools/portfolio";
+import PortfolioHeatMap from "../tools/portfolioHeatMap";
 
 import {
   PING_COINGECKO,
@@ -127,9 +129,9 @@ class PortfolioManagement extends Component {
       coinDataA: [],
       coinDataB: [],
       valueTab:
-        this.props.match.params.tool === "detective" ||
-        this.props.tool === "detective"
-          ? 1
+        this.props.match.params.toolID === "heatmap" ||
+        this.props.toolID === "heatmap"
+          ? 2
           : 0,
       selectA: false,
       selectB: false,
@@ -157,7 +159,6 @@ class PortfolioManagement extends Component {
   componentDidMount() {
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
     emitter.on(COIN_DATA_RETURNED, this.coinDataReturned);
-
     dispatcher.dispatch({
       type: PING_COINGECKO,
       content: {},
@@ -213,6 +214,7 @@ class PortfolioManagement extends Component {
               icon={<FlashOnIcon />}
               {...a11yProps(1)}
             />
+            <Tab label="HeatMap" icon={<ViewQuiltIcon />} {...a11yProps(2)} />
           </Tabs>
         </AppBar>
         <TabPanel value={valueTab} index={0}>
@@ -220,6 +222,9 @@ class PortfolioManagement extends Component {
         </TabPanel>
         <TabPanel value={valueTab} index={1}>
           <Transactions />
+        </TabPanel>
+        <TabPanel value={valueTab} index={2}>
+          <PortfolioHeatMap />
         </TabPanel>
       </Grid>
     );
