@@ -667,7 +667,6 @@ class PortfolioHeatMap extends Component {
         formatedRows.push(_rowData);
       });
     }
-    console.log(formatedRows);
     if (formatedRows.length > 0) {
       let heatMapData = [];
 

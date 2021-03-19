@@ -195,8 +195,6 @@ class Portfolio extends Component {
   };
 
   dbUserDataReturned = (payload) => {
-    console.log(payload);
-
     this.setState({
       userWallets: payload.wallets,
     });
@@ -280,7 +278,6 @@ class Portfolio extends Component {
           }
         });
       }
-      console.log(displayBalance);
       this.setState({ userBalance: displayBalance, selectedWallet: wallet });
     } else {
       this.state.userWallets.forEach((item, i) => {

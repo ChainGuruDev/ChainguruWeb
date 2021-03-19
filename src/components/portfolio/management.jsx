@@ -12,12 +12,14 @@ import SyncAltRoundedIcon from "@material-ui/icons/SyncAltRounded";
 import FlashOnIcon from "@material-ui/icons/FlashOn";
 import CompareArrowsIcon from "@material-ui/icons/CompareArrows";
 import ViewQuiltIcon from "@material-ui/icons/ViewQuilt";
+import ShuffleIcon from "@material-ui/icons/Shuffle";
 
 //Load Tools
 import CryptoDetective from "../tools/cryptoDetective";
 import Transactions from "../tools/transactions";
 import Portfolio from "../tools/portfolio";
 import PortfolioHeatMap from "../tools/portfolioHeatMap";
+import CryptoConverter from "../tools/cryptoConverter";
 
 import {
   PING_COINGECKO,
@@ -215,6 +217,11 @@ class PortfolioManagement extends Component {
               {...a11yProps(1)}
             />
             <Tab label="HeatMap" icon={<ViewQuiltIcon />} {...a11yProps(2)} />
+            <Tab
+              label="CryptoConverter"
+              icon={<ShuffleIcon />}
+              {...a11yProps(3)}
+            />
           </Tabs>
         </AppBar>
         <TabPanel value={valueTab} index={0}>
@@ -225,6 +232,9 @@ class PortfolioManagement extends Component {
         </TabPanel>
         <TabPanel value={valueTab} index={2}>
           <PortfolioHeatMap />
+        </TabPanel>
+        <TabPanel value={valueTab} index={3}>
+          <CryptoConverter />
         </TabPanel>
       </Grid>
     );
