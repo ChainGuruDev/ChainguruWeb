@@ -18,8 +18,9 @@ const styles = (theme) => ({
   root: {
     marginTop: 10,
     display: "flexGrow",
-    minHeight: "50vh",
+    minHeight: "100%",
     marginBottom: 20,
+    height: "500px",
   },
 });
 
@@ -34,9 +35,18 @@ class HeatMapChart extends Component {
         theme: {
           mode: tema,
         },
+        stroke: {
+          show: true,
+          curve: "smooth",
+          lineCap: "butt",
+          colors: ["#333"],
+          width: 1.5,
+          dashArray: 0,
+        },
         chart: {
-          height: 350,
           type: "treemap",
+          foreColor: "#333",
+          stroke: "#333",
         },
         tooltip: {
           enabled: true,
@@ -46,8 +56,9 @@ class HeatMapChart extends Component {
             return [
               text,
               initialData[indexPosition].symbol,
-              `$${op.value}`,
+              `Holdings: $ ${op.value}`,
               `${initialData[indexPosition].change}%`,
+              `Price: $ ${initialData[indexPosition].curPrice}`,
             ];
           },
           x: {
@@ -69,23 +80,12 @@ class HeatMapChart extends Component {
                       seriesName.dataPointIndex
                     ].change +
                       "%" +
-                      " in " +
                       seriesName.w.globals.initialSeries[0].data[
                         seriesName.dataPointIndex
                       ].changeText,
                   ];
                 }
-                return [
-                  x,
-                  seriesName.w.globals.initialSeries[0].data[
-                    seriesName.dataPointIndex
-                  ].change +
-                    "%" +
-                    " in " +
-                    seriesName.w.globals.initialSeries[0].data[
-                      seriesName.dataPointIndex
-                    ].changeText,
-                ];
+                return [];
               },
               title: {
                 formatter: (seriesName) => seriesName,
@@ -97,7 +97,8 @@ class HeatMapChart extends Component {
           enabled: true,
           offsetY: -10,
           style: {
-            fontSize: "12px",
+            fontSize: "14px",
+            colors: ["#333"],
           },
           formatter: function (text, op) {
             let indexPosition = op.dataPointIndex;
@@ -105,18 +106,24 @@ class HeatMapChart extends Component {
             return [
               text,
               initialData[indexPosition].symbol,
-              `$${op.value}`,
+              `holdings: $ ${op.value}`,
               `${initialData[indexPosition].change}%`,
+              `Price: $ ${initialData[indexPosition].curPrice}`,
             ];
           },
         },
 
         plotOptions: {
+          foreColor: "#333",
+
           treemap: {
             enableShades: true,
             shadeIntensity: 0.6,
             reverseNegativeShade: true,
-            useFillColorAsStroke: true,
+            useFillColorAsStroke: false,
+          },
+          style: {
+            foreColor: ["#333"],
           },
         },
       },
@@ -154,8 +161,9 @@ class HeatMapChart extends Component {
               return [
                 text,
                 initialData[indexPosition].symbol,
-                `$${op.value}`,
+                `holdings: $ ${op.value}`,
                 `${initialData[indexPosition].change}%`,
+                `Price: $ ${initialData[indexPosition].curPrice}`,
               ];
             },
             x: {
@@ -177,7 +185,6 @@ class HeatMapChart extends Component {
                         seriesName.dataPointIndex
                       ].change +
                         "%" +
-                        " in " +
                         seriesName.w.globals.initialSeries[0].data[
                           seriesName.dataPointIndex
                         ].changeText,
@@ -189,7 +196,6 @@ class HeatMapChart extends Component {
                       seriesName.dataPointIndex
                     ].change +
                       "%" +
-                      " in " +
                       seriesName.w.globals.initialSeries[0].data[
                         seriesName.dataPointIndex
                       ].changeText,
@@ -205,7 +211,7 @@ class HeatMapChart extends Component {
             enabled: true,
             offsetY: -10,
             style: {
-              fontSize: "12px",
+              fontSize: "14px",
             },
             formatter: function (text, op) {
               let indexPosition = op.dataPointIndex;
@@ -213,8 +219,9 @@ class HeatMapChart extends Component {
               return [
                 text,
                 initialData[indexPosition].symbol,
-                `$${op.value}`,
+                `holdings: $ ${op.value}`,
                 `${initialData[indexPosition].change}%`,
+                `Price: $ ${initialData[indexPosition].curPrice}`,
               ];
             },
           },

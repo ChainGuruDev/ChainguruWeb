@@ -72,6 +72,7 @@ const styles = (theme) => ({
     alignItems: "stretch",
     background: "rgba(125,125,125,0.1)",
     border: `2px solid ${colors.cgGreen}`,
+    minHeight: "100%",
   },
   walletsCard: {
     background: "rgba(125,125,125,0.1)",
@@ -473,10 +474,11 @@ class PortfolioHeatMap extends Component {
     current_price,
     value,
     price_change_percentage_1h_in_currency,
-    price_change_percentage_24h,
+    price_change_percentage_24h_in_currency,
     price_change_percentage_7d_in_currency,
     price_change_percentage_30d_in_currency,
-    price_change_percentage_1y_in_currency
+    price_change_percentage_1y_in_currency,
+    atl_change_percentage
   ) => {
     return {
       contractAddress,
@@ -488,10 +490,11 @@ class PortfolioHeatMap extends Component {
       current_price,
       value,
       price_change_percentage_1h_in_currency,
-      price_change_percentage_24h,
+      price_change_percentage_24h_in_currency,
       price_change_percentage_7d_in_currency,
       price_change_percentage_30d_in_currency,
       price_change_percentage_1y_in_currency,
+      atl_change_percentage,
     };
   };
 
@@ -514,10 +517,11 @@ class PortfolioHeatMap extends Component {
             item.geckoData.current_price,
             value,
             item.geckoData.price_change_percentage_1h_in_currency,
-            item.geckoData.price_change_percentage_24h,
+            item.geckoData.price_change_percentage_24h_in_currency,
             item.geckoData.price_change_percentage_7d_in_currency,
             item.geckoData.price_change_percentage_30d_in_currency,
-            item.geckoData.price_change_percentage_1y_in_currency
+            item.geckoData.price_change_percentage_1y_in_currency,
+            item.geckoData.atl_change_percentage
           );
           sort.push(sortData);
         }
@@ -633,13 +637,11 @@ class PortfolioHeatMap extends Component {
           this.formatMoney(item.current_price, 2),
           parseFloat(item.value).toFixed(2),
           parseFloat(item.price_change_percentage_1h_in_currency).toFixed(2),
-          parseFloat(item.price_change_percentage_24h).toFixed(2),
+          parseFloat(item.price_change_percentage_24h_in_currency).toFixed(2),
           parseFloat(item.price_change_percentage_7d_in_currency).toFixed(2),
           parseFloat(item.price_change_percentage_30d_in_currency).toFixed(2),
           parseFloat(item.price_change_percentage_1y_in_currency).toFixed(2),
-          this.formatMoneyMCAP(item.market_cap, 0),
-          parseFloat(item.market_cap_change_percentage_24h).toFixed(2),
-          item.sparkline_in_7d
+          parseFloat(item.atl_change_percentage).toFixed(4)
         );
         formatedRows.push(_rowData);
       });
@@ -656,18 +658,16 @@ class PortfolioHeatMap extends Component {
           this.formatMoney(item.current_price, 2),
           parseFloat(item.value).toFixed(2),
           parseFloat(item.price_change_percentage_1h_in_currency).toFixed(2),
-          parseFloat(item.price_change_percentage_24h).toFixed(2),
+          parseFloat(item.price_change_percentage_24h_in_currency).toFixed(2),
           parseFloat(item.price_change_percentage_7d_in_currency).toFixed(2),
           parseFloat(item.price_change_percentage_30d_in_currency).toFixed(2),
           parseFloat(item.price_change_percentage_1y_in_currency).toFixed(2),
-          this.formatMoney(item.market_cap, 0),
-          parseFloat(item.market_cap_change_percentage_24h).toFixed(2),
-          item.sparkline_in_7d
+          parseFloat(item.atl_change_percentage).toFixed(2)
         );
         formatedRows.push(_rowData);
       });
     }
-
+    console.log(formatedRows);
     if (formatedRows.length > 0) {
       let heatMapData = [];
 
@@ -707,26 +707,39 @@ class PortfolioHeatMap extends Component {
           case "1h":
             timeFrameChange =
               formatedRows[i].price_change_percentage_1h_in_currency;
-            timeFrameChangeString = "1 H";
+            timeFrameChangeString = " in 1 H";
             break;
           case "24hs":
-            timeFrameChange = formatedRows[i].price_change_percentage_24h;
-            timeFrameChangeString = "24 Hs";
+            timeFrameChange =
+              formatedRows[i].price_change_percentage_24h_in_currency;
+            timeFrameChangeString = " in 24 Hs";
             break;
           case "7d":
             timeFrameChange =
               formatedRows[i].price_change_percentage_7d_in_currency;
-            timeFrameChangeString = "7 days";
+            timeFrameChangeString = " in 7 days";
+            if (timeFrameChange === "NaN") {
+              timeFrameChange = formatedRows[i].atl_change_percentage;
+              timeFrameChangeString = " since all time low";
+            }
             break;
           case "30d":
             timeFrameChange =
               formatedRows[i].price_change_percentage_30d_in_currency;
-            timeFrameChangeString = "30 days";
+            timeFrameChangeString = " in 30 days";
+            if (timeFrameChange === "NaN") {
+              timeFrameChange = formatedRows[i].atl_change_percentage;
+              timeFrameChangeString = " since all time low";
+            }
             break;
           case "1y":
             timeFrameChange =
               formatedRows[i].price_change_percentage_1y_in_currency;
-            timeFrameChangeString = "1 Year";
+            timeFrameChangeString = " in 1 Year";
+            if (timeFrameChange === "NaN") {
+              timeFrameChange = formatedRows[i].atl_change_percentage;
+              timeFrameChangeString = " since all time low";
+            }
             break;
           default:
             break;
@@ -740,6 +753,7 @@ class PortfolioHeatMap extends Component {
           changeText: timeFrameChangeString,
           fillColor: getColor(timeFrameChange),
           stroke: colors.cgBlue,
+          curPrice: formatedRows[i].current_price,
         };
 
         heatMapData.push(item);
