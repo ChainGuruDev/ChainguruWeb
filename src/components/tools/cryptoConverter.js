@@ -21,6 +21,7 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   IconButton,
+  CircularProgress,
 } from "@material-ui/core";
 
 //import Constants
@@ -30,6 +31,8 @@ import {
   GET_COIN_LIST,
   COINLIST_RETURNED,
   COIN_DATA_RETURNED,
+  GET_COIN_DATA,
+  SWITCH_VS_COIN_RETURNED,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -66,16 +69,20 @@ class CryptoConverter extends Component {
   constructor() {
     super();
 
+    let vsCoin = store.getStore("vsCoin");
     const account = store.getStore("account");
     this.state = {
-      loadingFrom: true,
-      loadingTo: true,
+      loadingFrom: false,
+      loadingTo: false,
       fromData: null,
+      fromPrice: null,
+      toPrice: null,
       toData: null,
       errorFrom: false,
       errorTo: false,
       fromAmount: 1,
       toAmmount: "",
+      vsCoin: vsCoin,
     };
   }
 
@@ -85,6 +92,9 @@ class CryptoConverter extends Component {
     emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
+    emitter.on(GET_COIN_DATA, this.getCoinData);
+    emitter.on(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
+    !this.state.vs && this.getVsCoin();
     this._isMounted &&
       dispatcher.dispatch({
         type: GET_COIN_LIST,
@@ -99,8 +109,81 @@ class CryptoConverter extends Component {
       this.connectionDisconnected
     );
     emitter.removeListener(COINLIST_RETURNED, this.coinlistReturned);
+    emitter.removeListener(GET_COIN_DATA, this.getCoinData);
+    emitter.removeListener(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
+
     this._isMounted = false;
   }
+
+  getVsCoin = () => {
+    let vsCoin;
+    try {
+      vsCoin = JSON.parse(localStorage.getItem("vsCoin"));
+      if (!vsCoin) {
+        vsCoin = "usd";
+      }
+      this.setState({ vsCoin: vsCoin });
+    } catch (err) {
+      vsCoin = "usd";
+      this.setState({ vsCoin: vsCoin });
+    }
+  };
+
+  vsCoinReturned = (vsCoin) => {
+    const { fromData, toData } = this.state;
+    let newPriceFrom = null;
+    let newPriceTo = null;
+
+    if (fromData != null) {
+      switch (vsCoin) {
+        case "usd":
+          newPriceFrom = fromData.market_data.current_price.usd;
+          break;
+        case "eur":
+          newPriceFrom = fromData.market_data.current_price.eur;
+          break;
+        case "btc":
+          newPriceFrom = fromData.market_data.current_price.btc;
+          break;
+        case "eth":
+          newPriceFrom = fromData.market_data.current_price.eth;
+          break;
+        default:
+          break;
+      }
+    }
+    if (toData != null) {
+      switch (vsCoin) {
+        case "usd":
+          newPriceTo = toData.market_data.current_price.usd;
+          break;
+        case "eur":
+          newPriceTo = toData.market_data.current_price.eur;
+          break;
+        case "btc":
+          newPriceTo = toData.market_data.current_price.btc;
+          break;
+        case "eth":
+          newPriceTo = toData.market_data.current_price.eth;
+          break;
+        default:
+          break;
+      }
+    }
+    this.setState({
+      vsCoin: vsCoin,
+      fromPrice: newPriceFrom,
+      toPrice: newPriceTo,
+    });
+  };
+
+  getCoinData = (payload) => {
+    if (payload === "from") {
+      this.setState({ loadingFrom: true });
+    } else {
+      this.setState({ loadingTo: true });
+    }
+  };
 
   connectionConnected = () => {
     const { t } = this.props;
@@ -112,12 +195,33 @@ class CryptoConverter extends Component {
     this._isMounted && this.setState({ coinList: data });
   };
 
-  coinDataReturned = (data) => {
-    console.log(data);
+  coinDataReturned = async (data) => {
+    let newPrice = 0;
+    switch (this.state.vsCoin) {
+      case "usd":
+        newPrice = data[0].market_data.current_price.usd;
+        break;
+      case "eur":
+        newPrice = data[0].market_data.current_price.eur;
+        break;
+      case "btc":
+        newPrice = data[0].market_data.current_price.btc;
+        break;
+      case "eth":
+        newPrice = data[0].market_data.current_price.eth;
+        break;
+      default:
+        break;
+    }
+
     if (data[1] === "from") {
-      this.setState({ fromData: data[0], loadingFrom: false });
+      this.setState({
+        fromData: data[0],
+        fromPrice: newPrice,
+        loadingFrom: false,
+      });
     } else {
-      this.setState({ toData: data[0], loadingTo: false });
+      this.setState({ toData: data[0], toPrice: newPrice, loadingTo: false });
     }
   };
 
@@ -126,15 +230,10 @@ class CryptoConverter extends Component {
   };
 
   swapCalc = () => {
-    const { fromData, toData, fromAmount } = this.state;
-    if (fromData) {
-      if (toData) {
-        console.log(fromData.market_data.current_price.usd);
-        console.log(toData.market_data.current_price.usd);
-        let toAmmount =
-          (fromData.market_data.current_price.usd * fromAmount) /
-          toData.market_data.current_price.usd;
-        console.log(toAmmount);
+    const { fromPrice, toPrice, fromAmount, vsCoin } = this.state;
+    if (fromPrice) {
+      if (toPrice) {
+        let toAmmount = (fromPrice * fromAmount) / toPrice;
         this.setState({
           toAmmount: toAmmount,
           errorFrom: false,
@@ -144,7 +243,7 @@ class CryptoConverter extends Component {
         this.setState({ errorTo: true });
       }
     } else {
-      if (toData) {
+      if (toPrice) {
         this.setState({ errorTo: true, errorFrom: true });
       }
       this.setState({ errorFrom: true });
@@ -153,7 +252,15 @@ class CryptoConverter extends Component {
 
   render() {
     const { classes, t } = this.props;
-    const { loading } = this.state;
+    const {
+      fromData,
+      fromPrice,
+      toPrice,
+      toData,
+      loadingFrom,
+      loadingTo,
+      vsCoin,
+    } = this.state;
 
     return (
       <div className={classes.root}>
@@ -185,8 +292,29 @@ class CryptoConverter extends Component {
                   alignItems="center"
                   spacing={3}
                 >
-                  <Grid item xs={5}>
-                    <CoinSearchBar id={"from"} style={{ marginTop: 10 }} />
+                  <Grid
+                    container
+                    direction="column"
+                    justify="flex-start"
+                    alignItems="stretch"
+                    item
+                    xs={5}
+                  >
+                    <CoinSearchBar
+                      label="From"
+                      id={"from"}
+                      style={{ marginTop: 10 }}
+                    />
+                    <TextField
+                      style={{ marginTop: 10 }}
+                      id="fromPrice"
+                      label="Price"
+                      variant="filled"
+                      InputProps={{
+                        readOnly: true,
+                      }}
+                      value={this.state.fromPrice ? this.state.fromPrice : ""}
+                    />
                     <TextField
                       style={{ marginTop: 10 }}
                       id="fromAmount"
@@ -206,16 +334,38 @@ class CryptoConverter extends Component {
                         this.swapCalc();
                       }}
                     >
-                      <ShuffleIcon />
+                      {(loadingFrom || loadingTo) && <CircularProgress />}
+                      {!loadingFrom && !loadingTo && <ShuffleIcon />}
                     </IconButton>
                   </Grid>
-                  <Grid item xs={5}>
-                    <CoinSearchBar id={"to"} style={{ marginTop: 10 }} />
+                  <Grid
+                    container
+                    direction="column"
+                    justify="flex-start"
+                    alignItems="stretch"
+                    item
+                    xs={5}
+                  >
+                    <CoinSearchBar
+                      label="To"
+                      id={"to"}
+                      style={{ marginTop: 10 }}
+                    />
+                    <TextField
+                      style={{ marginTop: 10 }}
+                      id="toPrice"
+                      label="Price"
+                      variant="filled"
+                      InputProps={{
+                        readOnly: true,
+                      }}
+                      value={this.state.toPrice ? this.state.toPrice : ""}
+                    />
                     <TextField
                       style={{ marginTop: 10 }}
                       id="toAmmount"
                       label="To amount"
-                      variant="outlined"
+                      variant="filled"
                       InputProps={{
                         readOnly: true,
                       }}

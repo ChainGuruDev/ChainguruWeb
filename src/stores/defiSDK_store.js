@@ -44,10 +44,10 @@ class DefiSDKStore {
             this.getProtocolBalance();
             break;
           case GET_PROTOCOLS_BALANCES:
-            this.getProtocolsBalances();
+            this.getProtocolsBalances(payload);
             break;
           case GET_TOKEN_COMPONENTS:
-            this.getTokenComponents();
+            this.getTokenComponents(payload);
             break;
           default: {
             break;
@@ -103,17 +103,18 @@ class DefiSDKStore {
       .then((balance) => console.log(balance));
   };
 
-  getProtocolsBalances = async () => {
-    const account = "wallet";
+  getProtocolsBalances = async (wallet) => {
+    const account = wallet.address;
     defiSdk
       .getAccountBalances(account)
       .then((balances) => console.log(balances));
   };
 
-  getTokenComponents = async () => {
+  getTokenComponents = async (tokenAddress) => {
     const tokenType = "Uniswap V2 pool token";
-    const tokenAddress = "0xc5be99a02c6857f9eac67bbce58df5572498f40c";
-    defiSdk.getTokenComponents(tokenType, tokenAddress).then((components) => {
+    const _tokenAddress = tokenAddress.address;
+    //console.log(tokenAddress.address);
+    defiSdk.getTokenComponents(tokenType, _tokenAddress).then((components) => {
       console.log("Base", components.base);
       console.log("Underlying", components.underlying);
     });

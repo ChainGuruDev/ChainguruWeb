@@ -40,6 +40,11 @@ import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 import RestoreFromTrashRoundedIcon from "@material-ui/icons/RestoreFromTrashRounded";
 
 import {
+  GET_TOKEN_COMPONENTS,
+  GET_PROTOCOLS_BALANCES,
+} from "../../constants/defiSDK.js";
+
+import {
   COIN_DATA_RETURNED,
   DB_USERDATA_RETURNED,
   DB_ADD_FAVORITE_RETURNED,
@@ -57,9 +62,15 @@ import {
 } from "../../constants";
 
 import Store from "../../stores";
+import DefiSDKStore from "../../stores/defiSDK_store.js";
+
 const store = Store.store;
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
+
+const emitterDefi = DefiSDKStore.emitter;
+const storeDefi = DefiSDKStore.store;
+const dispatcherDefi = DefiSDKStore.dispatcher;
 
 const CoinGecko = require("coingecko-api");
 const CoinGeckoClient = new CoinGecko();
@@ -117,6 +128,10 @@ class BalanceList extends Component {
       if (prevProps.selectedWallet !== this.props.selectedWallet) {
         if (this.state.userBlacklist) {
           this.getCoinIDs(this.props.data);
+          // dispatcherDefi.dispatch({
+          //   type: GET_PROTOCOLS_BALANCES,
+          //   address: this.props.selectedWallet,
+          // });
         }
         //cambier el state loading para terminar el cargador
       }
@@ -230,9 +245,14 @@ class BalanceList extends Component {
             } else {
               if (symbolRepeats === 0) {
                 // HERE ENDS LIQUIDITY POOLS, STAKING, AND SCAM SHITCOINS
-                // ADD LOGIC FOR CONNECTING WITHw LPs, STAKING TOKENS
+                // ADD LOGIC FOR CONNECTING WITH LPs, STAKING TOKENS
                 // console.log("missing from geckoList");
-                // console.log(item);
+                if (item.tokenSymbol === "UNI-V2") {
+                  dispatcherDefi.dispatch({
+                    type: GET_TOKEN_COMPONENTS,
+                    address: item.contractAddress,
+                  });
+                }
               }
               if (symbolRepeats > 1) {
                 // console.log("repeated item in geckoList");

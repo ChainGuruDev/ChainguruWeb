@@ -56,6 +56,7 @@ class CoinSearchBar extends Component {
     if (newValue) {
       let _id = newValue.id;
       if (compareBarID) {
+        emitter.emit(GET_COIN_DATA, compareBarID);
         dispatcher.dispatch({
           type: GET_COIN_DATA,
           content: _id,
@@ -96,7 +97,8 @@ class CoinSearchBar extends Component {
         renderInput={(params) => (
           <TextField
             {...params}
-            label="Coin Search"
+            //label="Coin Search"
+            label={this.props.label ? this.props.label : "Coin Search"}
             variant="outlined"
             InputProps={{
               ...params.InputProps,

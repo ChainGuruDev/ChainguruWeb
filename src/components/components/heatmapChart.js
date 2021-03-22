@@ -19,8 +19,7 @@ const styles = (theme) => ({
     marginTop: 10,
     display: "flexGrow",
     minHeight: "100%",
-    marginBottom: 20,
-    height: "500px",
+    height: "66vh",
   },
 });
 
@@ -40,8 +39,7 @@ class HeatMapChart extends Component {
           curve: "smooth",
           lineCap: "butt",
           colors: ["#333"],
-          width: 1.5,
-          dashArray: 0,
+          width: 2,
         },
         chart: {
           type: "treemap",
@@ -50,17 +48,6 @@ class HeatMapChart extends Component {
         },
         tooltip: {
           enabled: true,
-          formatter: function (text, op) {
-            let indexPosition = op.dataPointIndex;
-            let initialData = op.w.globals.initialSeries[0].data;
-            return [
-              text,
-              initialData[indexPosition].symbol,
-              `Holdings: $ ${op.value}`,
-              `${initialData[indexPosition].change}%`,
-              `Price: $ ${initialData[indexPosition].curPrice}`,
-            ];
-          },
           x: {
             show: true,
           },
@@ -97,15 +84,16 @@ class HeatMapChart extends Component {
           enabled: true,
           offsetY: -10,
           style: {
-            fontSize: "14px",
+            fontSize: "18px",
             colors: ["#333"],
+            fontWeight: "bold",
           },
           formatter: function (text, op) {
+            console.log(text);
             let indexPosition = op.dataPointIndex;
             let initialData = op.w.globals.initialSeries[0].data;
             return [
-              text,
-              initialData[indexPosition].symbol,
+              initialData[indexPosition].symbol.toUpperCase(),
               `holdings: $ ${op.value}`,
               `${initialData[indexPosition].change}%`,
               `Price: $ ${initialData[indexPosition].curPrice}`,
@@ -115,7 +103,6 @@ class HeatMapChart extends Component {
 
         plotOptions: {
           foreColor: "#333",
-
           treemap: {
             enableShades: true,
             shadeIntensity: 0.6,
@@ -155,17 +142,6 @@ class HeatMapChart extends Component {
           ...this.state.options,
           tooltip: {
             enabled: true,
-            formatter: function (text, op) {
-              let indexPosition = op.dataPointIndex;
-              let initialData = op.w.globals.initialSeries[0].data;
-              return [
-                text,
-                initialData[indexPosition].symbol,
-                `holdings: $ ${op.value}`,
-                `${initialData[indexPosition].change}%`,
-                `Price: $ ${initialData[indexPosition].curPrice}`,
-              ];
-            },
             x: {
               show: true,
             },
@@ -211,14 +187,15 @@ class HeatMapChart extends Component {
             enabled: true,
             offsetY: -10,
             style: {
-              fontSize: "14px",
+              fontSize: "18px",
+              fontWeight: "bold",
             },
             formatter: function (text, op) {
+              console.log(text);
               let indexPosition = op.dataPointIndex;
               let initialData = op.w.globals.initialSeries[0].data;
               return [
-                text,
-                initialData[indexPosition].symbol,
+                initialData[indexPosition].symbol.toUpperCase(),
                 `holdings: $ ${op.value}`,
                 `${initialData[indexPosition].change}%`,
                 `Price: $ ${initialData[indexPosition].curPrice}`,
