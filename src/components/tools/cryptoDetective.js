@@ -162,7 +162,7 @@ class CryptoDetective extends Component {
   };
 
   coinDataReturned = (data) => {
-    console.log(data);
+    // console.log(data);
     this.setState({ coinData: data[0], dataLoaded: true });
   };
 

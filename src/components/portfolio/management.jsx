@@ -13,6 +13,7 @@ import FlashOnIcon from "@material-ui/icons/FlashOn";
 import CompareArrowsIcon from "@material-ui/icons/CompareArrows";
 import ViewQuiltIcon from "@material-ui/icons/ViewQuilt";
 import ShuffleIcon from "@material-ui/icons/Shuffle";
+import TrackChangesRoundedIcon from "@material-ui/icons/TrackChangesRounded";
 
 //Load Tools
 import CryptoDetective from "../tools/cryptoDetective";
@@ -20,6 +21,7 @@ import Transactions from "../tools/transactions";
 import Portfolio from "../tools/portfolio";
 import PortfolioHeatMap from "../tools/portfolioHeatMap";
 import CryptoConverter from "../tools/cryptoConverter";
+import PortfolioRadar from "../tools/portfolioRadar";
 
 import {
   PING_COINGECKO,
@@ -118,6 +120,8 @@ function a11yProps(index) {
     "aria-controls": `simple-tabpanel-${index}`,
   };
 }
+
+// MAIN PAGE FOR PORTFOLIO MANAGEMENT AND TOOLS
 
 class PortfolioManagement extends Component {
   constructor(props) {
@@ -222,6 +226,11 @@ class PortfolioManagement extends Component {
               icon={<ShuffleIcon />}
               {...a11yProps(3)}
             />
+            <Tab
+              label="Portfolio Radar"
+              icon={<TrackChangesRoundedIcon />}
+              {...a11yProps(4)}
+            />
           </Tabs>
         </AppBar>
         <TabPanel value={valueTab} index={0}>
@@ -235,6 +244,9 @@ class PortfolioManagement extends Component {
         </TabPanel>
         <TabPanel value={valueTab} index={3}>
           <CryptoConverter />
+        </TabPanel>
+        <TabPanel value={valueTab} index={4}>
+          <PortfolioRadar />
         </TabPanel>
       </Grid>
     );

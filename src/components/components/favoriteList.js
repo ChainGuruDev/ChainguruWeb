@@ -208,7 +208,6 @@ class FavoriteList extends Component {
       );
       sort.push(sortData);
     });
-    //console.log(sort);
     this.setState({ sortData: sort });
   };
 
@@ -349,7 +348,7 @@ class FavoriteList extends Component {
       });
     }
 
-    if (newRows.length > 1) {
+    if (newRows.length >= 1) {
       if (newRows.length != formatedRows.length) {
         this.setState({ formatedRows: newRows });
       }

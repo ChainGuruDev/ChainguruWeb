@@ -60,8 +60,8 @@ const limiterChips = new Bottleneck({
   reservoirRefreshAmount: 50,
   reservoirRefreshInterval: 60 * 1100, // must be divisible by 250
   // also use maxConcurrent and/or minTime for safety
-  maxConcurrent: 5,
-  minTime: 1100, // pick a value that makes sense for your use case
+  maxConcurrent: 1,
+  minTime: 250, // pick a value that makes sense for your use case
 });
 
 class BlueChips extends Component {

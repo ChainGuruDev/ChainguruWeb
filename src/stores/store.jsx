@@ -95,6 +95,8 @@ import {
   SWITCH_VS_COIN_RETURNED,
   DB_UPDATE_ONE_MOV,
   DB_UPDATE_ONE_MOV_RETURNED,
+  DB_GET_COIN_CATEGORIES,
+  DB_GET_COIN_CATEGORIES_RETURNED,
 } from "../constants";
 
 import {
@@ -312,6 +314,9 @@ class Store {
             break;
           case DB_UPDATE_WALLET_MOVEMENTS_PRICES:
             this.dbUpdateMovementPrices(payload);
+            break;
+          case DB_GET_COIN_CATEGORIES:
+            this.db_getCoinCategories(payload);
             break;
           default: {
             break;
@@ -1327,6 +1332,7 @@ class Store {
   };
 
   db_getUserData = async (payload) => {
+    const account = store.getStore("account");
     try {
       let _userExists = await axios.get(
         `https://chainguru-db.herokuapp.com/users/${payload.address}`
@@ -1351,6 +1357,21 @@ class Store {
         console.log(err.message);
       }
     }
+  };
+
+  db_getCoinCategories = async (payload) => {
+    // "https://chainguru-db.herokuapp.com"
+    let _dbCategories;
+    try {
+      _dbCategories = await axios.put(
+        `https://chainguru-db.herokuapp.com/tokens/getTokensbyIDs`,
+        { tokenIDs: payload.tokenIDs }
+      );
+    } catch (err) {
+      console.log(err.message);
+    }
+
+    emitter.emit(DB_GET_COIN_CATEGORIES_RETURNED, await _dbCategories);
   };
 
   db_addFavorite = async (payload) => {
@@ -1443,7 +1464,6 @@ class Store {
       let _dbUpdateWallet = await axios.put(
         `https://chainguru-db.herokuapp.com/movements/updateOne`,
         // `http://localhost:3001/movements/updateOne`,
-
         {
           userID: account.address,
           oldMovementId: payload.content._id,
