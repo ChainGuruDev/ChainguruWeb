@@ -191,7 +191,7 @@ class HeatMapChart extends Component {
               fontWeight: "bold",
             },
             formatter: function (text, op) {
-              console.log(text);
+              // console.log(text);
               let indexPosition = op.dataPointIndex;
               let initialData = op.w.globals.initialSeries[0].data;
               return [

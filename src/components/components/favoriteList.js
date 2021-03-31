@@ -491,8 +491,8 @@ class FavoriteList extends Component {
     };
 
     const handleBackButtonClick = (event) => {
-      console.log(event);
-      console.log(count);
+      // console.log(event);
+      // console.log(count);
       this.setState({ page: page - 1 });
     };
 

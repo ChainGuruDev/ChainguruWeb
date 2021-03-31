@@ -17,9 +17,10 @@ const store = Store.store;
 
 const styles = (theme) => ({
   root: {
+    display: "flex",
+    justifyContent: "center",
     marginTop: 10,
-    display: "flexGrow",
-    height: "66vh",
+    minHeight: "300px",
     backgroundColor: "rgba(255, 255, 255, 0.0)",
   },
 });
@@ -117,7 +118,8 @@ class PieChart extends Component {
         <Chart
           options={this.state.options}
           series={this.state.series}
-          height="100%"
+          width="650px"
+          height="600px"
           type="donut"
         />
       </div>

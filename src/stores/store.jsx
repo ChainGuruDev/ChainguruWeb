@@ -1365,6 +1365,7 @@ class Store {
     try {
       _dbCategories = await axios.put(
         `https://chainguru-db.herokuapp.com/tokens/getTokensbyIDs`,
+        // `http://localhost:3001/tokens/getTokensbyIDs`,
         { tokenIDs: payload.tokenIDs }
       );
     } catch (err) {

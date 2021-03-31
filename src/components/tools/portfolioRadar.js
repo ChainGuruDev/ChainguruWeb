@@ -11,6 +11,8 @@ import {
   Grid,
   Divider,
   CircularProgress,
+  Button,
+  ButtonGroup,
 } from "@material-ui/core";
 
 import PieChart from "../components/pieChart.js";
@@ -134,8 +136,10 @@ class PortfolioRadar extends Component {
     if (selectedCategorie) {
       // console.log(selectedCategorie);
       for (var i = 0; i < balanceList.length; i++) {
-        if (balanceList[i].categories.includes(selectedCategorie)) {
-          tokensInCategorie.push(balanceList[i].tokenID);
+        if (balanceList[i] != null) {
+          if (balanceList[i].categories.includes(selectedCategorie)) {
+            tokensInCategorie.push(balanceList[i].tokenID);
+          }
         }
       }
       this.setState({ tokenList: tokensInCategorie });
@@ -159,12 +163,18 @@ class PortfolioRadar extends Component {
   dbUserDataReturned = (payload) => {
     let userTokens = [];
     if (payload.wallets.length > 0) {
-      const allTokens = payload.wallets[0].erc20Balance;
-      for (var i = 0; i < allTokens.length; i++) {
-        if (allTokens[i].balance >= 1) {
-          userTokens.push(allTokens[i]);
+      let allTokens = [];
+      payload.wallets.forEach((item, i) => {
+        console.log(item.wallet);
+        console.log(i);
+        allTokens = payload.wallets[i].erc20Balance;
+        for (var x = 0; x < allTokens.length; x++) {
+          if (allTokens[x].balance >= 1) {
+            userTokens.push(allTokens[x]);
+          }
         }
-      }
+      });
+
       if (this.state.loading === false) {
         this.getCoinIDs(userTokens);
         this.setState({ userBlacklist: payload.blacklist, loading: true });
@@ -289,30 +299,35 @@ class PortfolioRadar extends Component {
   dbCategoriesReturned = (categories) => {
     // console.log(categories.data);
     // console.log(this.state.balanceList);
+
     if (categories.data) {
       let _newBalanceList = [...this.state.balanceList];
       for (var i = 0; i < categories.data.length; i++) {
-        let objIndex = _newBalanceList.findIndex(
-          (obj) => obj.id === categories.data[i].tokenID
-        );
-        if (objIndex != -1) {
-          let item = { ..._newBalanceList[objIndex] };
-          item.categories = categories.data[i].categories;
-          _newBalanceList[objIndex] = item;
+        if (categories.data[i] != null) {
+          let objIndex = _newBalanceList.findIndex(
+            (obj) => obj.id === categories.data[i].tokenID
+          );
+          if (objIndex != -1) {
+            let item = { ..._newBalanceList[objIndex] };
+            item.categories = categories.data[i].categories;
+            _newBalanceList[objIndex] = item;
+          }
         }
       }
 
       let allCategories = [];
       let uniqueCategories = [];
-      for (var i = 0; i < categories.data.length; i++) {
-        categories.data[i].categories.forEach((item, i) => {
-          allCategories.push(item);
-          if (uniqueCategories.indexOf(item) === -1) {
-            uniqueCategories.push(item);
-          }
-        });
-      }
 
+      for (var i = 0; i < categories.data.length; i++) {
+        if (categories.data[i] != null) {
+          categories.data[i].categories.forEach((item, i) => {
+            allCategories.push(item);
+            if (uniqueCategories.indexOf(item) === -1) {
+              uniqueCategories.push(item);
+            }
+          });
+        }
+      }
       // console.log(allCategories);
       // console.log(_newBalanceList);
       let countCategories = {};
@@ -372,6 +387,22 @@ class PortfolioRadar extends Component {
     this.setState({ countCategories: sortedRows });
   };
 
+  getWalletButtons() {
+    return (
+      <div>
+        <ButtonGroup
+          orientation="vertical"
+          color="primary"
+          aria-label="wallet Select"
+        >
+          <Button>All</Button>
+          <Button>Two</Button>
+          <Button>Three</Button>
+        </ButtonGroup>
+      </div>
+    );
+  }
+
   render() {
     const { classes, t } = this.props;
     const { loading, account, countCategories, tokenList } = this.state;
@@ -393,7 +424,17 @@ class PortfolioRadar extends Component {
                 <Typography>Portfolio Radar</Typography>
               </Grid>
               <Grid item>
-                {countCategories != null && <PieChart data={countCategories} />}
+                {countCategories != null && (
+                  <Grid
+                    item
+                    container
+                    direction="row"
+                    justify="center"
+                    alignItems="center"
+                  >
+                    <PieChart data={countCategories} />
+                  </Grid>
+                )}
                 {!countCategories && <CircularProgress />}
                 {tokenList.length >= 1 && <FavoriteList />}
               </Grid>
@@ -403,6 +444,8 @@ class PortfolioRadar extends Component {
       </div>
     );
   }
+
+  // {this.getWalletButtons()}
 
   nav = (screen) => {
     this.props.history.push(screen);
