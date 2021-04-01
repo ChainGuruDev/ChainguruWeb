@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import Chart from "react-apexcharts";
 import { withStyles } from "@material-ui/core/styles";
+import { withRouter } from "react-router-dom";
 
 import { colors } from "../../theme";
 
@@ -28,6 +29,7 @@ class HeatMapChart extends Component {
     super(props);
 
     const tema = store.getStore("theme");
+    var self = this;
 
     this.state = {
       options: {
@@ -43,7 +45,8 @@ class HeatMapChart extends Component {
         },
         chart: {
           type: "treemap",
-          foreColor: "#333",
+          background: "transparent",
+          foreColor: "rgba(125,125,125,0.1)",
           stroke: "#333",
         },
         tooltip: {
@@ -71,8 +74,9 @@ class HeatMapChart extends Component {
                         seriesName.dataPointIndex
                       ].changeText,
                   ];
+                } else {
+                  return [];
                 }
-                return [];
               },
               title: {
                 formatter: (seriesName) => seriesName,
@@ -82,27 +86,35 @@ class HeatMapChart extends Component {
         },
         dataLabels: {
           enabled: true,
-          offsetY: -10,
+          offsetY: -15,
+          rotate: 0,
           style: {
-            fontSize: "18px",
-            colors: ["#333"],
+            fontSize: "50px",
             fontWeight: "bold",
           },
+          dropShadow: {
+            enabled: true,
+            top: 2,
+            left: 2,
+            blur: 2,
+            color: "#000",
+            opacity: 0.75,
+          },
           formatter: function (text, op) {
-            console.log(text);
+            // console.log(text);
             let indexPosition = op.dataPointIndex;
             let initialData = op.w.globals.initialSeries[0].data;
             return [
-              initialData[indexPosition].symbol.toUpperCase(),
-              `holdings: $ ${op.value}`,
+              `${initialData[indexPosition].symbol.toUpperCase()}`,
+              `$ ${initialData[indexPosition].curPrice}`,
               `${initialData[indexPosition].change}%`,
-              `Price: $ ${initialData[indexPosition].curPrice}`,
+              `($ ${op.value})`,
             ];
           },
         },
 
         plotOptions: {
-          foreColor: "#333",
+          foreColor: "rgba(125,125,125,0.1)",
           treemap: {
             enableShades: true,
             shadeIntensity: 0.6,
@@ -110,7 +122,18 @@ class HeatMapChart extends Component {
             useFillColorAsStroke: false,
           },
           style: {
-            foreColor: ["#333"],
+            foreColor: ["rgba(125,125,125,0.1)"],
+          },
+        },
+        chart: {
+          events: {
+            dataPointSelection: function (event, chartContext, config) {
+              let index = config.dataPointIndex;
+              let selectedID =
+                config.w.globals.initialSeries[0].data[config.dataPointIndex]
+                  .tokenID;
+              self.detective(selectedID);
+            },
           },
         },
       },
@@ -122,6 +145,11 @@ class HeatMapChart extends Component {
     };
   }
 
+  detective = (id) => {
+    console.log(id);
+    this.nav("/short/detective/" + id);
+  };
+
   componentDidMount() {
     emitter.on(DARKMODE_SWITCH_RETURN, this.darkModeSwitchReturned);
   }
@@ -131,6 +159,9 @@ class HeatMapChart extends Component {
   }
 
   componentDidUpdate(prevProps) {
+    var self = this;
+    const colorMode = store.getStore("theme");
+
     if (this.props.data != prevProps.data) {
       this.setState({
         series: [
@@ -140,6 +171,9 @@ class HeatMapChart extends Component {
         ],
         options: {
           ...this.state.options,
+          theme: {
+            mode: colorMode,
+          },
           tooltip: {
             enabled: true,
             x: {
@@ -157,25 +191,19 @@ class HeatMapChart extends Component {
                   // );
                   if (typeof x !== "undefined") {
                     return [
-                      seriesName.w.globals.initialSeries[0].data[
-                        seriesName.dataPointIndex
-                      ].change +
-                        "%" +
+                      `${
                         seriesName.w.globals.initialSeries[0].data[
                           seriesName.dataPointIndex
-                        ].changeText,
+                        ].change
+                      } %${
+                        seriesName.w.globals.initialSeries[0].data[
+                          seriesName.dataPointIndex
+                        ].changeText
+                      }`,
                     ];
+                  } else {
+                    return [];
                   }
-                  return [
-                    x,
-                    seriesName.w.globals.initialSeries[0].data[
-                      seriesName.dataPointIndex
-                    ].change +
-                      "%" +
-                      seriesName.w.globals.initialSeries[0].data[
-                        seriesName.dataPointIndex
-                      ].changeText,
-                  ];
                 },
                 title: {
                   formatter: (seriesName) => seriesName,
@@ -183,11 +211,23 @@ class HeatMapChart extends Component {
               },
             ],
           },
+          chart: {
+            events: {
+              dataPointSelection: function (event, chartContext, config) {
+                let index = config.dataPointIndex;
+                let selectedID =
+                  config.w.globals.initialSeries[0].data[config.dataPointIndex]
+                    .tokenID;
+                self.detective(selectedID);
+              },
+            },
+          },
           dataLabels: {
             enabled: true,
-            offsetY: -10,
+            offsetY: -15,
+            rotate: 0,
             style: {
-              fontSize: "18px",
+              fontSize: "50px",
               fontWeight: "bold",
             },
             formatter: function (text, op) {
@@ -196,9 +236,9 @@ class HeatMapChart extends Component {
               let initialData = op.w.globals.initialSeries[0].data;
               return [
                 initialData[indexPosition].symbol.toUpperCase(),
-                `holdings: $ ${op.value}`,
+                `$ ${initialData[indexPosition].curPrice}`,
                 `${initialData[indexPosition].change}%`,
-                `Price: $ ${initialData[indexPosition].curPrice}`,
+                `($ ${op.value})`,
               ];
             },
           },
@@ -220,6 +260,11 @@ class HeatMapChart extends Component {
     });
   };
 
+  nav = (screen) => {
+    console.log(screen);
+    this.props.history.push(screen);
+  };
+
   render() {
     const { classes } = this.props;
     return (
@@ -236,4 +281,4 @@ class HeatMapChart extends Component {
   }
 }
 
-export default withStyles(styles)(HeatMapChart);
+export default withRouter(withStyles(styles)(HeatMapChart));

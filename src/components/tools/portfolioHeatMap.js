@@ -753,6 +753,7 @@ class PortfolioHeatMap extends Component {
           fillColor: getColor(timeFrameChange),
           stroke: colors.cgBlue,
           curPrice: formatedRows[i].current_price,
+          tokenID: formatedRows[i].id,
         };
 
         heatMapData.push(item);

@@ -416,14 +416,14 @@ class App extends Component {
           chainId: window.ethereum.chainId,
           web3context: { library: { provider: window.ethereum } },
         });
-        console.log(window.ethereum);
+        // console.log(window.ethereum);
         emitter.emit(CONNECTION_CONNECTED);
       });
 
       window.ethereum.on("networkChanged", function (networkId) {
         // Time to reload your interface with the new networkId
         store.setStore({ chainId: networkId });
-        console.log(networkId);
+        // console.log(networkId);
 
         emitter.emit(CONNECTION_CONNECTED);
       });
