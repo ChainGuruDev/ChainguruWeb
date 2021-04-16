@@ -32,6 +32,7 @@ import {
   COIN_DATA_RETURNED,
   DB_ADD_FAVORITE,
   DB_ADD_FAVORITE_RETURNED,
+  COINGECKO_POPULATE_FAVLIST,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -103,10 +104,9 @@ class Favorites extends Component {
       this.setState({ progressBar: newProgressBar });
       if (newProgressBar > 99) {
         this.setState({ progressBar: 0 });
-        console.log("update favorites");
         dispatcher.dispatch({
-          type: DB_GET_USERDATA,
-          address: account.address,
+          type: COINGECKO_POPULATE_FAVLIST,
+          tokenIDs: this.state.favList,
         });
       }
     }
@@ -116,12 +116,14 @@ class Favorites extends Component {
     emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
+    emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
     //emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
     this.interval = setInterval(() => this.updateFavorites(), 750);
   }
 
   componentWillUnmount() {
     emitter.removeListener(CONNECTION_CONNECTED, this.connectionConnected);
+    emitter.removeListener(DB_USERDATA_RETURNED, this.dbUserDataReturned);
     emitter.removeListener(
       CONNECTION_DISCONNECTED,
       this.connectionDisconnected
@@ -138,6 +140,15 @@ class Favorites extends Component {
 
   connectionDisconnected = () => {
     this.setState({ account: store.getStore("account") });
+  };
+
+  dbUserDataReturned = (data) => {
+    console.log(data);
+    console.log(data.favorites.tokenIDs);
+
+    if (data.favorites.tokenIDs.length > 0) {
+      this.setState({ favList: data.favorites.tokenIDs });
+    }
   };
 
   coinlistReturned = (payload) => {

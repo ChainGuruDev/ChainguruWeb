@@ -1223,7 +1223,7 @@ class Store {
   geckoPopulateFavList = async (tokenIds) => {
     let data;
     let vsCoin = store.getStore("vsCoin");
-
+    console.log(tokenIds);
     try {
       let data = await CoinGeckoClient.coins.markets({
         ids: tokenIds.tokenIDs,
