@@ -1590,7 +1590,7 @@ class Store {
   db_getTokenPD = async (payload) => {
     try {
       let data = await axios.get(
-        `http://localhost:3001/pumpDump/token?tokenID=${payload.tokenID}`
+        `https://chainguru-db.herokuapp.com/pumpDump/token?tokenID=${payload.tokenID}`
       );
       emitter.emit(DB_GET_TOKEN_PD_RETURNED, await data.data);
     } catch (err) {
@@ -1604,7 +1604,7 @@ class Store {
     const account = await store.getStore("account");
     try {
       let data = await axios.get(
-        `http://localhost:3001/pumpDump/token?tokenID=${payload.tokenID}&userID=${account.address}`
+        `https://chainguru-db.herokuapp.com/pumpDump/token?tokenID=${payload.tokenID}&userID=${account.address}`
       );
       emitter.emit(DB_GET_USER_TOKEN_PD_RETURNED, await data.data);
     } catch (err) {
@@ -1617,11 +1617,14 @@ class Store {
   db_createPD = async (payload) => {
     const account = store.getStore("account");
     try {
-      let data = await axios.put("http://localhost:3001/pumpDump/new", {
-        tokenID: payload.tokenID,
-        user: account.address,
-        vote: payload.vote,
-      });
+      let data = await axios.put(
+        "https://chainguru-db.herokuapp.com/pumpDump/new",
+        {
+          tokenID: payload.tokenID,
+          user: account.address,
+          vote: payload.vote,
+        }
+      );
       emitter.emit(DB_CREATE_PD_RETURNED, await data.data);
     } catch (err) {
       if (err) {
@@ -1633,10 +1636,13 @@ class Store {
   db_checkPDResult = async (payload) => {
     const account = store.getStore("account");
     try {
-      let data = await axios.put("http://localhost:3001/pumpDump/checkResult", {
-        user: account.address,
-        tokenID: payload.tokenID,
-      });
+      let data = await axios.put(
+        "https://chainguru-db.herokuapp.com/pumpDump/checkResult",
+        {
+          user: account.address,
+          tokenID: payload.tokenID,
+        }
+      );
       emitter.emit(DB_CHECK_PD_RESULT_RETURNED, await data.data);
     } catch (err) {
       if (err) {
