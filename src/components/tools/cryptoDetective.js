@@ -10,6 +10,10 @@ import ReactHtmlParser, {
 //IMPORT COMPONENTS
 import CoinSearchBar from "../components/CoinSearchBar.js";
 import PriceChart from "../components/Chart.js";
+import PDVoteResultChart from "../components/pdVoteResultChart.js";
+import PDvoteResultModal from "../components/pdVoteResultModal.js";
+
+import { colors } from "../../theme";
 
 //IMPORT MaterialUI elements
 import {
@@ -24,6 +28,8 @@ import {
   AccordionDetails,
   Paper,
   Link,
+  LinearProgress,
+  Container,
 } from "@material-ui/core";
 
 //IMPORT ICONS
@@ -33,6 +39,9 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ArrowDropUpRoundedIcon from "@material-ui/icons/ArrowDropUpRounded";
 import ArrowDropDownRoundedIcon from "@material-ui/icons/ArrowDropDownRounded";
 import DoubleArrowIcon from "@material-ui/icons/DoubleArrow";
+
+import ThumbUpIcon from "@material-ui/icons/ThumbUp";
+import ThumbDownIcon from "@material-ui/icons/ThumbDown";
 
 //WEB LINKS ICONS
 import TelegramIcon from "@material-ui/icons/Telegram";
@@ -49,6 +58,14 @@ import {
   GRAPH_TIMEFRAME_CHANGED,
   SWITCH_VS_COIN_RETURNED,
   GET_COIN_PRICECHART,
+  DB_GET_TOKEN_PD,
+  DB_GET_TOKEN_PD_RETURNED,
+  DB_GET_USER_TOKEN_PD,
+  DB_GET_USER_TOKEN_PD_RETURNED,
+  DB_CREATE_PD,
+  DB_CREATE_PD_RETURNED,
+  DB_CHECK_PD_RESULT,
+  DB_CHECK_PD_RESULT_RETURNED,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -131,13 +148,25 @@ class CryptoDetective extends Component {
       vs: vsCoin,
       timeFrame: "max",
       coinData: [],
+      tokenPD: [],
+      userTokenPD: [],
+      pdEnabled: false,
+      pdLoaded: false,
+      modalOpen: false,
     };
   }
+
   componentDidMount() {
+    const account = store.getStore("account");
+
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
     emitter.on(COIN_DATA_RETURNED, this.coinDataReturned);
     emitter.on(GRAPH_TIMEFRAME_CHANGED, this.graphTimeFrameChanged);
     emitter.on(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
+    emitter.on(DB_GET_TOKEN_PD_RETURNED, this.db_GetTokenPDReturned);
+    emitter.on(DB_GET_USER_TOKEN_PD_RETURNED, this.db_getUserTokenPDReturned);
+    emitter.on(DB_CREATE_PD_RETURNED, this.db_createPDReturned);
+    emitter.on(DB_CHECK_PD_RESULT_RETURNED, this.db_checkPDResultReturned);
 
     if (this.props.coinID) {
       dispatcher.dispatch({
@@ -155,6 +184,19 @@ class CryptoDetective extends Component {
     emitter.removeListener(COIN_DATA_RETURNED, this.coinDataReturned);
     emitter.removeListener(GRAPH_TIMEFRAME_CHANGED, this.graphTimeFrameChanged);
     emitter.removeListener(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
+    emitter.removeListener(
+      DB_GET_TOKEN_PD_RETURNED,
+      this.db_GetTokenPDReturned
+    );
+    emitter.removeListener(
+      DB_GET_USER_TOKEN_PD_RETURNED,
+      this.db_getUserTokenPDReturned
+    );
+    emitter.removeListener(DB_CREATE_PD_RETURNED, this.db_createPDReturned);
+    emitter.removeListener(
+      DB_CHECK_PD_RESULT_RETURNED,
+      this.db_checkPDResultReturned
+    );
   }
 
   coinlistReturned = (payload) => {
@@ -162,7 +204,12 @@ class CryptoDetective extends Component {
   };
 
   coinDataReturned = (data) => {
-    // console.log(data);
+    const account = store.getStore("account");
+
+    dispatcher.dispatch({
+      type: DB_GET_TOKEN_PD,
+      tokenID: data[0].id,
+    });
     this.setState({ coinData: data[0], dataLoaded: true });
   };
 
@@ -210,9 +257,134 @@ class CryptoDetective extends Component {
     }
   };
 
+  formatMoney = (amount, decimalCount = 2, decimal = ".", thousands = ",") => {
+    try {
+      decimalCount = Math.abs(decimalCount);
+      decimalCount = isNaN(decimalCount) ? 2 : decimalCount;
+
+      const negativeSign = amount < 0 ? "-" : "";
+
+      let i = parseInt(
+        (amount = Math.abs(Number(amount) || 0).toFixed(decimalCount))
+      ).toString();
+      let j = i.length > 3 ? i.length % 3 : 0;
+
+      return (
+        negativeSign +
+        (j ? i.substr(0, j) + thousands : "") +
+        i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousands) +
+        (decimalCount
+          ? decimal +
+            Math.abs(amount - i)
+              .toFixed(decimalCount)
+              .slice(2)
+          : "")
+      );
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  db_GetTokenPDReturned = async (data) => {
+    dispatcher.dispatch({
+      type: DB_GET_USER_TOKEN_PD,
+      tokenID: this.state.coinData.id,
+    });
+    let results = await this.getVoteResults(data);
+    this.setState({ tokenPD: data, voteResults: await results });
+  };
+
+  getVoteResults = async (data) => {
+    let voteDump = 0;
+    let votePump = 0;
+    for (var i = 0; i < data.length; i++) {
+      data[i].vote ? votePump++ : voteDump++;
+    }
+    let sharePump = ((votePump / (votePump + voteDump)) * 100).toString() + "%";
+    let shareDump = ((voteDump / (votePump + voteDump)) * 100).toString() + "%";
+
+    let voteResults = {
+      pump: { result: votePump, percent: sharePump },
+      dump: { result: voteDump, percent: shareDump },
+    };
+    return voteResults;
+  };
+
+  db_getUserTokenPDReturned = (data) => {
+    if (data.length > 0) {
+      //TODO CALCULATE REMAINING TIME UNTIL P&D is ready
+      // console.log({ message: "user has active PD", data: data[0] });
+      this.setState({ userTokenPD: data[0], pdEnabled: false, pdLoaded: true });
+    } else {
+      // console.log({ message: "user has no PD running", data: data });
+      this.setState({ userTokenPD: data, pdEnabled: true, pdLoaded: true });
+    }
+  };
+
+  timeRemaining = () => {
+    let dateEnd = new Date(this.state.userTokenPD.voteEnding);
+    let dateNow = new Date();
+    let remaining = dateEnd - dateNow;
+    // let timeLimit = 120 * 1000; // 2min for testing
+    let timeLimit = 12 * 60 * 60 * 1000; // 12hs for beta testing
+    // let timeLimit = 24 * 60 * 60 * 1000; // 12hs for release
+
+    let percentComplete = 0;
+    if (remaining <= 0) {
+      percentComplete = 100;
+    } else {
+      percentComplete = ((timeLimit - remaining) / timeLimit) * 100;
+    }
+    return percentComplete;
+  };
+
+  db_createPDReturned = (data) => {
+    // console.log(data);
+
+    dispatcher.dispatch({
+      type: DB_GET_TOKEN_PD,
+      tokenID: this.state.coinData.id,
+    });
+    this.setState({ userTokenPD: data, pdEnabled: false });
+  };
+
+  db_checkPDResultReturned = (data) => {
+    // console.log(data);
+    dispatcher.dispatch({
+      type: DB_GET_TOKEN_PD,
+      tokenID: this.state.coinData.id,
+    });
+    this.setState({ modalOpen: true, modalData: data });
+
+    //TODO: TRIGGER FUNCTION TO ADD SCREEN DIM AND DIALOG SHOWING RESULT HERE <<<
+  };
+
+  db_checkPDResult = (data) => {
+    dispatcher.dispatch({
+      type: DB_CHECK_PD_RESULT,
+      tokenID: this.state.coinData.id,
+    });
+  };
+
+  pump = () => {
+    dispatcher.dispatch({
+      type: DB_CREATE_PD,
+      tokenID: this.state.coinData.id,
+      vote: "pump",
+    });
+  };
+
+  dump = () => {
+    dispatcher.dispatch({
+      type: DB_CREATE_PD,
+      tokenID: this.state.coinData.id,
+      vote: "dump",
+    });
+  };
+
   dataDisplaySide = () => {
     const { classes } = this.props;
-    const { selectA, dataLoaded, coinData, vs } = this.state;
+    const { selectA, dataLoaded, coinData, vs, voteResults } = this.state;
     const preventDefault = (event) => event.preventDefault();
 
     return (
@@ -322,28 +494,36 @@ class CryptoDetective extends Component {
                     <Grid item container direction="row">
                       <Typography>Marketcap: </Typography>
                       <Typography variant="subtitle1">
-                        {coinData.market_data.market_cap[vs]} {[vs]}
+                        {this.formatMoney(
+                          coinData.market_data.market_cap[vs],
+                          2
+                        )}{" "}
+                        {[vs]}
                       </Typography>
                     </Grid>
                     <Grid item container direction="row">
                       <Typography>Fully diluted: </Typography>
                       <Typography variant="subtitle1">
-                        {coinData.market_data.fully_diluted_valuation[vs]}{" "}
+                        {this.formatMoney(
+                          coinData.market_data.fully_diluted_valuation[vs],
+                          2
+                        )}{" "}
                         {[vs]}
                       </Typography>
                     </Grid>
                     <Grid item container direction="row">
                       <Typography>Max Supply: </Typography>
                       <Typography variant="subtitle1">
-                        {coinData.market_data.max_supply}
+                        {this.formatMoney(coinData.market_data.max_supply, 0)}
                       </Typography>
                     </Grid>
                     <Grid item container direction="row">
                       <Typography>Circulating Supply: </Typography>
                       <Typography variant="subtitle1">
-                        {parseFloat(
-                          coinData.market_data.circulating_supply
-                        ).toFixed(4)}
+                        {this.formatMoney(
+                          coinData.market_data.circulating_supply,
+                          0
+                        )}
                       </Typography>
                     </Grid>
                   </Grid>
@@ -395,6 +575,167 @@ class CryptoDetective extends Component {
                       }
                       label={`Rank ${coinData.market_data.market_cap_rank}`}
                     />
+                  </Grid>
+                </Grid>
+              </Grid>
+            </Card>
+            <Card
+              className={classes.MarketcapChips}
+              elevation={1}
+              variant="outlined"
+              style={{
+                marginTop: 10,
+              }}
+            >
+              <Grid
+                container
+                direction="column"
+                justify="flex-start"
+                alignItems="stretch"
+                item
+                xs={12}
+              >
+                <Grid item>
+                  <Typography variant="subtitle1">Pump & Dump</Typography>
+                  <Grid
+                    style={{
+                      marginTop: 10,
+                      marginBottom: 10,
+                    }}
+                    container
+                    direction="column"
+                    justify="flex-start"
+                    alignItems="stretch"
+                    item
+                    xs={12}
+                    padding={5}
+                  >
+                    {this.state.pdLoaded && this.state.pdEnabled && (
+                      <Grid
+                        item
+                        container
+                        direction="row"
+                        justify="space-around"
+                      >
+                        <Button
+                          variant="outlined"
+                          color="primary"
+                          startIcon={<ThumbUpIcon />}
+                          onClick={() => this.pump()}
+                        >
+                          Pump
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          color="secondary"
+                          startIcon={<ThumbDownIcon />}
+                          onClick={() => this.dump()}
+                        >
+                          Dump
+                        </Button>
+                      </Grid>
+                    )}
+                    {this.state.pdLoaded && !this.state.pdEnabled && (
+                      <>
+                        <Grid
+                          item
+                          container
+                          direction="row"
+                          justify="space-around"
+                        >
+                          <Button
+                            variant={
+                              this.state.userTokenPD.vote
+                                ? "contained"
+                                : "outlined"
+                            }
+                            color="primary"
+                            startIcon={<ThumbUpIcon />}
+                          >
+                            Pump
+                          </Button>
+                          <Button
+                            variant={
+                              this.state.userTokenPD.vote
+                                ? "outlined"
+                                : "contained"
+                            }
+                            color="secondary"
+                            startIcon={<ThumbDownIcon />}
+                          >
+                            Dump
+                          </Button>
+                        </Grid>
+                      </>
+                    )}
+                    {this.state.pdLoaded && (
+                      <Grid
+                        item
+                        container
+                        direction="row"
+                        justify="space-around"
+                      >
+                        <Grid
+                          container
+                          direction="row"
+                          justify="center"
+                          alignItems="flex-start"
+                          spacing={0}
+                          style={{ marginTop: "10px", width: "90%" }}
+                        >
+                          <Grid
+                            style={{ width: voteResults.pump.percent }}
+                            item
+                          >
+                            <Typography
+                              component="div"
+                              style={{
+                                backgroundColor: colors.cgGreen,
+                                minWidth: "100%",
+                                width: "100%",
+                                height: "5px",
+                              }}
+                            />
+                          </Grid>
+                          <Grid
+                            style={{ width: voteResults.dump.percent }}
+                            item
+                          >
+                            <Typography
+                              component="div"
+                              style={{
+                                backgroundColor: colors.cgRed,
+                                height: "5px",
+                                width: "100%",
+                              }}
+                            />
+                          </Grid>
+                        </Grid>
+                        {!this.state.pdEnabled && (
+                          <>
+                            <Typography style={{ marginTop: 10 }}>
+                              Time remaining
+                            </Typography>
+                            <div style={{ width: "100%" }}>
+                              <LinearProgress
+                                variant="determinate"
+                                value={this.timeRemaining()}
+                              />
+                            </div>
+                          </>
+                        )}
+                        {this.timeRemaining() === 100 && (
+                          <Button
+                            style={{ marginTop: 20 }}
+                            variant="outlined"
+                            color="primary"
+                            onClick={() => this.db_checkPDResult()}
+                          >
+                            Check Results
+                          </Button>
+                        )}
+                      </Grid>
+                    )}
                   </Grid>
                 </Grid>
               </Grid>
@@ -831,9 +1172,23 @@ class CryptoDetective extends Component {
     );
   };
 
+  closeModal = () => {
+    this.setState({ modalOpen: false });
+  };
+
+  renderModal = (data) => {
+    return (
+      <PDvoteResultModal
+        closeModal={this.closeModal}
+        modalOpen={this.state.modalOpen}
+        modalData={data}
+      />
+    );
+  };
+
   render() {
     const { classes } = this.props;
-    const { selectA, dataLoaded, coinData } = this.state;
+    const { selectA, dataLoaded, coinData, modalOpen, modalData } = this.state;
 
     return (
       <div className={classes.background}>
@@ -862,6 +1217,7 @@ class CryptoDetective extends Component {
             </Grid>
           </Card>
         </Grid>
+        {modalOpen && this.renderModal(modalData)}
       </div>
     );
   }

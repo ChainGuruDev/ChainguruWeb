@@ -23,6 +23,9 @@ import Show from "./components/market/edition/show";
 import Artist from "./components/market/artist/artist";
 import User from "./components/market/user/user";
 
+//IN dev
+import PumpAndDump from "./components/tools/PumpDump.js";
+
 import { colors } from "./theme";
 
 import { injected } from "./stores/connectors";
@@ -543,7 +546,6 @@ class App extends Component {
               />
               <User />
             </Route>
-
             <Route path="/market/edition/new">
               <Header
                 setHeaderValue={this.setHeaderValue}
@@ -564,6 +566,14 @@ class App extends Component {
                 headerValue={headerValue}
               />
               <Market />
+            </Route>
+            //DEV ROUTES
+            <Route path="/dev/pump">
+              <Header
+                setHeaderValue={this.setHeaderValue}
+                headerValue={headerValue}
+              />
+              <PumpAndDump />
             </Route>
             <Route path="/">
               <Home />

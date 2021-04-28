@@ -97,6 +97,14 @@ import {
   DB_UPDATE_ONE_MOV_RETURNED,
   DB_GET_COIN_CATEGORIES,
   DB_GET_COIN_CATEGORIES_RETURNED,
+  DB_GET_TOKEN_PD,
+  DB_GET_TOKEN_PD_RETURNED,
+  DB_GET_USER_TOKEN_PD,
+  DB_GET_USER_TOKEN_PD_RETURNED,
+  DB_CREATE_PD,
+  DB_CREATE_PD_RETURNED,
+  DB_CHECK_PD_RESULT,
+  DB_CHECK_PD_RESULT_RETURNED,
 } from "../constants";
 
 import {
@@ -317,6 +325,18 @@ class Store {
             break;
           case DB_GET_COIN_CATEGORIES:
             this.db_getCoinCategories(payload);
+            break;
+          case DB_GET_TOKEN_PD:
+            this.db_getTokenPD(payload);
+            break;
+          case DB_GET_USER_TOKEN_PD:
+            this.db_getUserTokenPD(payload);
+            break;
+          case DB_CREATE_PD:
+            this.db_createPD(payload);
+            break;
+          case DB_CHECK_PD_RESULT:
+            this.db_checkPDResult(payload);
             break;
           default: {
             break;
@@ -1223,7 +1243,7 @@ class Store {
   geckoPopulateFavList = async (tokenIds) => {
     let data;
     let vsCoin = store.getStore("vsCoin");
-    console.log(tokenIds);
+    //console.log(tokenIds);
     try {
       let data = await CoinGeckoClient.coins.markets({
         ids: tokenIds.tokenIDs,
@@ -1564,6 +1584,64 @@ class Store {
       emitter.emit(COINGECKO_POPULATE_FAVLIST_RETURNED, await data.data);
     } catch (err) {
       console.log(err);
+    }
+  };
+
+  db_getTokenPD = async (payload) => {
+    try {
+      let data = await axios.get(
+        `http://localhost:3001/pumpDump/token?tokenID=${payload.tokenID}`
+      );
+      emitter.emit(DB_GET_TOKEN_PD_RETURNED, await data.data);
+    } catch (err) {
+      if (err) {
+        console.log(err.message);
+      }
+    }
+  };
+
+  db_getUserTokenPD = async (payload) => {
+    const account = await store.getStore("account");
+    try {
+      let data = await axios.get(
+        `http://localhost:3001/pumpDump/token?tokenID=${payload.tokenID}&userID=${account.address}`
+      );
+      emitter.emit(DB_GET_USER_TOKEN_PD_RETURNED, await data.data);
+    } catch (err) {
+      if (err) {
+        console.log(err.message);
+      }
+    }
+  };
+
+  db_createPD = async (payload) => {
+    const account = store.getStore("account");
+    try {
+      let data = await axios.put("http://localhost:3001/pumpDump/new", {
+        tokenID: payload.tokenID,
+        user: account.address,
+        vote: payload.vote,
+      });
+      emitter.emit(DB_CREATE_PD_RETURNED, await data.data);
+    } catch (err) {
+      if (err) {
+        console.log(err.message);
+      }
+    }
+  };
+
+  db_checkPDResult = async (payload) => {
+    const account = store.getStore("account");
+    try {
+      let data = await axios.put("http://localhost:3001/pumpDump/checkResult", {
+        user: account.address,
+        tokenID: payload.tokenID,
+      });
+      emitter.emit(DB_CHECK_PD_RESULT_RETURNED, await data.data);
+    } catch (err) {
+      if (err) {
+        console.log(err.message);
+      }
     }
   };
 
