@@ -97,14 +97,14 @@ import {
   DB_UPDATE_ONE_MOV_RETURNED,
   DB_GET_COIN_CATEGORIES,
   DB_GET_COIN_CATEGORIES_RETURNED,
-  DB_GET_TOKEN_PD,
-  DB_GET_TOKEN_PD_RETURNED,
-  DB_GET_USER_TOKEN_PD,
-  DB_GET_USER_TOKEN_PD_RETURNED,
-  DB_CREATE_PD,
-  DB_CREATE_PD_RETURNED,
-  DB_CHECK_PD_RESULT,
-  DB_CHECK_PD_RESULT_RETURNED,
+  DB_GET_TOKEN_LS,
+  DB_GET_TOKEN_LS_RETURNED,
+  DB_GET_USER_TOKEN_LS,
+  DB_GET_USER_TOKEN_LS_RETURNED,
+  DB_CREATE_LS,
+  DB_CREATE_LS_RETURNED,
+  DB_CHECK_LS_RESULT,
+  DB_CHECK_LS_RESULT_RETURNED,
 } from "../constants";
 
 import {
@@ -326,17 +326,17 @@ class Store {
           case DB_GET_COIN_CATEGORIES:
             this.db_getCoinCategories(payload);
             break;
-          case DB_GET_TOKEN_PD:
-            this.db_getTokenPD(payload);
+          case DB_GET_TOKEN_LS:
+            this.db_getTokenLS(payload);
             break;
-          case DB_GET_USER_TOKEN_PD:
-            this.db_getUserTokenPD(payload);
+          case DB_GET_USER_TOKEN_LS:
+            this.db_getUserTokenLS(payload);
             break;
-          case DB_CREATE_PD:
-            this.db_createPD(payload);
+          case DB_CREATE_LS:
+            this.db_createLS(payload);
             break;
-          case DB_CHECK_PD_RESULT:
-            this.db_checkPDResult(payload);
+          case DB_CHECK_LS_RESULT:
+            this.db_checkLSResult(payload);
             break;
           default: {
             break;
@@ -1587,12 +1587,12 @@ class Store {
     }
   };
 
-  db_getTokenPD = async (payload) => {
+  db_getTokenLS = async (payload) => {
     try {
       let data = await axios.get(
-        `https://chainguru-db.herokuapp.com/pumpDump/token?tokenID=${payload.tokenID}`
+        `https://chainguru-db.herokuapp.com/longShort/token?tokenID=${payload.tokenID}`
       );
-      emitter.emit(DB_GET_TOKEN_PD_RETURNED, await data.data);
+      emitter.emit(DB_GET_TOKEN_LS_RETURNED, await data.data);
     } catch (err) {
       if (err) {
         console.log(err.message);
@@ -1600,13 +1600,13 @@ class Store {
     }
   };
 
-  db_getUserTokenPD = async (payload) => {
+  db_getUserTokenLS = async (payload) => {
     const account = await store.getStore("account");
     try {
       let data = await axios.get(
-        `https://chainguru-db.herokuapp.com/pumpDump/token?tokenID=${payload.tokenID}&userID=${account.address}`
+        `https://chainguru-db.herokuapp.com/longShort/token?tokenID=${payload.tokenID}&userID=${account.address}`
       );
-      emitter.emit(DB_GET_USER_TOKEN_PD_RETURNED, await data.data);
+      emitter.emit(DB_GET_USER_TOKEN_LS_RETURNED, await data.data);
     } catch (err) {
       if (err) {
         console.log(err.message);
@@ -1614,18 +1614,18 @@ class Store {
     }
   };
 
-  db_createPD = async (payload) => {
+  db_createLS = async (payload) => {
     const account = store.getStore("account");
     try {
       let data = await axios.put(
-        "https://chainguru-db.herokuapp.com/pumpDump/new",
+        "https://chainguru-db.herokuapp.com/longShort/new",
         {
           tokenID: payload.tokenID,
           user: account.address,
           vote: payload.vote,
         }
       );
-      emitter.emit(DB_CREATE_PD_RETURNED, await data.data);
+      emitter.emit(DB_CREATE_LS_RETURNED, await data.data);
     } catch (err) {
       if (err) {
         console.log(err.message);
@@ -1633,17 +1633,17 @@ class Store {
     }
   };
 
-  db_checkPDResult = async (payload) => {
+  db_checkLSResult = async (payload) => {
     const account = store.getStore("account");
     try {
       let data = await axios.put(
-        "https://chainguru-db.herokuapp.com/pumpDump/checkResult",
+        "https://chainguru-db.herokuapp.com/longShort/checkResult",
         {
           user: account.address,
           tokenID: payload.tokenID,
         }
       );
-      emitter.emit(DB_CHECK_PD_RESULT_RETURNED, await data.data);
+      emitter.emit(DB_CHECK_LS_RESULT_RETURNED, await data.data);
     } catch (err) {
       if (err) {
         console.log(err.message);

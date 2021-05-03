@@ -36,7 +36,7 @@ const styles = (theme) => ({
   },
 });
 
-class PDvoteResultModal extends Component {
+class LSvoteResultModal extends Component {
   render() {
     const { closeModal, modalOpen, modalData } = this.props;
     const { classes } = this.props;
@@ -102,4 +102,4 @@ class PDvoteResultModal extends Component {
   }
 }
 
-export default withStyles(styles)(PDvoteResultModal);
+export default withStyles(styles)(LSvoteResultModal);

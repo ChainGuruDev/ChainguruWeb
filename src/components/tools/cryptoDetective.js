@@ -10,8 +10,8 @@ import ReactHtmlParser, {
 //IMPORT COMPONENTS
 import CoinSearchBar from "../components/CoinSearchBar.js";
 import PriceChart from "../components/Chart.js";
-import PDVoteResultChart from "../components/pdVoteResultChart.js";
-import PDvoteResultModal from "../components/pdVoteResultModal.js";
+import LSVoteResultChart from "../components/lsVoteResultChart.js";
+import LSvoteResultModal from "../components/lsVoteResultModal.js";
 
 import { colors } from "../../theme";
 
@@ -40,9 +40,8 @@ import ArrowDropUpRoundedIcon from "@material-ui/icons/ArrowDropUpRounded";
 import ArrowDropDownRoundedIcon from "@material-ui/icons/ArrowDropDownRounded";
 import DoubleArrowIcon from "@material-ui/icons/DoubleArrow";
 
-import ThumbUpIcon from "@material-ui/icons/ThumbUp";
-import ThumbDownIcon from "@material-ui/icons/ThumbDown";
-
+import TrendingUpIcon from "@material-ui/icons/TrendingUp";
+import TrendingDownIcon from "@material-ui/icons/TrendingDown";
 //WEB LINKS ICONS
 import TelegramIcon from "@material-ui/icons/Telegram";
 import TwitterIcon from "@material-ui/icons/Twitter";
@@ -58,14 +57,14 @@ import {
   GRAPH_TIMEFRAME_CHANGED,
   SWITCH_VS_COIN_RETURNED,
   GET_COIN_PRICECHART,
-  DB_GET_TOKEN_PD,
-  DB_GET_TOKEN_PD_RETURNED,
-  DB_GET_USER_TOKEN_PD,
-  DB_GET_USER_TOKEN_PD_RETURNED,
-  DB_CREATE_PD,
-  DB_CREATE_PD_RETURNED,
-  DB_CHECK_PD_RESULT,
-  DB_CHECK_PD_RESULT_RETURNED,
+  DB_GET_TOKEN_LS,
+  DB_GET_TOKEN_LS_RETURNED,
+  DB_GET_USER_TOKEN_LS,
+  DB_GET_USER_TOKEN_LS_RETURNED,
+  DB_CREATE_LS,
+  DB_CREATE_LS_RETURNED,
+  DB_CHECK_LS_RESULT,
+  DB_CHECK_LS_RESULT_RETURNED,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -148,10 +147,10 @@ class CryptoDetective extends Component {
       vs: vsCoin,
       timeFrame: "max",
       coinData: [],
-      tokenPD: [],
-      userTokenPD: [],
-      pdEnabled: false,
-      pdLoaded: false,
+      tokenLS: [],
+      userTokenLS: [],
+      lsEnabled: false,
+      lsLoaded: false,
       modalOpen: false,
     };
   }
@@ -163,10 +162,10 @@ class CryptoDetective extends Component {
     emitter.on(COIN_DATA_RETURNED, this.coinDataReturned);
     emitter.on(GRAPH_TIMEFRAME_CHANGED, this.graphTimeFrameChanged);
     emitter.on(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
-    emitter.on(DB_GET_TOKEN_PD_RETURNED, this.db_GetTokenPDReturned);
-    emitter.on(DB_GET_USER_TOKEN_PD_RETURNED, this.db_getUserTokenPDReturned);
-    emitter.on(DB_CREATE_PD_RETURNED, this.db_createPDReturned);
-    emitter.on(DB_CHECK_PD_RESULT_RETURNED, this.db_checkPDResultReturned);
+    emitter.on(DB_GET_TOKEN_LS_RETURNED, this.db_GetTokenLSReturned);
+    emitter.on(DB_GET_USER_TOKEN_LS_RETURNED, this.db_getUserTokenLSReturned);
+    emitter.on(DB_CREATE_LS_RETURNED, this.db_createLSReturned);
+    emitter.on(DB_CHECK_LS_RESULT_RETURNED, this.db_checkLSResultReturned);
 
     if (this.props.coinID) {
       dispatcher.dispatch({
@@ -185,17 +184,17 @@ class CryptoDetective extends Component {
     emitter.removeListener(GRAPH_TIMEFRAME_CHANGED, this.graphTimeFrameChanged);
     emitter.removeListener(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
     emitter.removeListener(
-      DB_GET_TOKEN_PD_RETURNED,
-      this.db_GetTokenPDReturned
+      DB_GET_TOKEN_LS_RETURNED,
+      this.db_GetTokenLSReturned
     );
     emitter.removeListener(
-      DB_GET_USER_TOKEN_PD_RETURNED,
-      this.db_getUserTokenPDReturned
+      DB_GET_USER_TOKEN_LS_RETURNED,
+      this.db_getUserTokenLSReturned
     );
-    emitter.removeListener(DB_CREATE_PD_RETURNED, this.db_createPDReturned);
+    emitter.removeListener(DB_CREATE_LS_RETURNED, this.db_createLSReturned);
     emitter.removeListener(
-      DB_CHECK_PD_RESULT_RETURNED,
-      this.db_checkPDResultReturned
+      DB_CHECK_LS_RESULT_RETURNED,
+      this.db_checkLSResultReturned
     );
   }
 
@@ -207,7 +206,7 @@ class CryptoDetective extends Component {
     const account = store.getStore("account");
 
     dispatcher.dispatch({
-      type: DB_GET_TOKEN_PD,
+      type: DB_GET_TOKEN_LS,
       tokenID: data[0].id,
     });
     this.setState({ coinData: data[0], dataLoaded: true });
@@ -285,44 +284,46 @@ class CryptoDetective extends Component {
     }
   };
 
-  db_GetTokenPDReturned = async (data) => {
+  db_GetTokenLSReturned = async (data) => {
     dispatcher.dispatch({
-      type: DB_GET_USER_TOKEN_PD,
+      type: DB_GET_USER_TOKEN_LS,
       tokenID: this.state.coinData.id,
     });
     let results = await this.getVoteResults(data);
-    this.setState({ tokenPD: data, voteResults: await results });
+    this.setState({ tokenLS: data, voteResults: await results });
   };
 
   getVoteResults = async (data) => {
-    let voteDump = 0;
-    let votePump = 0;
+    let voteShort = 0;
+    let voteLong = 0;
     for (var i = 0; i < data.length; i++) {
-      data[i].vote ? votePump++ : voteDump++;
+      data[i].vote ? voteLong++ : voteShort++;
     }
-    let sharePump = ((votePump / (votePump + voteDump)) * 100).toString() + "%";
-    let shareDump = ((voteDump / (votePump + voteDump)) * 100).toString() + "%";
+    let shareLong =
+      ((voteLong / (voteLong + voteShort)) * 100).toString() + "%";
+    let shareShort =
+      ((voteShort / (voteLong + voteShort)) * 100).toString() + "%";
 
     let voteResults = {
-      pump: { result: votePump, percent: sharePump },
-      dump: { result: voteDump, percent: shareDump },
+      long: { result: voteLong, percent: shareLong },
+      short: { result: voteShort, percent: shareShort },
     };
     return voteResults;
   };
 
-  db_getUserTokenPDReturned = (data) => {
+  db_getUserTokenLSReturned = (data) => {
     if (data.length > 0) {
       //TODO CALCULATE REMAINING TIME UNTIL P&D is ready
-      // console.log({ message: "user has active PD", data: data[0] });
-      this.setState({ userTokenPD: data[0], pdEnabled: false, pdLoaded: true });
+      console.log({ message: "user has active LS", data: data[0] });
+      this.setState({ userTokenLS: data[0], lsEnabled: false, lsLoaded: true });
     } else {
-      // console.log({ message: "user has no PD running", data: data });
-      this.setState({ userTokenPD: data, pdEnabled: true, pdLoaded: true });
+      console.log({ message: "user has no LS running", data: data });
+      this.setState({ userTokenLS: data, lsEnabled: true, lsLoaded: true });
     }
   };
 
   timeRemaining = () => {
-    let dateEnd = new Date(this.state.userTokenPD.voteEnding);
+    let dateEnd = new Date(this.state.userTokenLS.voteEnding);
     let dateNow = new Date();
     let remaining = dateEnd - dateNow;
     // let timeLimit = 120 * 1000; // 2min for testing
@@ -338,20 +339,20 @@ class CryptoDetective extends Component {
     return percentComplete;
   };
 
-  db_createPDReturned = (data) => {
+  db_createLSReturned = (data) => {
     // console.log(data);
 
     dispatcher.dispatch({
-      type: DB_GET_TOKEN_PD,
+      type: DB_GET_TOKEN_LS,
       tokenID: this.state.coinData.id,
     });
-    this.setState({ userTokenPD: data, pdEnabled: false });
+    this.setState({ userTokenLS: data, pdEnabled: false });
   };
 
-  db_checkPDResultReturned = (data) => {
+  db_checkLSResultReturned = (data) => {
     // console.log(data);
     dispatcher.dispatch({
-      type: DB_GET_TOKEN_PD,
+      type: DB_GET_TOKEN_LS,
       tokenID: this.state.coinData.id,
     });
     this.setState({ modalOpen: true, modalData: data });
@@ -359,26 +360,26 @@ class CryptoDetective extends Component {
     //TODO: TRIGGER FUNCTION TO ADD SCREEN DIM AND DIALOG SHOWING RESULT HERE <<<
   };
 
-  db_checkPDResult = (data) => {
+  db_checkLSResult = (data) => {
     dispatcher.dispatch({
-      type: DB_CHECK_PD_RESULT,
+      type: DB_CHECK_LS_RESULT,
       tokenID: this.state.coinData.id,
     });
   };
 
-  pump = () => {
+  long = () => {
     dispatcher.dispatch({
-      type: DB_CREATE_PD,
+      type: DB_CREATE_LS,
       tokenID: this.state.coinData.id,
-      vote: "pump",
+      vote: "long",
     });
   };
 
-  dump = () => {
+  short = () => {
     dispatcher.dispatch({
-      type: DB_CREATE_PD,
+      type: DB_CREATE_LS,
       tokenID: this.state.coinData.id,
-      vote: "dump",
+      vote: "short",
     });
   };
 
@@ -596,7 +597,7 @@ class CryptoDetective extends Component {
                 xs={12}
               >
                 <Grid item>
-                  <Typography variant="subtitle1">Pump & Dump</Typography>
+                  <Typography variant="subtitle1">Long & Short</Typography>
                   <Grid
                     style={{
                       marginTop: 10,
@@ -610,7 +611,7 @@ class CryptoDetective extends Component {
                     xs={12}
                     padding={5}
                   >
-                    {this.state.pdLoaded && this.state.pdEnabled && (
+                    {this.state.lsLoaded && this.state.lsEnabled && (
                       <Grid
                         item
                         container
@@ -620,22 +621,22 @@ class CryptoDetective extends Component {
                         <Button
                           variant="outlined"
                           color="primary"
-                          startIcon={<ThumbUpIcon />}
-                          onClick={() => this.pump()}
+                          startIcon={<TrendingUpIcon />}
+                          onClick={() => this.long()}
                         >
-                          Pump
+                          Long
                         </Button>
                         <Button
                           variant="outlined"
                           color="secondary"
-                          startIcon={<ThumbDownIcon />}
-                          onClick={() => this.dump()}
+                          startIcon={<TrendingDownIcon />}
+                          onClick={() => this.short()}
                         >
-                          Dump
+                          Short
                         </Button>
                       </Grid>
                     )}
-                    {this.state.pdLoaded && !this.state.pdEnabled && (
+                    {this.state.lsLoaded && !this.state.lsEnabled && (
                       <>
                         <Grid
                           item
@@ -645,30 +646,30 @@ class CryptoDetective extends Component {
                         >
                           <Button
                             variant={
-                              this.state.userTokenPD.vote
+                              this.state.userTokenLS.vote
                                 ? "contained"
                                 : "outlined"
                             }
                             color="primary"
-                            startIcon={<ThumbUpIcon />}
+                            startIcon={<TrendingUpIcon />}
                           >
-                            Pump
+                            Long
                           </Button>
                           <Button
                             variant={
-                              this.state.userTokenPD.vote
+                              this.state.userTokenLS.vote
                                 ? "outlined"
                                 : "contained"
                             }
                             color="secondary"
-                            startIcon={<ThumbDownIcon />}
+                            startIcon={<TrendingDownIcon />}
                           >
-                            Dump
+                            Short
                           </Button>
                         </Grid>
                       </>
                     )}
-                    {this.state.pdLoaded && (
+                    {this.state.lsLoaded && (
                       <Grid
                         item
                         container
@@ -684,7 +685,7 @@ class CryptoDetective extends Component {
                           style={{ marginTop: "10px", width: "90%" }}
                         >
                           <Grid
-                            style={{ width: voteResults.pump.percent }}
+                            style={{ width: voteResults.long.percent }}
                             item
                           >
                             <Typography
@@ -698,7 +699,7 @@ class CryptoDetective extends Component {
                             />
                           </Grid>
                           <Grid
-                            style={{ width: voteResults.dump.percent }}
+                            style={{ width: voteResults.short.percent }}
                             item
                           >
                             <Typography
@@ -711,7 +712,7 @@ class CryptoDetective extends Component {
                             />
                           </Grid>
                         </Grid>
-                        {!this.state.pdEnabled && (
+                        {!this.state.lsEnabled && (
                           <>
                             <Typography style={{ marginTop: 10 }}>
                               Time remaining
@@ -729,7 +730,7 @@ class CryptoDetective extends Component {
                             style={{ marginTop: 20 }}
                             variant="outlined"
                             color="primary"
-                            onClick={() => this.db_checkPDResult()}
+                            onClick={() => this.db_checkLSResult()}
                           >
                             Check Results
                           </Button>
@@ -1178,7 +1179,7 @@ class CryptoDetective extends Component {
 
   renderModal = (data) => {
     return (
-      <PDvoteResultModal
+      <LSvoteResultModal
         closeModal={this.closeModal}
         modalOpen={this.state.modalOpen}
         modalData={data}

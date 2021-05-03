@@ -19,7 +19,7 @@ const styles = (theme) => ({
   },
 });
 
-class PDVoteResultChart extends Component {
+class LSVoteResultChart extends Component {
   constructor(props) {
     super(props);
 
@@ -128,4 +128,4 @@ class PDVoteResultChart extends Component {
   }
 }
 
-export default withStyles(styles)(PDVoteResultChart);
+export default withStyles(styles)(LSVoteResultChart);
