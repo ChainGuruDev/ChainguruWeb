@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { withStyles } from "@material-ui/core/styles";
 import { Typography } from "@material-ui/core";
 import FormGroup from "@material-ui/core/FormGroup";
-import { Paper, Grid, Icon, SvgIcon } from "@material-ui/core";
+import { Paper, Grid, Icon, SvgIcon, IconButton } from "@material-ui/core";
 
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Checkbox from "@material-ui/core/Checkbox";
@@ -33,6 +33,7 @@ import {
 import Brightness2OutlinedIcon from "@material-ui/icons/Brightness2Outlined";
 import Brightness2RoundedIcon from "@material-ui/icons/Brightness2Rounded";
 import LocalGasStationOutlinedIcon from "@material-ui/icons/LocalGasStationOutlined";
+import SettingsIcon from "@material-ui/icons/Settings";
 
 import UnlockModal from "../unlock/unlockModal.jsx";
 
@@ -512,6 +513,9 @@ class Header extends Component {
                   {t("Market.Connect")}
                 </Typography>
               )}
+              <IconButton aria-label="settings">
+                <SettingsIcon />
+              </IconButton>
             </div>
           </div>
         </Grid>
