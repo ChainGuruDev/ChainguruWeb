@@ -513,7 +513,13 @@ class Header extends Component {
                   {t("Market.Connect")}
                 </Typography>
               )}
-              <IconButton aria-label="settings">
+              <IconButton
+                onClick={() => {
+                  this.nav("user/profile");
+                }}
+                style={{ marginLeft: 10 }}
+                aria-label="settings"
+              >
                 <SettingsIcon />
               </IconButton>
             </div>
@@ -570,6 +576,8 @@ class Header extends Component {
     if (screen === "cover") {
       window.open("https://chainguru.app/", "_blank");
       return;
+    } else if (screen === "profile") {
+      window.open("/user/profile", "_self");
     }
     this.props.history.push("/" + screen);
   };

@@ -24,7 +24,8 @@ import Artist from "./components/market/artist/artist";
 import User from "./components/market/user/user";
 
 //IN dev
-import PumpAndDump from "./components/tools/PumpDump.js";
+import LongShort from "./components/tools/longShort.js";
+import Profile from "./components/profile";
 
 import { colors } from "./theme";
 
@@ -568,12 +569,12 @@ class App extends Component {
               <Market />
             </Route>
             //DEV ROUTES
-            <Route path="/dev/pump">
+            <Route path="/user/profile">
               <Header
                 setHeaderValue={this.setHeaderValue}
                 headerValue={headerValue}
               />
-              <PumpAndDump />
+              <Profile />
             </Route>
             <Route path="/">
               <Home />

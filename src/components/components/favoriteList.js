@@ -706,7 +706,6 @@ class FavoriteList extends Component {
             </TableRow>
           </TableHead>
           <TableBody>{this.sortedList(sortData)}</TableBody>
-
           <TableFooter>
             <TableRow>
               <TablePagination

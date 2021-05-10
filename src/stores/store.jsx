@@ -101,10 +101,14 @@ import {
   DB_GET_TOKEN_LS_RETURNED,
   DB_GET_USER_TOKEN_LS,
   DB_GET_USER_TOKEN_LS_RETURNED,
+  DB_GET_USER_LS,
+  DB_GET_USER_LS_RETURNED,
   DB_CREATE_LS,
   DB_CREATE_LS_RETURNED,
   DB_CHECK_LS_RESULT,
   DB_CHECK_LS_RESULT_RETURNED,
+  DB_NEW_NICKNAME,
+  DB_NEW_NICKNAME_RETURNED,
 } from "../constants";
 
 import {
@@ -332,11 +336,17 @@ class Store {
           case DB_GET_USER_TOKEN_LS:
             this.db_getUserTokenLS(payload);
             break;
+          case DB_GET_USER_LS:
+            this.db_getUserLS(payload);
+            break;
           case DB_CREATE_LS:
             this.db_createLS(payload);
             break;
           case DB_CHECK_LS_RESULT:
             this.db_checkLSResult(payload);
+            break;
+          case DB_NEW_NICKNAME:
+            this.db_newNickname(payload);
             break;
           default: {
             break;
@@ -1240,20 +1250,40 @@ class Store {
     console.log(newVsCoin);
   };
 
-  geckoPopulateFavList = async (tokenIds) => {
+  geckoPopulateFavList = async (payload) => {
     let data;
     let vsCoin = store.getStore("vsCoin");
-    //console.log(tokenIds);
-    try {
-      let data = await CoinGeckoClient.coins.markets({
-        ids: tokenIds.tokenIDs,
-        vs_currency: vsCoin,
-        sparkline: true,
-        price_change_percentage: "1h,24h,7d,30d,1y",
-      });
-      emitter.emit(COINGECKO_POPULATE_FAVLIST_RETURNED, await data.data);
-    } catch (err) {
-      console.log(err);
+    console.log(payload);
+    console.log(payload.lsType);
+    if (!payload.lsType) {
+      console.log("standard query");
+      try {
+        let data = await CoinGeckoClient.coins.markets({
+          ids: payload.tokenIDs,
+          vs_currency: vsCoin,
+          sparkline: true,
+          price_change_percentage: "1h,24h,7d,30d,1y",
+        });
+        emitter.emit(COINGECKO_POPULATE_FAVLIST_RETURNED, await data.data);
+      } catch (err) {
+        console.log(err);
+      }
+    } else {
+      console.log("LongShort query type " + payload.lsType);
+      try {
+        let data = await CoinGeckoClient.coins.markets({
+          ids: payload.tokenIDs,
+          vs_currency: vsCoin,
+          sparkline: true,
+          price_change_percentage: "1h,24h,7d,30d,1y",
+        });
+        emitter.emit(
+          COINGECKO_POPULATE_FAVLIST_RETURNED,
+          await [data.data, payload.lsType]
+        );
+      } catch (err) {
+        console.log(err);
+      }
     }
   };
 
@@ -1634,6 +1664,7 @@ class Store {
   };
 
   db_checkLSResult = async (payload) => {
+    console.log(payload.tokenID);
     const account = store.getStore("account");
     try {
       let data = await axios.put(
@@ -1644,6 +1675,44 @@ class Store {
         }
       );
       emitter.emit(DB_CHECK_LS_RESULT_RETURNED, await data.data);
+    } catch (err) {
+      if (err) {
+        console.log(err.message);
+      }
+    }
+  };
+
+  db_newNickname = async (payload) => {
+    const account = store.getStore("account");
+    try {
+      let data = await axios.put(
+        `https://chainguru-db.herokuapp.com/users/${account.address}/setNickname`,
+        {
+          newNickname: payload.nickname,
+        }
+      );
+      emitter.emit(DB_NEW_NICKNAME_RETURNED, await data.data);
+    } catch (err) {
+      if (err) {
+        console.log(err.message);
+      }
+    }
+  };
+
+  db_getUserLS = async (payload) => {
+    const account = store.getStore("account");
+    try {
+      if (payload.onlyActive) {
+        let data = await axios.get(
+          `https://chainguru-db.herokuapp.com/longShort/user?userID=${account.address}&onlyActive=true`
+        );
+        emitter.emit(DB_GET_USER_LS_RETURNED, await data.data);
+      } else {
+        let data = await axios.get(
+          `https://chainguru-db.herokuapp.com/longShort/user?userID=${account.address}`
+        );
+        emitter.emit(DB_GET_USER_LS_RETURNED, await data.data);
+      }
     } catch (err) {
       if (err) {
         console.log(err.message);

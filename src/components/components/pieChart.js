@@ -38,6 +38,8 @@ class PieChart extends Component {
       count.push(value.amount);
     }
     console.log(props.data);
+    console.log(categories);
+    console.log(count);
     this.state = {
       series: count,
       options: {

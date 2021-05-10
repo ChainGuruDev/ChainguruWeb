@@ -107,27 +107,27 @@ class MySnackbar extends Component {
 
     switch (type) {
       case "Error":
-        icon = <ErrorIcon color={colors.red} />;
+        icon = <ErrorIcon color={colors.cgRed} />;
         color = colors.red;
         messageType = t("Snackbar.Error");
         break;
       case "Success":
-        icon = <SuccessIcon color={colors.blue} />;
-        color = colors.blue;
+        icon = <SuccessIcon color={colors.cgGreen} />;
+        color = colors.cgGreen;
         messageType = t("Snackbar.Success");
         break;
       case "Warning":
-        icon = <WarningIcon color={colors.orange} />;
+        icon = <WarningIcon color={colors.cgOrange} />;
         color = colors.orange;
         messageType = t("Snackbar.Warning");
         break;
       case "Info":
-        icon = <InfoIcon color={colors.blue} />;
+        icon = <InfoIcon color={colors.cgBlue} />;
         color = colors.blue;
         messageType = t("Snackbar.Info");
         break;
       case "Hash":
-        icon = <SuccessIcon color={colors.blue} />;
+        icon = <SuccessIcon color={colors.cgBlue} />;
         color = colors.blue;
         messageType = t("Snackbar.Hash");
 

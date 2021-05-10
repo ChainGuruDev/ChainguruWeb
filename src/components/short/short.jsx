@@ -7,10 +7,12 @@ import { withTranslation } from "react-i18next";
 
 import FlashOnIcon from "@material-ui/icons/FlashOn";
 import CompareArrowsIcon from "@material-ui/icons/CompareArrows";
+import TrendingUpIcon from "@material-ui/icons/TrendingUp";
 import SearchIcon from "@material-ui/icons/Search";
 import CryptoDetective from "../tools/cryptoDetective";
 import CryptoCompare from "../tools/cryptoCompare";
 import Favorites from "../tools/favorites";
+import LongShort from "../tools/longShort";
 
 import {
   PING_COINGECKO,
@@ -214,6 +216,11 @@ class Short extends Component {
               icon={<SearchIcon />}
               {...a11yProps(2)}
             />
+            <Tab
+              label="Short & Long"
+              icon={<TrendingUpIcon />}
+              {...a11yProps(3)}
+            />
           </Tabs>
         </AppBar>
         <TabPanel value={valueTab} index={0}>
@@ -225,6 +232,9 @@ class Short extends Component {
         <TabPanel value={valueTab} index={2}>
           {coinID && <CryptoDetective coinID={coinID} />}
           {!coinID && <CryptoDetective />}
+        </TabPanel>
+        <TabPanel value={valueTab} index={3}>
+          <LongShort />
         </TabPanel>
       </Grid>
     );
