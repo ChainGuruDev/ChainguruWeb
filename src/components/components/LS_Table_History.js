@@ -1,3 +1,5 @@
+//KEY.ID de los rows cambiar por el ID de la votacion de la DB
+
 //Table component to draw the active Long&Short
 
 import React, { Component } from "react";
@@ -102,8 +104,6 @@ class LS_Table_History extends Component {
     };
   }
 
-  //TODO PROPS LS DATA UPDATED update toknIDS state and geckofavData from newids
-
   componentDidMount() {
     emitter.on(COINGECKO_POPULATE_FAVLIST_RETURNED, this.geckoDataReturned);
   }
@@ -115,6 +115,7 @@ class LS_Table_History extends Component {
     );
   }
 
+  //TODO PROPS LS DATA UPDATED update toknIDS state and geckofavData from newids
   componentDidUpdate(prevProps) {
     if (prevProps.data !== this.props.data) {
       let tokenIDs = [];
@@ -143,8 +144,10 @@ class LS_Table_History extends Component {
     symbol,
     priceStart,
     vote,
+    voteEnding,
     priceEnd,
-    result
+    result,
+    dbid
   ) => {
     return {
       image,
@@ -153,8 +156,10 @@ class LS_Table_History extends Component {
       symbol,
       priceStart,
       vote,
+      voteEnding,
       priceEnd,
       result,
+      dbid,
     };
   };
 
@@ -177,33 +182,39 @@ class LS_Table_History extends Component {
 
   geckoDataReturned = (data) => {
     if (data[1] === "complete") {
-      console.log("data returned to complete list");
+      // console.log("data returned to complete list");
       // Create array with items to sort later in table
       let sort = [];
       //MERGE DATA FROM COINGECKO TOKENS and our DB LS positions
       const { lsData } = this.state;
-      this.setState({});
       //MATCH DBs FROM TOKEN IDS
-      data[0].forEach((item, i) => {
-        let index = lsData
+      lsData.forEach((item, i) => {
+        let index = data[0]
           .map(function (e) {
-            return e.tokenID;
+            return e.id;
           })
-          .indexOf(item.id);
+          .indexOf(item.tokenID);
+
+        var d = new Date(item.voteEnding);
+        let dformat =
+          [d.getMonth() + 1, d.getDate(), d.getFullYear()].join("/") +
+          " " +
+          [d.getHours(), d.getMinutes(), d.getSeconds()].join(":");
 
         let sortData = this.createData(
-          item.image,
-          item.name,
-          item.id,
-          item.symbol,
-          lsData[index].priceStart,
-          lsData[index].vote,
-          lsData[index].priceEnd.toFixed(2),
-          lsData[index].result
+          data[0][index].image,
+          data[0][index].name,
+          data[0][index].id,
+          data[0][index].symbol,
+          item.priceStart,
+          item.vote,
+          dformat.toString(),
+          item.priceEnd.toFixed(2),
+          item.result,
+          item._id
         );
         sort.push(sortData);
       });
-      // console.log(sort);
       this.setState({ sortData: sort, coinData: data });
     }
   };
@@ -237,8 +248,10 @@ class LS_Table_History extends Component {
           item.symbol,
           item.priceStart,
           item.vote,
+          item.voteEnding,
           item.priceEnd,
-          item.result
+          item.result,
+          item.dbid
         );
         newRows.push(_rowData);
       });
@@ -252,13 +265,14 @@ class LS_Table_History extends Component {
           item.symbol,
           item.priceStart,
           item.vote,
+          item.voteEnding,
           item.priceEnd,
-          item.result
+          item.result,
+          item.dbid
         );
         newRows.push(_rowData);
       });
     }
-
     if (newRows.length >= 1) {
       if (newRows.length != formatedRows.length) {
         this.setState({ formatedRows: newRows });
@@ -267,7 +281,7 @@ class LS_Table_History extends Component {
         ? newRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
         : newRows
       ).map((row) => (
-        <TableRow hover={true} key={row.name}>
+        <TableRow hover={true} key={row.dbid}>
           <TableCell
             style={{ cursor: "pointer" }}
             onClick={() => this.detective(row.id)}
@@ -309,6 +323,9 @@ class LS_Table_History extends Component {
               {row.priceEnd}
             </Typography>
           </TableCell>
+          <TableCell align="right">
+            <Typography variant={"h4"}>{row.voteEnding}</Typography>
+          </TableCell>
           <TableCell align="center">
             {row.vote && (
               <ButtonGroup color="primary" aria-label="LongShort_ButtonGroup">
@@ -342,7 +359,7 @@ class LS_Table_History extends Component {
             )}
           </TableCell>
           <TableCell align="center">
-            {row.vote === row.result && (
+            {row.result && (
               <Button
                 startIcon={<AssignmentTurnedInIcon />}
                 variant="outlined"
@@ -351,7 +368,7 @@ class LS_Table_History extends Component {
                 Good
               </Button>
             )}
-            {row.vote != row.result && (
+            {!row.result && (
               <Button
                 startIcon={<AssignmentTurnedInIcon />}
                 variant="outlined"
@@ -483,6 +500,7 @@ class LS_Table_History extends Component {
               <TableCell></TableCell>
               <TableCell></TableCell>
               <TableCell></TableCell>
+              <TableCell></TableCell>
             </TableRow>
             <TableRow>
               <TableCell></TableCell>
@@ -511,10 +529,7 @@ class LS_Table_History extends Component {
                   )}
                 Start Price
               </TableCell>
-              <TableCell
-                onClick={() => this.sortBy("current_price")}
-                align="right"
-              >
+              <TableCell onClick={() => this.sortBy("priceEnd")} align="right">
                 {this.state.sortBy === "priceEnd" &&
                   this.state.sortOrder === "asc" && (
                     <ArrowDropUpRoundedIcon align="right" />
@@ -524,6 +539,20 @@ class LS_Table_History extends Component {
                     <ArrowDropDownRoundedIcon align="right" />
                   )}
                 End Price
+              </TableCell>
+              <TableCell
+                onClick={() => this.sortBy("voteEnding")}
+                align="right"
+              >
+                {this.state.sortBy === "voteEnding" &&
+                  this.state.sortOrder === "asc" && (
+                    <ArrowDropUpRoundedIcon align="right" />
+                  )}
+                {this.state.sortBy === "voteEnding" &&
+                  this.state.sortOrder === "dsc" && (
+                    <ArrowDropDownRoundedIcon align="right" />
+                  )}
+                Date End
               </TableCell>
               <TableCell onClick={() => this.sortBy("vote")} align="center">
                 {this.state.sortBy === "vote" &&
@@ -552,7 +581,7 @@ class LS_Table_History extends Component {
             <TableRow>
               <TablePagination
                 rowsPerPageOptions={[5, 10, 25, { label: "All", value: -1 }]}
-                colSpan={3}
+                colSpan={0}
                 count={formatedRows.length}
                 rowsPerPage={rowsPerPage}
                 page={page}

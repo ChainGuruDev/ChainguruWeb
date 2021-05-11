@@ -106,7 +106,7 @@ class LSvoteResultModal extends Component {
 
     let answerOK;
     if (modalData) {
-      answerOK = modalData.result === modalData.vote ? true : false;
+      answerOK = modalData.result;
     } else {
       answerOK = false;
     }

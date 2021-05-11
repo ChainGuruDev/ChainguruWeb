@@ -1,3 +1,6 @@
+//KEY.ID de los rows cambiar por el ID de la votacion de la DB
+//REVISAR LOS SHORT que estan dando mal los resultados
+
 //Table component to draw the active Long&Short
 
 import React, { Component } from "react";
@@ -571,7 +574,7 @@ class LS_Table_Active extends Component {
             <TableRow>
               <TablePagination
                 rowsPerPageOptions={[5, 10, 25, { label: "All", value: -1 }]}
-                colSpan={3}
+                colSpan={0}
                 count={formatedRows.length}
                 rowsPerPage={rowsPerPage}
                 page={page}

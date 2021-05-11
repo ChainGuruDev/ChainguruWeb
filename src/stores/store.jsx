@@ -1253,10 +1253,10 @@ class Store {
   geckoPopulateFavList = async (payload) => {
     let data;
     let vsCoin = store.getStore("vsCoin");
-    console.log(payload);
-    console.log(payload.lsType);
+    // console.log(payload);
+    // console.log(payload.lsType);
     if (!payload.lsType) {
-      console.log("standard query");
+      // console.log("standard query");
       try {
         let data = await CoinGeckoClient.coins.markets({
           ids: payload.tokenIDs,
@@ -1269,7 +1269,7 @@ class Store {
         console.log(err);
       }
     } else {
-      console.log("LongShort query type " + payload.lsType);
+      // console.log("LongShort query type " + payload.lsType);
       try {
         let data = await CoinGeckoClient.coins.markets({
           ids: payload.tokenIDs,

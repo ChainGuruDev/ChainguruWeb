@@ -190,16 +190,16 @@ class LongShort extends Component {
     data.forEach((item, i) => {
       item.complete ? completeLS.push(item) : incompleteLS.push(item);
     });
-    console.log({ complete: completeLS, incomplete: incompleteLS });
+    // console.log({ complete: completeLS, incomplete: incompleteLS });
 
     // sort stats by Type Long / Short
     let countLong = [0, 0];
     let countShort = [0, 0];
     completeLS.forEach((item, i) => {
       if (item.vote) {
-        item.result === item.vote ? countLong[0]++ : countLong[1]++;
+        item.result ? countLong[0]++ : countLong[1]++;
       } else {
-        item.result === item.vote ? countShort[0]++ : countShort[1]++;
+        item.result ? countShort[0]++ : countShort[1]++;
       }
     });
     let countTotals = {
@@ -225,8 +225,14 @@ class LongShort extends Component {
   };
 
   db_createLSReturned = (data) => {
+    const account = store.getStore("account");
+
     let data2 = [];
     data2.push(data);
+    dispatcher.dispatch({
+      type: DB_GET_USER_LS,
+      address: account.address,
+    });
     this.userTokenLSReturned(data2);
   };
 
@@ -446,26 +452,72 @@ class LongShort extends Component {
                         style={{ marginLeft: 20 }}
                       >
                         {countTotals && (
-                          <Typography variant="h2" color="primary">
-                            {(
-                              (countTotals.ok /
-                                (countTotals.ok + countTotals.bad)) *
-                              100
-                            ).toFixed(2)}{" "}
-                            %
-                          </Typography>
+                          <>
+                            <Grid item container direction="row">
+                              <Typography variant="h2" color="primary">
+                                {countTotals.ok}
+                              </Typography>
+                              <Typography variant="h2">/</Typography>
+                              <Typography variant="h2" color="secondary">
+                                {countTotals.ok + countTotals.bad}
+                              </Typography>
+                            </Grid>
+                            <Typography variant="h2" color="primary">
+                              {(
+                                (countTotals.ok /
+                                  (countTotals.ok + countTotals.bad)) *
+                                100
+                              ).toFixed(2)}{" "}
+                              %
+                            </Typography>
+                          </>
                         )}
                         {countLong && (
-                          <Typography variant="h3" color="primary">
-                            Long: {countLong[0]} correct (
-                            {countLong[0] + countLong[1]} total)
-                          </Typography>
+                          <Grid item container direction="row">
+                            <TrendingUpIcon
+                              color="primary"
+                              style={{ marginRight: 10 }}
+                            />
+                            <Typography variant="h3" color="primary">
+                              {countLong[0]}
+                            </Typography>{" "}
+                            <Typography variant="h3">/</Typography>{" "}
+                            <Typography variant="h3" color="secondary">
+                              {countLong[1] + " "}
+                            </Typography>{" "}
+                            <Typography variant="h3" color="primary">
+                              {" ("}
+                              {(
+                                (countLong[0] / (countLong[0] + countLong[1])) *
+                                100
+                              ).toFixed(2)}{" "}
+                              %)
+                            </Typography>
+                          </Grid>
                         )}
                         {countShort && (
-                          <Typography variant="h3" color="secondary">
-                            Short: {countShort[0]} correct (
-                            {countShort[0] + countShort[1]} total)
-                          </Typography>
+                          <Grid item container direction="row">
+                            <TrendingDownIcon
+                              color="secondary"
+                              style={{ marginRight: 10 }}
+                            />
+                            <Typography variant="h3" color="primary">
+                              {countShort[0]}
+                            </Typography>{" "}
+                            <Typography variant="h3">/</Typography>{" "}
+                            <Typography variant="h3" color="secondary">
+                              {countShort[1] + " "}
+                            </Typography>
+                            <Typography variant="h3" color="primary">
+                              {" ("}
+                              {(
+                                (countShort[0] /
+                                  (countShort[0] + countShort[1])) *
+                                100
+                              ).toFixed(2)}{" "}
+                              %)
+                            </Typography>
+                          </Grid>
                         )}
                       </Grid>
                     </Grid>
