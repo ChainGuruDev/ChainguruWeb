@@ -17,6 +17,7 @@ import {
 } from "@material-ui/core";
 
 import Snackbar from "../snackbar";
+import AvatarSelectModal from "./avatarSelectModal.js";
 
 import AddCircleRoundedIcon from "@material-ui/icons/AddCircleRounded";
 
@@ -28,6 +29,7 @@ import {
   DB_USERDATA_RETURNED,
   DB_NEW_NICKNAME,
   DB_NEW_NICKNAME_RETURNED,
+  DB_NEW_AVATAR_RETURNED,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -54,8 +56,8 @@ const styles = (theme) => ({
     background: "rgba(255,255,255,0.05)",
   },
   largeProfile: {
-    width: theme.spacing(15),
-    height: theme.spacing(15),
+    width: "100px",
+    height: "100px",
     cursor: "pointer",
   },
 });
@@ -71,6 +73,8 @@ class Profile extends Component {
       loadingBTN: false,
       errorNick: false,
       errorMSG: "",
+      avatarModalOpen: false,
+      userAvatar: null,
     };
 
     if (account && account.address) {
@@ -86,6 +90,7 @@ class Profile extends Component {
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
     emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
     emitter.on(DB_NEW_NICKNAME_RETURNED, this.dbNewNicknameReturned);
+    emitter.on(DB_NEW_AVATAR_RETURNED, this.dbNewAvatarReturned);
   }
 
   componentWillUnmount() {
@@ -99,6 +104,7 @@ class Profile extends Component {
       DB_NEW_NICKNAME_RETURNED,
       this.dbNewNicknameReturned
     );
+    emitter.removeListener(DB_NEW_AVATAR_RETURNED, this.dbNewAvatarReturned);
   }
 
   connectionConnected = () => {
@@ -111,10 +117,21 @@ class Profile extends Component {
   };
 
   dbUserDataReturned = (data) => {
-    this.setState({
-      loading: false,
-      userData: data,
-    });
+    if (data.avatar) {
+      console.log(data.avatar);
+      let avatar = this.getAvatarType({ avatar: data.avatar });
+
+      this.setState({
+        loading: false,
+        userData: data,
+        avatar: avatar,
+      });
+    } else {
+      this.setState({
+        loading: false,
+        userData: data,
+      });
+    }
   };
 
   dbNewNicknameReturned = (data) => {
@@ -131,6 +148,81 @@ class Profile extends Component {
           snackbarMessage: snackbarObj.snackbarMessage,
           snackbarType: snackbarObj.snackbarType,
         });
+      });
+    } else {
+      console.log("error");
+      this.setState({
+        errorNick: true,
+        loadingBTN: false,
+        errorMSG: data.message,
+      });
+    }
+  };
+
+  getAvatarType = (data) => {
+    // userData.avatar starts with local_ or custom_
+    // depending which one load local avatars or custom user
+    let avatar;
+    if (data != null) {
+      if (data.avatar) {
+        var line = data.avatar;
+        var pieces = line.split("_");
+        avatar = {
+          type: pieces[0],
+          name: pieces[1],
+        };
+      }
+    }
+
+    let currentAvatar = null;
+    if (avatar) {
+      if (avatar.type === "local") {
+        switch (avatar.name) {
+          case "1":
+            currentAvatar = "/AvatarBeta/avatar-01.png";
+            break;
+          case "2":
+            currentAvatar = "/AvatarBeta/avatar-02.png";
+            break;
+          case "3":
+            currentAvatar = "/AvatarBeta/avatar-03.png";
+            break;
+          case "4":
+            currentAvatar = "/AvatarBeta/avatar-04.png";
+            break;
+          case "5":
+            currentAvatar = "/AvatarBeta/avatar-05.png";
+            break;
+          case "6":
+            currentAvatar = "/AvatarBeta/avatar-06.png";
+            break;
+          case "7":
+            currentAvatar = "/AvatarBeta/avatar-07.png";
+            break;
+          case "8":
+            currentAvatar = "/AvatarBeta/avatar-08.png";
+            break;
+          default:
+        }
+      } else if (avatar.type === "custom") {
+        //TODO ADD LOGIC TO POINT TO USER CUSTOM UPLOADED PICTURE
+      } else {
+        currentAvatar = "/avatar.jpg";
+      }
+    } else {
+      currentAvatar = "/avatar.jpg";
+    }
+
+    return currentAvatar;
+  };
+
+  dbNewAvatarReturned = (data) => {
+    if (!data.error) {
+      let avatar = this.getAvatarType(data);
+      this.setState({
+        loading: false,
+        userData: data,
+        avatar: avatar,
       });
     } else {
       console.log("error");
@@ -164,19 +256,17 @@ class Profile extends Component {
     });
   };
 
+  goBack = () => {
+    this.props.history.goBack();
+  };
+
   renderProfile = () => {
     const { classes, t } = this.props;
-    // <Grid container item justify="center" alignItems="center" xs={3}>
-    //   <Avatar
-    //     alt="avatar"
-    //     src="/avatar.jpg"
-    //     className={classes.largeProfile}
-    //     onClick={() => console.log("clickedProfile")}
-    //   />
-    // </Grid>
+    const { avatar } = this.state;
+
     return (
       <>
-        <Grid item xs={12}>
+        <Grid style={{ width: "100%" }} item xs={12}>
           <Typography style={{ textAlign: "center" }} variant="h3">
             User Profile
           </Typography>
@@ -186,15 +276,30 @@ class Profile extends Component {
           item
           container
           direction="row"
-          justify="center"
+          justify="space-evenly"
           alignItems="flex-start"
         >
+          <Grid
+            style={{ minWidth: "120px" }}
+            container
+            item
+            justify="center"
+            alignItems="center"
+            xs={3}
+          >
+            <Avatar
+              alt="avatar"
+              src={avatar}
+              className={classes.largeProfile}
+              onClick={() => this.setState({ avatarModalOpen: true })}
+            />
+          </Grid>
           <Grid
             style={{
               padding: 10,
             }}
             item
-            xs={7}
+            xs={8}
           >
             <TextField
               id="nickname-field"
@@ -219,15 +324,25 @@ class Profile extends Component {
               padding: 10,
             }}
             item
-            xs={2}
+            xs={12}
+            style={{ marginTop: 10, display: "flex", justifyContent: "end" }}
           >
+            <Button
+              color="secondary"
+              variant="outlined"
+              onClick={() => this.goBack()}
+              style={{ marginRight: 10 }}
+            >
+              {!this.state.loadingBTN && "Cancel"}
+              {this.state.loadingBTN && <CircularProgress />}
+            </Button>
             <Button
               color="primary"
               variant="outlined"
               onClick={() => this.setNickname()}
               disabled={this.state.errorNick || this.state.loadingBTN}
             >
-              {!this.state.loadingBTN && "Change"}
+              {!this.state.loadingBTN && "Save"}
               {this.state.loadingBTN && <CircularProgress />}
             </Button>
           </Grid>
@@ -240,7 +355,7 @@ class Profile extends Component {
   // </Grid>
   render() {
     const { classes, t } = this.props;
-    const { account, loading, snackbarMessage } = this.state;
+    const { account, loading, snackbarMessage, avatarModalOpen } = this.state;
 
     return (
       <div className={classes.root}>
@@ -259,12 +374,26 @@ class Profile extends Component {
             </Grid>
           </Card>
         )}
+        {avatarModalOpen && this.renderModal()}
         {snackbarMessage && this.renderSnackbar()}
       </div>
     );
   }
   nav = (screen) => {
     this.props.history.push(screen);
+  };
+
+  closeModal = () => {
+    this.setState({ avatarModalOpen: false });
+  };
+
+  renderModal = () => {
+    return (
+      <AvatarSelectModal
+        closeModal={this.closeModal}
+        modalOpen={this.state.avatarModalOpen}
+      />
+    );
   };
 
   renderSnackbar = () => {

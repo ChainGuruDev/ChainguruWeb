@@ -122,7 +122,7 @@ class LS_Table_History extends Component {
       this.props.data.forEach((item, i) => {
         tokenIDs.push(item.tokenID);
       });
-      console.log(tokenIDs);
+      // console.log(tokenIDs);
       if (tokenIDs.length > 0) {
         dispatcher.dispatch({
           type: COINGECKO_POPULATE_FAVLIST,

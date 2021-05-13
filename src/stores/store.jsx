@@ -109,6 +109,8 @@ import {
   DB_CHECK_LS_RESULT_RETURNED,
   DB_NEW_NICKNAME,
   DB_NEW_NICKNAME_RETURNED,
+  DB_NEW_AVATAR,
+  DB_NEW_AVATAR_RETURNED,
 } from "../constants";
 
 import {
@@ -347,6 +349,9 @@ class Store {
             break;
           case DB_NEW_NICKNAME:
             this.db_newNickname(payload);
+            break;
+          case DB_NEW_AVATAR:
+            this.db_newAvatar(payload);
             break;
           default: {
             break;
@@ -1696,6 +1701,22 @@ class Store {
       if (err) {
         console.log(err.message);
       }
+    }
+  };
+
+  db_newAvatar = async (payload) => {
+    const account = store.getStore("account");
+    try {
+      console.log(payload.avatar);
+      let data = await axios.put(
+        `http://localhost:3001/users/${account.address}/setAvatar`,
+        {
+          newAvatar: payload.avatar,
+        }
+      );
+      emitter.emit(DB_NEW_AVATAR_RETURNED, await data.data);
+    } catch (err) {
+      console.log(err.message);
     }
   };
 
