@@ -4,13 +4,6 @@ import { withStyles } from "@material-ui/core/styles";
 import { Card, Typography } from "@material-ui/core";
 import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
-import AttachMoneyRoundedIcon from "@material-ui/icons/AttachMoneyRounded";
-import WhatshotRoundedIcon from "@material-ui/icons/WhatshotRounded";
-import AccountBalanceWalletRoundedIcon from "@material-ui/icons/AccountBalanceWalletRounded";
-import AccountBalanceRoundedIcon from "@material-ui/icons/AccountBalanceRounded";
-import TrendingUpRoundedIcon from "@material-ui/icons/TrendingUpRounded";
-import GolfCourseRoundedIcon from "@material-ui/icons/GolfCourseRounded";
-import StoreIcon from "@material-ui/icons/Store";
 
 import { ReactComponent as FastIcon } from "../../assets/fast.svg";
 import { ReactComponent as MediumIcon } from "../../assets/medium.svg";

@@ -2,15 +2,11 @@ import React, { Component } from "react";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
 import { BrowserRouter, Switch, Route } from "react-router-dom";
-import useMediaQuery from "@material-ui/core/useMediaQuery";
 import "./i18n";
-import cgTheme from "./theme";
-import RobotoTTF from "typeface-roboto";
 import createBreakpoints from "@material-ui/core/styles/createBreakpoints";
 import Web3 from "web3";
 
 import Header from "./components/header";
-import Footer from "./components/footer";
 import Home from "./components/home";
 import Short from "./components/short";
 import Medium from "./components/medium";
@@ -24,37 +20,17 @@ import Artist from "./components/market/artist/artist";
 import User from "./components/market/user/user";
 
 //IN dev
-import LongShort from "./components/tools/longShort.js";
 import Profile from "./components/profile";
 
 import { colors } from "./theme";
 
 import { injected } from "./stores/connectors";
-import {
-  CONNECTION_CONNECTED,
-  DARKMODE_SWITCH_RETURN,
-  SWITCH_VS_COIN_RETURNED,
-  accountsChanged,
-} from "./constants";
-
-import {
-  GET_PROTOCOL_NAMES,
-  GET_PROTOCOL_BALANCE,
-  GET_PROTOCOLS_BALANCES,
-  GET_CONTRACT_ABI,
-  GET_TOKEN_COMPONENTS,
-} from "./constants/defiSDK.js";
+import { CONNECTION_CONNECTED, DARKMODE_SWITCH_RETURN } from "./constants";
 
 import Store from "./stores";
-import DefiSDKStore from "./stores/defiSDK_store.js";
 
 const emitter = Store.emitter;
 const store = Store.store;
-const dispatcher = Store.dispatcher;
-
-const emitterDefi = DefiSDKStore.emitter;
-const storeDefi = DefiSDKStore.store;
-const dispatcherDefi = DefiSDKStore.dispatcher;
 
 class App extends Component {
   state = {
@@ -211,7 +187,13 @@ class App extends Component {
         },
       },
       palette: {
-        type: "light",
+        type: state ? "dark" : "light",
+        primary: {
+          main: mainPrimaryColor,
+        },
+        secondary: {
+          main: mainSecondaryColor,
+        },
       },
       overrides: {
         MuiCssBaseline: {
@@ -299,7 +281,7 @@ class App extends Component {
         },
         MuiAccordion: {
           root: {
-            border: "1px solid " + "rgba(0,0,0,0.2)",
+            border: "1px solid rgba(0,0,0,0.2)",
             //backgroundColor: "rgba(255,255,255,0.25)",
 
             margin: "0px 0px",
@@ -379,15 +361,7 @@ class App extends Component {
           },
         },
       },
-      palette: {
-        type: state ? "dark" : "light",
-        primary: {
-          main: mainPrimaryColor,
-        },
-        secondary: {
-          main: mainSecondaryColor,
-        },
-      },
+
       // palette: {
       //   primary: {
       //     main: colors.buttonPrimary,
@@ -568,7 +542,7 @@ class App extends Component {
               />
               <Market />
             </Route>
-            //DEV ROUTES
+            {/* DEV ROUTES */}
             <Route path="/user/profile">
               <Header
                 setHeaderValue={this.setHeaderValue}

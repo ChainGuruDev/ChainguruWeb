@@ -1,23 +1,12 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import {
-  Grid,
-  Card,
-  FormControl,
-  InputLabel,
-  Input,
-  FormHelperText,
-  TextField,
-  CircularProgress,
-} from "@material-ui/core";
+import { Grid, Card, TextField, CircularProgress } from "@material-ui/core";
 import Button from "@material-ui/core/Button";
 import ipfs from "../../ipfs";
 
 import Loader from "../../loader";
-import UnlockModal from "../../unlock/unlockModal.jsx";
 import Snackbar from "../../snackbar";
-import { colors } from "../../../theme";
 
 import {
   ERROR,
@@ -248,8 +237,6 @@ class NewEdit extends Component {
   };
 
   refresh = () => {
-    const account = store.getStore("account");
-
     dispatcher.dispatch({
       type: GET_ACCOUNT_ROLES,
       content: {},

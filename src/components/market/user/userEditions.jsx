@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { withStyles } from "@material-ui/core/styles";
-import { withRouter, Link } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 import Card from "@material-ui/core/Card";
 import CardActionArea from "@material-ui/core/CardActionArea";
 import CardActions from "@material-ui/core/CardActions";
@@ -13,7 +13,6 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 import GiftModal from "../gift/giftModal.jsx";
 
 import { ERROR, BUY_EDITION, BUY_RETURNED } from "../../../constants";
-import { withTranslation } from "react-i18next";
 import { colors } from "../../../theme";
 
 import Store from "../../../stores";
@@ -144,7 +143,6 @@ class UserEditions extends Component {
   render(props) {
     const { classes } = this.props;
     const { loading, modalOpen } = this.state;
-    const editNum = this.props.editionNum;
     const owned = this.props.owned.length;
 
     return (

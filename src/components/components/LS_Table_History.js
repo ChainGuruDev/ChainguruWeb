@@ -3,12 +3,9 @@
 //Table component to draw the active Long&Short
 
 import React, { Component } from "react";
-import PropTypes from "prop-types";
-import clsx from "clsx";
-import { withRouter, Link } from "react-router-dom";
-import { lighten, withStyles } from "@material-ui/core/styles";
+import { withRouter } from "react-router-dom";
+import { withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
-import { colors } from "../../theme";
 
 //Import MaterialUI elements
 import {
@@ -20,18 +17,11 @@ import {
   TableFooter,
   TablePagination,
   TableRow,
-  TableSortLabel,
-  Toolbar,
   Typography,
-  Checkbox,
-  Tooltip,
-  FormControlLabel,
-  Switch,
   IconButton,
   Paper,
   Button,
   ButtonGroup,
-  CircularProgress,
 } from "@material-ui/core";
 
 //IMPORT icons
@@ -49,11 +39,9 @@ import AssignmentTurnedInIcon from "@material-ui/icons/AssignmentTurnedIn";
 import {
   COINGECKO_POPULATE_FAVLIST,
   COINGECKO_POPULATE_FAVLIST_RETURNED,
-  DB_CHECK_LS_RESULT,
 } from "../../constants";
 
 import Store from "../../stores";
-const store = Store.store;
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
 
@@ -71,7 +59,7 @@ const styles = (theme) => ({
   },
 });
 
-class LS_Table_History extends Component {
+class LSTableHistory extends Component {
   constructor(props) {
     super();
 
@@ -274,7 +262,7 @@ class LS_Table_History extends Component {
       });
     }
     if (newRows.length >= 1) {
-      if (newRows.length != formatedRows.length) {
+      if (newRows.length !== formatedRows.length) {
         this.setState({ formatedRows: newRows });
       }
       return (rowsPerPage > 0
@@ -401,8 +389,8 @@ class LS_Table_History extends Component {
   };
 
   TablePaginationActions = (props) => {
-    const { classes, t } = this.props;
-    const { formatedRows, page, rowsPerPage, onChangePage } = this.state;
+    const { classes } = this.props;
+    const { formatedRows, page, rowsPerPage } = this.state;
     const count = formatedRows.length;
 
     const handleFirstPageButtonClick = (event) => {
@@ -458,15 +446,8 @@ class LS_Table_History extends Component {
   };
 
   render() {
-    const { classes, t } = this.props;
-    const {
-      sortData,
-      page,
-      rows,
-      rowsPerPage,
-      count,
-      formatedRows,
-    } = this.state;
+    const { classes } = this.props;
+    const { sortData, page, rowsPerPage, formatedRows } = this.state;
 
     const handleChangePage = (newPage) => {
       console.log(newPage);
@@ -476,9 +457,6 @@ class LS_Table_History extends Component {
     const handleChangeRowsPerPage = (event) => {
       this.setState({ rowsPerPage: parseInt(event.target.value, 10), page: 0 });
     };
-
-    const emptyRows =
-      rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
 
     return (
       <TableContainer
@@ -606,5 +584,5 @@ class LS_Table_History extends Component {
 }
 
 export default withTranslation()(
-  withRouter(withStyles(styles)(LS_Table_History))
+  withRouter(withStyles(styles)(LSTableHistory))
 );

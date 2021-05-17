@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 
-import { Grid, GridList, Button, Paper } from "@material-ui/core";
+import { Grid, GridList } from "@material-ui/core";
 
 //import ItemCard from "../components/itemCard";
 import RenderEditions from "./renderEditions";
@@ -280,8 +280,6 @@ class Market extends Component {
     const { classes, t } = this.props;
     const { loading, modalOpen, snackbarMessage } = this.state;
 
-    const account = store.getStore("account");
-    const web3context = store.getStore("web3context");
     const chainId = store.getStore("chainId");
 
     if (this.state.account.address != null) {

@@ -1,7 +1,6 @@
 import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
 
 //Import Material UI components
@@ -169,7 +168,6 @@ class PortfolioHeatMap extends Component {
   }
 
   connectionConnected = () => {
-    const { t } = this.props;
     this.setState({ account: store.getStore("account") });
   };
 
@@ -239,8 +237,8 @@ class PortfolioHeatMap extends Component {
       let userWallet = { ...newWallets[0] };
       let displayBalance = [...userWallet.erc20Balance];
 
-      let objIndex;
       for (var i = 1; i < newWallets.length; i++) {
+        let objIndex;
         let wallet = { ...newWallets[i] };
         let erc20Balance = [...wallet.erc20Balance];
         erc20Balance.forEach((item, x) => {
@@ -293,9 +291,10 @@ class PortfolioHeatMap extends Component {
           if (
             userBlacklist.tokenIDs.includes(prevBalanceList[i].contractAddress)
           ) {
+            let index = i;
             let blacklistedIndex = prevBalanceList.findIndex(
               (obj) =>
-                obj.contractAddress === prevBalanceList[i].contractAddress
+                obj.contractAddress === prevBalanceList[index].contractAddress
             );
             prevBalanceList.splice(blacklistedIndex, 1);
             i--;
@@ -304,20 +303,21 @@ class PortfolioHeatMap extends Component {
       }
 
       if (this.state.hideLowBalanceCoins) {
-        for (var i = 0; i < prevBalanceList.length; i++) {
-          if (!prevBalanceList[i].balance > 0) {
+        for (var j = 0; j < prevBalanceList.length; j++) {
+          if (!prevBalanceList[j].balance > 0) {
+            let index = j;
             let blacklistedIndex = prevBalanceList.findIndex(
               (obj) =>
-                obj.contractAddress === prevBalanceList[i].contractAddress
+                obj.contractAddress === prevBalanceList[index].contractAddress
             );
             prevBalanceList.splice(blacklistedIndex, 1);
-            i--;
+            j--;
           }
         }
       }
 
-      for (var i = 0; i < prevBalanceList.length; i++) {
-        let item = { ...prevBalanceList[i] };
+      for (var k = 0; k < prevBalanceList.length; k++) {
+        let item = { ...prevBalanceList[k] };
         if (item.tokenSymbol === "EWTB") {
           item.id = "energy-web-token";
         } else if (item.tokenSymbol === "XOR") {
@@ -381,7 +381,7 @@ class PortfolioHeatMap extends Component {
       }
     });
     if (tokenIDs.length > 0) {
-      let geckoData = dispatcher.dispatch({
+      dispatcher.dispatch({
         type: COINGECKO_POPULATE_FAVLIST,
         tokenIDs: tokenIDs,
       });
@@ -408,7 +408,7 @@ class PortfolioHeatMap extends Component {
   };
 
   userWalletList = (wallets) => {
-    const { classes, t } = this.props;
+    const { classes } = this.props;
     if (wallets.length > 0) {
       return wallets.map((wallet) => (
         <div key={wallet._id}>
@@ -446,7 +446,7 @@ class PortfolioHeatMap extends Component {
               >
                 <RefreshRoundedIcon />
               </IconButton>
-              {this.state.account.address != wallet.wallet && (
+              {this.state.account.address !== wallet.wallet && (
                 <IconButton
                   aria-label="remove"
                   onClick={() => this.removeWALLET(wallet.wallet)}
@@ -499,7 +499,6 @@ class PortfolioHeatMap extends Component {
   };
 
   dataSorting = (data) => {
-    let rows = [];
     let sort = [];
     data.forEach((item, i) => {
       if (item.geckoData) {
@@ -603,7 +602,6 @@ class PortfolioHeatMap extends Component {
   };
 
   sortedList = (rowData) => {
-    const { classes } = this.props;
     const { sortBy, sortOrder } = this.state;
 
     function dynamicSort(property) {
@@ -798,15 +796,8 @@ class PortfolioHeatMap extends Component {
   };
 
   render() {
-    const { classes, t } = this.props;
-    const {
-      account,
-      loading,
-      selectedID,
-      userWallets,
-      addWallet,
-      heatMapData,
-    } = this.state;
+    const { classes } = this.props;
+    const { account, userWallets, addWallet, heatMapData } = this.state;
 
     return (
       <div className={classes.root}>

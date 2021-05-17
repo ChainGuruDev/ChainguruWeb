@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { withStyles } from "@material-ui/core/styles";
 import { Typography } from "@material-ui/core";
 import FormGroup from "@material-ui/core/FormGroup";
-import { Paper, Grid, Icon, SvgIcon, IconButton } from "@material-ui/core";
+import { Paper, Grid, IconButton } from "@material-ui/core";
 
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Checkbox from "@material-ui/core/Checkbox";
@@ -12,7 +12,6 @@ import ENS from "ethjs-ens";
 import { withTranslation } from "react-i18next";
 
 import { ReactComponent as CGLogo } from "../../assets/logos/logo_chainguru.svg";
-import { ReactComponent as GASIcon } from "../../assets/gas.svg";
 import { ReactComponent as Usd } from "../../assets/dolar.svg";
 import { ReactComponent as Eur } from "../../assets/euro.svg";
 import { ReactComponent as Btc } from "../../assets/bitcoin.svg";
@@ -22,10 +21,8 @@ import {
   CONNECTION_CONNECTED,
   CONNECTION_DISCONNECTED,
   DB_GET_USERDATA,
-  DARKMODE_SWITCH,
   DARKMODE_SWITCH_RETURN,
   CHECK_GASPRICE,
-  SWITCH_VS_COIN,
   GASPRICE_RETURNED,
   SWITCH_VS_COIN_RETURNED,
 } from "../../constants";
@@ -181,8 +178,6 @@ class Header extends Component {
     const account = store.getStore("account");
     const theme = store.getStore("theme");
     const vsCoin = store.getStore("vsCoin");
-
-    const darkModeBool = theme === "dark" ? true : false;
 
     this.state = {
       account: account,

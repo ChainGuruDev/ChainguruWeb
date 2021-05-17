@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import { Card, Typography, Paper, Grid, Button } from "@material-ui/core";
+import { Typography, Paper, Grid, Button } from "@material-ui/core";
 import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
 import AlltimeChart from "../components/AlltimeChart";
@@ -95,7 +95,7 @@ class BlueChipCard extends Component {
   };
 
   render() {
-    const { classes, t, location, data } = this.props;
+    const { classes, data } = this.props;
     const { loadingChart, chartData } = this.state;
     const darkMode = store.getStore("theme") === "dark" ? true : false;
 
@@ -157,7 +157,6 @@ class BlueChipCard extends Component {
           >
             <Button
               variant="contained"
-              onClick={this.overlayClicked}
               className={classes.button}
               color="primary"
               onClick={() => {

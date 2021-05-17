@@ -1,15 +1,12 @@
 import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import { withTranslation } from "react-i18next";
-import { colors } from "../../theme";
 import FavoriteList from "../components/favoriteList.js";
 
 //IMPORT MaterialUI
 import {
   Card,
   Grid,
-  Divider,
   Button,
   TextField,
   CircularProgress,
@@ -21,17 +18,13 @@ import Autocomplete from "@material-ui/lab/Autocomplete";
 import AddCircleRoundedIcon from "@material-ui/icons/AddCircleRounded";
 
 import {
-  ERROR,
   GET_COIN_LIST,
   COINLIST_RETURNED,
-  GET_COIN_DATA,
   DB_GET_USERDATA,
   DB_USERDATA_RETURNED,
   CONNECTION_CONNECTED,
   CONNECTION_DISCONNECTED,
-  COIN_DATA_RETURNED,
   DB_ADD_FAVORITE,
-  DB_ADD_FAVORITE_RETURNED,
   COINGECKO_POPULATE_FAVLIST,
 } from "../../constants";
 
@@ -134,7 +127,6 @@ class Favorites extends Component {
   }
 
   connectionConnected = () => {
-    const { t } = this.props;
     this.setState({ account: store.getStore("account") });
   };
 
@@ -185,8 +177,8 @@ class Favorites extends Component {
   };
 
   render() {
-    const { classes, t } = this.props;
-    const { account, loading, favList, selectedID } = this.state;
+    const { classes } = this.props;
+    const { account, selectedID } = this.state;
 
     return (
       <div className={classes.root}>

@@ -1,7 +1,6 @@
 import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
 
 //IMPORT MaterialUI
@@ -12,7 +11,6 @@ import {
   Divider,
   Button,
   TextField,
-  CircularProgress,
   List,
   ListItem,
   ListItemText,
@@ -29,14 +27,10 @@ import BackspaceRoundedIcon from "@material-ui/icons/BackspaceRounded";
 import {
   CHECK_ACCOUNT_RETURNED,
   CHECK_ACCOUNT,
-  GET_COIN_DATA,
   DB_GET_USERDATA,
   DB_USERDATA_RETURNED,
   CONNECTION_CONNECTED,
   CONNECTION_DISCONNECTED,
-  COIN_DATA_RETURNED,
-  DB_ADD_FAVORITE,
-  DB_ADD_FAVORITE_RETURNED,
   DB_ADD_WALLET,
   DB_ADD_WALLET_RETURNED,
   DB_DEL_WALLET,
@@ -178,7 +172,6 @@ class Portfolio extends Component {
   }
 
   connectionConnected = () => {
-    const { t } = this.props;
     this.setState({ account: store.getStore("account") });
   };
 

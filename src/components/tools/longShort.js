@@ -3,37 +3,30 @@
 //Check result after 24hs since prediction
 
 import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
-import { colors } from "../../theme";
 
 import CoinSearchBar from "../components/CoinSearchBar.js";
-import LS_ResultDonutChart from "../components/LS_ResultDonutChart.js";
-import LS_Table_Active from "../components/LS_Table_Active.js";
-import LS_Table_History from "../components/LS_Table_History.js";
+import LSResultDonutChart from "../components/LS_ResultDonutChart.js";
+import LSTableActive from "../components/LS_Table_Active.js";
+import LSTableHistory from "../components/LS_Table_History.js";
 import LSvoteResultModal from "../components/lsVoteResultModal.js";
 
 //import materialUI elements
 import {
   Grid,
-  Paper,
   Card,
-  TextField,
-  CircularProgress,
   Button,
   ButtonGroup,
   Avatar,
   Typography,
 } from "@material-ui/core";
 
-import Autocomplete from "@material-ui/lab/Autocomplete";
-import AddCircleRoundedIcon from "@material-ui/icons/AddCircleRounded";
 import TrendingDownIcon from "@material-ui/icons/TrendingDown";
 import TrendingUpIcon from "@material-ui/icons/TrendingUp";
 
 import {
-  ERROR,
   CONNECTION_CONNECTED,
   CONNECTION_DISCONNECTED,
   COIN_DATA_RETURNED,
@@ -44,7 +37,6 @@ import {
   DB_CREATE_LS,
   DB_CREATE_LS_RETURNED,
   DB_CHECK_LS_RESULT_RETURNED,
-  DB_GET_TOKEN_LS,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -116,7 +108,6 @@ class LongShort extends Component {
   }
 
   componentDidMount() {
-    const account = store.getStore("account");
     emitter.on(CONNECTION_CONNECTED, this.connected);
     emitter.on(CONNECTION_DISCONNECTED, this.disconnected);
     emitter.on(DB_GET_USER_LS_RETURNED, this.db_getUserLS);
@@ -262,11 +253,9 @@ class LongShort extends Component {
   };
 
   render() {
-    const { classes, t } = this.props;
+    const { classes } = this.props;
     const {
       account,
-      loading,
-      selectedID,
       countTotals,
       countLong,
       countShort,
@@ -438,7 +427,7 @@ class LongShort extends Component {
                       justify="flex-start"
                     >
                       <Grid item xs={3} style={{ minWidth: "120px" }}>
-                        <LS_ResultDonutChart
+                        <LSResultDonutChart
                           data={
                             this.state.countTotals ? this.state.countTotals : {}
                           }
@@ -525,8 +514,8 @@ class LongShort extends Component {
                 )}
               </Grid>
               <Grid item className={classes.favList} xs={12}>
-                {incompleteLS && <LS_Table_Active data={incompleteLS} />}
-                {completeLS && <LS_Table_History data={completeLS} />}
+                {incompleteLS && <LSTableActive data={incompleteLS} />}
+                {completeLS && <LSTableHistory data={completeLS} />}
               </Grid>
             </Grid>
           </Card>

@@ -1,16 +1,11 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import ReactHtmlParser, {
-  processNodes,
-  convertNodeToElement,
-  htmlparser2,
-} from "react-html-parser";
+import ReactHtmlParser from "react-html-parser";
 
 //IMPORT COMPONENTS
 import CoinSearchBar from "../components/CoinSearchBar.js";
 import PriceChart from "../components/Chart.js";
-import LSVoteResultChart from "../components/lsVoteResultChart.js";
 import LSvoteResultModal from "../components/lsVoteResultModal.js";
 
 import { colors } from "../../theme";
@@ -26,26 +21,21 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Paper,
   Link,
   LinearProgress,
-  Container,
 } from "@material-ui/core";
 
 //IMPORT ICONS
-import SwapHorizIcon from "@material-ui/icons/SwapHoriz";
-import AspectRatioRoundedIcon from "@material-ui/icons/AspectRatioRounded";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ArrowDropUpRoundedIcon from "@material-ui/icons/ArrowDropUpRounded";
 import ArrowDropDownRoundedIcon from "@material-ui/icons/ArrowDropDownRounded";
-import DoubleArrowIcon from "@material-ui/icons/DoubleArrow";
 
 import TrendingUpIcon from "@material-ui/icons/TrendingUp";
 import TrendingDownIcon from "@material-ui/icons/TrendingDown";
 //WEB LINKS ICONS
-import TelegramIcon from "@material-ui/icons/Telegram";
-import TwitterIcon from "@material-ui/icons/Twitter";
-import RedditIcon from "@material-ui/icons/Reddit";
+// import TelegramIcon from "@material-ui/icons/Telegram";
+// import TwitterIcon from "@material-ui/icons/Twitter";
+// import RedditIcon from "@material-ui/icons/Reddit";
 import CompassCalibrationIcon from "@material-ui/icons/CompassCalibration";
 import GitHubIcon from "@material-ui/icons/GitHub";
 import ChatIcon from "@material-ui/icons/Chat";
@@ -156,8 +146,6 @@ class CryptoDetective extends Component {
   }
 
   componentDidMount() {
-    const account = store.getStore("account");
-
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
     emitter.on(COIN_DATA_RETURNED, this.coinDataReturned);
     emitter.on(GRAPH_TIMEFRAME_CHANGED, this.graphTimeFrameChanged);
@@ -203,8 +191,6 @@ class CryptoDetective extends Component {
   };
 
   coinDataReturned = (data) => {
-    const account = store.getStore("account");
-
     dispatcher.dispatch({
       type: DB_GET_TOKEN_LS,
       tokenID: data[0].id,
@@ -246,7 +232,7 @@ class CryptoDetective extends Component {
   };
 
   graphTimeFrameChanged = (data) => {
-    const { coinData, loading, vs } = this.state;
+    const { coinData, vs } = this.state;
     this.setState({ timeFrame: data });
     if (coinData.id) {
       dispatcher.dispatch({
@@ -385,8 +371,7 @@ class CryptoDetective extends Component {
 
   dataDisplaySide = () => {
     const { classes } = this.props;
-    const { selectA, dataLoaded, coinData, vs, voteResults } = this.state;
-    const preventDefault = (event) => event.preventDefault();
+    const { coinData, vs, voteResults } = this.state;
 
     return (
       <div>
@@ -929,12 +914,12 @@ class CryptoDetective extends Component {
 
   dataDisplayMain = () => {
     const { classes } = this.props;
-    const { selectA, dataLoaded, coinData, vs } = this.state;
+    const { coinData, vs } = this.state;
 
     const handleClick = (timeFrame) => {
       dispatcher.dispatch({
         type: GET_COIN_PRICECHART,
-        content: [coinData.id, , timeFrame, vs],
+        content: [coinData.id, timeFrame, vs],
       });
       this.setState({ timeFrame: timeFrame });
     };
@@ -1189,7 +1174,7 @@ class CryptoDetective extends Component {
 
   render() {
     const { classes } = this.props;
-    const { selectA, dataLoaded, coinData, modalOpen, modalData } = this.state;
+    const { dataLoaded, coinData, modalOpen, modalData } = this.state;
 
     return (
       <div className={classes.background}>

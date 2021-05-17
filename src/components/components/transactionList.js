@@ -1,41 +1,25 @@
 import React, { Component } from "react";
-import PropTypes from "prop-types";
-import clsx from "clsx";
-import { withRouter, Link } from "react-router-dom";
-import { lighten, withStyles } from "@material-ui/core/styles";
+import { withRouter } from "react-router-dom";
+import { withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
-
-import { colors } from "../../theme";
 
 import {
   Table,
   TableBody,
   TableCell,
-  TableContainer,
-  TableHead,
-  TablePagination,
   TableRow,
-  TableSortLabel,
-  Toolbar,
   Typography,
-  Paper,
-  Checkbox,
-  Tooltip,
-  FormControlLabel,
-  Switch,
   IconButton,
   LinearProgress,
   CircularProgress,
   Grid,
 } from "@material-ui/core";
 
-import DeleteIcon from "@material-ui/icons/Delete";
 import RefreshRoundedIcon from "@material-ui/icons/RefreshRounded";
 
 import { DB_UPDATE_ONE_MOV, DB_UPDATE_ONE_MOV_RETURNED } from "../../constants";
 
 import Store from "../../stores";
-const store = Store.store;
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
 const axios = require("axios").default;
@@ -175,8 +159,6 @@ class TransactionList extends Component {
     const from = parseInt(tokenData.timeStamp) - 100;
     const to = parseInt(tokenData.timeStamp) + 10000;
     try {
-      let date = new Date(parseInt(tokenData.timeStamp) * 1000);
-      const queryDate = `${date.getDate()}-${date.getMonth()}-${date.getFullYear()}`;
       const _urlUSD = await `https://api.coingecko.com/api/v3/coins/${tokenData.id}/market_chart/range?vs_currency=${vsCoin[0]}&from=${from}&to=${to}`;
       const _urlEUR = await `https://api.coingecko.com/api/v3/coins/${tokenData.id}/market_chart/range?vs_currency=${vsCoin[1]}&from=${from}&to=${to}`;
       const _urlBTC = await `https://api.coingecko.com/api/v3/coins/${tokenData.id}/market_chart/range?vs_currency=${vsCoin[2]}&from=${from}&to=${to}`;
@@ -304,8 +286,8 @@ class TransactionList extends Component {
   };
 
   render() {
-    const { classes, t } = this.props;
-    const { rowData, loadingItems, loadingData } = this.state;
+    const { classes } = this.props;
+    const { rowData, loadingData } = this.state;
     return (
       <Table className={classes.table} aria-label="favoritesList">
         <TableBody>

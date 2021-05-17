@@ -3,16 +3,10 @@ import Chart from "react-apexcharts";
 import { withStyles } from "@material-ui/core/styles";
 import { withRouter } from "react-router-dom";
 
-import { colors } from "../../theme";
-
-import {
-  DARKMODE_SWITCH_RETURN,
-  SWITCH_VS_COIN_RETURNED,
-} from "../../constants";
+import { DARKMODE_SWITCH_RETURN } from "../../constants";
 
 import Store from "../../stores";
 const emitter = Store.emitter;
-const dispatcher = Store.dispatcher;
 const store = Store.store;
 
 const styles = (theme) => ({
@@ -48,6 +42,14 @@ class HeatMapChart extends Component {
           background: "transparent",
           foreColor: "rgba(125,125,125,0.1)",
           stroke: "#333",
+          events: {
+            dataPointSelection: function (event, chartContext, config) {
+              let index = config.dataPointIndex;
+              let selectedID =
+                config.w.globals.initialSeries[0].data[index].tokenID;
+              self.detective(selectedID);
+            },
+          },
         },
         tooltip: {
           enabled: true,
@@ -125,17 +127,6 @@ class HeatMapChart extends Component {
             foreColor: ["rgba(125,125,125,0.1)"],
           },
         },
-        chart: {
-          events: {
-            dataPointSelection: function (event, chartContext, config) {
-              let index = config.dataPointIndex;
-              let selectedID =
-                config.w.globals.initialSeries[0].data[config.dataPointIndex]
-                  .tokenID;
-              self.detective(selectedID);
-            },
-          },
-        },
       },
       series: [
         {
@@ -162,7 +153,7 @@ class HeatMapChart extends Component {
     var self = this;
     const colorMode = store.getStore("theme");
 
-    if (this.props.data != prevProps.data) {
+    if (this.props.data !== prevProps.data) {
       this.setState({
         series: [
           {
@@ -216,8 +207,7 @@ class HeatMapChart extends Component {
               dataPointSelection: function (event, chartContext, config) {
                 let index = config.dataPointIndex;
                 let selectedID =
-                  config.w.globals.initialSeries[0].data[config.dataPointIndex]
-                    .tokenID;
+                  config.w.globals.initialSeries[0].data[index].tokenID;
                 self.detective(selectedID);
               },
             },

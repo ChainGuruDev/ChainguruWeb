@@ -1,26 +1,14 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import {
-  Typography,
-  Button,
-  CircularProgress,
-  TextField,
-} from "@material-ui/core";
+import { Button, CircularProgress, TextField } from "@material-ui/core";
 import CloseIcon from "@material-ui/icons/Close";
 import { withTranslation } from "react-i18next";
 
-import {
-  ERROR,
-  CONNECTION_DISCONNECTED,
-  CONNECTION_CONNECTED,
-  GIFT_EDITION,
-  GIFT_EDITION_ARTIST,
-} from "../../../constants";
+import { ERROR, GIFT_EDITION } from "../../../constants";
 
 import Store from "../../../stores";
 const emitter = Store.emitter;
-const store = Store.store;
 const dispatcher = Store.dispatcher;
 
 const styles = (theme) => ({
@@ -92,7 +80,7 @@ class Gift extends Component {
   };
 
   render() {
-    const { classes, closeModal, t, editionNumber, account } = this.props;
+    const { classes, closeModal } = this.props;
 
     return (
       <div className={classes.root}>

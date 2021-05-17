@@ -1,12 +1,10 @@
 import React, { Component } from "react";
 import { withStyles } from "@material-ui/core/styles";
-import { withRouter, Link } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 
 import TextField from "@material-ui/core/TextField";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import CircularProgress from "@material-ui/core/CircularProgress";
-
-import { colors } from "../../theme";
 
 import {
   GET_COIN_LIST,
@@ -17,12 +15,8 @@ import {
 import Store from "../../stores";
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
-const store = Store.store;
 
-const styles = (theme) => {
-  root: {
-  }
-};
+const styles = (theme) => {};
 
 class CoinSearchBar extends Component {
   constructor(props) {

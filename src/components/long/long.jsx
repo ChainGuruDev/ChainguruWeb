@@ -1,20 +1,8 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import {
-  Card,
-  Typography,
-  Paper,
-  Grid,
-  ButtonBase,
-  Button,
-  Box,
-  AppBar,
-  Tabs,
-  Tab,
-} from "@material-ui/core";
+import { Typography, Grid, Box, AppBar, Tabs, Tab } from "@material-ui/core";
 import { withTranslation } from "react-i18next";
-import { colors } from "../../theme";
 import PropTypes from "prop-types";
 
 //Import ICONS
@@ -30,8 +18,6 @@ import { ERROR } from "../../constants";
 
 import Store from "../../stores";
 const emitter = Store.emitter;
-const dispatcher = Store.dispatcher;
-const store = Store.store;
 
 const styles = (theme) => ({
   background: {
@@ -149,7 +135,7 @@ class Long extends Component {
   };
 
   render() {
-    const { classes, t, location } = this.props;
+    const { classes } = this.props;
     const { snackbarMessage, valueTab } = this.state;
     const handleChangeTabs = (event, newValueTab) => {
       this.setState({ valueTab: newValueTab });

@@ -1,20 +1,11 @@
 import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
-import Bottleneck from "bottleneck";
 
 //Import UI elements
-import {
-  Card,
-  Typography,
-  Grid,
-  Divider,
-  Paper,
-  TextField,
-  Button,
-} from "@material-ui/core";
+import { Typography, Grid, Paper } from "@material-ui/core";
 
 import BlueChipCard from "../components/BlueChipCard.js";
 
@@ -53,15 +44,6 @@ const styles = (theme) => ({
     border: `2px solid ${colors.cgBlue}`,
     marginBottom: 10,
   },
-});
-
-const limiterChips = new Bottleneck({
-  reservoir: 50, // initial value
-  reservoirRefreshAmount: 50,
-  reservoirRefreshInterval: 60 * 1100, // must be divisible by 250
-  // also use maxConcurrent and/or minTime for safety
-  maxConcurrent: 1,
-  minTime: 250, // pick a value that makes sense for your use case
 });
 
 class BlueChips extends Component {
@@ -190,8 +172,8 @@ class BlueChips extends Component {
   };
 
   render() {
-    const { classes, t, location } = this.props;
-    const { chipData, snackbarMessage } = this.state;
+    const { classes } = this.props;
+    const { chipData } = this.state;
     const darkMode = store.getStore("theme") === "dark" ? true : false;
 
     return (

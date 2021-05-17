@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import { withStyles } from "@material-ui/core/styles";
 import {
-  Typography,
   Button,
   CircularProgress,
   Avatar,
@@ -11,15 +10,12 @@ import {
   Grid,
 } from "@material-ui/core";
 
-import CloseIcon from "@material-ui/icons/Close";
-
 import { ERROR, DB_NEW_AVATAR, DB_NEW_AVATAR_RETURNED } from "../../constants";
 
 import { colors } from "../../theme";
 
 import Store from "../../stores";
 const emitter = Store.emitter;
-const store = Store.store;
 const dispatcher = Store.dispatcher;
 
 const styles = (theme) => ({
@@ -105,7 +101,6 @@ class AvatarSelectModal extends Component {
   };
 
   newAvatarReturned = (data) => {
-    const { closeModal } = this.props;
     this.setState({
       loading: false,
     });

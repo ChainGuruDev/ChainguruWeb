@@ -41,7 +41,6 @@ import {
   GET_USER_EDITIONS_DETAILS,
   USER_EDITIONS_RETURNED,
   GET_ARTIST_EDITIONS_DETAILS,
-  ARTIST_EDITIONS_DETAILS_RETURNED,
   PING_COINGECKO,
   COINGECKO_POPULATE_FAVLIST,
   COINGECKO_POPULATE_FAVLIST_RETURNED,
@@ -56,11 +55,9 @@ import {
   GET_WALLET_TOKENS_BALANCE,
   SET_ALLOWED_ARTIST,
   ALLOWED_ARTIST_RETURNED,
-  SET_OPEN_TO_ALL_ARTISTS,
   IS_ALLOWED_ARTIST,
   IS_ALLOWED_RETURNED,
   GIFT_EDITION,
-  GIFT_EDITION_ARTIST,
   GET_MAX_EDITIONSIZE,
   MAX_EDIT_SIZE_RETURNED,
   DB_GET_USERDATA,
@@ -73,7 +70,6 @@ import {
   DB_DEL_BLACKLIST,
   DB_ADDDEL_BLACKLIST_RETURNED,
   DB_GET_BLUECHIPS,
-  DB_GET_BLUECHIPS_RETURNED,
   DB_ADD_WALLET,
   DB_DEL_WALLET,
   DB_ADD_WALLET_RETURNED,
@@ -92,7 +88,6 @@ import {
   CHECK_GASPRICE,
   GASPRICE_RETURNED,
   SWITCH_VS_COIN,
-  SWITCH_VS_COIN_RETURNED,
   DB_UPDATE_ONE_MOV,
   DB_UPDATE_ONE_MOV_RETURNED,
   DB_GET_COIN_CATEGORIES,
@@ -965,16 +960,12 @@ class Store {
         .tokenOfOwnerByIndex(payload.content, i)
         .call();
       _userTokens[i] = _tokenID;
-    }
 
-    for (var i = 0; i < (await _userBalance); i++) {
       let _tokenDetails = await lfOriginalsContract.methods
         .tokenData(await _userTokens[i])
         .call();
       _userTokenDetails[i] = _tokenDetails;
-    }
 
-    for (var i = 0; i < (await _userBalance); i++) {
       if (_userOwnedEditions.includes(_userTokenDetails[i][0])) {
         _userOwnedTokens[_userTokenDetails[i][0]].push(_userTokens[i]);
       } else {
@@ -1763,7 +1754,6 @@ class Store {
   };
 
   uniswapTrade = async (payload) => {
-    let contractAddress = "";
     try {
       let data = await CoinGeckoClient.coins.fetch(payload.id, {});
       if (data.data.contract_address) {

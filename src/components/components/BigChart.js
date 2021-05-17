@@ -74,7 +74,7 @@ class BigChart extends Component {
   };
 
   vsCoinReturned = (vsCoin) => {
-    const { classes, t, location, coinDataA, coinDataB, idA, idB } = this.props;
+    const { coinDataA, coinDataB, idA, idB } = this.props;
 
     dispatcher.dispatch({
       type: GET_COIN_PRICECHART,
@@ -87,7 +87,7 @@ class BigChart extends Component {
   };
 
   render() {
-    const { classes, t, location, coinDataA, coinDataB, vsCoin } = this.props;
+    const { classes, coinDataA, coinDataB, vsCoin } = this.props;
 
     const handleClick = (timeFrame) => {
       dispatcher.dispatch({

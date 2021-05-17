@@ -1,8 +1,6 @@
 import React, { Component } from "react";
-import PropTypes from "prop-types";
-import clsx from "clsx";
-import { withRouter, Link } from "react-router-dom";
-import { lighten, withStyles } from "@material-ui/core/styles";
+import { withRouter } from "react-router-dom";
+import { withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -10,7 +8,6 @@ import CargaLineal from "../components/cargaLineal.js";
 import SparklineChart from "./SparklineChart.js";
 import ArrowDropDownRoundedIcon from "@material-ui/icons/ArrowDropDownRounded";
 import ArrowDropUpRoundedIcon from "@material-ui/icons/ArrowDropUpRounded";
-import { colors } from "../../theme";
 
 import {
   Table,

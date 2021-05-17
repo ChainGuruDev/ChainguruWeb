@@ -31,7 +31,7 @@ class PriceChart extends Component {
     super(props);
 
     let color;
-    if (props.id == "A") {
+    if (props.id === "A") {
       color = [colors.cgGreen];
     } else {
       color = [colors.cgRed];
@@ -125,21 +125,19 @@ class PriceChart extends Component {
   };
 
   vsCoinReturned = (vsCoin) => {
-    function myFunction() {
-      var x = document.getElementById("cryptoCompSmall");
-      if (window.getComputedStyle(x).display !== "none") {
-        console.log("triggered");
-        if (this.props.id) {
-          dispatcher.dispatch({
-            type: GET_COIN_PRICECHART,
-            content: [
-              this.props.coinID,
-              this.props.id,
-              this.props.timeFrame,
-              vsCoin,
-            ],
-          });
-        }
+    var x = document.getElementById("cryptoCompSmall");
+    if (window.getComputedStyle(x).display !== "none") {
+      console.log("triggered");
+      if (this.props.id) {
+        dispatcher.dispatch({
+          type: GET_COIN_PRICECHART,
+          content: [
+            this.props.coinID,
+            this.props.id,
+            this.props.timeFrame,
+            vsCoin,
+          ],
+        });
       }
     }
   };

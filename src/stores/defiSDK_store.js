@@ -15,7 +15,6 @@ import { DeFiSDK } from "defi-sdk";
 
 const nodeUrl = config.infuraProviderMain;
 const defiSdk = new DeFiSDK(nodeUrl);
-const axios = require("axios").default;
 
 const Dispatcher = require("flux").Dispatcher;
 const Emitter = require("events").EventEmitter;
@@ -72,7 +71,7 @@ class DefiSDKStore {
     // const _abi = JSON.parse(contractABI);
 
     console.log(contractABI.abi);
-    if (contractABI != "") {
+    if (contractABI !== "") {
       const defiSDK = new web3.eth.Contract(
         contractABI.abi,
         "0x06fe76b2f432fdfecaef1a7d4f6c3d41b5861672"

@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { withStyles } from "@material-ui/core/styles";
-import { withRouter, Link } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 import Card from "@material-ui/core/Card";
 import CardActionArea from "@material-ui/core/CardActionArea";
 import CardActions from "@material-ui/core/CardActions";
@@ -11,7 +11,6 @@ import Typography from "@material-ui/core/Typography";
 import CircularProgress from "@material-ui/core/CircularProgress";
 
 import { ERROR, BUY_EDITION, BUY_RETURNED } from "../../constants";
-import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
 
 import Store from "../../stores";
@@ -136,7 +135,6 @@ class RenderEditions extends Component {
     const { classes } = this.props;
     const { loading } = this.state;
 
-    const editNum = this.props.editionNum;
     return (
       <div>
         <Card className={classes.root} elevation={6}>
@@ -181,7 +179,7 @@ class RenderEditions extends Component {
             }}
           >
             {this.props.details._maxAvailable -
-              this.props.details._circulatingSupply !=
+              this.props.details._circulatingSupply !==
               0 && (
               <Button
                 variant="contained"

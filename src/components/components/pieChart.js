@@ -4,15 +4,10 @@ import { withStyles } from "@material-ui/core/styles";
 
 import { colors } from "../../theme";
 
-import {
-  DARKMODE_SWITCH_RETURN,
-  SWITCH_VS_COIN_RETURNED,
-  PIE_CHART_SELECTED,
-} from "../../constants";
+import { DARKMODE_SWITCH_RETURN, PIE_CHART_SELECTED } from "../../constants";
 
 import Store from "../../stores";
 const emitter = Store.emitter;
-const dispatcher = Store.dispatcher;
 const store = Store.store;
 
 const styles = (theme) => ({
@@ -37,9 +32,9 @@ class PieChart extends Component {
       categories.push(value.categorie);
       count.push(value.amount);
     }
-    console.log(props.data);
-    console.log(categories);
-    console.log(count);
+    // console.log(props.data);
+    // console.log(categories);
+    // console.log(count);
     this.state = {
       series: count,
       options: {

@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { Card, Typography, Grid, Divider, Chip } from "@material-ui/core";
 import { withTranslation } from "react-i18next";
@@ -105,7 +105,7 @@ class CoinCompare extends Component {
   };
 
   graphTimeFrameChanged = (data) => {
-    const { coinData, loading, vs } = this.state;
+    const { coinData, vs } = this.state;
     this.setState({ timeFrame: data });
     if (coinData.id) {
       dispatcher.dispatch({
@@ -127,13 +127,12 @@ class CoinCompare extends Component {
   };
 
   getTimeFrameBTN = () => {
-    const { classes, t, toolTimeframe } = this.props;
-    const { coinData, loading, vs } = this.state;
+    const { classes, toolTimeframe } = this.props;
+    const { coinData, vs } = this.state;
 
     const handleClick = (newTimeframe) => {
       return emitter.emit(GRAPH_TIMEFRAME_CHANGED, newTimeframe);
     };
-    let timeFrameAvailable = [];
 
     const shortTimeframe = () => {
       return (
@@ -413,7 +412,7 @@ class CoinCompare extends Component {
   };
 
   render() {
-    const { classes, t } = this.props;
+    const { classes } = this.props;
     const { coinData, loading, vs } = this.state;
 
     return (

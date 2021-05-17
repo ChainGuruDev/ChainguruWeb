@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
 import dayjs from "dayjs";
@@ -12,7 +12,6 @@ import {
   Typography,
   Grid,
   Divider,
-  Paper,
   TextField,
   Button,
 } from "@material-ui/core";
@@ -25,7 +24,6 @@ import { COIN_DATA_RETURNED } from "../../constants";
 import Store from "../../stores";
 const store = Store.store;
 const emitter = Store.emitter;
-const dispatcher = Store.dispatcher;
 
 const APIURL = "https://api.coingecko.com/api/v3/";
 dayjs.extend(advancedFormat);
@@ -242,7 +240,7 @@ class DollarCostAverage extends Component {
   };
 
   render() {
-    const { classes, t } = this.props;
+    const { classes } = this.props;
     const darkMode = store.getStore("theme") === "dark" ? true : false;
     const {
       coinData,

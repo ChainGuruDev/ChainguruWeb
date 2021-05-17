@@ -8,7 +8,6 @@ import { DARKMODE_SWITCH_RETURN } from "../../constants";
 
 import Store from "../../stores";
 const emitter = Store.emitter;
-const dispatcher = Store.dispatcher;
 const store = Store.store;
 
 const styles = (theme) => ({

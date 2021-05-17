@@ -1,8 +1,8 @@
 import React, { Component } from "react";
 import { withStyles } from "@material-ui/core/styles";
-import { withRouter, Link } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 
-import { Paper, Typography, Button, Divider, Card } from "@material-ui/core";
+import { Typography, Button, Divider, Card } from "@material-ui/core";
 import { colors } from "../../theme";
 import {
   AVAILABLE_ITEMS_RETURNED,
@@ -13,8 +13,6 @@ import {
   CONNECTION_DISCONNECTED,
   IS_ALLOWED_RETURNED,
 } from "../../constants";
-
-import UnlockModal from "../unlock/unlockModal.jsx";
 
 import { withTranslation } from "react-i18next";
 import Store from "../../stores";
@@ -143,8 +141,7 @@ class MarketBar extends Component {
   };
 
   render() {
-    const { classes, t } = this.props;
-    const { userAccount, snackbarMessage } = this.state;
+    const { classes } = this.props;
     return (
       <div className={classes.root}>
         <Card className={classes.menuItems} elevation={3}>
@@ -175,7 +172,6 @@ class MarketBar extends Component {
           <Divider className={classes.divider} />
           <Button
             variant="contained"
-            onClick={this.overlayClicked}
             className={classes.button}
             color="primary"
             onClick={() => {

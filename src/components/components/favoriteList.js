@@ -1,13 +1,10 @@
 import React, { Component } from "react";
-import PropTypes from "prop-types";
-import clsx from "clsx";
-import { withRouter, Link } from "react-router-dom";
-import { lighten, withStyles } from "@material-ui/core/styles";
+import { withRouter } from "react-router-dom";
+import { withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
 import SparklineChart from "./SparklineChart.js";
 import ArrowDropDownRoundedIcon from "@material-ui/icons/ArrowDropDownRounded";
 import ArrowDropUpRoundedIcon from "@material-ui/icons/ArrowDropUpRounded";
-import { colors } from "../../theme";
 
 import {
   Table,
@@ -18,20 +15,12 @@ import {
   TableFooter,
   TablePagination,
   TableRow,
-  TableSortLabel,
-  Toolbar,
   Typography,
   Paper,
-  Checkbox,
-  Tooltip,
-  FormControlLabel,
-  Switch,
   IconButton,
 } from "@material-ui/core";
 
 import DeleteIcon from "@material-ui/icons/Delete";
-import FilterListIcon from "@material-ui/icons/FilterList";
-
 import FirstPageIcon from "@material-ui/icons/FirstPage";
 import KeyboardArrowLeft from "@material-ui/icons/KeyboardArrowLeft";
 import KeyboardArrowRight from "@material-ui/icons/KeyboardArrowRight";
@@ -46,11 +35,9 @@ import {
   COINGECKO_POPULATE_FAVLIST,
   COINGECKO_POPULATE_FAVLIST_RETURNED,
   SWITCH_VS_COIN_RETURNED,
-  SWITCH_VS_COIN,
 } from "../../constants";
 
 import Store from "../../stores";
-const store = Store.store;
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
 
@@ -188,7 +175,6 @@ class FavoriteList extends Component {
   };
 
   geckoFavListDataReturned = (data) => {
-    let rows = [];
     let sort = [];
     data.forEach((item, i) => {
       let sortData = this.createData(
@@ -349,7 +335,7 @@ class FavoriteList extends Component {
     }
 
     if (newRows.length >= 1) {
-      if (newRows.length != formatedRows.length) {
+      if (newRows.length !== formatedRows.length) {
         this.setState({ formatedRows: newRows });
       }
       return (rowsPerPage > 0
@@ -481,8 +467,8 @@ class FavoriteList extends Component {
   };
 
   TablePaginationActions = (props) => {
-    const { classes, t } = this.props;
-    const { formatedRows, page, rowsPerPage, onChangePage } = this.state;
+    const { classes } = this.props;
+    const { formatedRows, page, rowsPerPage } = this.state;
     const count = formatedRows.length;
 
     const handleFirstPageButtonClick = (event) => {
@@ -538,18 +524,8 @@ class FavoriteList extends Component {
   };
 
   render() {
-    const { classes, t } = this.props;
-    const {
-      coinData,
-      loading,
-      rowData,
-      sortData,
-      page,
-      rows,
-      rowsPerPage,
-      formatedRows,
-      count,
-    } = this.state;
+    const { classes } = this.props;
+    const { sortData, page, rowsPerPage, formatedRows } = this.state;
 
     const handleChangePage = (newPage) => {
       console.log(newPage);
@@ -559,9 +535,6 @@ class FavoriteList extends Component {
     const handleChangeRowsPerPage = (event) => {
       this.setState({ rowsPerPage: parseInt(event.target.value, 10), page: 0 });
     };
-
-    const emptyRows =
-      rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
 
     return (
       <TableContainer

@@ -4,16 +4,6 @@ import { withStyles } from "@material-ui/core/styles";
 
 import { colors } from "../../theme";
 
-import {
-  DARKMODE_SWITCH_RETURN,
-  SWITCH_VS_COIN_RETURNED,
-} from "../../constants";
-
-import Store from "../../stores";
-const emitter = Store.emitter;
-const dispatcher = Store.dispatcher;
-const store = Store.store;
-
 const styles = (theme) => ({
   root: {
     flex: 1,
@@ -26,11 +16,11 @@ const styles = (theme) => ({
   },
 });
 
-class LS_ResultDonutChart extends Component {
+class LSResultDonutChart extends Component {
   constructor(props) {
     super(props);
 
-    const tema = store.getStore("theme");
+    // const tema = store.getStore("theme");
     let categories = [];
     let count = [];
     for (var [key, value] of Object.entries(props.data)) {
@@ -107,14 +97,6 @@ class LS_ResultDonutChart extends Component {
     };
   }
 
-  componentDidMount() {
-    emitter.on(DARKMODE_SWITCH_RETURN, this.darkModeSwitchReturned);
-  }
-
-  componentWillUnmount() {
-    emitter.removeListener(DARKMODE_SWITCH_RETURN, this.darkModeSwitchReturned);
-  }
-
   componentDidUpdate(prevProps) {
     if (this.props.data) {
       if (prevProps.data !== this.props.data) {
@@ -136,18 +118,6 @@ class LS_ResultDonutChart extends Component {
     }
   }
 
-  darkModeSwitchReturned = (theme) => {
-    let colorMode = theme ? "dark" : "light";
-    this.setState({
-      options: {
-        ...this.state.options,
-        theme: {
-          mode: colorMode,
-        },
-      },
-    });
-  };
-
   render() {
     const { classes } = this.props;
     return (
@@ -164,4 +134,4 @@ class LS_ResultDonutChart extends Component {
   }
 }
 
-export default withStyles(styles)(LS_ResultDonutChart);
+export default withStyles(styles)(LSResultDonutChart);
