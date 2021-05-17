@@ -1,6 +1,3 @@
-//KEY.ID de los rows cambiar por el ID de la votacion de la DB
-//REVISAR LOS SHORT que estan dando mal los resultados
-
 //Table component to draw the active Long&Short
 
 import React, { Component } from "react";
@@ -137,6 +134,7 @@ class LSTableActive extends Component {
     priceStart,
     vote,
     voteEnding,
+    timeRemaining,
     percentComplete
   ) => {
     return {
@@ -148,8 +146,29 @@ class LSTableActive extends Component {
       priceStart,
       vote,
       voteEnding,
+      timeRemaining,
       percentComplete,
     };
+  };
+
+  timeConversion = (millisec) => {
+    var seconds = (millisec / 1000).toFixed(1);
+
+    var minutes = (millisec / (1000 * 60)).toFixed(1);
+
+    var hours = (millisec / (1000 * 60 * 60)).toFixed(1);
+
+    var days = (millisec / (1000 * 60 * 60 * 24)).toFixed(1);
+
+    if (seconds < 60) {
+      return seconds + " Sec";
+    } else if (minutes < 60) {
+      return minutes + " Min";
+    } else if (hours < 24) {
+      return hours + " Hrs";
+    } else {
+      return days + " Days";
+    }
   };
 
   timeRemaining = (voteEnding) => {
@@ -166,7 +185,13 @@ class LSTableActive extends Component {
     } else {
       percentComplete = ((timeLimit - remaining) / timeLimit) * 100;
     }
-    return percentComplete;
+    let timeRemaining = 0;
+    if (remaining <= 0) {
+      timeRemaining = 0;
+    } else {
+      timeRemaining = this.timeConversion(remaining);
+    }
+    return [timeRemaining, percentComplete];
   };
 
   geckoDataReturned = (data) => {
@@ -184,7 +209,7 @@ class LSTableActive extends Component {
           })
           .indexOf(item.id);
 
-        let percentComplete = this.timeRemaining(lsData[index].voteEnding);
+        let timeRemaining = this.timeRemaining(lsData[index].voteEnding);
 
         let sortData = this.createData(
           item.image,
@@ -195,11 +220,12 @@ class LSTableActive extends Component {
           lsData[index].priceStart,
           lsData[index].vote,
           lsData[index].voteEnding,
-          percentComplete
+          timeRemaining[0],
+          timeRemaining[1]
         );
         sort.push(sortData);
       });
-      // console.log(sort);
+      console.log(sort);
       this.setState({ sortData: sort, coinData: data, loadingResult: false });
     }
   };
@@ -243,6 +269,7 @@ class LSTableActive extends Component {
           item.priceStart,
           item.vote,
           item.voteEnding,
+          item.timeRemaining,
           item.percentComplete
         );
         newRows.push(_rowData);
@@ -259,6 +286,7 @@ class LSTableActive extends Component {
           item.priceStart,
           item.vote,
           item.voteEnding,
+          item.timeRemaining,
           item.percentComplete
         );
         newRows.push(_rowData);
@@ -349,10 +377,15 @@ class LSTableActive extends Component {
           </TableCell>
           <TableCell align="center">
             {row.percentComplete < 100 && (
-              <CircularProgress
-                variant="determinate"
-                value={row.percentComplete}
-              />
+              <>
+                <Typography variant={"subtitle2"} style={{ marginRight: 10 }}>
+                  {row.timeRemaining}
+                </Typography>
+                <CircularProgress
+                  variant="determinate"
+                  value={row.percentComplete}
+                />
+              </>
             )}
             {row.percentComplete >= 100 && !this.state.loadingResult && (
               <Button

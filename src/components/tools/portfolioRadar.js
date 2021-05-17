@@ -1,15 +1,12 @@
 import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
-import clsx from "clsx";
 
 import {
   Card,
   Typography,
   Grid,
-  Divider,
   CircularProgress,
   Button,
   ButtonGroup,
@@ -19,8 +16,6 @@ import PieChart from "../components/pieChart.js";
 import FavoriteList from "../components/favoriteList.js";
 
 import {
-  CONNECTION_CONNECTED,
-  CONNECTION_DISCONNECTED,
   DB_GET_USERDATA,
   DB_USERDATA_RETURNED,
   COINLIST_RETURNED,
@@ -33,15 +28,10 @@ import {
 } from "../../constants";
 
 import Store from "../../stores";
-import DefiSDKStore from "../../stores/defiSDK_store.js";
 
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
 const store = Store.store;
-
-const emitterDefi = DefiSDKStore.emitter;
-const storeDefi = DefiSDKStore.store;
-const dispatcherDefi = DefiSDKStore.dispatcher;
 
 const CoinGecko = require("coingecko-api");
 const CoinGeckoClient = new CoinGecko();
@@ -75,7 +65,6 @@ class PortfolioRadar extends Component {
   constructor() {
     super();
 
-    let vsCoin = store.getStore("vsCoin");
     const account = store.getStore("account");
 
     this.state = {
@@ -196,9 +185,10 @@ class PortfolioRadar extends Component {
           if (
             userBlacklist.tokenIDs.includes(prevBalanceList[i].contractAddress)
           ) {
+            let index = i;
             let blacklistedIndex = prevBalanceList.findIndex(
               (obj) =>
-                obj.contractAddress === prevBalanceList[i].contractAddress
+                obj.contractAddress === prevBalanceList[index].contractAddress
             );
             prevBalanceList.splice(blacklistedIndex, 1);
             i--;
@@ -207,20 +197,21 @@ class PortfolioRadar extends Component {
       }
 
       if (this.state.hideLowBalanceCoins) {
-        for (var i = 0; i < prevBalanceList.length; i++) {
-          if (!prevBalanceList[i].balance > 0) {
+        for (var j = 0; i < prevBalanceList.length; j++) {
+          if (!prevBalanceList[j].balance > 0) {
+            let index = j;
             let blacklistedIndex = prevBalanceList.findIndex(
               (obj) =>
-                obj.contractAddress === prevBalanceList[i].contractAddress
+                obj.contractAddress === prevBalanceList[index].contractAddress
             );
             prevBalanceList.splice(blacklistedIndex, 1);
-            i--;
+            j--;
           }
         }
       }
 
-      for (var i = 0; i < prevBalanceList.length; i++) {
-        let item = { ...prevBalanceList[i] };
+      for (var k = 0; k < prevBalanceList.length; k++) {
+        let item = { ...prevBalanceList[k] };
 
         if (item.tokenSymbol === "EWTB") {
           item.id = "energy-web-token";
@@ -304,12 +295,13 @@ class PortfolioRadar extends Component {
       let _newBalanceList = [...this.state.balanceList];
       for (var i = 0; i < categories.data.length; i++) {
         if (categories.data[i] != null) {
+          let index = i;
           let objIndex = _newBalanceList.findIndex(
-            (obj) => obj.id === categories.data[i].tokenID
+            (obj) => obj.id === categories.data[index].tokenID
           );
-          if (objIndex != -1) {
+          if (objIndex !== -1) {
             let item = { ..._newBalanceList[objIndex] };
-            item.categories = categories.data[i].categories;
+            item.categories = categories.data[index].categories;
             _newBalanceList[objIndex] = item;
           }
         }
@@ -318,9 +310,9 @@ class PortfolioRadar extends Component {
       let allCategories = [];
       let uniqueCategories = [];
 
-      for (var i = 0; i < categories.data.length; i++) {
-        if (categories.data[i] != null) {
-          categories.data[i].categories.forEach((item, i) => {
+      for (var j = 0; j < categories.data.length; j++) {
+        if (categories.data[j] != null) {
+          categories.data[j].categories.forEach((item, j) => {
             allCategories.push(item);
             if (uniqueCategories.indexOf(item) === -1) {
               uniqueCategories.push(item);
@@ -361,8 +353,6 @@ class PortfolioRadar extends Component {
 
   sortList = (rowData) => {
     // console.log(rowData);
-    const { classes } = this.props;
-    const { sortBy, sortOrder } = this.state;
 
     function dynamicSort(property) {
       var sortOrder = 1;
@@ -381,7 +371,6 @@ class PortfolioRadar extends Component {
       };
     }
     let sortedRows;
-    let formatedRows = [];
 
     sortedRows = rowData.sort(dynamicSort(`-amount`));
     this.setState({ countCategories: sortedRows });
@@ -404,8 +393,8 @@ class PortfolioRadar extends Component {
   }
 
   render() {
-    const { classes, t } = this.props;
-    const { loading, account, countCategories, tokenList } = this.state;
+    const { classes } = this.props;
+    const { account, countCategories, tokenList } = this.state;
 
     return (
       <div className={classes.root}>

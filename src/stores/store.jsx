@@ -1700,7 +1700,7 @@ class Store {
     try {
       console.log(payload.avatar);
       let data = await axios.put(
-        `http://localhost:3001/users/${account.address}/setAvatar`,
+        `https://chainguru-db.herokuapp.com/users/${account.address}/setAvatar`,
         {
           newAvatar: payload.avatar,
         }

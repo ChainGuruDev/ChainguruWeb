@@ -247,6 +247,10 @@ class Profile extends Component {
   };
 
   setNickname = () => {
+    if (!this.state.newNickname) {
+      console.log(this.state.newNickname);
+      this.props.history.goBack();
+    }
     dispatcher.dispatch({
       type: DB_NEW_NICKNAME,
       nickname: this.state.newNickname,
@@ -333,7 +337,7 @@ class Profile extends Component {
               onClick={() => this.goBack()}
               style={{ marginRight: 10 }}
             >
-              {!this.state.loadingBTN && "Cancel"}
+              {!this.state.loadingBTN && "Back"}
               {this.state.loadingBTN && <CircularProgress />}
             </Button>
             <Button
@@ -369,7 +373,11 @@ class Profile extends Component {
               alignItems="center"
               spacing={3}
             >
-              {loading && "Cargando"}
+              {loading && (
+                <Grid style={{ padding: 25 }}>
+                  <CircularProgress />
+                </Grid>
+              )}
               {!loading && this.renderProfile()}
             </Grid>
           </Card>
