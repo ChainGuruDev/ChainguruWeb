@@ -117,6 +117,9 @@ class Short extends Component {
     super(props);
 
     const account = store.getStore("account");
+
+    let toolID = this.tool2toolID(this.props.match.params.tool);
+
     this.state = {
       account: account,
       loading: false,
@@ -124,16 +127,55 @@ class Short extends Component {
       bigChart: false,
       coinDataA: [],
       coinDataB: [],
-      valueTab:
-        this.props.match.params.tool === "detective" ||
-        this.props.tool === "detective"
-          ? 2
-          : 0,
+      valueTab: toolID,
       selectA: false,
       selectB: false,
       coinID: this.props.match.params.coinID,
     };
   }
+
+  tool2toolID = (tool) => {
+    let toolID = 0;
+    switch (tool) {
+      case "compare":
+        toolID = 0;
+        break;
+      case "favorites":
+        toolID = 1;
+        break;
+      case "detective":
+        toolID = 2;
+        break;
+      case "shortLong":
+        toolID = 3;
+        break;
+      default:
+        break;
+    }
+    return toolID;
+  };
+
+  toolID2tool = (toolID) => {
+    let tool;
+    switch (toolID) {
+      case 0:
+        tool = "compare";
+        break;
+      case 1:
+        tool = "favorites";
+        break;
+      case 2:
+        tool = "detective";
+        break;
+      case 3:
+        tool = "shortLong";
+        break;
+      default:
+        tool = "";
+        break;
+    }
+    return tool;
+  };
 
   componentDidUpdate(prevProps) {
     if (prevProps.match.params.coinID !== this.props.match.params.coinID) {
@@ -147,6 +189,13 @@ class Short extends Component {
         this.setState({
           valueTab: 2,
           coinID: this.props.match.params.coinID,
+        });
+      }
+    } else {
+      if (prevProps.match.params.tool !== this.props.match.params.tool) {
+        let newValueTab = this.tool2toolID(this.props.match.params.tool);
+        this.setState({
+          valueTab: newValueTab,
         });
       }
     }
@@ -183,7 +232,6 @@ class Short extends Component {
 
   handleBigChart = () => {
     this.setState({ bigChart: !this.state.bigChart });
-    console.log("Big Chart " + this.state.bigChart);
   };
 
   render() {
@@ -191,6 +239,8 @@ class Short extends Component {
     const { bigChart, valueTab, coinID } = this.state;
     const handleChangeTabs = (event, newValueTab) => {
       this.setState({ valueTab: newValueTab });
+      let newScreen = this.toolID2tool(newValueTab);
+      this.nav("/short/" + newScreen);
     };
 
     return (

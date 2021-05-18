@@ -435,6 +435,14 @@ class App extends Component {
               />
               <Short />
             </Route>
+            <Route path="/short/:tool/">
+              <Header
+                setHeaderValue={this.setHeaderValue}
+                headerValue={headerValue}
+                darkMode={darkMode}
+              />
+              <Short />
+            </Route>
             <Route path="/short">
               <Header
                 setHeaderValue={this.setHeaderValue}

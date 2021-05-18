@@ -106,6 +106,8 @@ import {
   DB_NEW_NICKNAME_RETURNED,
   DB_NEW_AVATAR,
   DB_NEW_AVATAR_RETURNED,
+  DB_GET_LEADERBOARD,
+  DB_GET_LEADERBOARD_RETURNED,
 } from "../constants";
 
 import {
@@ -347,6 +349,9 @@ class Store {
             break;
           case DB_NEW_AVATAR:
             this.db_newAvatar(payload);
+            break;
+          case DB_GET_LEADERBOARD:
+            this.db_getLeaderboard();
             break;
           default: {
             break;
@@ -1725,6 +1730,19 @@ class Store {
         );
         emitter.emit(DB_GET_USER_LS_RETURNED, await data.data);
       }
+    } catch (err) {
+      if (err) {
+        console.log(err.message);
+      }
+    }
+  };
+
+  db_getLeaderboard = async () => {
+    try {
+      let data = await axios.get(
+        `https://chainguru-db.herokuapp.com/users/leaderboard`
+      );
+      emitter.emit(DB_GET_LEADERBOARD_RETURNED, await data.data);
     } catch (err) {
       if (err) {
         console.log(err.message);

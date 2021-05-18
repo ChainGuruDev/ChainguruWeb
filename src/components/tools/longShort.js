@@ -13,6 +13,8 @@ import LSTableActive from "../components/LS_Table_Active.js";
 import LSTableHistory from "../components/LS_Table_History.js";
 import LSvoteResultModal from "../components/lsVoteResultModal.js";
 import ProfileMini from "../profile/profileMini.js";
+import LeaderboardMini from "../leaderboard/leaderboardMini.js";
+
 //import materialUI elements
 import {
   Grid,
@@ -531,6 +533,7 @@ class LongShort extends Component {
             </Grid>
             <Grid item xs={3}>
               <ProfileMini />
+              <LeaderboardMini />
             </Grid>
           </Grid>
         )}

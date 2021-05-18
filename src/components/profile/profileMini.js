@@ -16,9 +16,6 @@ import {
   Typography,
 } from "@material-ui/core";
 
-import Snackbar from "../snackbar";
-import AvatarSelectModal from "./avatarSelectModal.js";
-
 import AddCircleRoundedIcon from "@material-ui/icons/AddCircleRounded";
 
 import {
@@ -101,8 +98,6 @@ class ProfileMini extends Component {
   };
 
   dbUserDataReturned = (data) => {
-    console.log(data);
-    console.log(data.experiencePoints);
     if (data.avatar) {
       let avatar = this.getAvatarType({ avatar: data.avatar });
 
@@ -229,7 +224,7 @@ class ProfileMini extends Component {
   // </Grid>
   render() {
     const { classes, t } = this.props;
-    const { account, loading, snackbarMessage, avatarModalOpen } = this.state;
+    const { account, loading, avatarModalOpen } = this.state;
 
     return (
       <Card className={classes.favCard} elevation={3}>
@@ -250,9 +245,6 @@ class ProfileMini extends Component {
       </Card>
     );
   }
-  nav = (screen) => {
-    this.props.history.push(screen);
-  };
 }
 
 export default withRouter(withStyles(styles)(ProfileMini));
