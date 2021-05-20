@@ -179,17 +179,24 @@ class Short extends Component {
 
   componentDidUpdate(prevProps) {
     if (prevProps.match.params.coinID !== this.props.match.params.coinID) {
-      if (this.props.match.params.tool === "detective") {
-        this.setState({
-          valueTab: 2,
-          coinID: this.props.match.params.coinID,
-        });
-      }
       if (this.props.tool === "detective") {
         this.setState({
           valueTab: 2,
           coinID: this.props.match.params.coinID,
         });
+      }
+      if (this.props.match.params.tool === "detective") {
+        this.setState({
+          valueTab: 2,
+          coinID: this.props.match.params.coinID,
+        });
+      } else {
+        if (prevProps.match.params.tool !== this.props.match.params.tool) {
+          let newValueTab = this.tool2toolID(this.props.match.params.tool);
+          this.setState({
+            valueTab: newValueTab,
+          });
+        }
       }
     } else {
       if (prevProps.match.params.tool !== this.props.match.params.tool) {

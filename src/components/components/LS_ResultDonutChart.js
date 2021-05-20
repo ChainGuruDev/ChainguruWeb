@@ -52,7 +52,7 @@ class LSResultDonutChart extends Component {
           show: false,
         },
         tooltip: {
-          enabled: false,
+          enabled: true,
         },
         legend: {
           show: false,

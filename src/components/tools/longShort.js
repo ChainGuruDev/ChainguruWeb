@@ -12,6 +12,8 @@ import LSResultDonutChart from "../components/LS_ResultDonutChart.js";
 import LSTableActive from "../components/LS_Table_Active.js";
 import LSTableHistory from "../components/LS_Table_History.js";
 import LSvoteResultModal from "../components/lsVoteResultModal.js";
+import SparklineChart from "../components/SparklineChart.js";
+
 import ProfileMini from "../profile/profileMini.js";
 import LeaderboardMini from "../leaderboard/leaderboardMini.js";
 
@@ -25,8 +27,12 @@ import {
   Typography,
 } from "@material-ui/core";
 
+//import materialUI icons
 import TrendingDownIcon from "@material-ui/icons/TrendingDown";
 import TrendingUpIcon from "@material-ui/icons/TrendingUp";
+import RadioButtonUncheckedIcon from "@material-ui/icons/RadioButtonUnchecked";
+import RadioButtonCheckedIcon from "@material-ui/icons/RadioButtonChecked";
+import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 
 import {
   CONNECTION_CONNECTED,
@@ -39,6 +45,8 @@ import {
   DB_CREATE_LS,
   DB_CREATE_LS_RETURNED,
   DB_CHECK_LS_RESULT_RETURNED,
+  DB_USERDATA_RETURNED,
+  DB_GET_USERDATA,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -58,19 +66,12 @@ const styles = (theme) => ({
     padding: 10,
     marginTop: 10,
     marginBottom: 10,
-    display: "flex",
-    flex: 1,
-    direction: "row",
-    alignItems: "stretch",
     background: "rgba(255,255,255,0.05)",
   },
   favTopBar: {
-    padding: 5,
     marginBottom: 5,
-    direction: "row",
     alignItems: "flex-start",
     alignSelf: "flex-start",
-    textAlign: "flex-end",
     justifyContent: "center",
   },
   favList: {
@@ -85,22 +86,28 @@ const styles = (theme) => ({
     alignItems: "stretch",
     maxHeight: "160px",
   },
+  comboBar: {
+    background: "rgba(75,75,75,0.8)",
+    borderRadius: "10px",
+  },
 });
 
 class LongShort extends Component {
   constructor() {
     super();
-
     const account = store.getStore("account");
+
     this.state = {
       account: account,
       loading: false,
       newSearchLoading: true,
       newTokenVote: false,
       modalOpen: false,
+      activeLS: 0,
+      longCombo: 0,
+      shortCombo: 0,
     };
 
-    //TODO MAS TODO GET CURRENT LEADERBOARD
     if (account && account.address) {
       dispatcher.dispatch({
         type: DB_GET_USER_LS,
@@ -117,6 +124,7 @@ class LongShort extends Component {
     emitter.on(DB_GET_USER_TOKEN_LS_RETURNED, this.userTokenLSReturned);
     emitter.on(DB_CREATE_LS_RETURNED, this.db_createLSReturned);
     emitter.on(DB_CHECK_LS_RESULT_RETURNED, this.db_checkLSResultReturned);
+    emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
   }
 
   componentWillUnmount() {
@@ -126,7 +134,11 @@ class LongShort extends Component {
     emitter.removeListener(COIN_DATA_RETURNED, this.coinDataReturned);
     emitter.removeListener(COIN_DATA_RETURNED, this.userTokenLSReturned);
     emitter.removeListener(DB_CREATE_LS_RETURNED, this.db_createLSReturned);
-    emitter.on(DB_CHECK_LS_RESULT_RETURNED, this.db_checkLSResultReturned);
+    emitter.removeListener(
+      DB_CHECK_LS_RESULT_RETURNED,
+      this.db_checkLSResultReturned
+    );
+    emitter.removeListener(DB_USERDATA_RETURNED, this.dbUserDataReturned);
   }
 
   connected = () => {
@@ -173,6 +185,9 @@ class LongShort extends Component {
       type: DB_GET_USER_TOKEN_LS,
       tokenID: data[0].id,
     });
+    console.log(data[0]);
+
+    console.log(data[0].market_data.sparkline_7d.price);
     this.setState({ coinData: data[0] });
   };
 
@@ -183,7 +198,6 @@ class LongShort extends Component {
     data.forEach((item, i) => {
       item.complete ? completeLS.push(item) : incompleteLS.push(item);
     });
-    // console.log({ complete: completeLS, incomplete: incompleteLS });
 
     // sort stats by Type Long / Short
     let countLong = [0, 0];
@@ -206,6 +220,7 @@ class LongShort extends Component {
       countTotals,
       countLong,
       countShort,
+      activeLS: incompleteLS.length,
     });
   };
 
@@ -236,8 +251,19 @@ class LongShort extends Component {
       type: DB_GET_USER_LS,
       address: account.address,
     });
-
+    dispatcher.dispatch({
+      type: DB_GET_USERDATA,
+      address: account.address,
+    });
     this.setState({ modalOpen: true, modalData: data });
+  };
+
+  dbUserDataReturned = (data) => {
+    //GET LONG SHORT COMBO STATUS
+    this.setState({
+      longCombo: data.minigames.longShortStrike.long,
+      shortCombo: data.minigames.longShortStrike.short,
+    });
   };
 
   closeModal = () => {
@@ -254,6 +280,41 @@ class LongShort extends Component {
     );
   };
 
+  drawCombo = (number, type, ls) => {
+    if (number > 7) {
+      number = 7;
+    }
+    const comboMax = 7;
+    const remaining = comboMax - number;
+    const combo = [];
+
+    if (type === "combo") {
+      for (var i = 0; i < number; i++) {
+        combo.push(
+          <CheckCircleIcon
+            fontSize="small"
+            color={ls === "long" ? "primary" : "secondary"}
+          />
+        );
+      }
+      for (var i = 0; i < remaining; i++) {
+        combo.push(
+          <RadioButtonUncheckedIcon fontSize="small" color="disabled" />
+        );
+      }
+    } else {
+      for (var i = 0; i < number; i++) {
+        combo.push(<RadioButtonCheckedIcon fontSize="small" color="primary" />);
+      }
+      for (var i = 0; i < remaining; i++) {
+        combo.push(
+          <RadioButtonUncheckedIcon fontSize="small" color="disabled" />
+        );
+      }
+    }
+    return combo;
+  };
+
   render() {
     const { classes } = this.props;
     const {
@@ -265,6 +326,9 @@ class LongShort extends Component {
       incompleteLS,
       modalOpen,
       modalData,
+      longCombo,
+      shortCombo,
+      activeLS,
     } = this.state;
 
     return (
@@ -274,15 +338,15 @@ class LongShort extends Component {
           <Grid container>
             <Grid item xs={9}>
               <Card className={classes.favCard} elevation={3}>
-                <Grid className={classes.favGrid} container>
+                <Grid container>
                   <Grid
                     className={classes.favTopBar}
                     item
                     xs={12}
+                    spacing={1}
                     container
-                    spacing={3}
                   >
-                    <Grid item xs={6}>
+                    <Grid item xs={8}>
                       <Grid
                         container
                         direction="column"
@@ -301,13 +365,31 @@ class LongShort extends Component {
                             item
                             style={{ marginTop: 10 }}
                           >
-                            <Grid item>
+                            <Grid
+                              onClick={() =>
+                                this.detective(this.state.coinData.id)
+                              }
+                              style={{
+                                maxWidth: "max-content",
+                                cursor: "pointer",
+                              }}
+                              item
+                            >
                               <Avatar
                                 alt={this.state.coinData.image.large}
                                 src={this.state.coinData.image.large}
+                                style={{ maxWidth: "max-content" }}
                               />
                             </Grid>
-                            <Grid item>
+                            <Grid
+                              onClick={() =>
+                                this.detective(this.state.coinData.id)
+                              }
+                              style={{
+                                cursor: "pointer",
+                              }}
+                              item
+                            >
                               <Grid item>
                                 <Typography variant="h6">
                                   {this.state.coinData.name}
@@ -319,7 +401,15 @@ class LongShort extends Component {
                                 </Typography>
                               </Grid>
                             </Grid>
-                            <Grid item>
+                            <Grid
+                              onClick={() =>
+                                this.detective(this.state.coinData.id)
+                              }
+                              style={{
+                                cursor: "pointer",
+                              }}
+                              item
+                            >
                               <Grid item>
                                 <Typography variant="subtitle2">
                                   Price
@@ -335,7 +425,15 @@ class LongShort extends Component {
                                 </Typography>
                               </Grid>
                             </Grid>
-                            <Grid item>
+                            <Grid
+                              onClick={() =>
+                                this.detective(this.state.coinData.id)
+                              }
+                              style={{
+                                cursor: "pointer",
+                              }}
+                              item
+                            >
                               <Grid item>
                                 <Typography variant="subtitle2">
                                   24hs
@@ -343,27 +441,50 @@ class LongShort extends Component {
                               </Grid>
                               <Grid item>
                                 <Typography variant="h6">
-                                  {
-                                    this.state.coinData.market_data
-                                      .price_change_percentage_24h
-                                  }
+                                  {this.state.coinData.market_data.price_change_percentage_24h.toFixed(
+                                    2
+                                  )}
                                   %
                                 </Typography>
                               </Grid>
                             </Grid>
-                            <Grid item>
+                            <Grid
+                              onClick={() =>
+                                this.detective(this.state.coinData.id)
+                              }
+                              style={{
+                                cursor: "pointer",
+                              }}
+                              item
+                            >
                               <Grid item>
                                 <Typography variant="subtitle2">7D</Typography>
                               </Grid>
                               <Grid item>
                                 <Typography variant="h6">
-                                  {
-                                    this.state.coinData.market_data
-                                      .price_change_percentage_7d
-                                  }
+                                  {this.state.coinData.market_data.price_change_percentage_7d.toFixed(
+                                    2
+                                  )}
                                   %
                                 </Typography>
                               </Grid>
+                            </Grid>
+                            <Grid
+                              onClick={() =>
+                                this.detective(this.state.coinData.id)
+                              }
+                              style={{
+                                cursor: "pointer",
+                              }}
+                              item
+                            >
+                              <SparklineChart
+                                id={this.state.coinData.symbol}
+                                data={
+                                  this.state.coinData.market_data.sparkline_7d
+                                    .price
+                                }
+                              />
                             </Grid>
                             <Grid item>
                               {!this.state.newSearchLoading &&
@@ -375,11 +496,13 @@ class LongShort extends Component {
                                     <Button
                                       startIcon={<TrendingUpIcon />}
                                       color="primary"
+                                      disabled={activeLS >= 7}
                                       onClick={() => this.newLSvote("long")}
                                     ></Button>
                                     <Button
                                       endIcon={<TrendingDownIcon />}
                                       color="secondary"
+                                      disabled={activeLS >= 7}
                                       onClick={() => this.newLSvote("short")}
                                     ></Button>
                                   </ButtonGroup>
@@ -426,15 +549,17 @@ class LongShort extends Component {
                         )}
                       </Grid>
                     </Grid>
-                    {countLong && (countLong[0] || countShort[0]) && (
-                      <Grid item className={classes.graphCard} xs={6}>
-                        <Grid
-                          item
-                          container
-                          direction="column"
-                          justify="flex-start"
-                        >
-                          <Grid item xs={3} style={{ minWidth: "120px" }}>
+                    <Grid
+                      item
+                      container
+                      direction="row"
+                      justify="flex-start"
+                      alignItems="flex-start"
+                      xs={4}
+                    >
+                      <Grid item container justify="center" xs={12}>
+                        {countLong && (countLong[0] || countShort[0]) && (
+                          <Grid item style={{ minWidth: "120px" }}>
                             <LSResultDonutChart
                               data={
                                 this.state.countTotals
@@ -443,87 +568,175 @@ class LongShort extends Component {
                               }
                             />
                           </Grid>
-                          <Grid
-                            item
-                            container
-                            direction="column"
-                            xs={9}
-                            style={{ marginLeft: 20 }}
-                          >
-                            {countTotals && (
-                              <>
-                                <Grid item container direction="row">
+                        )}
+                        {countLong && (countLong[0] || countShort[0]) && (
+                          <Grid style={{ marginLeft: "10px" }} item>
+                            <Grid container direction="column">
+                              {countTotals && (
+                                <Grid item>
+                                  <Grid item container direction="row">
+                                    <Typography variant="h2" color="primary">
+                                      {countTotals.ok}
+                                    </Typography>
+                                    <Typography variant="h2">/</Typography>
+                                    <Typography variant="h2" color="secondary">
+                                      {countTotals.ok + countTotals.bad}
+                                    </Typography>
+                                  </Grid>
                                   <Typography variant="h2" color="primary">
-                                    {countTotals.ok}
-                                  </Typography>
-                                  <Typography variant="h2">/</Typography>
-                                  <Typography variant="h2" color="secondary">
-                                    {countTotals.ok + countTotals.bad}
+                                    {(
+                                      (countTotals.ok /
+                                        (countTotals.ok + countTotals.bad)) *
+                                      100
+                                    ).toFixed(2)}{" "}
+                                    %
                                   </Typography>
                                 </Grid>
-                                <Typography variant="h2" color="primary">
-                                  {(
-                                    (countTotals.ok /
-                                      (countTotals.ok + countTotals.bad)) *
-                                    100
-                                  ).toFixed(2)}{" "}
-                                  %
-                                </Typography>
-                              </>
-                            )}
-                            {countLong && (
-                              <Grid item container direction="row">
-                                <TrendingUpIcon
-                                  color="primary"
-                                  style={{ marginRight: 10 }}
-                                />
-                                <Typography variant="h3" color="primary">
-                                  {countLong[0]}
-                                </Typography>{" "}
-                                <Typography variant="h3">/</Typography>{" "}
-                                <Typography variant="h3" color="secondary">
-                                  {countLong[1] + " "}
-                                </Typography>{" "}
-                                <Typography variant="h3" color="primary">
-                                  {" ("}
-                                  {(
-                                    (countLong[0] /
-                                      (countLong[0] + countLong[1])) *
-                                    100
-                                  ).toFixed(2)}{" "}
-                                  %)
-                                </Typography>
-                              </Grid>
-                            )}
-                            {countShort && (
-                              <Grid item container direction="row">
-                                <TrendingDownIcon
-                                  color="secondary"
-                                  style={{ marginRight: 10 }}
-                                />
-                                <Typography variant="h3" color="primary">
-                                  {countShort[0]}
-                                </Typography>{" "}
-                                <Typography variant="h3">/</Typography>{" "}
-                                <Typography variant="h3" color="secondary">
-                                  {countShort[1] + " "}
-                                </Typography>
-                                <Typography variant="h3" color="primary">
-                                  {" ("}
-                                  {(
-                                    (countShort[0] /
-                                      (countShort[0] + countShort[1])) *
-                                    100
-                                  ).toFixed(2)}{" "}
-                                  %)
-                                </Typography>
-                              </Grid>
-                            )}
+                              )}
+                              {countLong && (
+                                <Grid item container direction="row">
+                                  <TrendingUpIcon
+                                    color="primary"
+                                    style={{ marginRight: 10 }}
+                                  />
+                                  <Typography variant="h3" color="primary">
+                                    {countLong[0]}
+                                  </Typography>{" "}
+                                  <Typography variant="h3">/</Typography>{" "}
+                                  <Typography variant="h3" color="secondary">
+                                    {countLong[1] + " "}
+                                  </Typography>{" "}
+                                  <Typography variant="h3" color="primary">
+                                    {" ("}
+                                    {(
+                                      (countLong[0] /
+                                        (countLong[0] + countLong[1])) *
+                                      100
+                                    ).toFixed(2)}{" "}
+                                    %)
+                                  </Typography>
+                                </Grid>
+                              )}
+                              {countShort && (
+                                <Grid item container direction="row">
+                                  <TrendingDownIcon
+                                    color="secondary"
+                                    style={{ marginRight: 10 }}
+                                  />
+                                  <Typography variant="h3" color="primary">
+                                    {countShort[0]}
+                                  </Typography>{" "}
+                                  <Typography variant="h3">/</Typography>{" "}
+                                  <Typography variant="h3" color="secondary">
+                                    {countShort[1] + " "}
+                                  </Typography>
+                                  <Typography variant="h3" color="primary">
+                                    {" ("}
+                                    {(
+                                      (countShort[0] /
+                                        (countShort[0] + countShort[1])) *
+                                      100
+                                    ).toFixed(2)}{" "}
+                                    %)
+                                  </Typography>
+                                </Grid>
+                              )}
+                            </Grid>
+                          </Grid>
+                        )}
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                  {countLong && (
+                    <Grid
+                      item
+                      container
+                      direction={"row"}
+                      justify={"center"}
+                      align={"center"}
+                      style={{
+                        textAlign: "center",
+                        marginTop: "5px",
+                        marginBottom: "10px",
+                      }}
+                      xs={12}
+                    >
+                      <Grid
+                        style={{
+                          borderColor: "rgba(75,75,75,0.5)",
+                          borderStyle: "solid",
+                          borderWidth: "thin",
+                          borderRadius: "10px",
+                          background: "rgba(75,75,75,0.25)",
+                        }}
+                        container
+                      >
+                        <Grid item container xs={4}>
+                          <Grid className={classes.comboBar} xs={4}>
+                            <Typography
+                              style={{ marginTop: 5 }}
+                              variant={"h4"}
+                              gutterBottom
+                              color="primary"
+                            >
+                              Active
+                            </Typography>
+                          </Grid>
+                          <Grid
+                            justify={"space-around"}
+                            item
+                            style={{ flex: 1, display: "flex", marginTop: 5 }}
+                          >
+                            {this.drawCombo(activeLS, "active")}
+                          </Grid>
+                        </Grid>
+                        <Grid item container xs={4}>
+                          <Grid className={classes.comboBar} item xs={4}>
+                            <Typography
+                              style={{ marginLeft: "10px" }}
+                              style={{ marginTop: 5 }}
+                              variant={"h4"}
+                              gutterBottom
+                              color="primary"
+                            >
+                              Long Combo
+                            </Typography>
+                          </Grid>
+                          <Grid
+                            justify={"space-around"}
+                            item
+                            style={{
+                              flex: 1,
+                              display: "flex",
+                              marginTop: 5,
+                              marginRight: 5,
+                            }}
+                          >
+                            {this.drawCombo(longCombo, "combo", "long")}
+                          </Grid>
+                        </Grid>
+                        <Grid item container xs={4}>
+                          <Grid className={classes.comboBar} item xs={4}>
+                            <Typography
+                              style={{ marginTop: 5 }}
+                              variant={"h4"}
+                              gutterBottom
+                              color="primary"
+                            >
+                              Short Combo
+                            </Typography>
+                          </Grid>
+                          <Grid
+                            justify={"space-around"}
+                            item
+                            style={{ flex: 1, display: "flex", marginTop: 5 }}
+                          >
+                            {this.drawCombo(shortCombo, "combo", "short")}
                           </Grid>
                         </Grid>
                       </Grid>
-                    )}
-                  </Grid>
+                    </Grid>
+                  )}
                   <Grid item className={classes.favList} xs={12}>
                     {incompleteLS && <LSTableActive data={incompleteLS} />}
                     {completeLS && <LSTableHistory data={completeLS} />}
@@ -544,6 +757,9 @@ class LongShort extends Component {
 
   nav = (screen) => {
     this.props.history.push(screen);
+  };
+  detective = (id) => {
+    this.nav("/short/detective/" + id);
   };
 }
 

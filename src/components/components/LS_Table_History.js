@@ -460,6 +460,7 @@ class LSTableHistory extends Component {
 
     return (
       <TableContainer
+        style={{ marginTop: "10px" }}
         className={classes.root}
         component={Paper}
         elevation={2}

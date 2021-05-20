@@ -86,7 +86,7 @@ class LeaderboardMini extends Component {
     const { classes } = this.props;
     if (data.length > 0) {
       //LIMIT TOP 5
-      let leaderboardData = data.length > 5 ? data.slice(0, 5) : data;
+      let leaderboardData = data.length > 10 ? data.slice(0, 10) : data;
       return leaderboardData.map((user) => (
         <>
           <Grid
@@ -221,7 +221,7 @@ class LeaderboardMini extends Component {
                 color={"primary"}
                 variant={"h6"}
               >
-                Leaderboard (TOP 5)
+                Leaderboard
               </Typography>
               <Divider />
               {this.drawLeaderboard(this.state.leaderboard)}

@@ -1217,7 +1217,9 @@ class Store {
   getCoinData = async (coin) => {
     let data;
     try {
-      let data = await CoinGeckoClient.coins.fetch(coin.content, {});
+      let data = await CoinGeckoClient.coins.fetch(coin.content, {
+        sparkline: true,
+      });
       emitter.emit(COIN_DATA_RETURNED, [await data.data, coin.BarID]);
     } catch (err) {
       console.log(err);
