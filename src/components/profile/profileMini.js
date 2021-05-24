@@ -207,7 +207,7 @@ class ProfileMini extends Component {
                 variant={"outlined"}
                 color={"primary"}
                 onClick={() => {
-                  this.nav("user/profile");
+                  this.nav("../user/profile");
                 }}
                 style={{ marginLeft: 10 }}
               >
@@ -245,6 +245,10 @@ class ProfileMini extends Component {
       </Card>
     );
   }
+  nav = (screen) => {
+    console.log(screen);
+    this.props.history.push(screen);
+  };
 }
 
 export default withRouter(withStyles(styles)(ProfileMini));

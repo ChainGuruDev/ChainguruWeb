@@ -1101,11 +1101,11 @@ class Store {
 
   _getGasPrice = async () => {
     try {
-      const url = "https://gasprice.poa.network/";
+      const url = "https://chainguru-db.herokuapp.com/gas/checkGas";
       const priceString = await rp(url);
       const priceJSON = JSON.parse(priceString);
       if (priceJSON) {
-        return priceJSON.standard.toFixed(0);
+        return priceJSON.result.ProposeGasPrice;
       }
       return store.getStore("universalGasPrice");
     } catch (e) {
@@ -1335,7 +1335,6 @@ class Store {
         vs_currency: payload.content[3],
       });
     }
-
     emitter.emit(COIN_PRICECHART_RETURNED, [
       await data.data,
       payload.content[1],

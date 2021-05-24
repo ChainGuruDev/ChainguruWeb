@@ -559,7 +559,10 @@ class LongShort extends Component {
                     >
                       <Grid item container justify="center" xs={12}>
                         {countLong && (countLong[0] || countShort[0]) && (
-                          <Grid item style={{ minWidth: "120px" }}>
+                          <Grid
+                            item
+                            style={{ minWidth: "120px", maxWidth: "120px" }}
+                          >
                             <LSResultDonutChart
                               data={
                                 this.state.countTotals

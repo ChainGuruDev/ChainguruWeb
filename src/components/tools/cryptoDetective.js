@@ -213,20 +213,16 @@ class CryptoDetective extends Component {
   };
 
   vsCoinReturned = (vsCoin) => {
-    var x = document.getElementById("coinChart");
-    if (window.getComputedStyle(x).display !== "none") {
-      console.log("triggered");
-      if (this.state.coinData.id) {
-        dispatcher.dispatch({
-          type: GET_COIN_PRICECHART,
-          content: [
-            this.state.coinData.id,
-            this.props.id,
-            this.state.timeFrame,
-            vsCoin,
-          ],
-        });
-      }
+    if (this.state.coinData.id) {
+      dispatcher.dispatch({
+        type: GET_COIN_PRICECHART,
+        content: [
+          this.state.coinData.id,
+          this.props.id,
+          this.state.timeFrame,
+          vsCoin,
+        ],
+      });
     }
     this.setState({ vs: vsCoin });
   };
@@ -919,7 +915,7 @@ class CryptoDetective extends Component {
     const handleClick = (timeFrame) => {
       dispatcher.dispatch({
         type: GET_COIN_PRICECHART,
-        content: [coinData.id, timeFrame, vs],
+        content: [coinData.id, , timeFrame, vs],
       });
       this.setState({ timeFrame: timeFrame });
     };

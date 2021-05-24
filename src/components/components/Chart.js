@@ -126,8 +126,22 @@ class PriceChart extends Component {
 
   vsCoinReturned = (vsCoin) => {
     var x = document.getElementById("cryptoCompSmall");
-    if (window.getComputedStyle(x).display !== "none") {
-      console.log("triggered");
+    if (x) {
+      if (window.getComputedStyle(x).display !== "none") {
+        console.log("triggered");
+        if (this.props.id) {
+          dispatcher.dispatch({
+            type: GET_COIN_PRICECHART,
+            content: [
+              this.props.coinID,
+              this.props.id,
+              this.props.timeFrame,
+              vsCoin,
+            ],
+          });
+        }
+      }
+    } else {
       if (this.props.id) {
         dispatcher.dispatch({
           type: GET_COIN_PRICECHART,
@@ -164,6 +178,10 @@ class PriceChart extends Component {
 
       this.setState({
         series: [{ name: this.props.id, data: data[0].prices }],
+      });
+    } else {
+      this.setState({
+        series: [{ name: "", data: data[0].prices }],
       });
     }
   };
