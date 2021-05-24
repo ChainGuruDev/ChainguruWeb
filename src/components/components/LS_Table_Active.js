@@ -200,7 +200,6 @@ class LSTableActive extends Component {
       let sort = [];
       //MERGE DATA FROM COINGECKO TOKENS and our DB LS positions
       const { lsData } = this.state;
-      this.setState({});
       //MATCH DBs FROM TOKEN IDS
       data.forEach((item, i) => {
         let index = lsData

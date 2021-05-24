@@ -99,7 +99,7 @@ class BalanceList extends Component {
       coinData: [],
       loading: true,
       rowData: [],
-      sortBy: "marketcap",
+      sortBy: "value",
       sortOrder: "dsc",
       sortData: [],
       hideBlacklisted: true,

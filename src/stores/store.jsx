@@ -1202,12 +1202,47 @@ class Store {
   getCoinList = async () => {
     if (this.store.coinList.length > 0) {
       console.log("Cached coinlist");
+      //ADD USER FAVORITES TO TOP OF THE LIST
 
+      if (this.store.userFavorites.length > 0) {
+        const list = this.store.coinList;
+        const userFav = this.store.userFavorites;
+        const listFavFirst = [];
+
+        userFav.forEach((item, i) => {
+          list.sort(function (x, y) {
+            return x.id == item ? -1 : y.id == item ? 1 : 0;
+          });
+        });
+        list.sort(function (x, y) {
+          return x.id == "ethereum" ? -1 : y.id == "ethereum" ? 1 : 0;
+        });
+        list.sort(function (x, y) {
+          return x.id == "bitcoin" ? -1 : y.id == "bitcoin" ? 1 : 0;
+        });
+      }
       emitter.emit(COINLIST_RETURNED, this.store.coinList);
     } else {
       let data = await CoinGeckoClient.coins.list();
-
       this.store.coinList = data.data;
+      //ADD USER FAVORITES TO TOP OF THE LIST
+      if (this.store.userFavorites.length > 0) {
+        const list = data.data;
+        const userFav = this.store.userFavorites;
+        const listFavFirst = [];
+
+        userFav.forEach((item, i) => {
+          list.sort(function (x, y) {
+            return x.id == item ? -1 : y.id == item ? 1 : 0;
+          });
+        });
+        list.sort(function (x, y) {
+          return x.id == "ethereum" ? -1 : y.id == "ethereum" ? 1 : 0;
+        });
+        list.sort(function (x, y) {
+          return x.id == "bitcoin" ? -1 : y.id == "bitcoin" ? 1 : 0;
+        });
+      }
       emitter.emit(COINLIST_RETURNED, this.store.coinList);
     }
     //console.log(this.store.coinList);
@@ -1390,6 +1425,8 @@ class Store {
         `https://chainguru-db.herokuapp.com/users/${payload.address}`
         // `http://localhost:3001/users/${payload.address}`
       );
+      console.log(_userExists.data.favorites.tokenIDs);
+      store.setStore({ userFavorites: _userExists.data.favorites.tokenIDs });
       if (await _userExists) {
         emitter.emit(DB_USERDATA_RETURNED, _userExists.data);
       }
@@ -1434,6 +1471,8 @@ class Store {
       `https://chainguru-db.herokuapp.com/favorites/${account.address}`,
       { tokenID: payload.content }
     );
+    store.setStore({ userFavorites: _dbAddFav.data.tokenIDs });
+
     emitter.emit(DB_ADD_FAVORITE_RETURNED, await _dbAddFav.data);
   };
 
@@ -1444,6 +1483,7 @@ class Store {
       `https://chainguru-db.herokuapp.com/favorites/${account.address}`,
       { data: { tokenID: payload.content } }
     );
+    store.setStore({ userFavorites: _dbDelFav.data.tokenIDs });
     emitter.emit(DB_DEL_FAVORITE_RETURNED, await _dbDelFav.data);
   };
 

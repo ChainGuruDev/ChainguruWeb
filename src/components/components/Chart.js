@@ -52,6 +52,9 @@ class PriceChart extends Component {
 
         colors: color,
         chart: {
+          animations: {
+            enabled: false,
+          },
           id: "",
           background: "rgba(0, 0, 0, 0.0)",
         },
