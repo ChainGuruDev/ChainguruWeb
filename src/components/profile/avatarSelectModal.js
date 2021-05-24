@@ -13,6 +13,7 @@ import {
 import { ERROR, DB_NEW_AVATAR, DB_NEW_AVATAR_RETURNED } from "../../constants";
 
 import { colors } from "../../theme";
+import ipfs from "../ipfs";
 
 import Store from "../../stores";
 const emitter = Store.emitter;
@@ -94,10 +95,17 @@ class AvatarSelectModal extends Component {
     this.setState({
       loading: true,
     });
-    dispatcher.dispatch({
-      type: DB_NEW_AVATAR,
-      avatar: `local_${selected}`,
-    });
+    if (selected === 9) {
+      dispatcher.dispatch({
+        type: DB_NEW_AVATAR,
+        avatar: `custom_${this.state.imagePath}`,
+      });
+    } else {
+      dispatcher.dispatch({
+        type: DB_NEW_AVATAR,
+        avatar: `local_${selected}`,
+      });
+    }
   };
 
   newAvatarReturned = (data) => {
@@ -105,6 +113,31 @@ class AvatarSelectModal extends Component {
       loading: false,
     });
     this.props.closeModal();
+  };
+
+  handleFile = (event) => {
+    event.preventDefault();
+    const file = event.target.files[0];
+    const reader = new window.FileReader();
+    reader.readAsArrayBuffer(file);
+    reader.onloadend = () => {
+      this.convertToBuffer(reader);
+    };
+  };
+
+  convertToBuffer = async (reader) => {
+    this.setState({ isUploading: true });
+    const buffer = await Buffer.from(reader.result);
+    this.uploadImage(await buffer);
+  };
+
+  uploadImage = async (buffer) => {
+    let results = await ipfs.add(buffer);
+    this.setState({
+      imagePath: "https://cloudflare-ipfs.com/ipfs/" + (await results.path),
+      isUploading: false,
+      selectedAvatar: 9,
+    });
   };
 
   render() {
@@ -131,112 +164,168 @@ class AvatarSelectModal extends Component {
             alignItems="center"
             spacing={3}
           >
-            <Grid className={classes.avatarPic} item xs={3}>
-              <Avatar
-                alt="avatar1"
-                src="/AvatarBeta/avatar-01.png"
-                className={
-                  selectedAvatar === 1
-                    ? classes.selectedAvatar
-                    : classes.profile
-                }
-                onClick={() => this.selectAvatar(1)}
-              />
+            <Grid item container direction="row" xs={12} spacing={3}>
+              <Grid className={classes.avatarPic} item xs={3}>
+                <Avatar
+                  alt="avatar1"
+                  src="/AvatarBeta/avatar-01.png"
+                  className={
+                    selectedAvatar === 1
+                      ? classes.selectedAvatar
+                      : classes.profile
+                  }
+                  onClick={() => this.selectAvatar(1)}
+                />
+              </Grid>
+              <Grid className={classes.avatarPic} item xs={3}>
+                <Avatar
+                  alt="avatar2"
+                  src="/AvatarBeta/avatar-02.png"
+                  className={
+                    selectedAvatar === 2
+                      ? classes.selectedAvatar
+                      : classes.profile
+                  }
+                  onClick={() => this.selectAvatar(2)}
+                />
+              </Grid>
+              <Grid className={classes.avatarPic} item xs={3}>
+                <Avatar
+                  alt="avatar3"
+                  src="/AvatarBeta/avatar-03.png"
+                  className={
+                    selectedAvatar === 3
+                      ? classes.selectedAvatar
+                      : classes.profile
+                  }
+                  onClick={() => this.selectAvatar(3)}
+                />
+              </Grid>
+              <Grid className={classes.avatarPic} item xs={3}>
+                <Avatar
+                  alt="avatar4"
+                  src="/AvatarBeta/avatar-04.png"
+                  className={
+                    selectedAvatar === 4
+                      ? classes.selectedAvatar
+                      : classes.profile
+                  }
+                  onClick={() => this.selectAvatar(4)}
+                />
+              </Grid>
+              <Grid className={classes.avatarPic} item xs={3}>
+                <Avatar
+                  alt="avatar5"
+                  src="/AvatarBeta/avatar-05.png"
+                  className={
+                    selectedAvatar === 5
+                      ? classes.selectedAvatar
+                      : classes.profile
+                  }
+                  onClick={() => this.selectAvatar(5)}
+                />
+              </Grid>
+              <Grid className={classes.avatarPic} item xs={3}>
+                <Avatar
+                  alt="avatar6"
+                  src="/AvatarBeta/avatar-06.png"
+                  className={
+                    selectedAvatar === 6
+                      ? classes.selectedAvatar
+                      : classes.profile
+                  }
+                  onClick={() => this.selectAvatar(6)}
+                />
+              </Grid>
+              <Grid className={classes.avatarPic} item xs={3}>
+                <Avatar
+                  alt="avatar6"
+                  src="/AvatarBeta/avatar-07.png"
+                  className={
+                    selectedAvatar === 7
+                      ? classes.selectedAvatar
+                      : classes.profile
+                  }
+                  onClick={() => this.selectAvatar(7)}
+                />
+              </Grid>
+              <Grid className={classes.avatarPic} item xs={3}>
+                <Avatar
+                  alt="avatar6"
+                  src="/AvatarBeta/avatar-08.png"
+                  className={
+                    selectedAvatar === 8
+                      ? classes.selectedAvatar
+                      : classes.profile
+                  }
+                  onClick={() => this.selectAvatar(8)}
+                />
+              </Grid>
+              <Grid className={classes.avatarPic} item xs={12}>
+                <Avatar
+                  alt="customAvatar"
+                  src={this.state.imagePath}
+                  className={
+                    selectedAvatar === 9
+                      ? classes.selectedAvatar
+                      : classes.profile
+                  }
+                  style={{
+                    display: this.state.imagePath ? "flex" : "none",
+                  }}
+                  onClick={() => this.selectAvatar(9)}
+                />
+              </Grid>
             </Grid>
-            <Grid className={classes.avatarPic} item xs={3}>
-              <Avatar
-                alt="avatar2"
-                src="/AvatarBeta/avatar-02.png"
-                className={
-                  selectedAvatar === 2
-                    ? classes.selectedAvatar
-                    : classes.profile
-                }
-                onClick={() => this.selectAvatar(2)}
-              />
-            </Grid>
-            <Grid className={classes.avatarPic} item xs={3}>
-              <Avatar
-                alt="avatar3"
-                src="/AvatarBeta/avatar-03.png"
-                className={
-                  selectedAvatar === 3
-                    ? classes.selectedAvatar
-                    : classes.profile
-                }
-                onClick={() => this.selectAvatar(3)}
-              />
-            </Grid>
-            <Grid className={classes.avatarPic} item xs={3}>
-              <Avatar
-                alt="avatar4"
-                src="/AvatarBeta/avatar-04.png"
-                className={
-                  selectedAvatar === 4
-                    ? classes.selectedAvatar
-                    : classes.profile
-                }
-                onClick={() => this.selectAvatar(4)}
-              />
-            </Grid>
-            <Grid className={classes.avatarPic} item xs={3}>
-              <Avatar
-                alt="avatar5"
-                src="/AvatarBeta/avatar-05.png"
-                className={
-                  selectedAvatar === 5
-                    ? classes.selectedAvatar
-                    : classes.profile
-                }
-                onClick={() => this.selectAvatar(5)}
-              />
-            </Grid>
-            <Grid className={classes.avatarPic} item xs={3}>
-              <Avatar
-                alt="avatar6"
-                src="/AvatarBeta/avatar-06.png"
-                className={
-                  selectedAvatar === 6
-                    ? classes.selectedAvatar
-                    : classes.profile
-                }
-                onClick={() => this.selectAvatar(6)}
-              />
-            </Grid>
-            <Grid className={classes.avatarPic} item xs={3}>
-              <Avatar
-                alt="avatar6"
-                src="/AvatarBeta/avatar-07.png"
-                className={
-                  selectedAvatar === 7
-                    ? classes.selectedAvatar
-                    : classes.profile
-                }
-                onClick={() => this.selectAvatar(7)}
-              />
-            </Grid>
-            <Grid className={classes.avatarPic} item xs={3}>
-              <Avatar
-                alt="avatar6"
-                src="/AvatarBeta/avatar-08.png"
-                className={
-                  selectedAvatar === 8
-                    ? classes.selectedAvatar
-                    : classes.profile
-                }
-                onClick={() => this.selectAvatar(8)}
-              />
-            </Grid>
-            <Grid
-              style={{ marginTop: 10, display: "flex", justifyContent: "end" }}
-              item
-              xs={12}
-            >
+            <Grid style={{ marginTop: 10, display: "flex" }} item xs={12}>
+              <Grid style={{ align: "left" }} item xs={3}>
+                <form
+                  className={classes.root}
+                  style={{
+                    display: "flex",
+                  }}
+                  noValidate
+                  autoComplete="off"
+                >
+                  <input
+                    style={{
+                      display: "none",
+                    }}
+                    accept="image/*"
+                    className={classes.input}
+                    id="outlined-button-file"
+                    type="file"
+                    onChange={this.handleFile}
+                    onClick={(event) => {
+                      event.target.value = null;
+                    }}
+                  />
+                  <label
+                    htmlFor="outlined-button-file"
+                    style={{
+                      display: "block",
+                    }}
+                  >
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      component="span"
+                      style={{
+                        display: "flex",
+                      }}
+                      disabled={this.state.isUploading}
+                    >
+                      {this.state.isUploading && <CircularProgress size={24} />}
+                      {!this.state.isUploading && "Upload"}
+                    </Button>
+                  </label>
+                </form>
+              </Grid>
               <Button
                 color="secondary"
                 variant="outlined"
                 onClick={() => this.props.closeModal()}
-                style={{ marginRight: 10 }}
+                style={{ marginRight: 10, marginLeft: "auto" }}
               >
                 Cancel
               </Button>

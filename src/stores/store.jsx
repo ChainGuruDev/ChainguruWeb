@@ -1704,7 +1704,6 @@ class Store {
   db_newAvatar = async (payload) => {
     const account = store.getStore("account");
     try {
-      console.log(payload.avatar);
       let data = await axios.put(
         `https://chainguru-db.herokuapp.com/users/${account.address}/setAvatar`,
         {

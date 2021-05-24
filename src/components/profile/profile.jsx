@@ -118,7 +118,6 @@ class Profile extends Component {
 
   dbUserDataReturned = (data) => {
     if (data.avatar) {
-      console.log(data.avatar);
       let avatar = this.getAvatarType({ avatar: data.avatar });
 
       this.setState({
@@ -205,6 +204,7 @@ class Profile extends Component {
           default:
         }
       } else if (avatar.type === "custom") {
+        currentAvatar = avatar.name;
         //TODO ADD LOGIC TO POINT TO USER CUSTOM UPLOADED PICTURE
       } else {
         currentAvatar = "/avatar.jpg";

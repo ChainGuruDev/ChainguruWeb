@@ -225,7 +225,6 @@ class LSTableActive extends Component {
         );
         sort.push(sortData);
       });
-      console.log(sort);
       this.setState({ sortData: sort, coinData: data, loadingResult: false });
     }
   };

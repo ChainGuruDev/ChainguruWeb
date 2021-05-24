@@ -48,6 +48,10 @@ const styles = (theme) => ({
     alignItems: "flex-start",
     background: "rgba(255,255,255,0.05)",
   },
+  firstProfile: {
+    width: "75px",
+    height: "75px",
+  },
   largeProfile: {
     width: "50px",
     height: "50px",
@@ -87,7 +91,7 @@ class LeaderboardMini extends Component {
     if (data.length > 0) {
       //LIMIT TOP 5
       let leaderboardData = data.length > 10 ? data.slice(0, 10) : data;
-      return leaderboardData.map((user) => (
+      return leaderboardData.map((user, i) => (
         <>
           <Grid
             item
@@ -105,12 +109,14 @@ class LeaderboardMini extends Component {
               <Avatar
                 alt="avatar"
                 src={this.getAvatarType(user)}
-                className={classes.largeProfile}
+                className={
+                  i === 0 ? classes.firstProfile : classes.largeProfile
+                }
               />
             </Grid>
             {user.nickname && (
               <Grid style={{ marginLeft: 10 }} item>
-                <Typography color="primary" variant={"h4"}>
+                <Typography color="primary" variant={i === 0 ? "h6" : "h4"}>
                   {user.nickname}
                 </Typography>
                 <Typography color="secondary" variant={"body2"}>
@@ -176,6 +182,7 @@ class LeaderboardMini extends Component {
           default:
         }
       } else if (avatar.type === "custom") {
+        currentAvatar = avatar.name;
         //TODO ADD LOGIC TO POINT TO USER CUSTOM UPLOADED PICTURE
       } else {
         currentAvatar = "/avatar.jpg";

@@ -160,6 +160,7 @@ class ProfileMini extends Component {
           default:
         }
       } else if (avatar.type === "custom") {
+        currentAvatar = avatar.name;
         //TODO ADD LOGIC TO POINT TO USER CUSTOM UPLOADED PICTURE
       } else {
         currentAvatar = "/avatar.jpg";

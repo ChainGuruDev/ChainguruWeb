@@ -25,6 +25,7 @@ import {
   ButtonGroup,
   Avatar,
   Typography,
+  Tooltip,
 } from "@material-ui/core";
 
 //import materialUI icons
@@ -187,7 +188,6 @@ class LongShort extends Component {
     });
     console.log(data[0]);
 
-    console.log(data[0].market_data.sparkline_7d.price);
     this.setState({ coinData: data[0] });
   };
 
@@ -353,9 +353,16 @@ class LongShort extends Component {
                         justify="flex-start"
                         alignItems="stretch"
                       >
-                        <Grid item>
-                          <CoinSearchBar />
-                        </Grid>
+                        <Tooltip
+                          title="Find coins to Long or Short here"
+                          arrow
+                          placement="top"
+                        >
+                          <Grid item>
+                            <CoinSearchBar />
+                          </Grid>
+                        </Tooltip>
+
                         {this.state.coinData && (
                           <Grid
                             container
@@ -674,69 +681,84 @@ class LongShort extends Component {
                         }}
                         container
                       >
-                        <Grid item container xs={4}>
-                          <Grid className={classes.comboBar} xs={4}>
-                            <Typography
-                              style={{ marginTop: 5 }}
-                              variant={"h4"}
-                              gutterBottom
-                              color="primary"
+                        <Tooltip
+                          title="You can only have 7 trades open at a time"
+                          arrow
+                        >
+                          <Grid item container xs={4}>
+                            <Grid className={classes.comboBar} xs={4}>
+                              <Typography
+                                style={{ marginTop: 5 }}
+                                variant={"h4"}
+                                gutterBottom
+                                color="primary"
+                              >
+                                Active
+                              </Typography>
+                            </Grid>
+                            <Grid
+                              justify={"space-around"}
+                              item
+                              style={{ flex: 1, display: "flex", marginTop: 5 }}
                             >
-                              Active
-                            </Typography>
+                              {this.drawCombo(activeLS, "active")}
+                            </Grid>
                           </Grid>
-                          <Grid
-                            justify={"space-around"}
-                            item
-                            style={{ flex: 1, display: "flex", marginTop: 5 }}
-                          >
-                            {this.drawCombo(activeLS, "active")}
-                          </Grid>
-                        </Grid>
-                        <Grid item container xs={4}>
-                          <Grid className={classes.comboBar} item xs={4}>
-                            <Typography
-                              style={{ marginLeft: "10px" }}
-                              style={{ marginTop: 5 }}
-                              variant={"h4"}
-                              gutterBottom
-                              color="primary"
+                        </Tooltip>
+                        <Tooltip
+                          title="Get 7 Longs in a row for 2x bonus"
+                          arrow
+                        >
+                          <Grid item container xs={4}>
+                            <Grid className={classes.comboBar} item xs={4}>
+                              <Typography
+                                style={{ marginLeft: "10px" }}
+                                style={{ marginTop: 5 }}
+                                variant={"h4"}
+                                gutterBottom
+                                color="primary"
+                              >
+                                Long Combo
+                              </Typography>
+                            </Grid>
+                            <Grid
+                              justify={"space-around"}
+                              item
+                              style={{
+                                flex: 1,
+                                display: "flex",
+                                marginTop: 5,
+                                marginRight: 5,
+                              }}
                             >
-                              Long Combo
-                            </Typography>
+                              {this.drawCombo(longCombo, "combo", "long")}
+                            </Grid>
                           </Grid>
-                          <Grid
-                            justify={"space-around"}
-                            item
-                            style={{
-                              flex: 1,
-                              display: "flex",
-                              marginTop: 5,
-                              marginRight: 5,
-                            }}
-                          >
-                            {this.drawCombo(longCombo, "combo", "long")}
-                          </Grid>
-                        </Grid>
-                        <Grid item container xs={4}>
-                          <Grid className={classes.comboBar} item xs={4}>
-                            <Typography
-                              style={{ marginTop: 5 }}
-                              variant={"h4"}
-                              gutterBottom
-                              color="primary"
+                        </Tooltip>
+                        <Tooltip
+                          title="Get 7 Shorts in a row for 2x bonus"
+                          arrow
+                        >
+                          <Grid item container xs={4}>
+                            <Grid className={classes.comboBar} item xs={4}>
+                              <Typography
+                                style={{ marginTop: 5 }}
+                                variant={"h4"}
+                                gutterBottom
+                                color="primary"
+                              >
+                                Short Combo
+                              </Typography>
+                            </Grid>
+                            <Grid
+                              justify={"space-around"}
+                              item
+                              style={{ flex: 1, display: "flex", marginTop: 5 }}
                             >
-                              Short Combo
-                            </Typography>
+                              {this.drawCombo(shortCombo, "combo", "short")}
+                            </Grid>
                           </Grid>
-                          <Grid
-                            justify={"space-around"}
-                            item
-                            style={{ flex: 1, display: "flex", marginTop: 5 }}
-                          >
-                            {this.drawCombo(shortCombo, "combo", "short")}
-                          </Grid>
-                        </Grid>
+                        </Tooltip>
                       </Grid>
                     </Grid>
                   )}
