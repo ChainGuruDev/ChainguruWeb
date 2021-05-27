@@ -133,6 +133,7 @@ class LSTableHistory extends Component {
     priceStart,
     vote,
     voteEnding,
+    endingFormatted,
     priceEnd,
     result,
     dbid
@@ -145,6 +146,7 @@ class LSTableHistory extends Component {
       priceStart,
       vote,
       voteEnding,
+      endingFormatted,
       priceEnd,
       result,
       dbid,
@@ -196,6 +198,7 @@ class LSTableHistory extends Component {
           data[0][index].symbol,
           item.priceStart,
           item.vote,
+          item.voteEnding,
           dformat.toString(),
           item.priceEnd.toFixed(2),
           item.result,
@@ -237,6 +240,7 @@ class LSTableHistory extends Component {
           item.priceStart,
           item.vote,
           item.voteEnding,
+          item.endingFormatted,
           item.priceEnd,
           item.result,
           item.dbid
@@ -254,6 +258,7 @@ class LSTableHistory extends Component {
           item.priceStart,
           item.vote,
           item.voteEnding,
+          item.endingFormatted,
           item.priceEnd,
           item.result,
           item.dbid
@@ -312,7 +317,7 @@ class LSTableHistory extends Component {
             </Typography>
           </TableCell>
           <TableCell align="right">
-            <Typography variant={"h4"}>{row.voteEnding}</Typography>
+            <Typography variant={"h4"}>{row.endingFormatted}</Typography>
           </TableCell>
           <TableCell align="center">
             {row.vote && (

@@ -50,7 +50,6 @@ class CoinSearchBar extends Component {
     if (newValue) {
       let _id = newValue.id;
       if (compareBarID) {
-        emitter.emit(GET_COIN_DATA, compareBarID);
         dispatcher.dispatch({
           type: GET_COIN_DATA,
           content: _id,

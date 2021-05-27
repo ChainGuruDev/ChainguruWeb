@@ -214,7 +214,7 @@ class Home extends Component {
         <Card
           className={`${classes.card} ${classes.short}`}
           onClick={() => {
-            this.nav(location.pathname + "short");
+            this.nav(location.pathname + "short/compare/bitcoin/ethereum");
           }}
         >
           <FastIcon fill={colors.white} className={`${classes.icon} icon`} />
@@ -226,7 +226,7 @@ class Home extends Component {
         <Card
           className={`${classes.card} ${classes.mid}`}
           onClick={() => {
-            this.nav(location.pathname + "medium");
+            this.nav(location.pathname + "medium/compare/bitcoin/ethereum");
           }}
         >
           <MediumIcon fill={colors.white} className={`${classes.icon} icon`} />

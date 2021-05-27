@@ -89,10 +89,10 @@ class LeaderboardMini extends Component {
   drawLeaderboard = (data) => {
     const { classes } = this.props;
     if (data.length > 0) {
-      //LIMIT TOP 5
+      //LIMIT TOP 10
       let leaderboardData = data.length > 10 ? data.slice(0, 10) : data;
       return leaderboardData.map((user, i) => (
-        <>
+        <li key={`${user}_${i}`} style={{ display: "inherit" }}>
           <Grid
             item
             container
@@ -131,7 +131,7 @@ class LeaderboardMini extends Component {
             )}
           </Grid>
           <Divider />
-        </>
+        </li>
       ));
     }
   };
@@ -203,11 +203,9 @@ class LeaderboardMini extends Component {
         style={{ maxHeight: "max-content" }}
         elevation={3}
       >
-        <Grid container direction="column" justifyContent="center" spacing={3}>
+        <Grid container direction="column" spacing={3}>
           {loading && (
             <Grid
-              alignItems="center"
-              justifyContent="center"
               style={{
                 padding: 25,
                 justifyContent: "center",
@@ -218,7 +216,7 @@ class LeaderboardMini extends Component {
             </Grid>
           )}
           {!loading && (
-            <Grid style={{ display: "contents" }} justifyContent="center">
+            <Grid style={{ display: "contents" }}>
               <Typography
                 style={{
                   marginTop: 10,

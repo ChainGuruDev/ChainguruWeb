@@ -85,7 +85,7 @@ class LSTableActive extends Component {
       rows: 5,
       rowsPerPage: 5,
       sortBy: "voteEnding",
-      sortOrder: "dsc",
+      sortOrder: "asc",
       sortData: [],
       formatedRows: [],
       loadingResult: false,

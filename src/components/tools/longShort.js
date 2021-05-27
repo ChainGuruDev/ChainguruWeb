@@ -186,7 +186,7 @@ class LongShort extends Component {
       type: DB_GET_USER_TOKEN_LS,
       tokenID: data[0].id,
     });
-    console.log(data[0]);
+    // console.log(data[0]);
 
     this.setState({ coinData: data[0] });
   };
@@ -292,6 +292,7 @@ class LongShort extends Component {
       for (var i = 0; i < number; i++) {
         combo.push(
           <CheckCircleIcon
+            key={`active_${i}`}
             fontSize="small"
             color={ls === "long" ? "primary" : "secondary"}
           />
@@ -299,12 +300,22 @@ class LongShort extends Component {
       }
       for (var i = 0; i < remaining; i++) {
         combo.push(
-          <RadioButtonUncheckedIcon fontSize="small" color="disabled" />
+          <RadioButtonUncheckedIcon
+            key={`unchecked_${i}`}
+            fontSize="small"
+            color="disabled"
+          />
         );
       }
     } else {
       for (var i = 0; i < number; i++) {
-        combo.push(<RadioButtonCheckedIcon fontSize="small" color="primary" />);
+        combo.push(
+          <RadioButtonCheckedIcon
+            key={`checked_${i}`}
+            fontSize="small"
+            color="primary"
+          />
+        );
       }
       for (var i = 0; i < remaining; i++) {
         combo.push(
@@ -686,7 +697,7 @@ class LongShort extends Component {
                           arrow
                         >
                           <Grid item container xs={4}>
-                            <Grid className={classes.comboBar} xs={4}>
+                            <Grid className={classes.comboBar} item xs={4}>
                               <Typography
                                 style={{ marginTop: 5 }}
                                 variant={"h4"}
@@ -697,6 +708,7 @@ class LongShort extends Component {
                               </Typography>
                             </Grid>
                             <Grid
+                              container
                               justify={"space-around"}
                               item
                               style={{ flex: 1, display: "flex", marginTop: 5 }}
@@ -722,6 +734,7 @@ class LongShort extends Component {
                               </Typography>
                             </Grid>
                             <Grid
+                              container
                               justify={"space-around"}
                               item
                               style={{
@@ -751,6 +764,7 @@ class LongShort extends Component {
                               </Typography>
                             </Grid>
                             <Grid
+                              container
                               justify={"space-around"}
                               item
                               style={{ flex: 1, display: "flex", marginTop: 5 }}

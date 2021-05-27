@@ -91,6 +91,7 @@ class Favorites extends Component {
   }
 
   updateFavorites() {
+    // console.log("bar update");
     const account = store.getStore("account");
     if (account && account.address) {
       const newProgressBar = this.state.progressBar + 1;
@@ -111,7 +112,7 @@ class Favorites extends Component {
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
     emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
     //emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
-    this.interval = setInterval(() => this.updateFavorites(), 750);
+    this.interval = setInterval(() => this.updateFavorites(), 1000);
   }
 
   componentWillUnmount() {
@@ -135,16 +136,13 @@ class Favorites extends Component {
   };
 
   dbUserDataReturned = (data) => {
-    console.log(data);
-    console.log(data.favorites.tokenIDs);
-
     if (data.favorites.tokenIDs.length > 0) {
       this.setState({ favList: data.favorites.tokenIDs });
     }
   };
 
   coinlistReturned = (payload) => {
-    console.log(payload);
+    // console.log(payload);
     this.setState({ loading: false, items: payload, progressBar: 0 });
   };
 

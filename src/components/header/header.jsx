@@ -179,6 +179,10 @@ class Header extends Component {
     const theme = store.getStore("theme");
     const vsCoin = store.getStore("vsCoin");
 
+    if (account) {
+      this.setAddressEnsName();
+    }
+
     this.state = {
       account: account,
       theme: theme,
@@ -202,13 +206,14 @@ class Header extends Component {
       type: CHECK_GASPRICE,
     });
 
-    if (window.location.pathname === "/" + "short") {
+    const currentSection = this.props.match.path.split("/")[1];
+    if (currentSection === "short") {
       this.setState({ cgLogoColor: colors.cgOrange });
-    } else if (window.location.pathname === "/" + "medium") {
+    } else if (currentSection === "medium") {
       this.setState({ cgLogoColor: colors.cgGreen });
-    } else if (window.location.pathname === "/" + "long") {
+    } else if (currentSection === "long") {
       this.setState({ cgLogoColor: colors.cgBlue });
-    } else if (window.location.pathname === "/" + "portfolio") {
+    } else if (currentSection === "portfolio") {
       this.setState({ cgLogoColor: colors.cgGreen });
     } else {
       this.setState({ cgLogoColor: colors.cgRed });
@@ -216,14 +221,15 @@ class Header extends Component {
   }
 
   componentDidUpdate(prevProps) {
+    const currentSection = this.props.match.path.split("/")[1];
     if (prevProps.match.path !== this.props.match.path) {
-      if (this.props.match.path === "/" + "short") {
+      if (currentSection === "short") {
         this.setState({ cgLogoColor: colors.cgOrange });
-      } else if (this.props.match.path === "/" + "medium") {
+      } else if (currentSection === "medium") {
         this.setState({ cgLogoColor: colors.cgGreen });
-      } else if (this.props.match.path === "/" + "long") {
+      } else if (currentSection === "long") {
         this.setState({ cgLogoColor: colors.cgBlue });
-      } else if (this.props.match.path === "/" + "portfolio") {
+      } else if (currentSection === "portfolio") {
         this.setState({ cgLogoColor: colors.cgGreen });
       } else {
         this.setState({ cgLogoColor: colors.cgRed });
@@ -296,7 +302,7 @@ class Header extends Component {
       address: _acc.address,
     });
 
-    //this.setAddressEnsName();
+    this.setAddressEnsName();
   };
 
   connectionDisconnected = () => {
@@ -313,7 +319,6 @@ class Header extends Component {
       const ens = new ENS({ provider, network });
       const addressEnsName = await ens.reverse(address).catch(() => {});
       if (addressEnsName) {
-        console.log(addressEnsName);
         this.setState({ addressEnsName });
       }
     }
@@ -527,6 +532,8 @@ class Header extends Component {
 
   renderLink = (screen) => {
     const { classes, t } = this.props;
+    const currentSection = this.props.match.path.split("/")[1];
+
     // if (window.location.pathname === "/" + "short") {
     //   if (this.state.cgLogoColor !== colors.cgOrange) {
     //     this.setState({ cgLogoColor: colors.cgOrange });
@@ -552,9 +559,7 @@ class Header extends Component {
     return (
       <div
         className={
-          window.location.pathname === "/" + screen
-            ? classes.linkActive
-            : classes.link
+          currentSection === screen ? classes.linkActive : classes.link
         }
         onClick={() => {
           this.nav(screen);

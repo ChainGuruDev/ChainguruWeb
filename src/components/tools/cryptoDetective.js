@@ -296,10 +296,10 @@ class CryptoDetective extends Component {
   db_getUserTokenLSReturned = (data) => {
     if (data.length > 0) {
       //TODO CALCULATE REMAINING TIME UNTIL P&D is ready
-      console.log({ message: "user has active LS", data: data[0] });
+      // console.log({ message: "user has active LS", data: data[0] });
       this.setState({ userTokenLS: data[0], lsEnabled: false, lsLoaded: true });
     } else {
-      console.log({ message: "user has no LS running", data: data });
+      // console.log({ message: "user has no LS running", data: data });
       this.setState({ userTokenLS: data, lsEnabled: true, lsLoaded: true });
     }
   };
@@ -915,7 +915,7 @@ class CryptoDetective extends Component {
     const handleClick = (timeFrame) => {
       dispatcher.dispatch({
         type: GET_COIN_PRICECHART,
-        content: [coinData.id, , timeFrame, vs],
+        content: [coinData.id, null, timeFrame, vs],
       });
       this.setState({ timeFrame: timeFrame });
     };

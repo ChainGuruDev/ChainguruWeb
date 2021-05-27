@@ -13,6 +13,7 @@ import {
   GET_COIN_PRICECHART,
   GRAPH_TIMEFRAME_CHANGED,
   SWITCH_VS_COIN_RETURNED,
+  GET_COIN_DATA,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -51,7 +52,24 @@ const styles = (theme) => ({
 
 class CoinCompare extends Component {
   constructor(props) {
-    super();
+    super(props);
+    if (props.id === "A") {
+      if (props.match.params.coinID) {
+        dispatcher.dispatch({
+          type: GET_COIN_DATA,
+          content: props.match.params.coinID,
+          BarID: props.id,
+        });
+      }
+    } else {
+      if (props.match.params.coinID_B) {
+        dispatcher.dispatch({
+          type: GET_COIN_DATA,
+          content: props.match.params.coinID_B,
+          BarID: props.id,
+        });
+      }
+    }
     let vsCoin = store.getStore("vsCoin");
     this.state = { coinData: [], loading: true, vs: vsCoin, timeFrame: 7 };
   }
@@ -69,6 +87,31 @@ class CoinCompare extends Component {
     emitter.removeListener(COIN_DATA_RETURNED, this.coinDataReturned);
     emitter.removeListener(GRAPH_TIMEFRAME_CHANGED, this.graphTimeFrameChanged);
     emitter.removeListener(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.match.params.coinID !== this.props.match.params.coinID) {
+      if (this.props.id === "A") {
+        if (this.props.match.params.coinID) {
+          dispatcher.dispatch({
+            type: GET_COIN_DATA,
+            content: this.props.match.params.coinID,
+            BarID: this.props.id,
+          });
+        }
+      }
+    }
+    if (prevProps.match.params.coinID_B !== this.props.match.params.coinID_B) {
+      if (this.props.id === "B") {
+        if (this.props.match.params.coinID_B) {
+          dispatcher.dispatch({
+            type: GET_COIN_DATA,
+            content: this.props.match.params.coinID_B,
+            BarID: this.props.id,
+          });
+        }
+      }
+    }
   }
 
   getVsCoin = () => {
@@ -116,8 +159,8 @@ class CoinCompare extends Component {
   };
 
   coinDataReturned = (data) => {
-    console.log(data);
     if (data[1] === this.props.id) {
+      console.log(data);
       this.setState({ coinData: data[0], loading: false });
     }
   };
