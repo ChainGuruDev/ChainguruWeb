@@ -175,10 +175,9 @@ class LSTableActive extends Component {
     let dateEnd = new Date(voteEnding);
     let dateNow = new Date();
     let remaining = dateEnd - dateNow;
-    // let timeLimit = 120 * 1000; // 2min for testing
-    let timeLimit = 12 * 60 * 60 * 1000; // 12hs for beta testing
-    // let timeLimit = 24 * 60 * 60 * 1000; // 12hs for release
-
+    // let timeLimit = 12 * 60 * 60 * 1000; // 12hs for beta testing
+    let timeLimit = 24 * 60 * 60 * 1000; // 24hs for release
+    console.log(dateEnd);
     let percentComplete = 0;
     if (remaining <= 0) {
       percentComplete = 100;

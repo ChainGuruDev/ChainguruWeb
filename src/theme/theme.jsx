@@ -1,5 +1,6 @@
 import createBreakpoints from "@material-ui/core/styles/createBreakpoints";
 
+import AcuminTTF from "../assets/fonts/WorkSans-VariableFont_wght.ttf";
 import WorkSansTTF from "../assets/fonts/WorkSans-VariableFont_wght.ttf";
 import RobotoTTF from "typeface-roboto";
 
@@ -7,6 +8,17 @@ const Roboto = {
   fontFamily: "Roboto",
   fontStyle: "normal",
   fontWeight: 400,
+};
+
+const Acumin = {
+  fontFamily: "Acumin Variable Concept",
+  fontStyle: "normal",
+  fontWeight: 400,
+  src: `
+    local('Acumin Variable Concept'),
+    local('Acumin Variable Concept'),
+    url(${AcuminTTF}) format('truetype')
+  `,
 };
 
 const WorkSans = {
@@ -69,7 +81,7 @@ const breakpoints = createBreakpoints({
 
 const cgTheme = {
   typography: {
-    fontFamily: ["Roboto"].join(","),
+    fontFamily: ["Acumin Variable Concept"].join(","),
     h1: {
       fontSize: "48px",
       fontWeight: "600",
@@ -124,7 +136,7 @@ const cgTheme = {
   overrides: {
     MuiCssBaseline: {
       "@global": {
-        "@font-face": [Roboto],
+        "@font-face": [Acumin],
       },
     },
     MuiSelect: {

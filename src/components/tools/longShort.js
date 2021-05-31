@@ -319,7 +319,11 @@ class LongShort extends Component {
       }
       for (var i = 0; i < remaining; i++) {
         combo.push(
-          <RadioButtonUncheckedIcon fontSize="small" color="disabled" />
+          <RadioButtonUncheckedIcon
+            key={`checked_left${i}`}
+            fontSize="small"
+            color="disabled"
+          />
         );
       }
     }

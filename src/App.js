@@ -6,6 +6,8 @@ import "./i18n";
 import createBreakpoints from "@material-ui/core/styles/createBreakpoints";
 import Web3 from "web3";
 
+import AcuminTTF from "./assets/fonts/AcuminVariableConcept.otf";
+
 import Header from "./components/header";
 import Home from "./components/home";
 import Short from "./components/short";
@@ -28,7 +30,6 @@ import { injected } from "./stores/connectors";
 import { CONNECTION_CONNECTED, DARKMODE_SWITCH_RETURN } from "./constants";
 
 import Store from "./stores";
-
 const emitter = Store.emitter;
 const store = Store.store;
 
@@ -124,6 +125,17 @@ class App extends Component {
       fontStyle: "normal",
       fontWeight: 400,
     };
+    const Acumin = {
+      fontFamily: "Acumin Variable Concept Default ExtraCondensed UltraBlack",
+      fontStyle: "normal",
+      fontWeight: "bold",
+      fontStretch: "semi-condensed",
+      src: `
+        local('Acumin Variable Concept Default ExtraCondensed UltraBlack'),
+        local('Acumin Variable Concept Default ExtraCondensed UltraBlack'),
+        url(${AcuminTTF}) format('opentype')
+      `,
+    };
     const breakpoints = createBreakpoints({
       keys: ["xs", "sm", "md", "lg", "xl"],
       values: {
@@ -137,7 +149,10 @@ class App extends Component {
 
     const tema = createMuiTheme({
       typography: {
-        fontFamily: ["Roboto"].join(","),
+        fontFamily: [
+          "Acumin Variable Concept Default ExtraCondensed UltraBlack",
+        ].join(","),
+        fontStyle: "bold",
         h1: {
           fontSize: "48px",
           fontWeight: "600",
@@ -198,7 +213,7 @@ class App extends Component {
       overrides: {
         MuiCssBaseline: {
           "@global": {
-            "@font-face": [Roboto],
+            "@font-face": [Acumin],
           },
         },
         MuiSelect: {
@@ -492,7 +507,7 @@ class App extends Component {
               />
               <Long />
             </Route>
-            <Route path="/portfolio/:toolID">
+            <Route path="/portfolio/:tool">
               <Header
                 setHeaderValue={this.setHeaderValue}
                 headerValue={headerValue}
@@ -550,7 +565,6 @@ class App extends Component {
               />
               <Market />
             </Route>
-            {/* DEV ROUTES */}
             <Route path="/user/profile">
               <Header
                 setHeaderValue={this.setHeaderValue}
@@ -558,6 +572,7 @@ class App extends Component {
               />
               <Profile />
             </Route>
+
             <Route path="/">
               <Home />
             </Route>

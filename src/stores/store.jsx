@@ -1226,7 +1226,7 @@ class Store {
 
       //ADD USER FAVORITES TO TOP OF THE LIST
       let list = data.data;
-      if (this.store.userFavorites.length > 0) {
+      if (this.store.userFavorites && this.store.userFavorites.length > 0) {
         const userFav = this.store.userFavorites;
         const listFavFirst = [];
 

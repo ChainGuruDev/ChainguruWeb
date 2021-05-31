@@ -14,6 +14,7 @@ import CompareArrowsIcon from "@material-ui/icons/CompareArrows";
 import ViewQuiltIcon from "@material-ui/icons/ViewQuilt";
 import ShuffleIcon from "@material-ui/icons/Shuffle";
 import TrackChangesRoundedIcon from "@material-ui/icons/TrackChangesRounded";
+import DashboardIcon from "@material-ui/icons/Dashboard";
 
 //Load Tools
 import CryptoDetective from "../tools/cryptoDetective";
@@ -22,6 +23,7 @@ import Portfolio from "../tools/portfolio";
 import PortfolioHeatMap from "../tools/portfolioHeatMap";
 import CryptoConverter from "../tools/cryptoConverter";
 import PortfolioRadar from "../tools/portfolioRadar";
+import Dashboard from "../tools/dashboard.js";
 
 import {
   PING_COINGECKO,
@@ -128,37 +130,82 @@ class PortfolioManagement extends Component {
     super(props);
 
     const account = store.getStore("account");
+
+    let toolID = this.tool2toolID(this.props.match.params.tool);
     this.state = {
       account: account,
       loading: false,
       coinList: [],
       coinDataA: [],
       coinDataB: [],
-      valueTab:
-        this.props.match.params.toolID === "heatmap" ||
-        this.props.toolID === "heatmap"
-          ? 2
-          : 0,
+      valueTab: toolID,
       selectA: false,
       selectB: false,
       coinID: this.props.match.params.coinID,
     };
   }
 
+  tool2toolID = (tool) => {
+    let toolID = 0;
+    switch (tool) {
+      case "portfolio":
+        toolID = 0;
+        break;
+      case "transactions":
+        toolID = 1;
+        break;
+      case "heatmap":
+        toolID = 2;
+        break;
+      case "cryptoConverter":
+        toolID = 3;
+        break;
+      case "portfolioRadar":
+        toolID = 4;
+        break;
+      case "dashboard":
+        toolID = 5;
+        break;
+      default:
+        break;
+    }
+    return toolID;
+  };
+
+  toolID2tool = (toolID) => {
+    let tool;
+    switch (toolID) {
+      case 0:
+        tool = "portfolio";
+        break;
+      case 1:
+        tool = "transactions";
+        break;
+      case 2:
+        tool = "heatmap";
+        break;
+      case 3:
+        tool = "cryptoConverter";
+        break;
+      case 4:
+        tool = "portfolioRadar";
+        break;
+      case 5:
+        tool = "dashboard";
+        break;
+      default:
+        tool = "";
+        break;
+    }
+    return tool;
+  };
+
   componentDidUpdate(prevProps) {
-    if (prevProps.match.params.coinID !== this.props.match.params.coinID) {
-      if (this.props.match.params.tool === "detective") {
-        this.setState({
-          valueTab: 1,
-          coinID: this.props.match.params.coinID,
-        });
-      }
-      if (this.props.tool === "detective") {
-        this.setState({
-          valueTab: 1,
-          coinID: this.props.match.params.coinID,
-        });
-      }
+    if (prevProps.match.params.tool !== this.props.match.params.tool) {
+      let newValueTab = this.tool2toolID(this.props.match.params.tool);
+      this.setState({
+        valueTab: newValueTab,
+      });
     }
   }
 
@@ -196,6 +243,8 @@ class PortfolioManagement extends Component {
 
     const handleChangeTabs = (event, newValueTab) => {
       this.setState({ valueTab: newValueTab });
+      let newScreen = this.toolID2tool(newValueTab);
+      this.nav("/portfolio/" + newScreen);
     };
 
     return (
@@ -231,6 +280,7 @@ class PortfolioManagement extends Component {
               icon={<TrackChangesRoundedIcon />}
               {...a11yProps(4)}
             />
+            <Tab label="Dashboard" icon={<DashboardIcon />} {...a11yProps(5)} />
           </Tabs>
         </AppBar>
         <TabPanel value={valueTab} index={0}>
@@ -247,6 +297,9 @@ class PortfolioManagement extends Component {
         </TabPanel>
         <TabPanel value={valueTab} index={4}>
           <PortfolioRadar />
+        </TabPanel>
+        <TabPanel value={valueTab} index={5}>
+          <Dashboard />
         </TabPanel>
       </Grid>
     );
