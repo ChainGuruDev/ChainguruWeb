@@ -129,7 +129,7 @@ class App extends Component {
       fontFamily: "Acumin Variable Concept Default ExtraCondensed UltraBlack",
       fontStyle: "normal",
       fontWeight: "bold",
-      fontStretch: "semi-condensed",
+      fontStretch: "condensed",
       src: `
         local('Acumin Variable Concept Default ExtraCondensed UltraBlack'),
         local('Acumin Variable Concept Default ExtraCondensed UltraBlack'),
@@ -168,20 +168,27 @@ class App extends Component {
           lineHeight: 1.2,
         },
         h3: {
-          fontSize: "24px",
+          fontSize: "28px",
           fontWeight: "600",
           WebkitFontSmoothing: "antialiased",
           MozOsxFontSmoothing: "grayscale",
           lineHeight: 1.2,
         },
         h4: {
-          fontSize: "16px",
+          fontSize: "20px",
           fontWeight: "600",
           WebkitFontSmoothing: "antialiased",
           MozOsxFontSmoothing: "grayscale",
           lineHeight: 1.2,
         },
         h5: {
+          fontSize: "16px",
+          fontWeight: "600",
+          WebkitFontSmoothing: "antialiased",
+          MozOsxFontSmoothing: "grayscale",
+          lineHeight: 1.2,
+        },
+        h6: {
           fontSize: "14px",
           fontWeight: "600",
           WebkitFontSmoothing: "antialiased",

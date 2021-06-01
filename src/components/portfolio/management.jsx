@@ -90,6 +90,24 @@ const styles = (theme) => ({
   },
 });
 
+const PortfolioTabs = withStyles({
+  indicator: {
+    backgroundColor: colors.cgYellow,
+  },
+})(Tabs);
+
+const PortfolioTab = withStyles((theme) => ({
+  root: {
+    "&$selected": {
+      color: colors.cgYellow,
+    },
+    "&:focus": {
+      color: colors.cgYellow,
+    },
+  },
+  selected: {},
+}))((props) => <Tab {...props} />);
+
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
 
@@ -250,7 +268,7 @@ class PortfolioManagement extends Component {
     return (
       <Grid className={classes.rootTabs}>
         <AppBar position="static" color="default">
-          <Tabs
+          <PortfolioTabs
             value={valueTab}
             onChange={handleChangeTabs}
             aria-label="tool tabs"
@@ -259,29 +277,37 @@ class PortfolioManagement extends Component {
             textColor="primary"
             centered
           >
-            <Tab
+            <PortfolioTab
               label="Portfolio"
               icon={<BusinessCenterRoundedIcon />}
               {...a11yProps(0)}
             />
-            <Tab
+            <PortfolioTab
               label="Transactions"
               icon={<FlashOnIcon />}
               {...a11yProps(1)}
             />
-            <Tab label="HeatMap" icon={<ViewQuiltIcon />} {...a11yProps(2)} />
-            <Tab
+            <PortfolioTab
+              label="HeatMap"
+              icon={<ViewQuiltIcon />}
+              {...a11yProps(2)}
+            />
+            <PortfolioTab
               label="CryptoConverter"
               icon={<ShuffleIcon />}
               {...a11yProps(3)}
             />
-            <Tab
+            <PortfolioTab
               label="Portfolio Radar"
               icon={<TrackChangesRoundedIcon />}
               {...a11yProps(4)}
             />
-            <Tab label="Dashboard" icon={<DashboardIcon />} {...a11yProps(5)} />
-          </Tabs>
+            <PortfolioTab
+              label="Dashboard"
+              icon={<DashboardIcon />}
+              {...a11yProps(5)}
+            />
+          </PortfolioTabs>
         </AppBar>
         <TabPanel value={valueTab} index={0}>
           <Portfolio />

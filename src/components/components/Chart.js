@@ -39,7 +39,6 @@ class PriceChart extends Component {
 
     const tema = store.getStore("theme");
     //console.log(tema);
-
     this.state = {
       options: {
         theme: {
@@ -51,6 +50,14 @@ class PriceChart extends Component {
         },
 
         colors: color,
+        fill: {
+          type: "gradient",
+          gradient: {
+            shadeIntensity: 1,
+            opacityFrom: 0.8,
+            opacityTo: 0.3,
+          },
+        },
         chart: {
           animations: {
             enabled: false,
@@ -61,6 +68,9 @@ class PriceChart extends Component {
         xaxis: {
           type: "datetime",
           tickAmount: 1,
+        },
+        dataLabels: {
+          enabled: false,
         },
         yaxis: {
           crosshairs: {
@@ -75,6 +85,7 @@ class PriceChart extends Component {
           tooltip: {
             enabled: true,
           },
+
           type: "numeric",
           decimalsInFloat: 4,
           forceNiceScale: true,
@@ -174,14 +185,16 @@ class PriceChart extends Component {
   };
 
   coinPriceChartReturned = (data) => {
-    if (data[1] === this.props.id) {
-      // let roundedPrices = data[0].prices.map(function (each_element) {
-      //   return [each_element[0], Number(each_element[1]).toFixed(3)];
-      // });
+    if (data[1]) {
+      if (data[1] === this.props.id) {
+        // let roundedPrices = data[0].prices.map(function (each_element) {
+        //   return [each_element[0], Number(each_element[1]).toFixed(3)];
+        // });
 
-      this.setState({
-        series: [{ name: this.props.id, data: data[0].prices }],
-      });
+        this.setState({
+          series: [{ name: this.props.id, data: data[0].prices }],
+        });
+      }
     } else {
       this.setState({
         series: [{ name: "", data: data[0].prices }],
@@ -196,7 +209,7 @@ class PriceChart extends Component {
         <Chart
           options={this.state.options}
           series={this.state.series}
-          type="line"
+          type="area"
           width="100%"
           height="100%"
         />

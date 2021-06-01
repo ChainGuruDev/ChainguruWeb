@@ -184,7 +184,7 @@ class BlueChips extends Component {
               className={darkMode ? classes.paperDark : classes.paper}
               elevation={3}
             >
-              <Typography variant="h2">BlueChips to hodl</Typography>
+              <Typography variant="h2">BLUECHIPS</Typography>
             </Paper>
           </Grid>
         </Grid>

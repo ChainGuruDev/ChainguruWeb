@@ -194,7 +194,7 @@ class ProfileMini extends Component {
           </Grid>
           {this.state.userData.nickname && (
             <Grid style={{ marginLeft: 10 }} item>
-              <Typography color="primary" variant={"h6"}>
+              <Typography color="primary" variant={"h3"}>
                 {this.state.userData.nickname}
               </Typography>
               <Typography variant={"h5"}>

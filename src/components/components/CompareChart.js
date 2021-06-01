@@ -46,6 +46,9 @@ class CompareChart extends Component {
         chart: {
           id: "",
           background: "rgba(0, 0, 0, 0.0)",
+          animations: {
+            enabled: false,
+          },
         },
         xaxis: {
           type: "datetime",

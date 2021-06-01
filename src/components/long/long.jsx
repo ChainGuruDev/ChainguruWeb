@@ -4,6 +4,7 @@ import { withStyles } from "@material-ui/core/styles";
 import { Typography, Grid, Box, AppBar, Tabs, Tab } from "@material-ui/core";
 import { withTranslation } from "react-i18next";
 import PropTypes from "prop-types";
+import { colors } from "../../theme";
 
 //Import ICONS
 import ShowChartIcon from "@material-ui/icons/ShowChart";
@@ -63,6 +64,24 @@ const styles = (theme) => ({
     alignItems: "center",
   },
 });
+
+const LongTabs = withStyles({
+  indicator: {
+    backgroundColor: colors.cgBlue,
+  },
+})(Tabs);
+
+const LongTab = withStyles((theme) => ({
+  root: {
+    "&$selected": {
+      color: colors.cgBlue,
+    },
+    "&:focus": {
+      color: colors.cgBlue,
+    },
+  },
+  selected: {},
+}))((props) => <Tab {...props} />);
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -144,26 +163,25 @@ class Long extends Component {
     return (
       <Grid className={classes.rootTabs}>
         <AppBar position="static" color="default">
-          <Tabs
+          <LongTabs
             value={valueTab}
             onChange={handleChangeTabs}
             aria-label="tool tabs"
             scrollButtons="auto"
-            indicatorColor="secondary"
             textColor="secondary"
             centered
           >
-            <Tab
+            <LongTab
               label="BlueChips"
               icon={<CheckCircleIcon />}
               {...a11yProps(0)}
             />
-            <Tab
+            <LongTab
               label="Dollar Cost Average"
               icon={<ShowChartIcon />}
               {...a11yProps(1)}
             />
-          </Tabs>
+          </LongTabs>
         </AppBar>
         <TabPanel className={classes.background} value={valueTab} index={0}>
           <BlueChips />

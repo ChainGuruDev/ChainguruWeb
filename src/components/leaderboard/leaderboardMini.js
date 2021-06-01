@@ -116,7 +116,7 @@ class LeaderboardMini extends Component {
             </Grid>
             {user.nickname && (
               <Grid style={{ marginLeft: 10 }} item>
-                <Typography color="primary" variant={i === 0 ? "h6" : "h4"}>
+                <Typography color="primary" variant={i === 0 ? "h4" : "h5"}>
                   {user.nickname}
                 </Typography>
                 <Typography color="secondary" variant={"body2"}>
@@ -203,7 +203,12 @@ class LeaderboardMini extends Component {
         style={{ maxHeight: "max-content" }}
         elevation={3}
       >
-        <Grid container direction="column" spacing={3}>
+        <Grid
+          container
+          direction="column"
+          spacing={3}
+          style={{ margin: "0px" }}
+        >
           {loading && (
             <Grid
               style={{
@@ -219,12 +224,11 @@ class LeaderboardMini extends Component {
             <Grid style={{ display: "contents" }}>
               <Typography
                 style={{
-                  marginTop: 10,
                   justifyContent: "center",
                   display: "flex",
                 }}
                 color={"primary"}
-                variant={"h6"}
+                variant={"h2"}
               >
                 Leaderboard
               </Typography>

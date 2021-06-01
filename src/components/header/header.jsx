@@ -214,7 +214,7 @@ class Header extends Component {
     } else if (currentSection === "long") {
       this.setState({ cgLogoColor: colors.cgBlue });
     } else if (currentSection === "portfolio") {
-      this.setState({ cgLogoColor: colors.cgGreen });
+      this.setState({ cgLogoColor: colors.cgYellow });
     } else {
       this.setState({ cgLogoColor: colors.cgRed });
     }
@@ -230,7 +230,7 @@ class Header extends Component {
       } else if (currentSection === "long") {
         this.setState({ cgLogoColor: colors.cgBlue });
       } else if (currentSection === "portfolio") {
-        this.setState({ cgLogoColor: colors.cgGreen });
+        this.setState({ cgLogoColor: colors.cgYellow });
       } else {
         this.setState({ cgLogoColor: colors.cgRed });
       }
@@ -311,14 +311,15 @@ class Header extends Component {
 
   setAddressEnsName = async () => {
     const context = store.getStore("web3context");
+
     if (context && context.library && context.library.provider) {
       const provider = context.library.provider;
       const account = store.getStore("account");
       const { address } = account;
       const network = provider.networkVersion;
-      const ens = new ENS({ provider, network });
-      const addressEnsName = await ens.reverse(address).catch(() => {});
-      if (addressEnsName) {
+      if (network === "1") {
+        const ens = new ENS({ provider, network });
+        const addressEnsName = await ens.reverse(address).catch(() => {});
         this.setState({ addressEnsName });
       }
     }
@@ -458,7 +459,7 @@ class Header extends Component {
                   });
                 }}
               />
-              <Typography variant={"h4"}>{this.state.gasPrice}</Typography>
+              <Typography variant={"h5"}>{this.state.gasPrice}</Typography>
             </div>
             <div className={classes.darkModeSwitch}>
               <FormGroup
@@ -494,7 +495,7 @@ class Header extends Component {
             <div className={classes.account}>
               {address && (
                 <Typography
-                  variant={"h4"}
+                  variant={"h5"}
                   className={classes.walletAddress}
                   noWrap
                   onClick={this.addressClicked}
@@ -505,7 +506,7 @@ class Header extends Component {
               )}
               {!address && (
                 <Typography
-                  variant={"h4"}
+                  variant={"h5"}
                   className={classes.walletAddress}
                   noWrap
                   onClick={this.addressClicked}
@@ -561,11 +562,27 @@ class Header extends Component {
         className={
           currentSection === screen ? classes.linkActive : classes.link
         }
+        style={
+          currentSection === screen
+            ? { borderBottom: "3px solid" + this.state.cgLogoColor }
+            : {}
+        }
         onClick={() => {
           this.nav(screen);
         }}
       >
-        <Typography variant={"h4"} className={`title`}>
+        <Typography
+          variant={"h4"}
+          style={
+            currentSection === screen
+              ? {
+                  textTransform: "uppercase",
+                  color: this.state.cgLogoColor,
+                }
+              : { textTransform: "uppercase" }
+          }
+          className={currentSection === screen ? classes.titleActive : ""}
+        >
           {t("Home." + screen)}
         </Typography>
       </div>

@@ -7,6 +7,7 @@ import CoinSearchBar from "../components/CoinSearchBar.js";
 import PriceChart from "../components/Chart.js";
 import ArrowDropUpRoundedIcon from "@material-ui/icons/ArrowDropUpRounded";
 import ArrowDropDownRoundedIcon from "@material-ui/icons/ArrowDropDownRounded";
+import { colors } from "../../theme";
 
 import {
   COIN_DATA_RETURNED,
@@ -212,6 +213,11 @@ class CoinCompare extends Component {
                         <ArrowDropDownRoundedIcon />
                       )
                     }
+                    style={
+                      this.state.timeFrame === 1
+                        ? { background: colors.cgOrange + 25 }
+                        : {}
+                    }
                     label={`${coinData.market_data.price_change_percentage_24h_in_currency[vs]}%`}
                     onClick={() => {
                       handleClick(1);
@@ -242,6 +248,11 @@ class CoinCompare extends Component {
                       )
                     }
                     label={`${coinData.market_data.price_change_percentage_7d_in_currency[vs]}%`}
+                    style={
+                      this.state.timeFrame === 7
+                        ? { background: colors.cgOrange + 25 }
+                        : {}
+                    }
                     onClick={() => {
                       handleClick(7);
                     }}
@@ -271,6 +282,11 @@ class CoinCompare extends Component {
                       ) : (
                         <ArrowDropDownRoundedIcon />
                       )
+                    }
+                    style={
+                      this.state.timeFrame === 30
+                        ? { background: colors.cgOrange + 25 }
+                        : {}
                     }
                     label={`${coinData.market_data.price_change_percentage_30d_in_currency[vs]}%`}
                     onClick={() => {

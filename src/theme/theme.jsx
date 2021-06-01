@@ -97,20 +97,27 @@ const cgTheme = {
       lineHeight: 1.2,
     },
     h3: {
-      fontSize: "24px",
+      fontSize: "28px",
       fontWeight: "600",
       WebkitFontSmoothing: "antialiased",
       MozOsxFontSmoothing: "grayscale",
       lineHeight: 1.2,
     },
     h4: {
-      fontSize: "16px",
+      fontSize: "20px",
       fontWeight: "600",
       WebkitFontSmoothing: "antialiased",
       MozOsxFontSmoothing: "grayscale",
       lineHeight: 1.2,
     },
     h5: {
+      fontSize: "16px",
+      fontWeight: "600",
+      WebkitFontSmoothing: "antialiased",
+      MozOsxFontSmoothing: "grayscale",
+      lineHeight: 1.2,
+    },
+    h6: {
       fontSize: "14px",
       fontWeight: "600",
       WebkitFontSmoothing: "antialiased",
@@ -124,7 +131,7 @@ const cgTheme = {
       MozOsxFontSmoothing: "grayscale",
     },
     body2: {
-      fontSize: "16px",
+      fontSize: "15px",
       fontWeight: "300",
       WebkitFontSmoothing: "antialiased",
       MozOsxFontSmoothing: "grayscale",
