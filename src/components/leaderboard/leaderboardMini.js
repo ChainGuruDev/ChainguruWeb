@@ -92,18 +92,27 @@ class LeaderboardMini extends Component {
       //LIMIT TOP 10
       let leaderboardData = data.length > 10 ? data.slice(0, 10) : data;
       return leaderboardData.map((user, i) => (
-        <li key={`${user}_${i}`} style={{ display: "inherit" }}>
+        <li
+          key={`${user}_${i}`}
+          style={{ display: "inherit", minWidth: "100%" }}
+        >
           <Grid
             item
             container
             direction="row"
             alignItems="flex-start"
-            style={{ padding: "10px", maxWidth: "80%" }}
+            style={{ padding: "10px" }}
           >
             <Grid
               container
               item
-              style={{ maxWidth: "max-content" }}
+              style={{
+                maxWidth: "max-content",
+                filter:
+                  i === 0
+                    ? `drop-shadow(0px 0px 3px ${colors.cgGreen})`
+                    : `drop-shadow(0px 0px 3px ${colors.black})`,
+              }}
               alignItems="center"
             >
               <Avatar
@@ -115,7 +124,13 @@ class LeaderboardMini extends Component {
               />
             </Grid>
             {user.nickname && (
-              <Grid style={{ marginLeft: 10 }} item>
+              <Grid
+                style={{
+                  marginLeft: 10,
+                  filter: "drop-shadow(1px 1px 1px rgba(0,0,0,0.5))",
+                }}
+                item
+              >
                 <Typography color="primary" variant={i === 0 ? "h4" : "h5"}>
                   {user.nickname}
                 </Typography>
@@ -196,6 +211,7 @@ class LeaderboardMini extends Component {
   render() {
     const { classes, t } = this.props;
     const { loading } = this.state;
+    const darkMode = store.getStore("theme") === "dark" ? true : false;
 
     return (
       <Card
@@ -221,18 +237,33 @@ class LeaderboardMini extends Component {
             </Grid>
           )}
           {!loading && (
-            <Grid style={{ display: "contents" }}>
-              <Typography
+            <Grid style={{ display: "grid", justifyItems: "center" }}>
+              <div
                 style={{
-                  justifyContent: "center",
-                  display: "flex",
+                  background: darkMode
+                    ? `${colors.cgGreen}15`
+                    : `${colors.black}15`, //CG COLOR GREEN 25% opacity
+                  paddingBottom: "5px",
+                  maxWidth: "inherit",
+                  position: "relative",
+                  minWidth: "150%",
+                  filter: "blur(1px)",
+                  overflow: "hidden",
+                  margin: "0px",
+                  minHeight: "50px",
                 }}
-                color={"primary"}
-                variant={"h2"}
+              ></div>
+              <div
+                style={{
+                  position: "absolute",
+                  textAlign: "center",
+                  filter: "drop-shadow(1px 1px 1px rgba(0,0,0,0.5))",
+                }}
               >
-                Leaderboard
-              </Typography>
-              <Divider />
+                <Typography color={"primary"} variant={"h2"}>
+                  Leaderboard
+                </Typography>
+              </div>
               {this.drawLeaderboard(this.state.leaderboard)}
             </Grid>
           )}

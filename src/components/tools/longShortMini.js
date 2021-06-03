@@ -10,6 +10,8 @@ import { withTranslation } from "react-i18next";
 import LSvoteResultModal from "../components/lsVoteResultModal.js";
 import LSResultDonutChart from "../components/LS_ResultDonutChart.js";
 //LSTABLEACTIVE MINI
+import LSTableActiveMini from "../components/LS_Table_ActiveMini.js";
+
 import { colors } from "../../theme";
 
 import {
@@ -51,6 +53,11 @@ const styles = (theme) => ({
     alignItems: "flex-start",
     background: "rgba(255,255,255,0.05)",
   },
+  favList: {
+    alignItems: "center",
+    textAlign: "center",
+    justifyContent: "center",
+  },
 });
 
 class LongShortMini extends Component {
@@ -60,7 +67,7 @@ class LongShortMini extends Component {
 
     this.state = {
       account: account,
-      loading: false,
+      loading: true,
       modalOpen: false,
     };
 
@@ -138,6 +145,7 @@ class LongShortMini extends Component {
       countLong,
       countShort,
       activeLS: incompleteLS.length,
+      loading: false,
     });
   };
 
@@ -231,12 +239,14 @@ class LongShortMini extends Component {
       shortCombo,
       activeLS,
     } = this.state;
+    const darkMode = store.getStore("theme") === "dark" ? true : false;
 
     return (
       <Card
         className={classes.favCard}
         style={{ maxHeight: "max-content" }}
         elevation={3}
+        id="longShortMiniUI"
       >
         <Grid
           container
@@ -262,21 +272,38 @@ class LongShortMini extends Component {
                   display: "flex",
                   alignContent: "center",
                   justifyContent: "center",
-                  margin: "-10px",
-                  background: `${colors.cgGreen}25`, //CG COLOR GREEN 25% opacity
-                  paddingBottom: "5px",
                 }}
               >
-                <Typography
+                <div
                   style={{
-                    justifyContent: "center",
-                    display: "flex",
+                    background: darkMode
+                      ? `${colors.cgGreen}15`
+                      : `${colors.black}15`,
+                    paddingBottom: "5px",
+                    maxWidth: "inherit",
+                    position: "relative",
+                    minWidth: "150%",
+                    filter: "blur(1px)",
+                    overflow: "hidden",
+                    margin: "0px",
+                    minHeight: "50px",
                   }}
-                  color={"primary"}
-                  variant={"h2"}
+                ></div>
+                <div
+                  style={{
+                    position: "absolute",
+                  }}
                 >
-                  Long Short
-                </Typography>
+                  <Typography
+                    style={{
+                      filter: "drop-shadow(1px 1px 1px rgba(0,0,0,0.5))",
+                    }}
+                    color={"primary"}
+                    variant={"h2"}
+                  >
+                    Short & Long
+                  </Typography>
+                </div>
                 <Divider />
               </Grid>
               <Grid
@@ -288,7 +315,14 @@ class LongShortMini extends Component {
               >
                 <Grid item container justify="center" xs={12}>
                   {countLong && (countLong[0] || countShort[0]) && (
-                    <Grid item style={{ minWidth: "120px", maxWidth: "120px" }}>
+                    <Grid
+                      item
+                      style={{
+                        minWidth: "120px",
+                        maxWidth: "120px",
+                        filter: "drop-shadow(1px 1px 1px rgba(0,0,0,0.5))",
+                      }}
+                    >
                       <LSResultDonutChart
                         data={
                           this.state.countTotals ? this.state.countTotals : {}
@@ -297,7 +331,13 @@ class LongShortMini extends Component {
                     </Grid>
                   )}
                   {countLong && (countLong[0] || countShort[0]) && (
-                    <Grid style={{ marginLeft: "10px" }} item>
+                    <Grid
+                      style={{
+                        marginLeft: "10px",
+                        filter: "drop-shadow(1px 1px 1px rgba(0,0,0,0.5))",
+                      }}
+                      item
+                    >
                       <Grid container direction="column">
                         {countTotals && (
                           <Grid item>
@@ -373,17 +413,9 @@ class LongShortMini extends Component {
                 </Grid>
               </Grid>
               <Grid item>
-                <Typography
-                  style={{
-                    justifyContent: "center",
-                    display: "flex",
-                  }}
-                  color={"primary"}
-                  variant={"h3"}
-                >
-                  Active
-                </Typography>
-                <Divider />
+                <Grid item className={classes.favList} xs={12}>
+                  {incompleteLS && <LSTableActiveMini data={incompleteLS} />}
+                </Grid>
               </Grid>
             </>
           )}

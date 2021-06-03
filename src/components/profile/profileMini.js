@@ -182,7 +182,10 @@ class ProfileMini extends Component {
           <Grid
             container
             item
-            style={{ maxWidth: "max-content" }}
+            style={{
+              maxWidth: "max-content",
+              filter: `drop-shadow(0px 0px 3px ${colors.cgGreen})`,
+            }}
             alignItems="center"
           >
             <Avatar
@@ -193,11 +196,17 @@ class ProfileMini extends Component {
             />
           </Grid>
           {this.state.userData.nickname && (
-            <Grid style={{ marginLeft: 10 }} item>
+            <Grid
+              style={{
+                marginLeft: 20,
+                filter: `drop-shadow(1px 1px 1px rgba(0,0,0,0.5))`,
+              }}
+              item
+            >
               <Typography color="primary" variant={"h3"}>
                 {this.state.userData.nickname}
               </Typography>
-              <Typography variant={"h5"}>
+              <Typography color="secondary" variant={"h5"}>
                 xp: {this.state.userData.experiencePoints}
               </Typography>
             </Grid>

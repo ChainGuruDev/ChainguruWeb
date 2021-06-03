@@ -115,7 +115,8 @@ class Dashboard extends Component {
     Object.keys(tools).forEach(function (key) {
       const toolSize = key.split("_")[1];
       if (toolSize === "MINI") {
-        console.log(key, tools[key]);
+        // console.log(key, tools[key]);
+
         //Check if tool is active or not
         if (tools[key]) {
           activeTools[key] = tools[key];
@@ -125,10 +126,8 @@ class Dashboard extends Component {
     return (
       <div>
         <Suspense fallback={<div>Loading...</div>}>
-          <section>
-            {activeTools.longShort_MINI && <LongShortMini />}
-            {activeTools.leaderboard_MINI && <LeaderboardMini />}
-          </section>
+          {activeTools.longShort_MINI && <LongShortMini />}
+          {activeTools.leaderboard_MINI && <LeaderboardMini />}
         </Suspense>
       </div>
     );
@@ -143,7 +142,8 @@ class Dashboard extends Component {
     Object.keys(tools).forEach(function (key) {
       const toolSize = key.split("_")[1];
       if (toolSize === "BIG") {
-        console.log(key, tools[key]);
+        // console.log(key, tools[key]);
+
         //Check if tool is active or not
         if (tools[key]) {
           activeTools[key] = tools[key];

@@ -42,8 +42,8 @@ export const colors = {
   cgYellow: "#fcc98b",
   cgBlue: "#9de2f9",
   cgGreen: "#79d8a2",
-  white: "#fff",
-  black: "#000",
+  white: "#ffffff",
+  black: "#000000",
   darkBlue: "#2c3b57",
   blue: "#2F80ED",
   gray: "#e1e1e1",
@@ -63,7 +63,6 @@ export const colors = {
   darkGray: "rgba(43,57,84,.5)",
   borderBlue: "rgba(25, 101, 233, 0.5)",
 
-  cardBackground: "#68efcf",
   buttonPrimary: "#0b8f92",
   buttonSecondary: "#ed4337",
 };

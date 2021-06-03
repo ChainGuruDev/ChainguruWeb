@@ -51,15 +51,18 @@ const styles = (theme) => ({
     maxHeight: "440",
   },
   tokenLogo: {
-    maxHeight: 30,
+    maxHeight: 45,
   },
   footer: {
     flexShrink: 0,
     marginLeft: theme.spacing(2.5),
   },
+  table: {
+    display: "table",
+  },
 });
 
-class LSTableActive extends Component {
+class LSTableActiveMini extends Component {
   constructor(props) {
     super();
 
@@ -300,10 +303,13 @@ class LSTableActive extends Component {
       ).map((row) => (
         <TableRow hover={true} key={row.name}>
           <TableCell
-            style={{ cursor: "pointer" }}
+            style={{
+              cursor: "pointer",
+              padding: "0px 0px",
+              textAlign: "center",
+              width: "0px",
+            }}
             onClick={() => this.detective(row.id)}
-            component="th"
-            scope="row"
           >
             <img
               className={classes.tokenLogo}
@@ -321,10 +327,10 @@ class LSTableActive extends Component {
             </Typography>
             <Typography variant="subtitle1">{row.symbol}</Typography>
           </TableCell>
-          <TableCell align="right">
+          <TableCell align="right" style={{ padding: "10px 0px" }}>
+            <Typography variant={"subtitle2"}>price Start</Typography>
             <Typography variant={"h4"}>{row.priceStart}</Typography>
-          </TableCell>
-          <TableCell align="right">
+            <Typography variant={"subtitle2"}>current price</Typography>
             <Typography
               variant={"h4"}
               color={
@@ -340,39 +346,7 @@ class LSTableActive extends Component {
               {row.current_price}
             </Typography>
           </TableCell>
-          <TableCell align="center">
-            {row.vote && (
-              <ButtonGroup color="primary" aria-label="LongShort_ButtonGroup">
-                <Button
-                  startIcon={<TrendingUpIcon />}
-                  color="primary"
-                  variant="contained"
-                ></Button>
-                <Button
-                  disabled
-                  endIcon={<TrendingDownIcon />}
-                  color="secondary"
-                ></Button>
-              </ButtonGroup>
-            )}
-            {!row.vote && (
-              <ButtonGroup color="primary" aria-label="LongShort_ButtonGroup">
-                <Button
-                  disabled
-                  startIcon={<TrendingUpIcon />}
-                  color="primary"
-                ></Button>
-                <Button
-                  endIcon={<TrendingDownIcon />}
-                  disableRipple={true}
-                  disableFocusRipple={true}
-                  variant="contained"
-                  color="secondary"
-                ></Button>
-              </ButtonGroup>
-            )}
-          </TableCell>
-          <TableCell align="center">
+          <TableCell style={{ padding: "10px 10px" }} align="center">
             {row.percentComplete < 100 && (
               <>
                 <Typography variant={"subtitle2"} style={{ marginRight: 10 }}>
@@ -510,94 +484,9 @@ class LSTableActive extends Component {
               <TableCell></TableCell>
               <TableCell></TableCell>
               <TableCell></TableCell>
-              <TableCell></TableCell>
-              <TableCell></TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell></TableCell>
-              <TableCell onClick={() => this.sortBy("name")} align="left">
-                {this.state.sortBy === "name" &&
-                  this.state.sortOrder === "asc" && (
-                    <ArrowDropUpRoundedIcon align="right" />
-                  )}
-                {this.state.sortBy === "name" &&
-                  this.state.sortOrder === "dsc" && (
-                    <ArrowDropDownRoundedIcon align="right" />
-                  )}
-                Name
-              </TableCell>
-              <TableCell
-                onClick={() => this.sortBy("priceStart")}
-                align="right"
-              >
-                {this.state.sortBy === "priceStart" &&
-                  this.state.sortOrder === "asc" && (
-                    <ArrowDropUpRoundedIcon align="right" />
-                  )}
-                {this.state.sortBy === "priceStart" &&
-                  this.state.sortOrder === "dsc" && (
-                    <ArrowDropDownRoundedIcon align="right" />
-                  )}
-                Start Price
-              </TableCell>
-              <TableCell
-                onClick={() => this.sortBy("current_price")}
-                align="right"
-              >
-                {this.state.sortBy === "current_price" &&
-                  this.state.sortOrder === "asc" && (
-                    <ArrowDropUpRoundedIcon align="right" />
-                  )}
-                {this.state.sortBy === "current_price" &&
-                  this.state.sortOrder === "dsc" && (
-                    <ArrowDropDownRoundedIcon align="right" />
-                  )}
-                Current Price
-              </TableCell>
-              <TableCell onClick={() => this.sortBy("vote")} align="center">
-                {this.state.sortBy === "vote" &&
-                  this.state.sortOrder === "asc" && (
-                    <ArrowDropUpRoundedIcon align="center" />
-                  )}
-                {this.state.sortBy === "vote" &&
-                  this.state.sortOrder === "dsc" && (
-                    <ArrowDropDownRoundedIcon align="center" />
-                  )}
-                Vote
-              </TableCell>
-              <TableCell
-                onClick={() => this.sortBy("voteEnding")}
-                align="center"
-              >
-                {this.state.sortBy === "voteEnding" &&
-                  this.state.sortOrder === "asc" && <ArrowDropUpRoundedIcon />}
-                {this.state.sortBy === "voteEnding" &&
-                  this.state.sortOrder === "dsc" && (
-                    <ArrowDropDownRoundedIcon />
-                  )}
-                Remaining
-              </TableCell>
             </TableRow>
           </TableHead>
           {sortData && <TableBody>{this.sortedList(sortData)}</TableBody>}
-          <TableFooter>
-            <TableRow>
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25, { label: "All", value: -1 }]}
-                colSpan={0}
-                count={formatedRows.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                SelectProps={{
-                  inputProps: { "aria-label": "rows per page" },
-                  native: true,
-                }}
-                onChangePage={handleChangePage}
-                onChangeRowsPerPage={handleChangeRowsPerPage}
-                ActionsComponent={this.TablePaginationActions}
-              />
-            </TableRow>
-          </TableFooter>
         </Table>
       </TableContainer>
     );
@@ -608,4 +497,6 @@ class LSTableActive extends Component {
   };
 }
 
-export default withTranslation()(withRouter(withStyles(styles)(LSTableActive)));
+export default withTranslation()(
+  withRouter(withStyles(styles)(LSTableActiveMini))
+);
