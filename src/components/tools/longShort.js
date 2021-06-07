@@ -3,6 +3,7 @@
 //Check result after 24hs since prediction
 
 import React, { Component } from "react";
+
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
@@ -715,7 +716,11 @@ class LongShort extends Component {
                               container
                               justify={"space-around"}
                               item
-                              style={{ flex: 1, display: "flex", marginTop: 5 }}
+                              style={{
+                                flex: 1,
+                                display: "flex",
+                                marginTop: 5,
+                              }}
                             >
                               {this.drawCombo(activeLS, "active")}
                             </Grid>
@@ -771,7 +776,11 @@ class LongShort extends Component {
                               container
                               justify={"space-around"}
                               item
-                              style={{ flex: 1, display: "flex", marginTop: 5 }}
+                              style={{
+                                flex: 1,
+                                display: "flex",
+                                marginTop: 5,
+                              }}
                             >
                               {this.drawCombo(shortCombo, "combo", "short")}
                             </Grid>

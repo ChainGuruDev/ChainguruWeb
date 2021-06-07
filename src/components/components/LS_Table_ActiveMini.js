@@ -92,6 +92,7 @@ class LSTableActiveMini extends Component {
       sortData: [],
       formatedRows: [],
       loadingResult: false,
+      show: false,
     };
   }
 
@@ -455,7 +456,7 @@ class LSTableActiveMini extends Component {
 
   render() {
     const { classes } = this.props;
-    const { sortData, page, rowsPerPage, formatedRows } = this.state;
+    const { sortData, page, rowsPerPage, formatedRows, show } = this.state;
 
     const handleChangePage = (newPage) => {
       console.log(newPage);
@@ -464,6 +465,11 @@ class LSTableActiveMini extends Component {
 
     const handleChangeRowsPerPage = (event) => {
       this.setState({ rowsPerPage: parseInt(event.target.value, 10), page: 0 });
+    };
+
+    const handleActiveShow = (event) => {
+      const newActive = !show;
+      this.setState({ show: newActive });
     };
 
     return (
@@ -483,10 +489,26 @@ class LSTableActiveMini extends Component {
               </TableCell>
               <TableCell></TableCell>
               <TableCell></TableCell>
-              <TableCell></TableCell>
+              <TableCell style={{ textAlign: "end" }}>
+                {show && (
+                  <IconButton
+                    onClick={handleActiveShow}
+                    disabled={formatedRows.length === 0}
+                  >
+                    {<ArrowDropUpRoundedIcon />}
+                  </IconButton>
+                )}
+                {!show && (
+                  <IconButton onClick={handleActiveShow}>
+                    {<ArrowDropDownRoundedIcon />}
+                  </IconButton>
+                )}
+              </TableCell>
             </TableRow>
           </TableHead>
-          {sortData && <TableBody>{this.sortedList(sortData)}</TableBody>}
+          {sortData && show && (
+            <TableBody>{this.sortedList(sortData)}</TableBody>
+          )}
         </Table>
       </TableContainer>
     );
