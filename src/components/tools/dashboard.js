@@ -7,7 +7,7 @@ import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
 
-import { Grid } from "@material-ui/core";
+import { Grid, CircularProgress, Card } from "@material-ui/core";
 import ProfileMini from "../profile/profileMini.js";
 
 import { CONNECTION_CONNECTED, CONNECTION_DISCONNECTED } from "../../constants";
@@ -32,6 +32,17 @@ const styles = (theme) => ({
     width: "100%",
     minHeight: "100%",
     justifyContent: "space-around",
+  },
+  favCard: {
+    padding: 10,
+    margin: 10,
+    display: "flex",
+    flex: 1,
+    direction: "row",
+    alignContent: "center",
+    textAlign: "center",
+    justifyContent: "center",
+    background: "rgba(255,255,255,0.05)",
   },
 });
 
@@ -107,6 +118,7 @@ class Dashboard extends Component {
   }
 
   renderMini = (tools) => {
+    const { classes } = this.props;
     // console.log(tools);
 
     // check if tools active are Mini or Big
@@ -125,7 +137,15 @@ class Dashboard extends Component {
     });
     return (
       <div>
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense
+          fallback={
+            <div style={{ textAlign: "center" }}>
+              <Card className={classes.favCard} elevation={3}>
+                <CircularProgress />
+              </Card>
+            </div>
+          }
+        >
           {activeTools.longShort_MINI && <LongShortMini />}
           {activeTools.leaderboard_MINI && <LeaderboardMini />}
         </Suspense>

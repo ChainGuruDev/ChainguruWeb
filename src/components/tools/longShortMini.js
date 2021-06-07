@@ -412,10 +412,9 @@ class LongShortMini extends Component {
                   )}
                 </Grid>
               </Grid>
-              <Grid item>
-                <Grid item className={classes.favList} xs={12}>
-                  {incompleteLS && <LSTableActiveMini data={incompleteLS} />}
-                </Grid>
+              <Divider />
+              <Grid item className={classes.favList} xs={12}>
+                {incompleteLS && <LSTableActiveMini data={incompleteLS} />}
               </Grid>
             </>
           )}

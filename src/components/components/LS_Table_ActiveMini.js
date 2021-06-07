@@ -7,20 +7,14 @@ import { withTranslation } from "react-i18next";
 
 //Import MaterialUI elements
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableFooter,
-  TablePagination,
-  TableRow,
+  Grid,
   Typography,
   IconButton,
   Paper,
   Button,
   ButtonGroup,
   CircularProgress,
+  Divider,
 } from "@material-ui/core";
 
 //IMPORT icons
@@ -28,10 +22,6 @@ import ArrowDropDownRoundedIcon from "@material-ui/icons/ArrowDropDownRounded";
 import ArrowDropUpRoundedIcon from "@material-ui/icons/ArrowDropUpRounded";
 import TrendingDownIcon from "@material-ui/icons/TrendingDown";
 import TrendingUpIcon from "@material-ui/icons/TrendingUp";
-import FirstPageIcon from "@material-ui/icons/FirstPage";
-import KeyboardArrowLeft from "@material-ui/icons/KeyboardArrowLeft";
-import KeyboardArrowRight from "@material-ui/icons/KeyboardArrowRight";
-import LastPageIcon from "@material-ui/icons/LastPage";
 import AssignmentTurnedInIcon from "@material-ui/icons/AssignmentTurnedIn";
 
 //Import Constants
@@ -57,9 +47,6 @@ const styles = (theme) => ({
     flexShrink: 0,
     marginLeft: theme.spacing(2.5),
   },
-  table: {
-    display: "table",
-  },
 });
 
 class LSTableActiveMini extends Component {
@@ -84,11 +71,6 @@ class LSTableActiveMini extends Component {
     this.state = {
       tokenIDs: tokenIDs,
       lsData: props.data,
-      page: 0,
-      rows: 5,
-      rowsPerPage: 5,
-      sortBy: "voteEnding",
-      sortOrder: "asc",
       sortData: [],
       formatedRows: [],
       loadingResult: false,
@@ -302,80 +284,101 @@ class LSTableActiveMini extends Component {
         ? newRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
         : newRows
       ).map((row) => (
-        <TableRow hover={true} key={row.name}>
-          <TableCell
-            style={{
-              cursor: "pointer",
-              padding: "0px 0px",
-              textAlign: "center",
-              width: "0px",
-            }}
-            onClick={() => this.detective(row.id)}
-          >
-            <img
-              className={classes.tokenLogo}
-              alt="coin-icon"
-              src={row.image}
-            />
-          </TableCell>
-          <TableCell
-            style={{ cursor: "pointer" }}
-            onClick={() => this.detective(row.id)}
-            align="left"
-          >
-            <Typography variant={"h4"} onClick={() => this.detective(row.id)}>
-              {row.name}
-            </Typography>
-            <Typography variant="subtitle1">{row.symbol}</Typography>
-          </TableCell>
-          <TableCell align="right" style={{ padding: "10px 0px" }}>
-            <Typography variant={"subtitle2"}>price Start</Typography>
-            <Typography variant={"h4"}>{row.priceStart}</Typography>
-            <Typography variant={"subtitle2"}>current price</Typography>
-            <Typography
-              variant={"h4"}
-              color={
-                row.current_price > row.priceStart && row.vote
-                  ? "primary"
-                  : row.current_price > row.priceStart && !row.vote
-                  ? "secondary"
-                  : row.current_price < row.priceStart && !row.vote
-                  ? "primary"
-                  : "secondary"
-              }
+        <>
+          <Divider style={{ width: "100%" }} />
+          <Grid item container justify="space-between" key={row.name}>
+            <Grid
+              item
+              style={{
+                cursor: "pointer",
+                marginRight: "10px",
+                textAlign: "center",
+                alignSelf: "center",
+              }}
+              onClick={() => this.detective(row.id)}
             >
-              {row.current_price}
-            </Typography>
-          </TableCell>
-          <TableCell style={{ padding: "10px 10px" }} align="center">
-            {row.percentComplete < 100 && (
-              <>
-                <Typography variant={"subtitle2"} style={{ marginRight: 10 }}>
-                  {row.timeRemaining}
-                </Typography>
-                <CircularProgress
-                  variant="determinate"
-                  value={row.percentComplete}
-                />
-              </>
-            )}
-            {row.percentComplete >= 100 && !this.state.loadingResult && (
-              <Button
-                startIcon={<AssignmentTurnedInIcon />}
-                variant="outlined"
-                onClick={() => this.checkResult(row.id)}
-                color="primary"
+              <img
+                className={classes.tokenLogo}
+                alt="coin-icon"
+                src={row.image}
+              />
+            </Grid>
+            <Grid
+              item
+              style={{ cursor: "pointer", alignSelf: "center" }}
+              onClick={() => this.detective(row.id)}
+              align="left"
+            >
+              <Typography variant={"h4"} onClick={() => this.detective(row.id)}>
+                {row.name}
+              </Typography>
+              <Typography variant="subtitle1">{row.symbol}</Typography>
+            </Grid>
+            <Grid
+              item
+              align="right"
+              style={{
+                padding: "10px 0px",
+                marginRight: "0px",
+                marginLeft: "auto",
+              }}
+            >
+              <Typography variant={"subtitle2"}>price Start</Typography>
+              <Typography variant={"h4"}>{row.priceStart}</Typography>
+              <Typography variant={"subtitle2"}>current price</Typography>
+              <Typography
+                variant={"h4"}
+                color={
+                  row.current_price > row.priceStart && row.vote
+                    ? "primary"
+                    : row.current_price > row.priceStart && !row.vote
+                    ? "secondary"
+                    : row.current_price < row.priceStart && !row.vote
+                    ? "primary"
+                    : "secondary"
+                }
               >
-                Results
-              </Button>
-            )}
-            {row.percentComplete >= 100 && this.state.loadingResult && (
-              <Button disabled variant="outlined">
-                <CircularProgress />
-              </Button>
-            )}
-          </TableCell>
-        </TableRow>
+                {row.current_price}
+              </Typography>
+            </Grid>
+            <Grid
+              item
+              style={{
+                alignSelf: "center",
+                marginRight: "0px",
+                marginLeft: "10px",
+              }}
+              align="center"
+            >
+              {row.percentComplete < 100 && (
+                <>
+                  <Typography variant={"subtitle2"} style={{ marginRight: 10 }}>
+                    {row.timeRemaining}
+                  </Typography>
+                  <CircularProgress
+                    variant="determinate"
+                    value={row.percentComplete}
+                  />
+                </>
+              )}
+              {row.percentComplete >= 100 && !this.state.loadingResult && (
+                <Button
+                  startIcon={<AssignmentTurnedInIcon />}
+                  variant="outlined"
+                  onClick={() => this.checkResult(row.id)}
+                  color="primary"
+                >
+                  Results
+                </Button>
+              )}
+              {row.percentComplete >= 100 && this.state.loadingResult && (
+                <Button disabled variant="outlined">
+                  <CircularProgress />
+                </Button>
+              )}
+            </Grid>
+          </Grid>
+        </>
       ));
     }
   };
@@ -397,75 +400,9 @@ class LSTableActiveMini extends Component {
     this.nav("/short/detective/" + id);
   };
 
-  TablePaginationActions = (props) => {
-    const { classes } = this.props;
-    const { formatedRows, page, rowsPerPage } = this.state;
-    const count = formatedRows.length;
-
-    const handleFirstPageButtonClick = (event) => {
-      this.setState({ page: 0 });
-    };
-
-    const handleBackButtonClick = (event) => {
-      // console.log(event);
-      // console.log(count);
-      this.setState({ page: page - 1 });
-    };
-
-    const handleNextButtonClick = (event) => {
-      this.setState({ page: page + 1 });
-    };
-
-    const handleLastPageButtonClick = (event) => {
-      this.setState({ page: Math.max(0, Math.ceil(count / rowsPerPage) - 1) });
-    };
-
-    return (
-      <div className={classes.footer}>
-        <IconButton
-          onClick={handleFirstPageButtonClick}
-          disabled={page === 0}
-          aria-label="first page"
-        >
-          {<FirstPageIcon />}
-        </IconButton>
-        <IconButton
-          onClick={handleBackButtonClick}
-          disabled={page === 0}
-          aria-label="previous page"
-        >
-          {<KeyboardArrowLeft />}
-        </IconButton>
-        <IconButton
-          onClick={handleNextButtonClick}
-          disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-          aria-label="next page"
-        >
-          {<KeyboardArrowRight />}
-        </IconButton>
-        <IconButton
-          onClick={handleLastPageButtonClick}
-          disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-          aria-label="last page"
-        >
-          {<LastPageIcon />}
-        </IconButton>
-      </div>
-    );
-  };
-
   render() {
     const { classes } = this.props;
-    const { sortData, page, rowsPerPage, formatedRows, show } = this.state;
-
-    const handleChangePage = (newPage) => {
-      console.log(newPage);
-      this.setState({ page: newPage });
-    };
-
-    const handleChangeRowsPerPage = (event) => {
-      this.setState({ rowsPerPage: parseInt(event.target.value, 10), page: 0 });
-    };
+    const { sortData, formatedRows, show } = this.state;
 
     const handleActiveShow = (event) => {
       const newActive = !show;
@@ -473,44 +410,42 @@ class LSTableActiveMini extends Component {
     };
 
     return (
-      <TableContainer
-        className={classes.root}
-        component={Paper}
-        elevation={2}
-        size="small"
-      >
-        <Table className={classes.table} aria-label="favoritesList">
-          <TableHead>
-            <TableRow>
-              <TableCell>
-                <Typography color="primary" variant="h4">
-                  Active
-                </Typography>
-              </TableCell>
-              <TableCell></TableCell>
-              <TableCell></TableCell>
-              <TableCell style={{ textAlign: "end" }}>
-                {show && (
-                  <IconButton
-                    onClick={handleActiveShow}
-                    disabled={formatedRows.length === 0}
-                  >
-                    {<ArrowDropUpRoundedIcon />}
-                  </IconButton>
-                )}
-                {!show && (
-                  <IconButton onClick={handleActiveShow}>
-                    {<ArrowDropDownRoundedIcon />}
-                  </IconButton>
-                )}
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          {sortData && show && (
-            <TableBody>{this.sortedList(sortData)}</TableBody>
-          )}
-        </Table>
-      </TableContainer>
+      <Grid container className={classes.root} aria-label="favoritesList">
+        <Grid
+          item
+          container
+          direction="row"
+          justify="space-between"
+          alignItems="center"
+          style={{ paddingBottom: "12px" }}
+        >
+          <Grid item>
+            <Typography color="primary" variant="h4">
+              Active
+            </Typography>
+          </Grid>
+          <Grid item style={{ textAlign: "end" }}>
+            {show && (
+              <IconButton
+                onClick={handleActiveShow}
+                disabled={formatedRows.length === 0}
+              >
+                {<ArrowDropUpRoundedIcon />}
+              </IconButton>
+            )}
+            {!show && (
+              <IconButton onClick={handleActiveShow}>
+                {<ArrowDropDownRoundedIcon />}
+              </IconButton>
+            )}
+          </Grid>
+        </Grid>
+        {sortData && show && (
+          <Grid item container>
+            {this.sortedList(sortData)}
+          </Grid>
+        )}
+      </Grid>
     );
   }
 
