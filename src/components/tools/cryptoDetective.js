@@ -309,8 +309,8 @@ class CryptoDetective extends Component {
     let dateNow = new Date();
     let remaining = dateEnd - dateNow;
     // let timeLimit = 120 * 1000; // 2min for testing
-    let timeLimit = 12 * 60 * 60 * 1000; // 12hs for beta testing
-    // let timeLimit = 24 * 60 * 60 * 1000; // 12hs for release
+    //let timeLimit = 12 * 60 * 60 * 1000; // 12hs for beta testing
+    let timeLimit = 24 * 60 * 60 * 1000; // 24hs for release
 
     let percentComplete = 0;
     if (remaining <= 0) {
@@ -1004,6 +1004,11 @@ class CryptoDetective extends Component {
                           onClick={() => {
                             handleClick(7);
                           }}
+                          style={
+                            this.state.timeFrame === 7
+                              ? { background: colors.cgOrange + 25 }
+                              : {}
+                          }
                           label={`${coinData.market_data.price_change_percentage_7d_in_currency[vs]}%`}
                         />
                       </Grid>
@@ -1035,6 +1040,11 @@ class CryptoDetective extends Component {
                           onClick={() => {
                             handleClick(30);
                           }}
+                          style={
+                            this.state.timeFrame === 30
+                              ? { background: colors.cgOrange + 25 }
+                              : {}
+                          }
                           label={`${coinData.market_data.price_change_percentage_30d_in_currency[vs]}%`}
                         />
                       </Grid>
@@ -1066,6 +1076,11 @@ class CryptoDetective extends Component {
                           onClick={() => {
                             handleClick(60);
                           }}
+                          style={
+                            this.state.timeFrame === 60
+                              ? { background: colors.cgOrange + 25 }
+                              : {}
+                          }
                           label={`${coinData.market_data.price_change_percentage_60d_in_currency[vs]}%`}
                         />
                       </Grid>
@@ -1097,6 +1112,11 @@ class CryptoDetective extends Component {
                           onClick={() => {
                             handleClick(365);
                           }}
+                          style={
+                            this.state.timeFrame === 365
+                              ? { background: colors.cgOrange + 25 }
+                              : {}
+                          }
                           label={`${coinData.market_data.price_change_percentage_1y_in_currency[vs]}%`}
                         />
                       </Grid>
@@ -1111,6 +1131,11 @@ class CryptoDetective extends Component {
                           onClick={() => {
                             handleClick("max");
                           }}
+                          style={
+                            this.state.timeFrame === "max"
+                              ? { background: colors.cgOrange + 25 }
+                              : {}
+                          }
                           label={"All"}
                         />
                       </Grid>

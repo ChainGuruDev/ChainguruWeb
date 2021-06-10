@@ -382,6 +382,11 @@ class App extends Component {
             lineHeight: 1.2,
           },
         },
+        MuiTooltip: {
+          tooltip: {
+            fontSize: 14,
+          },
+        },
       },
 
       // palette: {

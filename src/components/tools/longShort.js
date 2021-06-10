@@ -134,7 +134,10 @@ class LongShort extends Component {
     emitter.removeListener(CONNECTION_DISCONNECTED, this.disconnected);
     emitter.removeListener(DB_GET_USER_LS_RETURNED, this.db_getUserLS);
     emitter.removeListener(COIN_DATA_RETURNED, this.coinDataReturned);
-    emitter.removeListener(COIN_DATA_RETURNED, this.userTokenLSReturned);
+    emitter.removeListener(
+      DB_GET_USER_TOKEN_LS_RETURNED,
+      this.userTokenLSReturned
+    );
     emitter.removeListener(DB_CREATE_LS_RETURNED, this.db_createLSReturned);
     emitter.removeListener(
       DB_CHECK_LS_RESULT_RETURNED,
@@ -247,7 +250,7 @@ class LongShort extends Component {
 
   db_checkLSResultReturned = (data) => {
     const { account } = this.state;
-    // console.log(data);
+    console.log(data);
     dispatcher.dispatch({
       type: DB_GET_USER_LS,
       address: account.address,
@@ -370,7 +373,7 @@ class LongShort extends Component {
                         alignItems="stretch"
                       >
                         <Tooltip
-                          title="Find coins to Long or Short here"
+                          title="FIND COINS TO LONG OR SHORT HERE"
                           arrow
                           placement="top"
                         >
@@ -698,8 +701,9 @@ class LongShort extends Component {
                         container
                       >
                         <Tooltip
-                          title="You can only have 7 trades open at a time"
+                          title="YOU CAN ONLY HAVE 7 TRADES OPEN AT A TIME"
                           arrow
+                          placement="top"
                         >
                           <Grid item container xs={4}>
                             <Grid className={classes.comboBar} item xs={4}>
@@ -727,8 +731,9 @@ class LongShort extends Component {
                           </Grid>
                         </Tooltip>
                         <Tooltip
-                          title="Get 7 Longs in a row for 2x bonus"
+                          title="GET 7 LONGS IN A ROW FOR A 2X BONUS"
                           arrow
+                          placement="top"
                         >
                           <Grid item container xs={4}>
                             <Grid className={classes.comboBar} item xs={4}>
@@ -758,8 +763,9 @@ class LongShort extends Component {
                           </Grid>
                         </Tooltip>
                         <Tooltip
-                          title="Get 7 Shorts in a row for 2x bonus"
+                          title="GET 7 SHORTS IN A ROW FOR A 2X BONUS"
                           arrow
+                          placement="top"
                         >
                           <Grid item container xs={4}>
                             <Grid className={classes.comboBar} item xs={4}>
@@ -790,7 +796,9 @@ class LongShort extends Component {
                     </Grid>
                   )}
                   <Grid item className={classes.favList} xs={12}>
-                    {incompleteLS && <LSTableActive data={incompleteLS} />}
+                    {incompleteLS && incompleteLS.length > 0 && (
+                      <LSTableActive data={incompleteLS} />
+                    )}
                     {completeLS && <LSTableHistory data={completeLS} />}
                   </Grid>
                 </Grid>

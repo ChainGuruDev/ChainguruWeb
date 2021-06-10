@@ -70,7 +70,6 @@ class LSTableActive extends Component {
     props.data.forEach((item, i) => {
       tokenIDs.push(item.tokenID);
     });
-    // console.log(tokenIDs);
     if (tokenIDs.length > 0) {
       dispatcher.dispatch({
         type: COINGECKO_POPULATE_FAVLIST,
@@ -111,7 +110,7 @@ class LSTableActive extends Component {
       this.props.data.forEach((item, i) => {
         tokenIDs.push(item.tokenID);
       });
-      // console.log(tokenIDs);
+      console.log(tokenIDs);
       if (tokenIDs.length > 0) {
         dispatcher.dispatch({
           type: COINGECKO_POPULATE_FAVLIST,
@@ -165,9 +164,17 @@ class LSTableActive extends Component {
     } else if (minutes < 60) {
       return minutes + " Min";
     } else if (hours < 24) {
-      return hours + " Hrs";
+      if (hours <= 1) {
+        return hours + " Hr";
+      } else {
+        return hours + " Hrs";
+      }
     } else {
-      return days + " Days";
+      if (days <= 1) {
+        return days + " Day";
+      } else {
+        return days + " Days";
+      }
     }
   };
 

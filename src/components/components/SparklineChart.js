@@ -68,6 +68,29 @@ class SparklineChart extends Component {
     };
   }
 
+  componentDidUpdate(prevProps) {
+    if (prevProps.data !== this.props.data) {
+      let profit7D_BasedColor;
+      if (this.props.data[0] < this.props.data[this.props.data.length - 1]) {
+        profit7D_BasedColor = [colors.cgGreen];
+      } else {
+        profit7D_BasedColor = [colors.cgOrange];
+      }
+
+      this.setState({
+        options: {
+          colors: profit7D_BasedColor,
+        },
+        series: [
+          {
+            name: this.props.id,
+            data: this.props.data,
+          },
+        ],
+      });
+    }
+  }
+
   render() {
     const { classes } = this.props;
     return (

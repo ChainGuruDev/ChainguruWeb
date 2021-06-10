@@ -1,0 +1,641 @@
+[33mcommit 561c258343a0f66d5d60eb4c860a2784de40db1f[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31mheroku/master[m[33m, [m[1;32mdevTom[m[33m)[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Mon Jun 7 15:13:31 2021 +0100
+
+    longShort mini Grid MODE
+
+[33mcommit a4d81c9a8270df94cbad6f0aaec51cdff11de510[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Mon Jun 7 14:27:30 2021 +0100
+
+    longShort mini update
+
+[33mcommit 3f63cd858f1949d73958e7da8f68d12ed48f4701[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Thu Jun 3 22:04:03 2021 +0100
+
+    update Long shorts and leaderboard, some ui fixes
+
+[33mcommit b9e1ecb3530b0fd44f9a38d76ce28cf821dd8d6d[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Tue Jun 1 13:49:31 2021 +0100
+
+    typo and UI colors updated, Mini LongShort big update
+
+[33mcommit a1d71fd096cd468d26a8d010db44dfc667e294ad[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Mon May 31 20:29:44 2021 +0100
+
+    Alpha dashboard, fix type font chainguru
+
+[33mcommit 383a6f926a9255dee6c5204c5e3921b3b5dc8d60[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Thu May 27 14:33:16 2021 +0100
+
+    fixes long&short and some ui improvements
+
+[33mcommit 182ae61da6b1a2bdae5a8ac8c8dd32e1077e3a41[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Mon May 24 19:49:25 2021 +0100
+
+    CoinList fav sorted and some improvements
+
+[33mcommit 38f6103bc3887d36711dcc5ee25f0b3c3cc9f2fa[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Mon May 24 18:04:39 2021 +0100
+
+    custom Avatar addin and tooltips
+
+[33mcommit f25388a1bdf431c07e9d60fc7d94dad7f3f6272c[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Mon May 24 13:03:45 2021 +0100
+
+    bug fixes Gas fix
+
+[33mcommit c90af4c91995bc5ad213ec924dfe1f3bd351933b[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Thu May 20 14:16:59 2021 +0100
+
+    long shorts limit and ui upgrade
+
+[33mcommit 6d81998d8bf2f6c96f4249727fe6f07f508bc932[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Tue May 18 13:45:54 2021 +0100
+
+    leaderboard v1
+
+[33mcommit 14448fbcb94efc3fab09e20640d6224c89842161[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Mon May 17 21:02:25 2021 +0100
+
+    fix typo
+
+[33mcommit 2797c720ebdfc3c12e347265488e290eb26f7ae5[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Mon May 17 20:44:56 2021 +0100
+
+    several bug fixes userProfile and LongShorts
+
+[33mcommit 593caf3712c0d231d9fb5f6bddb136a534a82d69[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Mon May 17 13:37:09 2021 +0100
+
+    several fixes
+
+[33mcommit b65bf21d4f94c4a38f70c7740d7ced01e187d7bb[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Thu May 13 20:59:56 2021 +0100
+
+    user profile update
+
+[33mcommit d8983342566e500088957429933591c0c349de6e[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Thu May 13 16:15:06 2021 +0100
+
+    user profile start update
+
+[33mcommit a5d013367806c8a9b9120d80f0c9d4856b63d5b7[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Tue May 11 20:33:04 2021 +0100
+
+    long Short UI improvements & fixes
+
+[33mcommit 122f31c5950693c7f3f9fd0c1cf7486b6a2c9ebc[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Mon May 10 19:59:04 2021 +0100
+
+    UI longShort
+
+[33mcommit d20a3b1dd5a866ea6280c57e1c89d8ac619565c2[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Mon May 10 19:46:30 2021 +0100
+
+    UI longShort
+
+[33mcommit 036b6c8d7f83025d37a4812679a2e0d721a15035[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Tue May 4 13:12:56 2021 +0100
+
+    user profile begin
+
+[33mcommit ba4f2f67da128fca8926383c082e3bdd202e23a1[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Mon May 3 13:39:09 2021 +0100
+
+    renamed LongShort
+
+[33mcommit f1c8d072234b3a609ec4e9697f65b6fbd16d9be7[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Wed Apr 28 21:16:18 2021 +0100
+
+    localhost fix
+
+[33mcommit f321e89856659516fd804c402b22c55ed639bbe1[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Wed Apr 28 20:59:05 2021 +0100
+
+    first beta PumpDumps
+
+[33mcommit a0ba516a98c1ca82cb6ea52b4a107e39fd3ad388[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Fri Apr 16 19:41:23 2021 +0100
+
+    fav list update
+
+[33mcommit a0db794a2b87d8fd41f34a15b2220586756700a7[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Thu Apr 1 13:22:58 2021 +0100
+
+    ui fixes
+
+[33mcommit 400edb8927f57bdd3fbfd459256bbd164f2071d1[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Wed Mar 31 19:21:13 2021 +0100
+
+    portfolio radar
+
+[33mcommit fb2e62935aebaa04aaf3a76527d51edf23737839[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Tue Mar 30 17:18:03 2021 +0100
+
+    portfolio radar
+
+[33mcommit 81e6fe8d0e5838f39f18d239bf93b61440985820[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Mon Mar 22 19:16:58 2021 +0000
+
+    converter update
+
+[33mcommit 9e8677fd4526ee060a98e4b9d60df7a26b9405f4[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Sat Mar 20 19:54:43 2021 +0000
+
+    latest
+
+[33mcommit aa3fa097975dda780180afd6d145df7e35705a5f[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Fri Mar 19 20:56:56 2021 +0000
+
+    crypto converter beta1
+
+[33mcommit 3ebc932e6603f5fe6a2cbdeea43596989c657581[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Fri Mar 19 17:48:15 2021 +0000
+
+    fixes HEATMAP
+
+[33mcommit 09712f37023413ddf6681fc2e0b69a38b9769505[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Thu Mar 18 13:13:08 2021 +0000
+
+    heatmap v1
+
+[33mcommit 1057cb29a4625ca3264c58294beb49690892eac1[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Thu Mar 11 20:57:04 2021 +0000
+
+    several upgrades UI NFT UI updated
+
+[33mcommit 02655367a681d626cf2a4ca8a5cab4475f4c5282[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Mon Mar 8 19:48:41 2021 +0000
+
+    fav list update
+
+[33mcommit e238c9c95d3425329a1b323757fa6c19fd40a477[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Thu Mar 4 14:18:58 2021 +0000
+
+    some ui updates LONG
+
+[33mcommit c5058ab393f30deeb13cc094786e7400788a0b8f[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Thu Mar 4 12:14:59 2021 +0000
+
+    fixes ui DCA Tool
+
+[33mcommit 334f9228f685124fb90b382f4b2b7a732dbaefcc[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Wed Mar 3 21:15:03 2021 +0000
+
+    various fixes DCA
+
+[33mcommit 5d468f5e6c23fd54cc8859ad763415ee569bb87f[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Tue Mar 2 14:50:18 2021 +0000
+
+    dollar cost average
+
+[33mcommit 0cec8cd9e3fb9baacd27a87f8ac35b7b1f11baa7[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Thu Feb 18 14:01:13 2021 +0000
+
+    update Cdetective
+
+[33mcommit e225dc3114238bb36a67efee9b74d2397df30839[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Thu Feb 18 14:00:37 2021 +0000
+
+    update cryptoDetective
+
+[33mcommit 89b3d5f58cf7c4d16e7a7abbac376dad47723569[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Wed Feb 17 19:34:25 2021 +0000
+
+    updates graficos y detective
+
+[33mcommit 25099fb54ff9f0f132aaab338f25cac709ac840f[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Tue Feb 16 14:40:13 2021 +0000
+
+    update smart timeframe tools
+
+[33mcommit c69e66460d1198966661ba5c6939ca547323e600[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Tue Feb 16 12:57:22 2021 +0000
+
+    update crypto detective
+
+[33mcommit 2af0622dab784724f9affb3b006b27d216e65ce1[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Tue Feb 16 11:32:35 2021 +0000
+
+    medium pre update
+
+[33mcommit 39a49996817448431342f8b11ebc453a227e2cd1[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Fri Feb 12 20:28:40 2021 +0000
+
+    update blacklist
+
+[33mcommit bdf1798d323bff778a777633b3e562ffdee01bb6[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Fri Feb 12 15:09:56 2021 +0000
+
+    blacklist update
+
+[33mcommit c14a952d1e2ec37cfa2d18f45a47024b431e2b32[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Wed Feb 10 20:49:33 2021 +0000
+
+    update tx
+
+[33mcommit ec16f1bcb7ee9005d1401582c6bb1092b2cbda42[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Wed Feb 10 20:15:01 2021 +0000
+
+    auto tx update
+
+[33mcommit 4d48f9547bc8f6d1580fdbf216c420c4935f4f48[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Mon Feb 8 14:27:16 2021 +0000
+
+    tx list update
+
+[33mcommit 79050cb36c6e9b8d1165f6e53eb4ca54f5ad7420[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Fri Feb 5 13:47:22 2021 +0000
+
+    beta TX
+
+[33mcommit 66b801c4c48c353f3500d7bbcb6e671dcd9c7918[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Fri Jan 15 17:21:55 2021 +0000
+
+    MAYOR upgrades all around
+
+[33mcommit 3c6074a350f5adce69a3bc12bfdd849a4210d094[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Fri Jan 15 00:18:16 2021 +0000
+
+    fixes balance
+
+[33mcommit 1ce44a184c15cb29b3cb7012a659e02569bbde5f[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Thu Jan 14 20:20:05 2021 +0000
+
+    portfolio update
+
+[33mcommit 9fd6c6683d631d38b97f75183e9798ad4eedcd44[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Thu Jan 14 17:53:45 2021 +0000
+
+    fix balance list
+
+[33mcommit 6c516ac3ee80a9319667a9ade89ef81bc3207bab[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Wed Jan 13 21:27:08 2021 +0000
+
+    puto balance andando bien
+
+[33mcommit c76b601036668825466d712468650afbf8da7d4e[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Wed Jan 13 17:33:30 2021 +0000
+
+    fix vsCoin
+
+[33mcommit b8c449c3058a49d7760d9a064adce548c7115e60[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Wed Jan 13 16:28:27 2021 +0000
+
+    balance with eth
+
+[33mcommit b31654621abc683f01b51d073f491e5737b72aab[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Tue Jan 12 14:31:07 2021 +0000
+
+    fixes coin VS
+
+[33mcommit 9ed7237ce2250d926869e2cd09e138936cb4f9fd[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Mon Jan 11 20:31:33 2021 +0000
+
+    added vsCoin compare
+
+[33mcommit c3b28968ab065d327e67b1612fdf534858f83af2[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Sat Jan 9 13:53:43 2021 +0000
+
+    fix balanceList same key error
+
+[33mcommit 325500015b0c99a73bcc849b682ce4b9afcd2051[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Fri Jan 8 17:21:49 2021 +0000
+
+    working portfolio balance
+
+[33mcommit c7f382b2271a631b588453ae6ae0ee7f1a12f537[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Thu Jan 7 19:57:33 2021 +0000
+
+    portfolio alpha 0.2
+
+[33mcommit 9a0a3a99f649b4382bf99e35e399502eda3d7f2f[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Thu Jan 7 12:12:57 2021 +0000
+
+    various fixes
+
+[33mcommit 6c8d61851540f5a9f7aaed13c4f61d7ccab2dd7f[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Wed Jan 6 21:30:16 2021 +0000
+
+    PORTFOLIO alpha
+
+[33mcommit c7cfe8acd348d69ad7fdace2125c3d342bd93962[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Wed Jan 6 20:57:13 2021 +0000
+
+    PORTFOLIO alpha
+
+[33mcommit 3b87ce0decc01738991328249259fc44b9f8ff06[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Mon Jan 4 19:52:20 2021 +0000
+
+    authorized wallet reconnect / favorites autoupdate
+
+[33mcommit ca7e922b8beff1e890c406343bbdae4190bba948[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Wed Dec 30 19:58:23 2020 +0000
+
+    added new icons
+
+[33mcommit 8b165aad1c1198961516b4c37b4e74c114d5f0a0[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Wed Dec 30 17:54:22 2020 +0000
+
+    header upgrade and logos footer hid
+
+[33mcommit bf26848b206811edab804c612065684503b17ce5[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Tue Dec 29 13:24:31 2020 +0000
+
+    colors and debug
+
+[33mcommit 1bfaf104f6660490f93758c58e9c3c093ba1cc8b[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Mon Dec 28 14:08:32 2020 +0000
+
+    dark mode v1
+
+[33mcommit 52750a06a1f6e3ebd43c8d7db9b2564372444106[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Tue Dec 22 20:05:34 2020 +0000
+
+    chainguru detective v0.0.1
+
+[33mcommit d8e7eac96c56f55bf66a59eebe9ea0c71b0589b8[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Wed Dec 16 21:27:18 2020 +0000
+
+    chainguru favList sortable
+
+[33mcommit 57afc077e6f0b9a6de3aae1b3afd97c75f95d696[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Tue Dec 15 16:46:50 2020 +0000
+
+    chainguru BlueChips v0.1
+
+[33mcommit 72dda9260038c020a502c7f65c9675b72f99694f[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Tue Dec 15 16:21:48 2020 +0000
+
+    chainguru BlueChips v0.1
+
+[33mcommit c83598954b05700ef710062f4ec9ae0b2d7c96ba[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Wed Dec 9 19:03:53 2020 +0000
+
+    favorites list with sparklink and wrong network warning v2
+
+[33mcommit f95b5e210aa103f5a756979466edd8763addae5f[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Wed Dec 9 18:25:29 2020 +0000
+
+    favorites list with sparklink and wrong network warning
+
+[33mcommit 41fe9ee95e3ee1a2558be3f4992b7359f09c1990[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Mon Dec 7 17:30:49 2020 +0000
+
+    chainguru favlist update
+
+[33mcommit 7249ce48500105b24e521254f406deff6307e800[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Thu Dec 3 15:25:38 2020 +0000
+
+    ChainGuru favList beta
+
+[33mcommit 824e14e5172d4da4dd8c1bd387f410c955d1a9f3[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Tue Dec 1 19:56:01 2020 +0000
+
+    ChainGuru Tools v2
+
+[33mcommit f8a398aad7a22e57c5bad5252dc5ef1d85ee9478[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Tue Dec 1 15:26:20 2020 +0000
+
+    ChainGuru Tools
+
+[33mcommit d00a630aab006754a16f13ebe8be12480c1810db[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Thu Nov 19 14:41:57 2020 +0000
+
+    beta 0.0.2
+
+[33mcommit 49451a0fcbe60c01fe9218a3accad22f3b6260da[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Wed Nov 18 17:51:38 2020 +0000
+
+    beta launch
+
+[33mcommit 9a57420e56d3826006a53ee97454e430aeacf57e[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Wed Nov 18 17:33:44 2020 +0000
+
+    beta launch
+
+[33mcommit 3094abea28f81eeac1ccacc3a9d80e09ad323606[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Mon Nov 16 15:48:32 2020 +0000
+
+    crypto compare
+
+[33mcommit 70b497a8f3c975f9e867a7cc6a2d75bb0f9be267[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Thu Nov 12 13:29:19 2020 +0000
+
+    crypto compare
+
+[33mcommit 876ebade2955d12f662e238d1580ac4e6b6ef182[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Wed Nov 11 20:24:09 2020 +0000
+
+    blue chips
+
+[33mcommit 4213c7fc45a6888f9ff8ab59bc9678fb421167b5[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Wed Nov 11 17:33:29 2020 +0000
+
+    short Long Med
+
+[33mcommit 03814911efe6f7b6676d7961b036899806e51704[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Fri Oct 16 19:32:49 2020 +0100
+
+    beta2
+
+[33mcommit f1eeb2f877f516212b1ea94fcf5c0f54c33eda92[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Thu Oct 1 11:00:18 2020 +0100
+
+    fix New Edition
+
+[33mcommit c6fd4d4e53fc01d54f1d86910fe5e976aa8da11e[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Thu Oct 1 10:37:42 2020 +0100
+
+    fix New Edition
+
+[33mcommit 576e26e50216efa36086009fd9a472866b6e1f36[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Thu Oct 1 03:04:37 2020 +0100
+
+    admin panel and roles
+
+[33mcommit a8a1944da0e4dab7a13a8af22d6cf64d30ad784d[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Mon Sep 28 02:19:59 2020 +0100
+
+    rinkeby deploy with fixes
+
+[33mcommit 900f0090113d7cf0bb4d6ee574cae2f63f066f10[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Mon Sep 28 00:39:24 2020 +0100
+
+    rinkeby deploy
+
+[33mcommit 5871c73f47357f4410c37e6b3ba207c5557f67c9[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Mon Sep 28 00:23:54 2020 +0100
+
+    rinkeby deploy
+
+[33mcommit 1e31e74f5b6f0aa48c87307a68897ced56ab16c8[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Sun Sep 27 04:01:41 2020 +0100
+
+    some upgrades
+
+[33mcommit 426fdd4ec185e5ea1d24e1db610345092d43fba2[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Sun Sep 27 00:38:12 2020 +0100
+
+    Token Creation
+
+[33mcommit 108db7df5e37a8293af7837b9f442ebc04f7b16b[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Sat Sep 26 23:09:45 2020 +0100
+
+    test IPFS
+
+[33mcommit 68f5e70dc277a8362542568065acc39ae607c72f[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Sat Sep 26 22:54:23 2020 +0100
+
+    test IPFS
+
+[33mcommit efae0cf1afbec90df1de2622f0bf94772e35c154[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Sat Sep 26 22:51:53 2020 +0100
+
+    test IPFS
+
+[33mcommit 07ae46eb8aeb2f959ff590e298f9a18ec015d2b7[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Sat Sep 26 22:50:54 2020 +0100
+
+    test IPFS
+
+[33mcommit 7333cfc6f4b462e5c04faccfcdbfb9c041694c9e[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Sat Sep 26 22:19:12 2020 +0100
+
+    test deploy
+
+[33mcommit 2300bf41eb2438b50cdbcd9de74f470f80f9a6a6[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Sat Sep 26 22:05:55 2020 +0100
+
+    test IPFS
+
+[33mcommit f137fb404dcbdd8516b29a3ab5cc81ecc31fe8d2[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Sat Sep 26 21:47:09 2020 +0100
+
+    test deploy
+
+[33mcommit 691e2af68e961ab3b9678be4d19d58b56f3954c3[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Sat Sep 26 21:39:20 2020 +0100
+
+    test IPFS
+
+[33mcommit a8517e658b73c725cf55ffff3dc596c43ccba071[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Fri Sep 25 15:35:28 2020 +0100
+
+    va queriendo
+
+[33mcommit 42c9443afad2e2bdcae9e000ab387fc2740ac323[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Fri Sep 25 02:18:02 2020 +0100
+
+    setup
+
+[33mcommit 707eb8d4f846278c6575e098a4528bc62836ccbf[m
+Author: juani <juaniv8@hotmail.com>
+Date:   Fri Sep 25 02:12:29 2020 +0100
+
+    Initialize project using Create React App

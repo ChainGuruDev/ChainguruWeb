@@ -248,12 +248,7 @@ class LongShortMini extends Component {
         elevation={3}
         id="longShortMiniUI"
       >
-        <Grid
-          container
-          direction="column"
-          spacing={3}
-          style={{ margin: "0px" }}
-        >
+        <Grid container direction="column" style={{ margin: "0px" }}>
           {loading && (
             <Grid
               style={{
@@ -412,7 +407,7 @@ class LongShortMini extends Component {
                   )}
                 </Grid>
               </Grid>
-              <Divider />
+              <Divider style={{ marginTop: "12px" }} />
               <Grid item className={classes.favList} xs={12}>
                 {incompleteLS && <LSTableActiveMini data={incompleteLS} />}
               </Grid>

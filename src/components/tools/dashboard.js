@@ -24,6 +24,7 @@ const LeaderboardMini = React.lazy(() =>
   import("../leaderboard/leaderboardMini.js")
 );
 const LongShortMini = React.lazy(() => import("./longShortMini.js"));
+const PortfolioBig = React.lazy(() => import("./portfolioBig.js"));
 
 const styles = (theme) => ({
   root: {
@@ -155,6 +156,7 @@ class Dashboard extends Component {
 
   renderBig = (tools) => {
     // console.log(tools);
+    const { classes } = this.props;
 
     // check if tools active are Mini or Big
     // only render the needed for the section
@@ -170,15 +172,22 @@ class Dashboard extends Component {
         }
       }
     });
-    // return (
-    //   <div>
-    //     <Suspense fallback={<div>Loading...</div>}>
-    //       <section>
-    //         {activeTools.leaderboard_MINI && <LeaderboardMini />}
-    //       </section>
-    //     </Suspense>
-    //   </div>
-    // );
+    console.log(activeTools);
+    return (
+      <div>
+        <Suspense
+          fallback={
+            <div style={{ textAlign: "center" }}>
+              <Card className={classes.favCard} elevation={3}>
+                <CircularProgress />
+              </Card>
+            </div>
+          }
+        >
+          {activeTools.portfolio_BIG && <PortfolioBig />}
+        </Suspense>
+      </div>
+    );
   };
 
   nav = (screen) => {

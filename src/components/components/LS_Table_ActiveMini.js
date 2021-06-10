@@ -15,6 +15,7 @@ import {
   ButtonGroup,
   CircularProgress,
   Divider,
+  ButtonBase,
 } from "@material-ui/core";
 
 //IMPORT icons
@@ -38,7 +39,6 @@ const dispatcher = Store.dispatcher;
 const styles = (theme) => ({
   root: {
     backgroundColor: "rgba(255, 255, 255, 0.0)",
-    maxHeight: "440",
   },
   tokenLogo: {
     maxHeight: 45,
@@ -46,6 +46,19 @@ const styles = (theme) => ({
   footer: {
     flexShrink: 0,
     marginLeft: theme.spacing(2.5),
+  },
+  row: {
+    cursor: "pointer",
+    "&:hover": {
+      background: "rgba(255, 255, 255, 0.05)",
+    },
+  },
+  header: {
+    cursor: "pointer",
+    "&:hover": {
+      background: "rgba(255, 255, 255, 0.05)",
+    },
+    padding: "12px",
   },
 });
 
@@ -71,6 +84,8 @@ class LSTableActiveMini extends Component {
     this.state = {
       tokenIDs: tokenIDs,
       lsData: props.data,
+      sortBy: "voteEnding",
+      sortOrder: "asc",
       sortData: [],
       formatedRows: [],
       loadingResult: false,
@@ -151,9 +166,17 @@ class LSTableActiveMini extends Component {
     } else if (minutes < 60) {
       return minutes + " Min";
     } else if (hours < 24) {
-      return hours + " Hrs";
+      if (hours <= 1) {
+        return hours + " Hr";
+      } else {
+        return hours + " Hrs";
+      }
     } else {
-      return days + " Days";
+      if (days <= 1) {
+        return days + " Day";
+      } else {
+        return days + " Days";
+      }
     }
   };
 
@@ -213,12 +236,24 @@ class LSTableActiveMini extends Component {
     }
   };
 
-  checkResult = (id) => {
-    this.setState({ loadingResult: true });
-    dispatcher.dispatch({
-      type: DB_CHECK_LS_RESULT,
-      tokenID: id,
-    });
+  checkResult = (event, id) => {
+    if (event.target.id != "row") {
+      event.stopPropagation = true;
+      event.preventDefault = true;
+      this.setState({ loadingResult: true });
+      dispatcher.dispatch({
+        type: DB_CHECK_LS_RESULT,
+        tokenID: id,
+      });
+    }
+  };
+
+  detective = (event, id) => {
+    if (event.target.id === "row") {
+      event.stopPropagation = true;
+      event.preventDefault = true;
+      this.nav("/short/detective/" + id);
+    }
   };
 
   sortedList = (rowData) => {
@@ -284,101 +319,101 @@ class LSTableActiveMini extends Component {
         ? newRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
         : newRows
       ).map((row) => (
-        <>
+        <Grid
+          key={row.name}
+          item
+          container
+          justify="space-between"
+          onClick={(event) => {
+            this.detective(event, row.id);
+          }}
+          className={classes.row}
+          id={"row"}
+        >
           <Divider style={{ width: "100%" }} />
-          <Grid item container justify="space-between" key={row.name}>
-            <Grid
-              item
-              style={{
-                cursor: "pointer",
-                marginRight: "10px",
-                textAlign: "center",
-                alignSelf: "center",
-              }}
-              onClick={() => this.detective(row.id)}
-            >
-              <img
-                className={classes.tokenLogo}
-                alt="coin-icon"
-                src={row.image}
-              />
-            </Grid>
-            <Grid
-              item
-              style={{ cursor: "pointer", alignSelf: "center" }}
-              onClick={() => this.detective(row.id)}
-              align="left"
-            >
-              <Typography variant={"h4"} onClick={() => this.detective(row.id)}>
-                {row.name}
-              </Typography>
-              <Typography variant="subtitle1">{row.symbol}</Typography>
-            </Grid>
-            <Grid
-              item
-              align="right"
-              style={{
-                padding: "10px 0px",
-                marginRight: "0px",
-                marginLeft: "auto",
-              }}
-            >
-              <Typography variant={"subtitle2"}>price Start</Typography>
-              <Typography variant={"h4"}>{row.priceStart}</Typography>
-              <Typography variant={"subtitle2"}>current price</Typography>
-              <Typography
-                variant={"h4"}
-                color={
-                  row.current_price > row.priceStart && row.vote
-                    ? "primary"
-                    : row.current_price > row.priceStart && !row.vote
-                    ? "secondary"
-                    : row.current_price < row.priceStart && !row.vote
-                    ? "primary"
-                    : "secondary"
-                }
-              >
-                {row.current_price}
-              </Typography>
-            </Grid>
-            <Grid
-              item
-              style={{
-                alignSelf: "center",
-                marginRight: "0px",
-                marginLeft: "10px",
-              }}
-              align="center"
-            >
-              {row.percentComplete < 100 && (
-                <>
-                  <Typography variant={"subtitle2"} style={{ marginRight: 10 }}>
-                    {row.timeRemaining}
-                  </Typography>
-                  <CircularProgress
-                    variant="determinate"
-                    value={row.percentComplete}
-                  />
-                </>
-              )}
-              {row.percentComplete >= 100 && !this.state.loadingResult && (
-                <Button
-                  startIcon={<AssignmentTurnedInIcon />}
-                  variant="outlined"
-                  onClick={() => this.checkResult(row.id)}
-                  color="primary"
-                >
-                  Results
-                </Button>
-              )}
-              {row.percentComplete >= 100 && this.state.loadingResult && (
-                <Button disabled variant="outlined">
-                  <CircularProgress />
-                </Button>
-              )}
-            </Grid>
+          <Grid
+            item
+            style={{
+              marginRight: "10px",
+              textAlign: "center",
+              alignSelf: "center",
+            }}
+          >
+            <img
+              className={classes.tokenLogo}
+              alt="coin-icon"
+              src={row.image}
+            />
           </Grid>
-        </>
+          <Grid item style={{ alignSelf: "center" }} align="left">
+            <Typography variant={"h4"}>{row.name}</Typography>
+            <Typography variant="subtitle1">{row.symbol}</Typography>
+          </Grid>
+          <Grid
+            item
+            align="right"
+            style={{
+              padding: "10px 0px",
+              marginRight: "0px",
+              marginLeft: "auto",
+            }}
+          >
+            <Typography variant={"subtitle2"}>price Start</Typography>
+            <Typography variant={"h4"}>{row.priceStart}</Typography>
+            <Typography variant={"subtitle2"}>current price</Typography>
+            <Typography
+              variant={"h4"}
+              color={
+                row.current_price > row.priceStart && row.vote
+                  ? "primary"
+                  : row.current_price > row.priceStart && !row.vote
+                  ? "secondary"
+                  : row.current_price < row.priceStart && !row.vote
+                  ? "primary"
+                  : "secondary"
+              }
+            >
+              {row.current_price}
+            </Typography>
+          </Grid>
+          <Grid
+            item
+            style={{
+              alignSelf: "center",
+              marginRight: "0px",
+              marginLeft: "10px",
+            }}
+            align="center"
+          >
+            {row.percentComplete < 100 && (
+              <>
+                <Typography variant={"subtitle2"} style={{ marginRight: 10 }}>
+                  {row.timeRemaining}
+                </Typography>
+                <CircularProgress
+                  variant="determinate"
+                  value={row.percentComplete}
+                />
+              </>
+            )}
+            {row.percentComplete >= 100 && !this.state.loadingResult && (
+              <Button
+                id="checkBTN"
+                startIcon={<AssignmentTurnedInIcon />}
+                variant="outlined"
+                onClick={(event) => this.checkResult(event, row.id)}
+                color="primary"
+              >
+                Results
+              </Button>
+            )}
+            {row.percentComplete >= 100 && this.state.loadingResult && (
+              <Button disabled variant="outlined">
+                <CircularProgress />
+              </Button>
+            )}
+          </Grid>
+        </Grid>
       ));
     }
   };
@@ -395,10 +430,6 @@ class LSTableActiveMini extends Component {
       this.setState({ sortBy: _sortBy, sortOrder: "dsc" });
     }
   }
-
-  detective = (id) => {
-    this.nav("/short/detective/" + id);
-  };
 
   render() {
     const { classes } = this.props;
@@ -417,7 +448,8 @@ class LSTableActiveMini extends Component {
           direction="row"
           justify="space-between"
           alignItems="center"
-          style={{ paddingBottom: "12px" }}
+          className={classes.header}
+          onClick={handleActiveShow}
         >
           <Grid item>
             <Typography color="primary" variant="h4">
@@ -426,10 +458,7 @@ class LSTableActiveMini extends Component {
           </Grid>
           <Grid item style={{ textAlign: "end" }}>
             {show && (
-              <IconButton
-                onClick={handleActiveShow}
-                disabled={formatedRows.length === 0}
-              >
+              <IconButton disabled={formatedRows.length === 0}>
                 {<ArrowDropUpRoundedIcon />}
               </IconButton>
             )}
