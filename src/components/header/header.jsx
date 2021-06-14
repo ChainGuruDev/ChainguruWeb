@@ -82,14 +82,54 @@ const styles = (theme) => ({
   link: {
     padding: "12px 0px",
     margin: "0px 12px",
+    transition: "0.25s",
     cursor: "pointer",
     "&:hover": {
-      paddingBottom: "9px",
+      paddingBottom: "8px",
       borderBottom: "3px solid " + colors.cgGreen,
     },
   },
   title: {
+    transition: "0.25s",
     textTransform: "capitalize",
+    "&:hover": {
+      color: colors.cgGreen,
+    },
+  },
+  titleShort: {
+    transition: "0.25s",
+    textTransform: "capitalize",
+    "&:hover": {
+      color: colors.cgOrange,
+    },
+  },
+  titleMedium: {
+    transition: "0.25s",
+    textTransform: "capitalize",
+    "&:hover": {
+      color: colors.cgGreen,
+    },
+  },
+  titleLong: {
+    transition: "0.25s",
+    textTransform: "capitalize",
+    "&:hover": {
+      color: colors.cgBlue,
+    },
+  },
+  titlePortfolio: {
+    transition: "0.25s",
+    textTransform: "capitalize",
+    "&:hover": {
+      color: colors.cgYellow,
+    },
+  },
+  titleMarket: {
+    transition: "0.25s",
+    textTransform: "capitalize",
+    "&:hover": {
+      color: colors.cgRed,
+    },
   },
   linkActive: {
     padding: "12px 0px",
@@ -97,6 +137,7 @@ const styles = (theme) => ({
     cursor: "pointer",
     paddingBottom: "9px",
     borderBottom: "3px solid " + colors.cgGreen,
+    boxShadow: `rgba(247, 157, 107, 0.37) 0px 10px 5px -5px`,
   },
   account: {
     display: "flex",
@@ -564,7 +605,10 @@ class Header extends Component {
         }
         style={
           currentSection === screen
-            ? { borderBottom: "3px solid" + this.state.cgLogoColor }
+            ? {
+                borderBottom: "3px solid" + this.state.cgLogoColor,
+                boxShadow: `${this.state.cgLogoColor}50 0px 10px 5px -5px`,
+              }
             : {}
         }
         onClick={() => {
@@ -581,7 +625,19 @@ class Header extends Component {
                 }
               : { textTransform: "uppercase" }
           }
-          className={currentSection === screen ? classes.titleActive : ""}
+          className={
+            currentSection === screen
+              ? classes.titleActive
+              : screen === "short"
+              ? classes.titleShort
+              : screen === "medium"
+              ? classes.titleMedium
+              : screen === "long"
+              ? classes.titleLong
+              : screen === "portfolio"
+              ? classes.titlePortfolio
+              : classes.titleMarket
+          }
         >
           {t("Home." + screen)}
         </Typography>

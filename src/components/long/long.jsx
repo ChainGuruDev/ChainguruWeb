@@ -24,7 +24,7 @@ const styles = (theme) => ({
   background: {
     flex: 1,
     display: "flex",
-    width: "100%",
+    width: "90%",
     minHeight: "100%",
 
     justifyContent: "space-around",
@@ -183,7 +183,7 @@ class Long extends Component {
             />
           </LongTabs>
         </AppBar>
-        <TabPanel className={classes.background} value={valueTab} index={0}>
+        <TabPanel value={valueTab} index={0}>
           <BlueChips />
         </TabPanel>
         <TabPanel value={valueTab} index={1}>

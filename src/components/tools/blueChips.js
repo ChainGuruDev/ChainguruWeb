@@ -3,6 +3,7 @@ import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 //Import UI elements
 import { Typography, Grid, Paper } from "@material-ui/core";
@@ -27,6 +28,7 @@ const styles = (theme) => ({
     alignItems: "center",
     flexGrow: 1,
     width: "100%",
+    maxHeight: "100%",
   },
   paper: {
     padding: theme.spacing(2),
@@ -34,7 +36,6 @@ const styles = (theme) => ({
     color: theme.palette.text.primary,
     backgroundColor: `${colors.cgBlue}85`,
     border: `2px solid ${colors.cgBlue}`,
-    marginBottom: 10,
   },
   paperDark: {
     padding: theme.spacing(2),
@@ -42,7 +43,6 @@ const styles = (theme) => ({
     color: theme.palette.text.primary,
     backgroundColor: `${colors.cgBlue}52`,
     border: `2px solid ${colors.cgBlue}`,
-    marginBottom: 10,
   },
 });
 
@@ -50,7 +50,12 @@ class BlueChips extends Component {
   constructor(props) {
     super();
 
-    this.state = { chipData: [] };
+    this.state = {
+      chipData: [],
+      hasMore: true,
+      count: { prev: 0, next: 6 },
+      current: [],
+    };
   }
 
   componentDidMount() {
@@ -113,6 +118,7 @@ class BlueChips extends Component {
   };
 
   geckoBluechipData = (payload) => {
+    const { count } = this.state;
     let chips = [];
     payload.forEach((item, i) => {
       let chipData = this.createBluechip(
@@ -127,7 +133,10 @@ class BlueChips extends Component {
       );
       chips.push(chipData);
     });
-    this.setState({ chipData: chips });
+    this.setState({
+      chipData: chips,
+      current: chips.slice(count.prev, count.next),
+    });
   };
 
   createBluechip = (
@@ -152,34 +161,41 @@ class BlueChips extends Component {
     };
   };
 
-  geckoFavListDataReturned = (data) => {
-    let rows = [];
-    data.forEach((item, i) => {
-      console.log(item);
-      let rowData = this.createData(
-        item.image,
-        item.name,
-        item.id,
-        item.symbol,
-        this.formatMoney(item.current_price, 2),
-        parseFloat(item.price_change_percentage_1y_in_currency).toFixed(2),
-        this.formatMoney(item.market_cap, 0),
-        this.formatMoney(item.fully_diluted_valuation, 0)
-      );
-      rows.push(rowData);
-    });
-    this.setState({ rowData: rows });
-  };
-
   render() {
     const { classes } = this.props;
-    const { chipData } = this.state;
+    const { chipData, current, hasMore, count } = this.state;
     const darkMode = store.getStore("theme") === "dark" ? true : false;
 
+    const getMoreData = () => {
+      if (current.length === chipData.length) {
+        this.setState({ hasMore: false });
+        return;
+      }
+      setTimeout(() => {
+        this.setState({
+          current: current.concat(
+            chipData.slice(
+              count.prev === 0 ? count.prev + 6 : count.prev + 4,
+              count.next + 4
+            )
+          ),
+        });
+      }, 2000);
+      this.setState((prevState) => ({
+        count: {
+          prev:
+            prevState.count.prev === 0
+              ? prevState.count.prev + 6
+              : prevState.count.prev + 4,
+          next: prevState.count.next + 4,
+        },
+      }));
+    };
+
     return (
-      <div className={classes.root}>
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
+      <>
+        <Grid style={{ maxWidth: "90%", margin: "auto" }}>
+          <Grid style={{ marginBottom: 20 }} item xs={12}>
             <Paper
               className={darkMode ? classes.paperDark : classes.paper}
               elevation={3}
@@ -187,13 +203,27 @@ class BlueChips extends Component {
               <Typography variant="h2">BLUECHIPS</Typography>
             </Paper>
           </Grid>
+          <Grid item>
+            <InfiniteScroll
+              dataLength={current.length}
+              next={getMoreData}
+              hasMore={hasMore}
+              loader={
+                <div style={{ textAlign: "center", marginTop: 15 }}>
+                  Loading...
+                </div>
+              }
+              style={{ overflow: false }}
+            >
+              <Grid container spacing={3}>
+                {current.map((bluechip) => (
+                  <BlueChipCard key={bluechip.id} data={bluechip} />
+                ))}
+              </Grid>
+            </InfiniteScroll>
+          </Grid>
         </Grid>
-        <Grid container spacing={3}>
-          {chipData.map((bluechip) => (
-            <BlueChipCard key={bluechip.id} data={bluechip} />
-          ))}
-        </Grid>
-      </div>
+      </>
     );
   }
 

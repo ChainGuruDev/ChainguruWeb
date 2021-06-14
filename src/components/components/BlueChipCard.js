@@ -1,7 +1,13 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import { Typography, Paper, Grid, Button } from "@material-ui/core";
+import {
+  Typography,
+  Paper,
+  Grid,
+  Button,
+  CircularProgress,
+} from "@material-ui/core";
 import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
 import AlltimeChart from "../components/AlltimeChart";
@@ -23,7 +29,11 @@ const styles = (theme) => ({
     flexGrow: 1,
   },
   skeletonChart: {
-    flexGrow: 1,
+    minHeight: "150px",
+    minWidth: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    display: "flex",
   },
   root: {
     padding: theme.spacing(2),
@@ -38,15 +48,25 @@ const styles = (theme) => ({
     padding: theme.spacing(2),
     textAlign: "center",
     color: theme.palette.text.primary,
-    backgroundColor: `${colors.cgBlue}85`,
+    background: `${colors.cgBlue}65`,
     border: `2px solid ${colors.cgBlue}`,
+    transition: "0.5s",
+    "&:hover": {
+      background: `${colors.cgBlue}95`,
+    },
+    cursor: "pointer",
   },
   paperDark: {
     padding: theme.spacing(2),
     textAlign: "center",
     color: theme.palette.text.primary,
-    backgroundColor: `${colors.cgBlue}52`,
+    background: `${colors.cgBlue}52`,
     border: `2px solid ${colors.cgBlue}`,
+    transition: "0.5s",
+    "&:hover": {
+      background: `${colors.cgBlue}75`,
+    },
+    cursor: "pointer",
   },
   img: {
     margin: "auto",
@@ -106,48 +126,66 @@ class BlueChipCard extends Component {
           className={darkMode ? classes.paperDark : classes.paper}
           elevation={10}
         >
-          <Grid container direction="row" spacing={2}>
-            <Grid item xs={2}>
-              <img className={classes.img} alt="coin-icon" src={data.image} />
-            </Grid>
-            <Grid item xs container direction="column" spacing={2}>
-              <Typography align="left" gutterBottom variant="subtitle1">
-                {data.name}
-              </Typography>
-              <Typography align="left" variant="h2">
-                {data.current_price}
-              </Typography>
-              <Typography align="left" variant="body2">
-                Marketcap: {data.market_cap}
-              </Typography>
-              {data.fully_diluted_valuation > 0 && (
-                <Typography align="left" variant="body2">
-                  Fully diluted valuation: {data.fully_diluted_valuation}
-                </Typography>
-              )}
-              {data.price_change_percentage_1y_in_currency > 0 && (
-                <Typography align="left" variant="body2">
-                  price change 1Y: {data.price_change_percentage_1y_in_currency}
-                  %
-                </Typography>
-              )}
-            </Grid>
-            <Grid item xs>
-              {!loadingChart && (
-                <AlltimeChart id={data.symbol} data={chartData} />
-              )}
-              {loadingChart && (
-                <Skeleton
-                  className={classes.skeletonChart}
-                  variant="rect"
-                  width="100%"
-                  height="100%"
-                  animation="wave"
-                />
-              )}
-            </Grid>
-          </Grid>
           <Grid
+            onClick={
+              !loadingChart
+                ? () => this.nav(`./short/detective/` + id)
+                : () => console.log("")
+            }
+            container
+            direction="row"
+            spacing={2}
+          >
+            {loadingChart && (
+              <Grid item className={classes.skeletonChart}>
+                <CircularProgress />
+              </Grid>
+            )}
+            {!loadingChart && (
+              <>
+                <Grid item xs={2}>
+                  <img
+                    className={classes.img}
+                    alt="coin-icon"
+                    src={data.image}
+                  />
+                </Grid>
+                <Grid
+                  style={{ zIndex: 1 }}
+                  item
+                  xs
+                  container
+                  direction="column"
+                  spacing={2}
+                >
+                  <Typography align="left" variant="h2">
+                    {data.name}
+                  </Typography>
+                  <Typography align="left" variant="h3">
+                    {data.current_price}
+                  </Typography>
+                  <Typography align="left" variant="body2">
+                    Marketcap: {data.market_cap}
+                  </Typography>
+                  {data.fully_diluted_valuation > 0 && (
+                    <Typography align="left" variant="body2">
+                      Fully diluted valuation: {data.fully_diluted_valuation}
+                    </Typography>
+                  )}
+                  {data.price_change_percentage_1y_in_currency > 0 && (
+                    <Typography align="left" variant="body2">
+                      price change 1Y:{" "}
+                      {data.price_change_percentage_1y_in_currency}%
+                    </Typography>
+                  )}
+                </Grid>
+                <Grid item xs>
+                  <AlltimeChart id={data.symbol} data={chartData} />
+                </Grid>
+              </>
+            )}
+          </Grid>
+          {/*<Grid
             className={classes.buttonGrid}
             item
             xs
@@ -165,7 +203,7 @@ class BlueChipCard extends Component {
             >
               Get Some
             </Button>
-          </Grid>
+          </Grid>*/}
         </Paper>
       </Grid>
     );

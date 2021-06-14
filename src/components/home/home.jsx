@@ -9,6 +9,7 @@ import { ReactComponent as FastIcon } from "../../assets/fast.svg";
 import { ReactComponent as MediumIcon } from "../../assets/medium.svg";
 import { ReactComponent as LongIcon } from "../../assets/long.svg";
 import { ReactComponent as MarketIcon } from "../../assets/market.svg";
+import { ReactComponent as WalletIcon } from "../../assets/wallet.svg";
 
 const styles = (theme) => ({
   root: {
@@ -250,17 +251,29 @@ class Home extends Component {
         <Card
           className={`${classes.card} ${classes.market}`}
           onClick={() => {
-            this.nav(location.pathname + "market");
+            this.nav(location.pathname + "portfolio");
           }}
         >
-          <MarketIcon fill={colors.white} className={`${classes.icon} icon`} />
+          <WalletIcon fill={colors.white} className={`${classes.icon} icon`} />
           <Typography variant={"h3"} className={`${classes.title} title`}>
-            {t("Home.market")}
+            {t("Home.portfolio")}
           </Typography>
         </Card>
       </div>
     );
   }
+
+  // <Card
+  //   className={`${classes.card} ${classes.market}`}
+  //   onClick={() => {
+  //     this.nav(location.pathname + "market");
+  //   }}
+  // >
+  //   <MarketIcon fill={colors.white} className={`${classes.icon} icon`} />
+  //   <Typography variant={"h3"} className={`${classes.title} title`}>
+  //     {t("Home.market")}
+  //   </Typography>
+  // </Card>
 
   nav = (screen) => {
     this.props.history.push(screen);

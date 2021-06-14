@@ -33,7 +33,7 @@ class AlltimeChart extends Component {
 
         yaxis: {
           type: "numeric",
-          forceNiceScale: true,
+          forceNiceScale: false,
         },
 
         stroke: {
