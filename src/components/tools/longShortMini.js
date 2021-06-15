@@ -242,179 +242,183 @@ class LongShortMini extends Component {
     const darkMode = store.getStore("theme") === "dark" ? true : false;
 
     return (
-      <Card
-        className={classes.favCard}
-        style={{ maxHeight: "max-content" }}
-        elevation={3}
-        id="longShortMiniUI"
-      >
-        <Grid container direction="column" style={{ margin: "0px" }}>
-          {loading && (
-            <Grid
-              style={{
-                padding: 25,
-                justifyContent: "center",
-                display: "flex",
-              }}
-            >
-              <CircularProgress />
-            </Grid>
-          )}
-          {!loading && (
-            <>
+      <>
+        <Card
+          className={classes.favCard}
+          style={{ maxHeight: "max-content" }}
+          elevation={3}
+          id="longShortMiniUI"
+        >
+          <Grid container direction="column" style={{ margin: "0px" }}>
+            {loading && (
               <Grid
                 style={{
-                  display: "flex",
-                  alignContent: "center",
+                  padding: 25,
                   justifyContent: "center",
+                  display: "flex",
                 }}
               >
-                <div
+                <CircularProgress />
+              </Grid>
+            )}
+            {!loading && (
+              <>
+                <Grid
                   style={{
-                    background: darkMode
-                      ? `${colors.cgGreen}15`
-                      : `${colors.black}15`,
-                    paddingBottom: "5px",
-                    maxWidth: "inherit",
-                    position: "relative",
-                    minWidth: "150%",
-                    filter: "blur(1px)",
-                    overflow: "hidden",
-                    margin: "0px",
-                    minHeight: "50px",
-                  }}
-                ></div>
-                <div
-                  style={{
-                    position: "absolute",
+                    display: "flex",
+                    alignContent: "center",
+                    justifyContent: "center",
                   }}
                 >
-                  <Typography
+                  <div
                     style={{
-                      filter: "drop-shadow(1px 1px 1px rgba(0,0,0,0.5))",
+                      background: darkMode
+                        ? `${colors.cgGreen}15`
+                        : `${colors.black}15`,
+                      paddingBottom: "5px",
+                      maxWidth: "inherit",
+                      position: "relative",
+                      minWidth: "150%",
+                      filter: "blur(1px)",
+                      overflow: "hidden",
+                      margin: "0px",
+                      minHeight: "50px",
                     }}
-                    color={"primary"}
-                    variant={"h2"}
+                  ></div>
+                  <div
+                    style={{
+                      position: "absolute",
+                    }}
                   >
-                    Short & Long
-                  </Typography>
-                </div>
-                <Divider />
-              </Grid>
-              <Grid
-                item
-                container
-                direction="row"
-                justify="flex-start"
-                alignItems="flex-start"
-              >
-                <Grid item container justify="center" xs={12}>
-                  {countLong && (countLong[0] || countShort[0]) && (
-                    <Grid
-                      item
+                    <Typography
                       style={{
-                        minWidth: "120px",
-                        maxWidth: "120px",
                         filter: "drop-shadow(1px 1px 1px rgba(0,0,0,0.5))",
                       }}
+                      color={"primary"}
+                      variant={"h2"}
                     >
-                      <LSResultDonutChart
-                        data={
-                          this.state.countTotals ? this.state.countTotals : {}
-                        }
-                      />
-                    </Grid>
-                  )}
-                  {countLong && (countLong[0] || countShort[0]) && (
-                    <Grid
-                      style={{
-                        marginLeft: "10px",
-                        filter: "drop-shadow(1px 1px 1px rgba(0,0,0,0.5))",
-                      }}
-                      item
-                    >
-                      <Grid container direction="column">
-                        {countTotals && (
-                          <Grid item>
-                            <Grid item container direction="row">
+                      Short & Long
+                    </Typography>
+                  </div>
+                  <Divider />
+                </Grid>
+                <Grid
+                  item
+                  container
+                  direction="row"
+                  justify="flex-start"
+                  alignItems="flex-start"
+                >
+                  <Grid item container justify="center" xs={12}>
+                    {countLong && (countLong[0] || countShort[0]) && (
+                      <Grid
+                        item
+                        style={{
+                          minWidth: "120px",
+                          maxWidth: "120px",
+                          filter: "drop-shadow(1px 1px 1px rgba(0,0,0,0.5))",
+                        }}
+                      >
+                        <LSResultDonutChart
+                          data={
+                            this.state.countTotals ? this.state.countTotals : {}
+                          }
+                        />
+                      </Grid>
+                    )}
+                    {countLong && (countLong[0] || countShort[0]) && (
+                      <Grid
+                        style={{
+                          marginLeft: "10px",
+                          filter: "drop-shadow(1px 1px 1px rgba(0,0,0,0.5))",
+                        }}
+                        item
+                      >
+                        <Grid container direction="column">
+                          {countTotals && (
+                            <Grid item>
+                              <Grid item container direction="row">
+                                <Typography variant="h2" color="primary">
+                                  {countTotals.ok}
+                                </Typography>
+                                <Typography variant="h2">/</Typography>
+                                <Typography variant="h2" color="secondary">
+                                  {countTotals.ok + countTotals.bad}
+                                </Typography>
+                              </Grid>
                               <Typography variant="h2" color="primary">
-                                {countTotals.ok}
-                              </Typography>
-                              <Typography variant="h2">/</Typography>
-                              <Typography variant="h2" color="secondary">
-                                {countTotals.ok + countTotals.bad}
+                                {(
+                                  (countTotals.ok /
+                                    (countTotals.ok + countTotals.bad)) *
+                                  100
+                                ).toFixed(2)}{" "}
+                                %
                               </Typography>
                             </Grid>
-                            <Typography variant="h2" color="primary">
-                              {(
-                                (countTotals.ok /
-                                  (countTotals.ok + countTotals.bad)) *
-                                100
-                              ).toFixed(2)}{" "}
-                              %
-                            </Typography>
-                          </Grid>
-                        )}
-                        {countLong && (
-                          <Grid item container direction="row">
-                            <TrendingUpIcon
-                              color="primary"
-                              style={{ marginRight: 10 }}
-                            />
-                            <Typography variant="h3" color="primary">
-                              {countLong[0]}
-                            </Typography>{" "}
-                            <Typography variant="h3">/</Typography>{" "}
-                            <Typography variant="h3" color="secondary">
-                              {countLong[1] + " "}
-                            </Typography>{" "}
-                            <Typography variant="h3" color="primary">
-                              {" ("}
-                              {(
-                                (countLong[0] / (countLong[0] + countLong[1])) *
-                                100
-                              ).toFixed(2)}{" "}
-                              %)
-                            </Typography>
-                          </Grid>
-                        )}
-                        {countShort && (
-                          <Grid item container direction="row">
-                            <TrendingDownIcon
-                              color="secondary"
-                              style={{ marginRight: 10 }}
-                            />
-                            <Typography variant="h3" color="primary">
-                              {countShort[0]}
-                            </Typography>{" "}
-                            <Typography variant="h3">/</Typography>{" "}
-                            <Typography variant="h3" color="secondary">
-                              {countShort[1] + " "}
-                            </Typography>
-                            <Typography variant="h3" color="primary">
-                              {" ("}
-                              {(
-                                (countShort[0] /
-                                  (countShort[0] + countShort[1])) *
-                                100
-                              ).toFixed(2)}{" "}
-                              %)
-                            </Typography>
-                          </Grid>
-                        )}
+                          )}
+                          {countLong && (
+                            <Grid item container direction="row">
+                              <TrendingUpIcon
+                                color="primary"
+                                style={{ marginRight: 10 }}
+                              />
+                              <Typography variant="h3" color="primary">
+                                {countLong[0]}
+                              </Typography>{" "}
+                              <Typography variant="h3">/</Typography>{" "}
+                              <Typography variant="h3" color="secondary">
+                                {countLong[1] + " "}
+                              </Typography>{" "}
+                              <Typography variant="h3" color="primary">
+                                {" ("}
+                                {(
+                                  (countLong[0] /
+                                    (countLong[0] + countLong[1])) *
+                                  100
+                                ).toFixed(2)}{" "}
+                                %)
+                              </Typography>
+                            </Grid>
+                          )}
+                          {countShort && (
+                            <Grid item container direction="row">
+                              <TrendingDownIcon
+                                color="secondary"
+                                style={{ marginRight: 10 }}
+                              />
+                              <Typography variant="h3" color="primary">
+                                {countShort[0]}
+                              </Typography>{" "}
+                              <Typography variant="h3">/</Typography>{" "}
+                              <Typography variant="h3" color="secondary">
+                                {countShort[1] + " "}
+                              </Typography>
+                              <Typography variant="h3" color="primary">
+                                {" ("}
+                                {(
+                                  (countShort[0] /
+                                    (countShort[0] + countShort[1])) *
+                                  100
+                                ).toFixed(2)}{" "}
+                                %)
+                              </Typography>
+                            </Grid>
+                          )}
+                        </Grid>
                       </Grid>
-                    </Grid>
-                  )}
+                    )}
+                  </Grid>
                 </Grid>
-              </Grid>
-              <Divider style={{ marginTop: "12px" }} />
-              <Grid item className={classes.favList} xs={12}>
-                {incompleteLS && <LSTableActiveMini data={incompleteLS} />}
-              </Grid>
-            </>
-          )}
-        </Grid>
-      </Card>
+                <Divider style={{ marginTop: "12px" }} />
+                <Grid item className={classes.favList} xs={12}>
+                  {incompleteLS && <LSTableActiveMini data={incompleteLS} />}
+                </Grid>
+              </>
+            )}
+          </Grid>
+        </Card>
+        {modalOpen && this.renderModal(modalData)}
+      </>
     );
   }
 

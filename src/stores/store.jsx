@@ -108,6 +108,8 @@ import {
   DB_NEW_AVATAR_RETURNED,
   DB_GET_LEADERBOARD,
   DB_GET_LEADERBOARD_RETURNED,
+  DB_GET_PORTFOLIO,
+  DB_GET_PORTFOLIO_RETURNED,
 } from "../constants";
 
 import {
@@ -352,6 +354,9 @@ class Store {
             break;
           case DB_GET_LEADERBOARD:
             this.db_getLeaderboard();
+            break;
+          case DB_GET_PORTFOLIO:
+            this.db_getPortfolio(payload);
             break;
           default: {
             break;
@@ -1822,6 +1827,20 @@ class Store {
       }
     } catch (err) {
       console.log(err);
+    }
+  };
+
+  //ROUTES FOR DB TOM WALLET PORTFOLIO stats
+  db_getPortfolio = async (payload) => {
+    //TODO NOT FINAL API ENDPOINT ROUTE
+    console.log(payload);
+    try {
+      let data = await axios.get(
+        `https://daetrik.site/api/portfolio/wallet?address=${payload.wallet}&update=true`
+      );
+      emitter.emit(DB_GET_PORTFOLIO_RETURNED, await data.data);
+    } catch (err) {
+      console.log(err.message);
     }
   };
 }
