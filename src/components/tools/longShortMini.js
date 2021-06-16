@@ -58,6 +58,23 @@ const styles = (theme) => ({
     textAlign: "center",
     justifyContent: "center",
   },
+  titleBar: {
+    cursor: "pointer",
+    background: "rgba(121, 216, 162, 0.1)",
+    paddingBottom: "5",
+    maxWidth: "inherit",
+    position: "relative",
+    minWidth: "150%",
+    filter: "blur(1px)",
+    overflow: "hidden",
+    margin: "0",
+    minHeight: "50px",
+    zIndex: "1",
+    "&:hover": {
+      background: "rgba(121, 216, 162, 0.25)",
+    },
+    transition: "0.4321s",
+  },
 });
 
 class LongShortMini extends Component {
@@ -271,19 +288,8 @@ class LongShortMini extends Component {
                   }}
                 >
                   <div
-                    style={{
-                      background: darkMode
-                        ? `${colors.cgGreen}15`
-                        : `${colors.black}15`,
-                      paddingBottom: "5px",
-                      maxWidth: "inherit",
-                      position: "relative",
-                      minWidth: "150%",
-                      filter: "blur(1px)",
-                      overflow: "hidden",
-                      margin: "0px",
-                      minHeight: "50px",
-                    }}
+                    className={classes.titleBar}
+                    onClick={() => this.nav("/short/shortLong")}
                   ></div>
                   <div
                     style={{

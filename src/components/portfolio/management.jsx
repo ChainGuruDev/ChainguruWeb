@@ -166,7 +166,7 @@ class PortfolioManagement extends Component {
   tool2toolID = (tool) => {
     let toolID = 0;
     switch (tool) {
-      case "portfolio":
+      case "dashboard":
         toolID = 0;
         break;
       case "transactions":
@@ -181,7 +181,7 @@ class PortfolioManagement extends Component {
       case "portfolioRadar":
         toolID = 4;
         break;
-      case "dashboard":
+      case "wallets":
         toolID = 5;
         break;
       default:
@@ -194,7 +194,7 @@ class PortfolioManagement extends Component {
     let tool;
     switch (toolID) {
       case 0:
-        tool = "portfolio";
+        tool = "dashboard";
         break;
       case 1:
         tool = "transactions";
@@ -209,7 +209,7 @@ class PortfolioManagement extends Component {
         tool = "portfolioRadar";
         break;
       case 5:
-        tool = "dashboard";
+        tool = "wallets";
         break;
       default:
         tool = "";
@@ -278,8 +278,8 @@ class PortfolioManagement extends Component {
             centered
           >
             <PortfolioTab
-              label="Portfolio"
-              icon={<BusinessCenterRoundedIcon />}
+              label="Dashboard"
+              icon={<DashboardIcon />}
               {...a11yProps(0)}
             />
             <PortfolioTab
@@ -303,14 +303,14 @@ class PortfolioManagement extends Component {
               {...a11yProps(4)}
             />
             <PortfolioTab
-              label="Dashboard"
-              icon={<DashboardIcon />}
+              label="Wallets"
+              icon={<BusinessCenterRoundedIcon />}
               {...a11yProps(5)}
             />
           </PortfolioTabs>
         </AppBar>
         <TabPanel value={valueTab} index={0}>
-          <Portfolio />
+          <Dashboard />
         </TabPanel>
         <TabPanel value={valueTab} index={1}>
           <Transactions />
@@ -325,7 +325,7 @@ class PortfolioManagement extends Component {
           <PortfolioRadar />
         </TabPanel>
         <TabPanel value={valueTab} index={5}>
-          <Dashboard />
+          <Portfolio />
         </TabPanel>
       </Grid>
     );

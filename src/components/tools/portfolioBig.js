@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
+import { formatMoney, formatMoneyMCAP } from "../helpers";
 
 import {
   Card,
@@ -74,6 +75,7 @@ class PortfolioBig extends Component {
   }
 
   componentDidMount() {
+    this.setState({ loading: false });
     emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
     emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
@@ -110,7 +112,7 @@ class PortfolioBig extends Component {
       wallets.push(item.wallet);
     });
     console.log(wallets[1]);
-    if (this.state.loading) {
+    if (!this.state.loading) {
       dispatcher.dispatch({
         type: DB_GET_PORTFOLIO,
         wallet: wallets[1],
@@ -164,17 +166,25 @@ class PortfolioBig extends Component {
           </TableCell>
           <TableCell align="left">
             <Typography variant={"body1"}>{row.balance}</Typography>
-            <Typography variant={"subtitle2"}>{row.contract_ticker}</Typography>
+            <Typography style={{ opacity: 0.6 }} variant={"subtitle2"}>
+              {row.contract_ticker}
+            </Typography>
           </TableCell>
           <TableCell align="left">
-            <Typography variant={"body1"}>{row.quote_rate}</Typography>
+            <Typography variant={"body1"}>
+              {formatMoney(row.quote_rate)}
+            </Typography>
           </TableCell>
           <TableCell align="left">
-            <Typography variant={"body1"}>{row.quote}</Typography>
+            <Typography variant={"body1"}>{formatMoney(row.quote)}</Typography>
           </TableCell>
           <TableCell align="left">
-            <Typography variant={"body1"}>{row.profit_percent}%</Typography>
-            <Typography variant={"body1"}>({row.profit_value})</Typography>
+            <Typography variant={"body1"}>
+              {row.profit_percent.toFixed(1)} %
+            </Typography>
+            <Typography variant={"body1"}>
+              ({formatMoney(row.profit_value)})
+            </Typography>
           </TableCell>
         </TableRow>
       ));

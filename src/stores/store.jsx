@@ -110,6 +110,8 @@ import {
   DB_GET_LEADERBOARD_RETURNED,
   DB_GET_PORTFOLIO,
   DB_GET_PORTFOLIO_RETURNED,
+  DB_UPDATE_PORTFOLIO,
+  DB_UPDATE_PORTFOLIO_RETURNED,
 } from "../constants";
 
 import {
@@ -357,6 +359,9 @@ class Store {
             break;
           case DB_GET_PORTFOLIO:
             this.db_getPortfolio(payload);
+            break;
+          case DB_UPDATE_PORTFOLIO:
+            this.db_updatePortfolio(payload);
             break;
           default: {
             break;
@@ -1836,9 +1841,21 @@ class Store {
     console.log(payload);
     try {
       let data = await axios.get(
-        `https://daetrik.site/api/portfolio/wallet?address=${payload.wallet}&update=true`
+        `https://daetrik.site/api/portfolio/wallet?address=${payload.wallet}&update=false`
       );
       emitter.emit(DB_GET_PORTFOLIO_RETURNED, await data.data);
+    } catch (err) {
+      console.log(err.message);
+    }
+  };
+  db_updatePortfolio = async (payload) => {
+    //TODO NOT FINAL API ENDPOINT ROUTE
+    console.log(payload);
+    try {
+      let data = await axios.get(
+        `https://daetrik.site/api/portfolio/wallet?address=${payload.wallet}&update=true`
+      );
+      emitter.emit(DB_UPDATE_PORTFOLIO_RETURNED, await data.data);
     } catch (err) {
       console.log(err.message);
     }
