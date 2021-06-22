@@ -1843,6 +1843,10 @@ class Store {
       let data = await axios.get(
         `https://daetrik.site/api/portfolio/wallet?address=${payload.wallet}&update=false`
       );
+      console.log(data.data);
+      if (data.data === "") {
+        this.db_updatePortfolio(payload);
+      }
       emitter.emit(DB_GET_PORTFOLIO_RETURNED, await data.data);
     } catch (err) {
       console.log(err.message);
@@ -1855,6 +1859,7 @@ class Store {
       let data = await axios.get(
         `https://daetrik.site/api/portfolio/wallet?address=${payload.wallet}&update=true`
       );
+      console.log(await data.data);
       emitter.emit(DB_UPDATE_PORTFOLIO_RETURNED, await data.data);
     } catch (err) {
       console.log(err.message);

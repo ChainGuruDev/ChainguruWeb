@@ -171,6 +171,7 @@ class LSTableHistory extends Component {
   };
 
   geckoDataReturned = (data) => {
+    console.log(data);
     if (data[1] === "complete") {
       // console.log("data returned to complete list");
       // Create array with items to sort later in table
@@ -185,6 +186,9 @@ class LSTableHistory extends Component {
           })
           .indexOf(item.tokenID);
 
+        if (index === -1) {
+          return;
+        }
         var d = new Date(item.voteEnding);
         let dformat =
           [d.getMonth() + 1, d.getDate(), d.getFullYear()].join("/") +

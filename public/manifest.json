@@ -1,10 +1,10 @@
 {
-  "short_name": "CG",
+  "short_name": "ChainGuru",
   "name": "Chain Guru",
   "start_url": ".",
   "icons": [
     {
-      "src": "favicon.ico",
+      "src": "./favicon.ico",
       "sizes": "512x512 192x192 64x64 32x32 24x24 16x16",
       "type": "image/x-icon"
     }
