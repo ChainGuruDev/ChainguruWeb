@@ -3,6 +3,8 @@ import { withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
 import { formatMoney, formatMoneyMCAP } from "../helpers";
+import WalletNicknameModal from "../components/walletNicknameModal.js";
+
 import ArrowDropDownRoundedIcon from "@material-ui/icons/ArrowDropDownRounded";
 import ArrowDropUpRoundedIcon from "@material-ui/icons/ArrowDropUpRounded";
 import RefreshRoundedIcon from "@material-ui/icons/RefreshRounded";
@@ -42,6 +44,8 @@ import {
   DB_GET_PORTFOLIO_RETURNED,
   DB_UPDATE_PORTFOLIO,
   DB_UPDATE_PORTFOLIO_RETURNED,
+  DB_SET_USER_WALLET_NICKNAME_RETURNED,
+  DB_REMOVE_USER_WALLET_NICKNAME_RETURNED,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -108,6 +112,7 @@ class PortfolioBig extends Component {
       hideLowBalanceCoins: true,
       userWallets: [],
       walletNicknames: [],
+      walletNicknameModal: false,
     };
 
     // IF USER IS CONNECTED GET THE PORTFOLIO DATA
@@ -127,6 +132,11 @@ class PortfolioBig extends Component {
     emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
     emitter.on(DB_GET_PORTFOLIO_RETURNED, this.dbGetPortfolioReturned);
     emitter.on(DB_UPDATE_PORTFOLIO_RETURNED, this.dbGetPortfolioReturned);
+    emitter.on(DB_SET_USER_WALLET_NICKNAME_RETURNED, this.setNicknameReturned);
+    emitter.on(
+      DB_REMOVE_USER_WALLET_NICKNAME_RETURNED,
+      this.setNicknameReturned
+    );
   }
 
   componentWillUnmount() {
@@ -144,7 +154,14 @@ class PortfolioBig extends Component {
       DB_UPDATE_PORTFOLIO_RETURNED,
       this.dbGetPortfolioReturned
     );
-
+    emitter.removeListener(
+      DB_SET_USER_WALLET_NICKNAME_RETURNED,
+      this.setNicknameReturned
+    );
+    emitter.removeListener(
+      DB_REMOVE_USER_WALLET_NICKNAME_RETURNED,
+      this.setNicknameReturned
+    );
     this._isMounted = false;
   }
 
@@ -159,7 +176,6 @@ class PortfolioBig extends Component {
   };
 
   dbUserDataReturned = (data) => {
-    console.log(data.walletNicknames);
     let wallets = [];
     data.wallets.forEach((item, i) => {
       wallets.push(item.wallet);
@@ -172,8 +188,16 @@ class PortfolioBig extends Component {
     }
     this.setState({
       loading: true,
+      selectedWallet: wallets[0],
       userWallets: data.wallets,
       walletNicknames: data.walletNicknames,
+    });
+  };
+
+  setNicknameReturned = (data) => {
+    console.log(data);
+    this.setState({
+      walletNicknames: data,
     });
   };
 
@@ -309,7 +333,7 @@ class PortfolioBig extends Component {
       type: DB_GET_PORTFOLIO,
       wallet: wallet,
     });
-    this.setState({ dbDataLoaded: false });
+    this.setState({ selectedWallet: wallet, dbDataLoaded: false });
   };
 
   updateWallet = (wallet) => {
@@ -321,12 +345,23 @@ class PortfolioBig extends Component {
   };
 
   renameWallet = (wallet) => {
-    console.log(wallet);
+    const data = this.state.walletNicknames.find(
+      (ele) => ele.wallet === wallet
+    );
+    this.setState({
+      walletNicknameModal: true,
+      selectedWallet: wallet,
+      oldNickname: data ? data.nickname : "",
+      dbDataLoaded: false,
+    });
+    dispatcher.dispatch({
+      type: DB_GET_PORTFOLIO,
+      wallet: wallet,
+    });
   };
 
   userWalletList = (wallets) => {
     const { walletNicknames } = this.state;
-    console.log(wallets);
     const { classes, t } = this.props;
     const walletIndex = wallets.findIndex(
       (wallets) => wallets.wallet === wallets.wallet
@@ -419,124 +454,143 @@ class PortfolioBig extends Component {
       sortBy,
       sortOrder,
       userWallets,
+      walletNicknameModal,
     } = this.state;
 
     return (
-      <Card className={classes.favCard} elevation={3}>
-        <Grid
-          container
-          direction="row"
-          justify="flex-start"
-          alignItems="stretch"
-          spacing={3}
-        >
-          {!dbDataLoaded && (
-            <Grid item xs={12} style={{ textAlign: "center" }}>
-              <Typography variant={"h4"}>
-                Loading your wallet data...
-              </Typography>
-              <LinearProgress style={{ marginTop: "10px" }} />
+      <>
+        <Card className={classes.favCard} elevation={3}>
+          <Grid
+            container
+            direction="row"
+            justify="flex-start"
+            alignItems="stretch"
+            spacing={3}
+          >
+            <Grid item xs={6}>
+              <div className={classes.walletGrid}>
+                <Typography variant={"h4"}>Wallets</Typography>
+                <List
+                  className={classes.walletList}
+                  component="nav"
+                  aria-label="user wallet list"
+                >
+                  {this.userWalletList(userWallets)}
+                </List>
+              </div>
             </Grid>
-          )}
-          {dbDataLoaded && (
-            <>
-              <Grid item xs={6}>
-                <div className={classes.walletGrid}>
-                  <Typography variant={"h4"}>Wallets</Typography>
-                  <List
-                    className={classes.walletList}
-                    component="nav"
-                    aria-label="user wallet list"
-                  >
-                    {this.userWalletList(userWallets)}
-                  </List>
-                </div>
+            <Grid item xs={6}>
+              <div className={classes.graphGrid}>
+                <Typography variant={"h4"}>Section in Development</Typography>
+              </div>
+            </Grid>
+            {!dbDataLoaded && (
+              <Grid item xs={12} style={{ textAlign: "center" }}>
+                <Typography variant={"h4"}>
+                  Loading your wallet data...
+                </Typography>
+                <LinearProgress style={{ marginTop: "10px" }} />
               </Grid>
-              <Grid item xs={6}>
-                <div className={classes.graphGrid}>
-                  <Typography variant={"h4"}>Section in Development</Typography>
-                </div>
-              </Grid>
-              <Grid item xs={12}>
-                <Typography variant={"h4"}>Assets</Typography>
-                <Divider />
-                <TableContainer size="small">
-                  <Table className={classes.table} aria-label="assetList">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell
-                          style={{ width: "30px", height: "30px" }}
-                        ></TableCell>
-                        <TableCell align="left" padding="none">
-                          <TableSortLabel
-                            active={sortBy === "contract_name"}
-                            direction={sortOrder}
-                            onClick={() => this.sortBy("contract_name")}
-                          >
-                            Name
-                          </TableSortLabel>
-                        </TableCell>
-                        <TableCell align="right">
-                          <TableSortLabel
-                            active={sortBy === "balance"}
-                            direction={sortOrder}
-                            onClick={() => this.sortBy("balance")}
-                          >
-                            Balance
-                          </TableSortLabel>
-                        </TableCell>
-                        <TableCell
-                          align="right"
-                          onClick={() => this.sortBy("quote_rate")}
-                        >
-                          <TableSortLabel
-                            active={sortBy === "quote_rate"}
-                            direction={sortOrder}
+            )}
+            {dbDataLoaded && (
+              <>
+                <Grid item xs={12}>
+                  <Typography variant={"h4"}>Assets</Typography>
+                  <Divider />
+                  <TableContainer size="small">
+                    <Table className={classes.table} aria-label="assetList">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell
+                            style={{ width: "30px", height: "30px" }}
+                          ></TableCell>
+                          <TableCell align="left" padding="none">
+                            <TableSortLabel
+                              active={sortBy === "contract_name"}
+                              direction={sortOrder}
+                              onClick={() => this.sortBy("contract_name")}
+                            >
+                              Name
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell align="right">
+                            <TableSortLabel
+                              active={sortBy === "balance"}
+                              direction={sortOrder}
+                              onClick={() => this.sortBy("balance")}
+                            >
+                              Balance
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell
+                            align="right"
                             onClick={() => this.sortBy("quote_rate")}
                           >
-                            Price
-                          </TableSortLabel>
-                        </TableCell>
-                        <TableCell
-                          align="right"
-                          onClick={() => this.sortBy("quote")}
-                        >
-                          <TableSortLabel
-                            active={sortBy === "quote"}
-                            direction={sortOrder}
+                            <TableSortLabel
+                              active={sortBy === "quote_rate"}
+                              direction={sortOrder}
+                              onClick={() => this.sortBy("quote_rate")}
+                            >
+                              Price
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell
+                            align="right"
                             onClick={() => this.sortBy("quote")}
                           >
-                            Value
-                          </TableSortLabel>
-                        </TableCell>
-                        <TableCell
-                          align="right"
-                          onClick={() => this.sortBy("profit_percent")}
-                        >
-                          <TableSortLabel
-                            active={sortBy === "profit_percent"}
-                            direction={sortOrder}
+                            <TableSortLabel
+                              active={sortBy === "quote"}
+                              direction={sortOrder}
+                              onClick={() => this.sortBy("quote")}
+                            >
+                              Value
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell
+                            align="right"
                             onClick={() => this.sortBy("profit_percent")}
                           >
-                            Profit %
-                          </TableSortLabel>
-                        </TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>{this.sortedList(portfolioData)}</TableBody>
-                  </Table>
-                </TableContainer>
-              </Grid>
-            </>
-          )}
-        </Grid>
-      </Card>
+                            <TableSortLabel
+                              active={sortBy === "profit_percent"}
+                              direction={sortOrder}
+                              onClick={() => this.sortBy("profit_percent")}
+                            >
+                              Profit %
+                            </TableSortLabel>
+                          </TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>{this.sortedList(portfolioData)}</TableBody>
+                    </Table>
+                  </TableContainer>
+                </Grid>
+              </>
+            )}
+          </Grid>
+        </Card>
+        {walletNicknameModal && this.renderModal()}
+      </>
     );
   }
 
   nav = (screen) => {
     console.log(screen);
     this.props.history.push(screen);
+  };
+
+  closeModal = () => {
+    this.setState({ walletNicknameModal: false });
+  };
+
+  renderModal = (wallet, nickname) => {
+    return (
+      <WalletNicknameModal
+        closeModal={this.closeModal}
+        modalOpen={this.state.walletNicknameModal}
+        wallet={this.state.selectedWallet}
+        nickname={this.state.oldNickname}
+      />
+    );
   };
 }
 

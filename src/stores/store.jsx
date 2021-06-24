@@ -112,6 +112,10 @@ import {
   DB_GET_PORTFOLIO_RETURNED,
   DB_UPDATE_PORTFOLIO,
   DB_UPDATE_PORTFOLIO_RETURNED,
+  DB_SET_USER_WALLET_NICKNAME,
+  DB_SET_USER_WALLET_NICKNAME_RETURNED,
+  DB_REMOVE_USER_WALLET_NICKNAME,
+  DB_REMOVE_USER_WALLET_NICKNAME_RETURNED,
 } from "../constants";
 
 import {
@@ -362,6 +366,12 @@ class Store {
             break;
           case DB_UPDATE_PORTFOLIO:
             this.db_updatePortfolio(payload);
+            break;
+          case DB_SET_USER_WALLET_NICKNAME:
+            this.db_setUserWalletNickname(payload);
+            break;
+          case DB_REMOVE_USER_WALLET_NICKNAME:
+            this.db_delUserWalletNickname(payload);
             break;
           default: {
             break;
@@ -1863,6 +1873,41 @@ class Store {
       emitter.emit(DB_UPDATE_PORTFOLIO_RETURNED, await data.data);
     } catch (err) {
       console.log(err.message);
+    }
+  };
+  db_setUserWalletNickname = async (payload) => {
+    const account = store.getStore("account");
+
+    try {
+      let data = await axios.put(
+        `https://chainguru-db.herokuapp.com/users/${account.address}/walletnick`,
+        {
+          wallet: payload.wallet,
+          nick: payload.nick,
+        }
+      );
+      emitter.emit(DB_SET_USER_WALLET_NICKNAME_RETURNED, await data.data);
+    } catch (err) {
+      console.log(err.message);
+      emitter.emit(ERROR, err.message);
+    }
+  };
+
+  db_delUserWalletNickname = async (payload) => {
+    const account = store.getStore("account");
+    console.log(payload);
+    try {
+      let data = await axios.put(
+        `https://chainguru-db.herokuapp.com/users/${account.address}/walletnickRemove`,
+        {
+          wallet: payload.wallet,
+        }
+      );
+      console.log(await data.data);
+      emitter.emit(DB_REMOVE_USER_WALLET_NICKNAME_RETURNED, await data.data);
+    } catch (err) {
+      console.log(err.message);
+      emitter.emit(ERROR, err.message);
     }
   };
 }
