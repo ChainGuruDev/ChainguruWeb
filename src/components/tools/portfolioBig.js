@@ -281,6 +281,28 @@ class PortfolioBig extends Component {
             </Typography>
           </TableCell>
           <TableCell align="right">
+            {row.avg_buy != 0 && (
+              <>
+                <Typography variant={"body1"}>
+                  ${formatMoney(row.avg_buy)}
+                </Typography>
+                <Typography
+                  variant={"body1"}
+                  color={
+                    ((row.quote_rate - row.avg_buy) / row.avg_buy) * 100 > 0
+                      ? "primary"
+                      : "secondary"
+                  }
+                >
+                  {formatMoney(
+                    ((row.quote_rate - row.avg_buy) / row.avg_buy) * 100
+                  )}
+                  %
+                </Typography>
+              </>
+            )}
+          </TableCell>
+          <TableCell align="right">
             <Typography variant={"body1"}>{formatMoney(row.quote)}</Typography>
           </TableCell>
           <TableCell align="right">
@@ -532,6 +554,18 @@ class PortfolioBig extends Component {
                               onClick={() => this.sortBy("quote_rate")}
                             >
                               Price
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell
+                            align="right"
+                            onClick={() => this.sortBy("avg_buy")}
+                          >
+                            <TableSortLabel
+                              active={sortBy === "avg_buy"}
+                              direction={sortOrder}
+                              onClick={() => this.sortBy("avg_buy")}
+                            >
+                              Avg. Buy Price
                             </TableSortLabel>
                           </TableCell>
                           <TableCell
