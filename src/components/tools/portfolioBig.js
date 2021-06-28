@@ -35,6 +35,8 @@ import {
   IconButton,
 } from "@material-ui/core";
 
+import Skeleton from "@material-ui/lab/Skeleton";
+
 import {
   ERROR,
   CONNECTION_CONNECTED,
@@ -204,10 +206,20 @@ class PortfolioBig extends Component {
   dbGetPortfolioReturned = (data) => {
     console.log(data);
     if (data) {
+      let walletData = {};
+      const walletProfitValue = data[0].profit_value;
+      let assets = data[0].assets;
+      let walletBalance = 0;
+      for (var i = 0; i < assets.length; i++) {
+        walletBalance += assets[i].quote;
+        // console.log(sortedRows[i].quote);
+      }
       this.setState({
         loading: false,
         dbDataLoaded: true,
         portfolioData: data,
+        portfolioProfit: walletProfitValue,
+        portfolioBalance: walletBalance,
       });
     }
   };
@@ -240,7 +252,7 @@ class PortfolioBig extends Component {
 
     if (hideLowBalanceCoins) {
       portfolioData[0].assets.forEach((item, i) => {
-        if (item.balance > 0.00001) {
+        if (item.balance > 0.000001) {
           filteredData.push(portfolioData[0].assets[i]);
         }
       });
@@ -489,33 +501,47 @@ class PortfolioBig extends Component {
             alignItems="stretch"
             spacing={3}
           >
-            <Grid item xs={6}>
-              <div className={classes.walletGrid}>
-                <Typography variant={"h4"}>Wallets</Typography>
-                <List
-                  className={classes.walletList}
-                  component="nav"
-                  aria-label="user wallet list"
-                >
-                  {this.userWalletList(userWallets)}
-                </List>
-              </div>
-            </Grid>
-            <Grid item xs={6}>
-              <div className={classes.graphGrid}>
-                <Typography variant={"h4"}>Section in Development</Typography>
-              </div>
-            </Grid>
             {!dbDataLoaded && (
               <Grid item xs={12} style={{ textAlign: "center" }}>
-                <Typography variant={"h4"}>
-                  Loading your wallet data...
+                <Typography inline variant={"h4"}>
+                  Please give us a moment
+                </Typography>
+                <Typography inline variant={"h4"}>
+                  while we prepare your portfolio data...
+                </Typography>
+                <Typography inline style={{ marginTop: "10px" }} variant={"h4"}>
+                  (The first time on a wallet with lots of transactions
+                </Typography>
+                <Typography inline variant={"h4"}>
+                  might take a couple of minutes to complete)
                 </Typography>
                 <LinearProgress style={{ marginTop: "10px" }} />
               </Grid>
             )}
             {dbDataLoaded && (
               <>
+                <Grid item xs={6}>
+                  <div className={classes.walletGrid}>
+                    <Typography variant={"h4"}>Wallets</Typography>
+                    <List
+                      className={classes.walletList}
+                      component="nav"
+                      aria-label="user wallet list"
+                    >
+                      {this.userWalletList(userWallets)}
+                    </List>
+                  </div>
+                </Grid>
+                <Grid item xs={6}>
+                  <div className={classes.graphGrid}>
+                    <Typography variant={"h4"} inline>
+                      Balance: {this.state.portfolioBalance}
+                    </Typography>
+                    <Typography variant={"h4"} inline>
+                      Profit/Loss: {this.state.portfolioProfit}
+                    </Typography>
+                  </div>
+                </Grid>
                 <Grid item xs={12}>
                   <Typography variant={"h4"}>Assets</Typography>
                   <Divider />
