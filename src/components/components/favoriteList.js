@@ -528,7 +528,6 @@ class FavoriteList extends Component {
     const { sortData, page, rowsPerPage, formatedRows } = this.state;
 
     const handleChangePage = (newPage) => {
-      console.log(newPage);
       this.setState({ page: newPage });
     };
 
