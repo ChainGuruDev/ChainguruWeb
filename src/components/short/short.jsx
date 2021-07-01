@@ -5,6 +5,7 @@ import { withStyles } from "@material-ui/core/styles";
 import { Typography, AppBar, Tabs, Tab, Box, Grid } from "@material-ui/core";
 import { withTranslation } from "react-i18next";
 
+import LensIcon from "@material-ui/icons/Lens";
 import FlashOnIcon from "@material-ui/icons/FlashOn";
 import CompareArrowsIcon from "@material-ui/icons/CompareArrows";
 import TrendingUpIcon from "@material-ui/icons/TrendingUp";
@@ -13,6 +14,7 @@ import CryptoDetective from "../tools/cryptoDetective";
 import CryptoCompare from "../tools/cryptoCompare";
 import Favorites from "../tools/favorites";
 import LongShort from "../tools/longShort";
+import CoinList from "../tools/coins";
 
 import {
   PING_COINGECKO,
@@ -149,6 +151,9 @@ class Short extends Component {
       case "shortLong":
         toolID = 3;
         break;
+      case "coins":
+        toolID = 4;
+        break;
       default:
         break;
     }
@@ -169,6 +174,9 @@ class Short extends Component {
         break;
       case 3:
         tool = "shortLong";
+        break;
+      case 4:
+        tool = "coins";
         break;
       default:
         tool = "";
@@ -278,6 +286,7 @@ class Short extends Component {
               icon={<TrendingUpIcon />}
               {...a11yProps(3)}
             />
+            <Tab label="Coins" icon={<LensIcon />} {...a11yProps(4)} />
           </Tabs>
         </AppBar>
         <TabPanel value={valueTab} index={0}>
@@ -292,6 +301,9 @@ class Short extends Component {
         </TabPanel>
         <TabPanel value={valueTab} index={3}>
           <LongShort />
+        </TabPanel>
+        <TabPanel value={valueTab} index={4}>
+          <CoinList />
         </TabPanel>
       </Grid>
     );

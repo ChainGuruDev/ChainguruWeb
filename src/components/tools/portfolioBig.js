@@ -115,6 +115,7 @@ class PortfolioBig extends Component {
       userWallets: [],
       walletNicknames: [],
       walletNicknameModal: false,
+      error: false,
     };
 
     // IF USER IS CONNECTED GET THE PORTFOLIO DATA
@@ -129,6 +130,7 @@ class PortfolioBig extends Component {
   componentDidMount() {
     this._isMounted = true;
     this.setState({ loading: false });
+    emitter.on(ERROR, this.error);
     emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
     emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
@@ -142,6 +144,7 @@ class PortfolioBig extends Component {
   }
 
   componentWillUnmount() {
+    emitter.removeListener(ERROR, this.error);
     emitter.removeListener(CONNECTION_CONNECTED, this.connectionConnected);
     emitter.removeListener(
       CONNECTION_DISCONNECTED,
@@ -215,6 +218,7 @@ class PortfolioBig extends Component {
         // console.log(sortedRows[i].quote);
       }
       this.setState({
+        error: false,
         loading: false,
         dbDataLoaded: true,
         portfolioData: data,
@@ -222,6 +226,10 @@ class PortfolioBig extends Component {
         portfolioBalance: walletBalance,
       });
     }
+  };
+
+  error = () => {
+    this.setState({ error: true });
   };
 
   //END EMITTER EVENT FUNCTIONS
@@ -489,6 +497,7 @@ class PortfolioBig extends Component {
       sortOrder,
       userWallets,
       walletNicknameModal,
+      error,
     } = this.state;
 
     return (
@@ -501,7 +510,17 @@ class PortfolioBig extends Component {
             alignItems="stretch"
             spacing={3}
           >
-            {!dbDataLoaded && (
+            {error && (
+              <Grid item xs={12} style={{ textAlign: "center" }}>
+                <Typography inline variant={"h4"}>
+                  Portfolio dashboard in development
+                </Typography>
+                <Typography inline variant={"h4"}>
+                  Please try again later. Sorry!
+                </Typography>
+              </Grid>
+            )}
+            {!error && !dbDataLoaded && (
               <Grid item xs={12} style={{ textAlign: "center" }}>
                 <Typography inline variant={"h4"}>
                   Please give us a moment

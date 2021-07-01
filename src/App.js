@@ -120,11 +120,11 @@ class App extends Component {
     localStorage.setItem("dark", JSON.stringify(state));
     const mainPrimaryColor = state ? colors.cgGreen : colors.cgGreen;
     const mainSecondaryColor = state ? colors.cgOrange : colors.cgOrange;
-    const Roboto = {
-      fontFamily: "Roboto",
-      fontStyle: "normal",
-      fontWeight: 400,
-    };
+    // const Roboto = {
+    //   fontFamily: "Roboto",
+    //   fontStyle: "normal",
+    //   fontWeight: 400,
+    // };
     const Acumin = {
       fontFamily: "Acumin Variable Concept Default ExtraCondensed UltraBlack",
       fontStyle: "normal",

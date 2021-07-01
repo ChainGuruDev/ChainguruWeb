@@ -2,9 +2,41 @@ import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { colors } from "../../theme";
+import { formatMoney, formatMoneyMCAP } from "../helpers";
+import SparklineChart from "../components/SparklineChart.js";
 
 //IMPORT MaterialUI
-import { Card, Grid, LinearProgress } from "@material-ui/core";
+import {
+  Card,
+  Grid,
+  LinearProgress,
+  IconButton,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableContainer,
+  TableFooter,
+  TablePagination,
+  TableSortLabel,
+  Typography,
+  TableBody,
+} from "@material-ui/core";
+
+import FirstPageIcon from "@material-ui/icons/FirstPage";
+import KeyboardArrowLeft from "@material-ui/icons/KeyboardArrowLeft";
+import KeyboardArrowRight from "@material-ui/icons/KeyboardArrowRight";
+import {
+  ERROR,
+  GECKO_GET_COINS,
+  GECKO_GET_COINS_RETURNED,
+  SWITCH_VS_COIN_RETURNED,
+} from "../../constants";
+
+import Store from "../../stores";
+const emitter = Store.emitter;
+const dispatcher = Store.dispatcher;
+const store = Store.store;
 
 const styles = (theme) => ({
   root: {
@@ -25,39 +57,70 @@ const styles = (theme) => ({
     justifyContent: "center",
     background: "rgba(255,255,255,0.05)",
   },
+  tokenLogo: {
+    maxHeight: 30,
+  },
+  footer: {
+    flexShrink: 0,
+    marginLeft: theme.spacing(2.5),
+  },
 });
 
-class Coins extends Component {
+class CoinList extends Component {
   constructor() {
     super();
     this._isMounted = false;
 
     this.state = {
-      loading: false,
       geckoDataLoaded: false,
-      sortBy: "marketcap",
+      sortBy: "market_cap",
       sortOrder: "desc",
-      page: 1,
-      rows: 10,
-      rowsPerPage: 10,
+      page: 0,
+      rows: 0,
+      perPage: 25,
     };
   }
 
   componentDidMount() {
+    const { page, rows, perPage, sortBy, sortOrder } = this.state;
+
     this._isMounted = true;
-    this.setState({ loading: false });
-    //GECKO GET ALL COINS
+    this.setState({ geckoDataLoaded: false });
+
     emitter.on(GECKO_GET_COINS_RETURNED, this.geckoCoinsReturned);
+    emitter.on(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
+
     this._isMounted &&
       dispatcher.dispatch({
         type: GECKO_GET_COINS,
+        page: page,
+        perPage: perPage,
+        sparkline: true,
+        priceChangePercentage: "1h,24h,7d",
+        order: sortBy + "_" + sortOrder,
       });
   }
 
   componentWillUnmount() {
     emitter.removeListener(GECKO_GET_COINS_RETURNED, this.geckoCoinsReturned);
+    emitter.removeListener(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
+
     this._isMounted = false;
   }
+
+  vsCoinReturned = () => {
+    const { page, rows, perPage, sortBy, sortOrder } = this.state;
+
+    this._isMounted &&
+      dispatcher.dispatch({
+        type: GECKO_GET_COINS,
+        page: page + 1,
+        perPage: perPage,
+        sparkline: true,
+        priceChangePercentage: "1h,24h,7d",
+        order: sortBy + "_" + sortOrder,
+      });
+  };
 
   createData = (
     image,
@@ -66,10 +129,8 @@ class Coins extends Component {
     symbol,
     current_price,
     price_change_percentage_1h_in_currency,
-    price_change_percentage_24h,
+    price_change_percentage_24h_in_currency,
     price_change_percentage_7d_in_currency,
-    price_change_percentage_30d_in_currency,
-    price_change_percentage_1y_in_currency,
     market_cap,
     market_cap_change_percentage_24h,
     sparkline_in_7d
@@ -81,10 +142,8 @@ class Coins extends Component {
       symbol,
       current_price,
       price_change_percentage_1h_in_currency,
-      price_change_percentage_24h,
+      price_change_percentage_24h_in_currency,
       price_change_percentage_7d_in_currency,
-      price_change_percentage_30d_in_currency,
-      price_change_percentage_1y_in_currency,
       market_cap,
       market_cap_change_percentage_24h,
       sparkline_in_7d,
@@ -103,10 +162,8 @@ class Coins extends Component {
         item.symbol,
         item.current_price,
         item.price_change_percentage_1h_in_currency,
-        item.price_change_percentage_24h,
+        item.price_change_percentage_24h_in_currency,
         item.price_change_percentage_7d_in_currency,
-        item.price_change_percentage_30d_in_currency,
-        item.price_change_percentage_1y_in_currency,
         item.market_cap,
         item.market_cap_change_percentage_24h,
         item.sparkline_in_7d.price
@@ -114,9 +171,9 @@ class Coins extends Component {
       geckoData.push(sortData);
     });
 
+    console.log(geckoData);
     if (data) {
       this.setState({
-        loading: false,
         geckoDataLoaded: true,
         geckoData: geckoData,
       });
@@ -124,50 +181,195 @@ class Coins extends Component {
   };
 
   sortBy(_sortBy) {
-    let _prevSortBy = this.state.sortBy;
+    const { page, rows, perPage, sortBy, sortOrder } = this.state;
+    let _prevSortBy = sortBy;
+    let _sortOrder;
     if (_prevSortBy === _sortBy) {
       if (this.state.sortOrder === "asc") {
+        _sortOrder = "desc";
         this._isMounted &&
-          this.setState({ sortBy: _sortBy, sortOrder: "desc" });
+          this.setState({
+            sortBy: _sortBy,
+            sortOrder: _sortOrder,
+            geckoDataLoaded: false,
+          });
       } else {
-        this._isMounted && this.setState({ sortBy: _sortBy, sortOrder: "asc" });
+        _sortOrder = "asc";
+        this._isMounted &&
+          this.setState({
+            sortBy: _sortBy,
+            sortOrder: _sortOrder,
+            geckoDataLoaded: false,
+          });
       }
     } else {
-      this._isMounted && this.setState({ sortBy: _sortBy, sortOrder: "desc" });
+      _sortOrder = "desc";
+      this._isMounted &&
+        this.setState({
+          sortBy: _sortBy,
+          sortOrder: _sortOrder,
+          geckoDataLoaded: false,
+        });
     }
+    this._isMounted &&
+      dispatcher.dispatch({
+        type: GECKO_GET_COINS,
+        page: page + 1,
+        perPage: perPage,
+        sparkline: true,
+        priceChangePercentage: "1h,24h,7d",
+        order: _sortBy + "_" + _sortOrder,
+      });
   }
+
+  sortedList = () => {
+    const { classes } = this.props;
+    const { sortBy, sortOrder, geckoData } = this.state;
+
+    if (geckoData.length > 0) {
+      return geckoData.map((row) => (
+        <TableRow
+          hover={true}
+          key={row.id}
+          style={{ cursor: "pointer" }}
+          onClick={() => this.detective(row.id)}
+        >
+          <TableCell>
+            <img className={classes.tokenLogo} alt="" src={row.image} />
+          </TableCell>
+          <TableCell padding="none" align="left">
+            <Typography inline variant={"h4"}>
+              {row.name}
+            </Typography>
+            <Typography inline style={{ opacity: 0.6 }} variant={"subtitle2"}>
+              {row.symbol}
+            </Typography>
+          </TableCell>
+          <TableCell align="right">
+            <Typography variant={"body1"}>
+              {formatMoney(row.current_price)}
+            </Typography>
+          </TableCell>
+          <TableCell align="right">
+            <Typography
+              variant={"body1"}
+              color={
+                row.price_change_percentage_1h_in_currency > 0
+                  ? "primary"
+                  : "secondary"
+              }
+            >
+              {formatMoney(row.price_change_percentage_1h_in_currency)} %
+            </Typography>
+          </TableCell>
+          <TableCell align="right">
+            <Typography
+              variant={"body1"}
+              color={
+                row.price_change_percentage_24h_in_currency > 0
+                  ? "primary"
+                  : "secondary"
+              }
+            >
+              {formatMoney(row.price_change_percentage_24h_in_currency)} %
+            </Typography>
+          </TableCell>
+          <TableCell align="right">
+            <Typography
+              variant={"body1"}
+              color={
+                row.price_change_percentage_7d_in_currency > 0
+                  ? "primary"
+                  : "secondary"
+              }
+            >
+              {formatMoney(row.price_change_percentage_7d_in_currency)} %
+            </Typography>
+          </TableCell>
+          <TableCell align="right">
+            <Typography variant={"body1"}>
+              {formatMoneyMCAP(row.market_cap)}
+            </Typography>
+            <Typography
+              inline
+              variant={"body1"}
+              color={
+                row.market_cap_change_percentage_24h > 0
+                  ? "primary"
+                  : "secondary"
+              }
+            >
+              {formatMoneyMCAP(row.market_cap_change_percentage_24h)} %
+            </Typography>
+          </TableCell>
+          <TableCell align="center">
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <SparklineChart id={row.symbol} data={row.sparkline_in_7d} />
+            </div>
+          </TableCell>
+        </TableRow>
+      ));
+    }
+  };
 
   TablePaginationActions = (props) => {
     const { classes } = this.props;
-    const { formatedRows, page, rowsPerPage } = this.state;
-    const count = formatedRows.length;
+    const { geckoData, page, perPage, sortBy, sortOrder } = this.state;
+    const count = geckoData.length;
 
     const handleFirstPageButtonClick = (event) => {
-      this.setState({ page: 1 });
+      this.setState({ page: 0, geckoDataLoaded: false });
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: GECKO_GET_COINS,
+          page: 0,
+          perPage: perPage,
+          sparkline: true,
+          priceChangePercentage: "1h,24h,7d",
+          order: sortBy + "_" + sortOrder,
+        });
     };
 
     const handleBackButtonClick = (event) => {
-      // console.log(event);
-      // console.log(count);
-      this.setState({ page: page - 1 });
+      const newPage = page - 1;
+      this.setState({ page: newPage, geckoDataLoaded: false });
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: GECKO_GET_COINS,
+          page: newPage + 1,
+          perPage: perPage,
+          sparkline: true,
+          priceChangePercentage: "1h,24h,7d",
+          order: sortBy + "_" + sortOrder,
+        });
     };
 
     const handleNextButtonClick = (event) => {
-      this.setState({ page: page + 1 });
+      const newPage = page + 1;
+      this.setState({ page: newPage, geckoDataLoaded: false });
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: GECKO_GET_COINS,
+          page: newPage + 1,
+          perPage: perPage,
+          sparkline: true,
+          priceChangePercentage: "1h,24h,7d",
+          order: sortBy + "_" + sortOrder,
+        });
     };
 
     return (
       <div className={classes.footer}>
         <IconButton
           onClick={handleFirstPageButtonClick}
-          disabled={page === 1}
+          disabled={page === 0}
           aria-label="first page"
         >
           {<FirstPageIcon />}
         </IconButton>
         <IconButton
           onClick={handleBackButtonClick}
-          disabled={page === 1}
+          disabled={page === 0}
           aria-label="previous page"
         >
           {<KeyboardArrowLeft />}
@@ -182,21 +384,31 @@ class Coins extends Component {
   render() {
     const { classes, t } = this.props;
     const {
-      loading,
       geckoDataLoaded,
       geckoData,
       sortBy,
       sortOrder,
       page,
-      rowsPerPage,
+      perPage,
     } = this.state;
 
-    const handleChangePage = (newPage) => {
-      this.setState({ page: newPage });
-    };
-
     const handleChangeRowsPerPage = (event) => {
-      this.setState({ rowsPerPage: parseInt(event.target.value, 10), page: 0 });
+      const newPerPage = parseInt(event.target.value, 10);
+      this.setState({
+        perPage: parseInt(event.target.value, 10),
+        page: 0,
+        geckoDataLoaded: false,
+      });
+
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: GECKO_GET_COINS,
+          page: 0,
+          perPage: newPerPage,
+          sparkline: true,
+          priceChangePercentage: "1h,24h,7d",
+          order: sortBy + "_" + sortOrder,
+        });
     };
 
     return (
@@ -214,9 +426,67 @@ class Coins extends Component {
                 <LinearProgress style={{ margin: "10px" }} />
               </Grid>
             )}
+            {geckoDataLoaded && (
+              <TableContainer size="small">
+                <Table className={classes.table} aria-label="coinList">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell
+                        style={{ width: "30px", height: "30px" }}
+                      ></TableCell>
+                      <TableCell align="left" padding="none">
+                        Name
+                      </TableCell>
+                      <TableCell align="right">Price</TableCell>
+                      <TableCell align="right">Price 1h</TableCell>
+                      <TableCell align="right">Price 24h</TableCell>
+                      <TableCell align="right">Price 7d</TableCell>
+                      <TableCell align="right">
+                        <TableSortLabel
+                          active={sortBy === "market_cap"}
+                          direction={sortOrder}
+                          onClick={() => this.sortBy("market_cap")}
+                        >
+                          Marketcap
+                        </TableSortLabel>
+                      </TableCell>
+                      <TableCell align="center">Chart (7d)</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>{this.sortedList(geckoData)}</TableBody>
+                  <TableFooter>
+                    <TableRow>
+                      <TablePagination
+                        rowsPerPageOptions={[10, 25, 50]}
+                        colSpan={3}
+                        count={geckoData.length}
+                        rowsPerPage={perPage}
+                        page={page}
+                        SelectProps={{
+                          inputProps: { "aria-label": "rows per page" },
+                          native: true,
+                        }}
+                        onChangeRowsPerPage={handleChangeRowsPerPage}
+                        ActionsComponent={this.TablePaginationActions}
+                      />
+                    </TableRow>
+                  </TableFooter>
+                </Table>
+              </TableContainer>
+            )}
           </Grid>
         </Card>
       </div>
     );
   }
+
+  nav = (screen) => {
+    console.log(screen);
+    this.props.history.push(screen);
+  };
+  detective = (id) => {
+    this.nav("/short/detective/" + id);
+  };
 }
+
+export default withRouter(withStyles(styles)(CoinList));

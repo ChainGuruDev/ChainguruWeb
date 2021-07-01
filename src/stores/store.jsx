@@ -116,6 +116,8 @@ import {
   DB_SET_USER_WALLET_NICKNAME_RETURNED,
   DB_REMOVE_USER_WALLET_NICKNAME,
   DB_REMOVE_USER_WALLET_NICKNAME_RETURNED,
+  GECKO_GET_COINS,
+  GECKO_GET_COINS_RETURNED,
 } from "../constants";
 
 import {
@@ -372,6 +374,9 @@ class Store {
             break;
           case DB_REMOVE_USER_WALLET_NICKNAME:
             this.db_delUserWalletNickname(payload);
+            break;
+          case GECKO_GET_COINS:
+            this.geckoGetCoins(payload);
             break;
           default: {
             break;
@@ -1811,7 +1816,6 @@ class Store {
   limitedGetChips = limiterGecko.wrap(this.db_getBluechips);
 
   coingeckoGetAllTimeChart = async (payload) => {
-    emitter.emit(COINGECKO_ALLTIME_CHART_RETURNED, payload.payload);
     let chartData = [];
     try {
       chartData = await CoinGeckoClient.coins.fetchMarketChart(
@@ -1845,6 +1849,24 @@ class Store {
     }
   };
 
+  geckoGetCoins = async (payload) => {
+    let data;
+    let vsCoin = store.getStore("vsCoin");
+    try {
+      let data = await CoinGeckoClient.coins.markets({
+        vs_currency: vsCoin,
+        page: payload.page,
+        per_page: payload.perPage,
+        sparkline: payload.sparkline,
+        price_change_percentage: payload.priceChangePercentage,
+        order: payload.order,
+      });
+      emitter.emit(GECKO_GET_COINS_RETURNED, await data.data);
+    } catch (err) {
+      console.log(err.message);
+    }
+  };
+
   //ROUTES FOR DB TOM WALLET PORTFOLIO stats
   db_getPortfolio = async (payload) => {
     //TODO NOT FINAL API ENDPOINT ROUTE
@@ -1859,6 +1881,8 @@ class Store {
       }
       emitter.emit(DB_GET_PORTFOLIO_RETURNED, await data.data);
     } catch (err) {
+      emitter.emit(ERROR, await err.message);
+
       console.log(err.message);
     }
   };

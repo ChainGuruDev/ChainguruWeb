@@ -8,7 +8,7 @@ import { colors } from "../../theme";
 import { ReactComponent as FastIcon } from "../../assets/fast.svg";
 import { ReactComponent as MediumIcon } from "../../assets/medium.svg";
 import { ReactComponent as LongIcon } from "../../assets/long.svg";
-import { ReactComponent as MarketIcon } from "../../assets/market.svg";
+// import { ReactComponent as MarketIcon } from "../../assets/market.svg";
 import { ReactComponent as WalletIcon } from "../../assets/wallet.svg";
 
 const styles = (theme) => ({
