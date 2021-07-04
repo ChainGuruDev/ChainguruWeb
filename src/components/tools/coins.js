@@ -4,6 +4,7 @@ import { withStyles } from "@material-ui/core/styles";
 import { colors } from "../../theme";
 import { formatMoney, formatMoneyMCAP } from "../helpers";
 import SparklineChart from "../components/SparklineChart.js";
+import LastPageIcon from "@material-ui/icons/LastPage";
 
 //IMPORT MaterialUI
 import {
@@ -31,6 +32,7 @@ import {
   GECKO_GET_COINS,
   GECKO_GET_COINS_RETURNED,
   SWITCH_VS_COIN_RETURNED,
+  COINLIST_RETURNED,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -71,7 +73,9 @@ class CoinList extends Component {
     super();
     this._isMounted = false;
 
+    const coinList = store.getStore("coinList");
     this.state = {
+      coins: coinList ? coinList.length : 0,
       geckoDataLoaded: false,
       sortBy: "market_cap",
       sortOrder: "desc",
@@ -89,6 +93,7 @@ class CoinList extends Component {
 
     emitter.on(GECKO_GET_COINS_RETURNED, this.geckoCoinsReturned);
     emitter.on(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
+    emitter.on(COINLIST_RETURNED, this.getCoinList);
 
     this._isMounted &&
       dispatcher.dispatch({
@@ -104,9 +109,15 @@ class CoinList extends Component {
   componentWillUnmount() {
     emitter.removeListener(GECKO_GET_COINS_RETURNED, this.geckoCoinsReturned);
     emitter.removeListener(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
-
+    emitter.removeListener(COINLIST_RETURNED, this.getCoinList);
     this._isMounted = false;
   }
+
+  getCoinList = (coins) => {
+    this.setState({
+      coins: coins.lenght,
+    });
+  };
 
   vsCoinReturned = () => {
     const { page, rows, perPage, sortBy, sortOrder } = this.state;
@@ -358,6 +369,10 @@ class CoinList extends Component {
         });
     };
 
+    const handleLastPageButtonClick = (event) => {
+      this.setState({ page: Math.max(0, Math.ceil(count / perPage) - 1) });
+    };
+
     return (
       <div className={classes.footer}>
         <IconButton
@@ -377,6 +392,13 @@ class CoinList extends Component {
         <IconButton onClick={handleNextButtonClick} aria-label="next page">
           {<KeyboardArrowRight />}
         </IconButton>
+        <IconButton
+          onClick={handleLastPageButtonClick}
+          disabled={page >= Math.ceil(count / perPage) - 1}
+          aria-label="last page"
+        >
+          {<LastPageIcon />}
+        </IconButton>
       </div>
     );
   };
@@ -390,6 +412,7 @@ class CoinList extends Component {
       sortOrder,
       page,
       perPage,
+      coins,
     } = this.state;
 
     const handleChangeRowsPerPage = (event) => {
@@ -459,7 +482,7 @@ class CoinList extends Component {
                       <TablePagination
                         rowsPerPageOptions={[10, 25, 50]}
                         colSpan={3}
-                        count={geckoData.length}
+                        count={coins}
                         rowsPerPage={perPage}
                         page={page}
                         SelectProps={{

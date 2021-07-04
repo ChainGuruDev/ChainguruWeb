@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
@@ -186,10 +187,11 @@ class PortfolioBig extends Component {
       wallets.push(item.wallet);
     });
     if (!this.state.loading) {
-      dispatcher.dispatch({
-        type: DB_GET_PORTFOLIO,
-        wallet: wallets[0],
-      });
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: DB_GET_PORTFOLIO,
+          wallet: wallets[0],
+        });
     }
     this.setState({
       loading: true,
@@ -278,7 +280,12 @@ class PortfolioBig extends Component {
     }
     if (sortedRows.length > 0) {
       return sortedRows.map((row) => (
-        <TableRow hover={true} key={row.contract_address}>
+        <TableRow
+          hover={true}
+          key={row.contract_address}
+          style={{ cursor: "pointer" }}
+          onClick={() => this.nav("/short/detective/" + row.contract_address)}
+        >
           <TableCell>
             <img className={classes.tokenLogo} alt="" src={row.logo_url} />
           </TableCell>
@@ -371,18 +378,20 @@ class PortfolioBig extends Component {
   }
 
   walletClicked = (wallet) => {
-    dispatcher.dispatch({
-      type: DB_GET_PORTFOLIO,
-      wallet: wallet,
-    });
+    this._isMounted &&
+      dispatcher.dispatch({
+        type: DB_GET_PORTFOLIO,
+        wallet: wallet,
+      });
     this.setState({ selectedWallet: wallet, dbDataLoaded: false });
   };
 
   updateWallet = (wallet) => {
-    dispatcher.dispatch({
-      type: DB_UPDATE_PORTFOLIO,
-      wallet: wallet,
-    });
+    this._isMounted &&
+      dispatcher.dispatch({
+        type: DB_UPDATE_PORTFOLIO,
+        wallet: wallet,
+      });
     this.setState({ dbDataLoaded: false });
   };
 
@@ -396,10 +405,11 @@ class PortfolioBig extends Component {
       oldNickname: data ? data.nickname : "",
       dbDataLoaded: false,
     });
-    dispatcher.dispatch({
-      type: DB_GET_PORTFOLIO,
-      wallet: wallet,
-    });
+    this._isMounted &&
+      dispatcher.dispatch({
+        type: DB_GET_PORTFOLIO,
+        wallet: wallet,
+      });
   };
 
   userWalletList = (wallets) => {
@@ -652,8 +662,11 @@ class PortfolioBig extends Component {
     );
   }
 
+  //
+  //
+  //
+
   nav = (screen) => {
-    console.log(screen);
     this.props.history.push(screen);
   };
 
@@ -673,4 +686,4 @@ class PortfolioBig extends Component {
   };
 }
 
-export default withStyles(styles)(PortfolioBig);
+export default withRouter(withStyles(styles)(PortfolioBig));

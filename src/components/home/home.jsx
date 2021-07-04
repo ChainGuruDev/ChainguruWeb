@@ -203,8 +203,6 @@ const styles = (theme) => ({
 class Home extends Component {
   constructor(props) {
     super();
-
-    this.state = {};
   }
 
   render() {
@@ -215,7 +213,7 @@ class Home extends Component {
         <Card
           className={`${classes.card} ${classes.short}`}
           onClick={() => {
-            this.nav(location.pathname + "short/compare/bitcoin/ethereum");
+            this.nav("/short/compare/bitcoin/ethereum");
           }}
         >
           <FastIcon fill={colors.white} className={`${classes.icon} icon`} />
@@ -227,7 +225,7 @@ class Home extends Component {
         <Card
           className={`${classes.card} ${classes.mid}`}
           onClick={() => {
-            this.nav(location.pathname + "medium/compare/bitcoin/ethereum");
+            this.nav("/medium/compare/bitcoin/ethereum");
           }}
         >
           <MediumIcon fill={colors.white} className={`${classes.icon} icon`} />
@@ -239,7 +237,7 @@ class Home extends Component {
         <Card
           className={`${classes.card} ${classes.long}`}
           onClick={() => {
-            this.nav(location.pathname + "long");
+            this.nav("/long");
           }}
         >
           <LongIcon stroke={colors.white} className={`${classes.icon} icon`} />
@@ -251,7 +249,7 @@ class Home extends Component {
         <Card
           className={`${classes.card} ${classes.market}`}
           onClick={() => {
-            this.nav(location.pathname + "portfolio");
+            this.nav("/portfolio");
           }}
         >
           <WalletIcon fill={colors.white} className={`${classes.icon} icon`} />

@@ -384,6 +384,8 @@ class Store {
         }
       }.bind(this)
     );
+
+    this.getCoinList();
   }
 
   getStore(index) {
@@ -1276,13 +1278,37 @@ class Store {
 
   getCoinData = async (coin) => {
     let data;
-    try {
-      let data = await CoinGeckoClient.coins.fetch(coin.content, {
-        sparkline: true,
-      });
-      emitter.emit(COIN_DATA_RETURNED, [await data.data, coin.BarID]);
-    } catch (err) {
-      console.log(err);
+
+    if (coin.content.startsWith("0x") && coin.content.length > 3) {
+      console.log("bla");
+      //TODO GET COINDATA FROM CONTRACT ADDRESS
+      if (coin.content === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
+        try {
+          let data = await CoinGeckoClient.coins.fetch("ethereum", {
+            sparkline: true,
+          });
+          emitter.emit(COIN_DATA_RETURNED, [await data.data, coin.BarID]);
+        } catch (err) {
+          console.log(err);
+        }
+      }
+      try {
+        let data = await axios.get(
+          `https://api.coingecko.com/api/v3/coins/ethereum/contract/${coin.content}`
+        );
+        emitter.emit(COIN_DATA_RETURNED, [await data.data, coin.BarID]);
+      } catch (err) {
+        console.log(err);
+      }
+    } else {
+      try {
+        let data = await CoinGeckoClient.coins.fetch(coin.content, {
+          sparkline: true,
+        });
+        emitter.emit(COIN_DATA_RETURNED, [await data.data, coin.BarID]);
+      } catch (err) {
+        console.log(err);
+      }
     }
   };
 
@@ -1873,7 +1899,7 @@ class Store {
     console.log(payload);
     try {
       let data = await axios.get(
-        `https://daetrik.site/api/portfolio/wallet?address=${payload.wallet}&update=false`
+        `https://chainguru.fun/api/portfolio/wallet?address=${payload.wallet}&update=false`
       );
       console.log(data.data);
       if (data.data === "") {
@@ -1888,10 +1914,12 @@ class Store {
   };
   db_updatePortfolio = async (payload) => {
     //TODO NOT FINAL API ENDPOINT ROUTE
+    //         `https://daetrik.site/api/portfolio/wallet?address=${payload.wallet}&update=true`
+
     console.log(payload);
     try {
       let data = await axios.get(
-        `https://daetrik.site/api/portfolio/wallet?address=${payload.wallet}&update=true`
+        `https://chainguru.fun/api/portfolio/wallet?address=${payload.wallet}&update=true`
       );
       console.log(await data.data);
       emitter.emit(DB_UPDATE_PORTFOLIO_RETURNED, await data.data);

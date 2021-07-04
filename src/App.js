@@ -27,11 +27,16 @@ import Profile from "./components/profile";
 import { colors } from "./theme";
 
 import { injected } from "./stores/connectors";
-import { CONNECTION_CONNECTED, DARKMODE_SWITCH_RETURN } from "./constants";
+import {
+  CONNECTION_CONNECTED,
+  DARKMODE_SWITCH_RETURN,
+  GET_COIN_LIST,
+} from "./constants";
 
 import Store from "./stores";
 const emitter = Store.emitter;
 const store = Store.store;
+const dispatcher = Store.dispatch;
 
 class App extends Component {
   state = {
