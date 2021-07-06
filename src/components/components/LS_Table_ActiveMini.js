@@ -10,19 +10,14 @@ import {
   Grid,
   Typography,
   IconButton,
-  Paper,
   Button,
-  ButtonGroup,
   CircularProgress,
   Divider,
-  ButtonBase,
 } from "@material-ui/core";
 
 //IMPORT icons
 import ArrowDropDownRoundedIcon from "@material-ui/icons/ArrowDropDownRounded";
 import ArrowDropUpRoundedIcon from "@material-ui/icons/ArrowDropUpRounded";
-import TrendingDownIcon from "@material-ui/icons/TrendingDown";
-import TrendingUpIcon from "@material-ui/icons/TrendingUp";
 import AssignmentTurnedInIcon from "@material-ui/icons/AssignmentTurnedIn";
 
 //Import Constants
@@ -237,7 +232,7 @@ class LSTableActiveMini extends Component {
   };
 
   checkResult = (event, id) => {
-    if (event.target.id != "row") {
+    if (event.target.id !== "row") {
       event.stopPropagation = true;
       event.preventDefault = true;
       this.setState({ loadingResult: true });

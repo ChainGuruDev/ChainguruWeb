@@ -303,7 +303,7 @@ class Short extends Component {
           <LongShort />
         </TabPanel>
         <TabPanel value={valueTab} index={4}>
-          <CoinList />
+          <CoinList timeFrame="short" />
         </TabPanel>
       </Grid>
     );

@@ -14,7 +14,6 @@ import { CONNECTION_CONNECTED, CONNECTION_DISCONNECTED } from "../../constants";
 
 import Store from "../../stores";
 const emitter = Store.emitter;
-const dispatcher = Store.dispatcher;
 const store = Store.store;
 
 // Import requiredTools
@@ -98,7 +97,7 @@ class Dashboard extends Component {
 
   render() {
     const { classes } = this.props;
-    const { account, loading, tools } = this.state;
+    const { account, tools } = this.state;
 
     return (
       <div className={classes.root}>

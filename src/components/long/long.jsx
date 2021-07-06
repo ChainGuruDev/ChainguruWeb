@@ -9,7 +9,9 @@ import { colors } from "../../theme";
 //Import ICONS
 import ShowChartIcon from "@material-ui/icons/ShowChart";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
+import LensIcon from "@material-ui/icons/Lens";
 
+import CoinList from "../tools/coins";
 import DollarCostAverage from "../tools/dollarCostAverage.js";
 import BlueChips from "../tools/blueChips.js";
 
@@ -181,6 +183,7 @@ class Long extends Component {
               icon={<ShowChartIcon />}
               {...a11yProps(1)}
             />
+            <Tab label="Coins" icon={<LensIcon />} {...a11yProps(2)} />
           </LongTabs>
         </AppBar>
         <TabPanel value={valueTab} index={0}>
@@ -188,6 +191,9 @@ class Long extends Component {
         </TabPanel>
         <TabPanel value={valueTab} index={1}>
           <DollarCostAverage />
+        </TabPanel>
+        <TabPanel value={valueTab} index={2}>
+          <CoinList timeFrame="long" />
         </TabPanel>
         {snackbarMessage && this.renderSnackbar()}
       </Grid>

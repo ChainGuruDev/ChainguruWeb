@@ -52,7 +52,7 @@ class WalletNicknameModal extends Component {
     };
   }
 
-  componentWillMount() {
+  componentDidMount() {
     emitter.on(ERROR, this.error);
     emitter.on(DB_SET_USER_WALLET_NICKNAME_RETURNED, this.setNicknameReturned);
     emitter.on(

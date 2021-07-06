@@ -69,11 +69,44 @@ const styles = (theme) => ({
 });
 
 class CoinList extends Component {
-  constructor() {
+  constructor(props) {
     super();
     this._isMounted = false;
 
     const coinList = store.getStore("coinList");
+
+    let reqPercentage = "";
+    let labelA = "";
+    let labelB = "";
+    let labelC = "";
+
+    switch (props.timeFrame) {
+      case "short":
+        reqPercentage = "1h,24h,7d";
+        labelA = "price 1h";
+        labelB = "price 24h";
+        labelC = "price 7d";
+        break;
+      case "medium":
+        reqPercentage = "14d,30d,200d";
+        labelA = "price 14d";
+        labelB = "price 30d";
+        labelC = "price 200d";
+        break;
+      case "long":
+        reqPercentage = "30d,200d,1y";
+        labelA = "price 30d";
+        labelB = "price 200d";
+        labelC = "price 1y";
+        break;
+      default:
+        reqPercentage = "1h,24h,7d";
+        labelA = "price 1h";
+        labelB = "price 24h";
+        labelC = "price 7d";
+        break;
+    }
+
     this.state = {
       coins: coinList ? coinList.length : 0,
       geckoDataLoaded: false,
@@ -82,11 +115,23 @@ class CoinList extends Component {
       page: 0,
       rows: 0,
       perPage: 25,
+      reqPercentage: reqPercentage,
+      timeFrame: props.timeFrame,
+      labelA: labelA,
+      labelB: labelB,
+      labelC: labelC,
     };
   }
 
   componentDidMount() {
-    const { page, rows, perPage, sortBy, sortOrder } = this.state;
+    const {
+      page,
+      rows,
+      perPage,
+      sortBy,
+      sortOrder,
+      reqPercentage,
+    } = this.state;
 
     this._isMounted = true;
     this.setState({ geckoDataLoaded: false });
@@ -95,13 +140,15 @@ class CoinList extends Component {
     emitter.on(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
     emitter.on(COINLIST_RETURNED, this.getCoinList);
 
+    //
+
     this._isMounted &&
       dispatcher.dispatch({
         type: GECKO_GET_COINS,
         page: page,
         perPage: perPage,
         sparkline: true,
-        priceChangePercentage: "1h,24h,7d",
+        priceChangePercentage: reqPercentage,
         order: sortBy + "_" + sortOrder,
       });
   }
@@ -120,7 +167,14 @@ class CoinList extends Component {
   };
 
   vsCoinReturned = () => {
-    const { page, rows, perPage, sortBy, sortOrder } = this.state;
+    const {
+      page,
+      rows,
+      perPage,
+      sortBy,
+      sortOrder,
+      reqPercentage,
+    } = this.state;
 
     this._isMounted &&
       dispatcher.dispatch({
@@ -128,7 +182,7 @@ class CoinList extends Component {
         page: page + 1,
         perPage: perPage,
         sparkline: true,
-        priceChangePercentage: "1h,24h,7d",
+        priceChangePercentage: reqPercentage,
         order: sortBy + "_" + sortOrder,
       });
   };
@@ -139,9 +193,9 @@ class CoinList extends Component {
     id,
     symbol,
     current_price,
-    price_change_percentage_1h_in_currency,
-    price_change_percentage_24h_in_currency,
-    price_change_percentage_7d_in_currency,
+    price_change_percentage_A,
+    price_change_percentage_B,
+    price_change_percentage_C,
     market_cap,
     market_cap_change_percentage_24h,
     sparkline_in_7d
@@ -152,9 +206,9 @@ class CoinList extends Component {
       id,
       symbol,
       current_price,
-      price_change_percentage_1h_in_currency,
-      price_change_percentage_24h_in_currency,
-      price_change_percentage_7d_in_currency,
+      price_change_percentage_A,
+      price_change_percentage_B,
+      price_change_percentage_C,
       market_cap,
       market_cap_change_percentage_24h,
       sparkline_in_7d,
@@ -162,9 +216,34 @@ class CoinList extends Component {
   };
 
   geckoCoinsReturned = (data) => {
-    console.log(data);
+    let priceChangeA;
+    let priceChangeB;
+    let priceChangeC;
 
     let geckoData = [];
+
+    switch (this.state.timeFrame) {
+      case "short":
+        priceChangeA = "price_change_percentage_1h_in_currency";
+        priceChangeB = "price_change_percentage_24h_in_currency";
+        priceChangeC = "price_change_percentage_7d_in_currency";
+        break;
+      case "medium":
+        priceChangeA = "price_change_percentage_14d_in_currency";
+        priceChangeB = "price_change_percentage_30d_in_currency";
+        priceChangeC = "price_change_percentage_200d_in_currency";
+        break;
+      case "long":
+        priceChangeA = "price_change_percentage_30d_in_currency";
+        priceChangeB = "price_change_percentage_200d_in_currency";
+        priceChangeC = "price_change_percentage_1y_in_currency";
+        break;
+      default:
+        priceChangeA = "price_change_percentage_1h_in_currency";
+        priceChangeB = "price_change_percentage_24h_in_currency";
+        priceChangeC = "price_change_percentage_7d_in_currency";
+        break;
+    }
     data.forEach((item, i) => {
       let sortData = this.createData(
         item.image,
@@ -172,9 +251,9 @@ class CoinList extends Component {
         item.id,
         item.symbol,
         item.current_price,
-        item.price_change_percentage_1h_in_currency,
-        item.price_change_percentage_24h_in_currency,
-        item.price_change_percentage_7d_in_currency,
+        item[priceChangeA],
+        item[priceChangeB],
+        item[priceChangeC],
         item.market_cap,
         item.market_cap_change_percentage_24h,
         item.sparkline_in_7d.price
@@ -182,7 +261,6 @@ class CoinList extends Component {
       geckoData.push(sortData);
     });
 
-    console.log(geckoData);
     if (data) {
       this.setState({
         geckoDataLoaded: true,
@@ -192,7 +270,14 @@ class CoinList extends Component {
   };
 
   sortBy(_sortBy) {
-    const { page, rows, perPage, sortBy, sortOrder } = this.state;
+    const {
+      page,
+      rows,
+      perPage,
+      sortBy,
+      sortOrder,
+      reqPercentage,
+    } = this.state;
     let _prevSortBy = sortBy;
     let _sortOrder;
     if (_prevSortBy === _sortBy) {
@@ -228,7 +313,7 @@ class CoinList extends Component {
         page: page + 1,
         perPage: perPage,
         sparkline: true,
-        priceChangePercentage: "1h,24h,7d",
+        priceChangePercentage: reqPercentage,
         order: _sortBy + "_" + _sortOrder,
       });
   }
@@ -265,36 +350,30 @@ class CoinList extends Component {
             <Typography
               variant={"body1"}
               color={
-                row.price_change_percentage_1h_in_currency > 0
-                  ? "primary"
-                  : "secondary"
+                row.price_change_percentage_A > 0 ? "primary" : "secondary"
               }
             >
-              {formatMoney(row.price_change_percentage_1h_in_currency)} %
+              {formatMoney(row.price_change_percentage_A)} %
             </Typography>
           </TableCell>
           <TableCell align="right">
             <Typography
               variant={"body1"}
               color={
-                row.price_change_percentage_24h_in_currency > 0
-                  ? "primary"
-                  : "secondary"
+                row.price_change_percentage_B > 0 ? "primary" : "secondary"
               }
             >
-              {formatMoney(row.price_change_percentage_24h_in_currency)} %
+              {formatMoney(row.price_change_percentage_B)} %
             </Typography>
           </TableCell>
           <TableCell align="right">
             <Typography
               variant={"body1"}
               color={
-                row.price_change_percentage_7d_in_currency > 0
-                  ? "primary"
-                  : "secondary"
+                row.price_change_percentage_C > 0 ? "primary" : "secondary"
               }
             >
-              {formatMoney(row.price_change_percentage_7d_in_currency)} %
+              {formatMoney(row.price_change_percentage_C)} %
             </Typography>
           </TableCell>
           <TableCell align="right">
@@ -325,7 +404,14 @@ class CoinList extends Component {
 
   TablePaginationActions = (props) => {
     const { classes } = this.props;
-    const { geckoData, page, perPage, sortBy, sortOrder } = this.state;
+    const {
+      geckoData,
+      page,
+      perPage,
+      sortBy,
+      sortOrder,
+      reqPercentage,
+    } = this.state;
     const count = geckoData.length;
 
     const handleFirstPageButtonClick = (event) => {
@@ -336,7 +422,7 @@ class CoinList extends Component {
           page: 0,
           perPage: perPage,
           sparkline: true,
-          priceChangePercentage: "1h,24h,7d",
+          priceChangePercentage: reqPercentage,
           order: sortBy + "_" + sortOrder,
         });
     };
@@ -350,7 +436,7 @@ class CoinList extends Component {
           page: newPage + 1,
           perPage: perPage,
           sparkline: true,
-          priceChangePercentage: "1h,24h,7d",
+          priceChangePercentage: reqPercentage,
           order: sortBy + "_" + sortOrder,
         });
     };
@@ -364,7 +450,7 @@ class CoinList extends Component {
           page: newPage + 1,
           perPage: perPage,
           sparkline: true,
-          priceChangePercentage: "1h,24h,7d",
+          priceChangePercentage: reqPercentage,
           order: sortBy + "_" + sortOrder,
         });
     };
@@ -413,6 +499,11 @@ class CoinList extends Component {
       page,
       perPage,
       coins,
+      reqPercentage,
+      timeFrame,
+      labelA,
+      labelB,
+      labelC,
     } = this.state;
 
     const handleChangeRowsPerPage = (event) => {
@@ -429,7 +520,7 @@ class CoinList extends Component {
           page: 0,
           perPage: newPerPage,
           sparkline: true,
-          priceChangePercentage: "1h,24h,7d",
+          priceChangePercentage: reqPercentage,
           order: sortBy + "_" + sortOrder,
         });
     };
@@ -461,9 +552,9 @@ class CoinList extends Component {
                         Name
                       </TableCell>
                       <TableCell align="right">Price</TableCell>
-                      <TableCell align="right">Price 1h</TableCell>
-                      <TableCell align="right">Price 24h</TableCell>
-                      <TableCell align="right">Price 7d</TableCell>
+                      <TableCell align="right">{labelA}</TableCell>
+                      <TableCell align="right">{labelB}</TableCell>
+                      <TableCell align="right">{labelC}</TableCell>
                       <TableCell align="right">
                         <TableSortLabel
                           active={sortBy === "market_cap"}

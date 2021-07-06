@@ -1887,6 +1887,7 @@ class Store {
         price_change_percentage: payload.priceChangePercentage,
         order: payload.order,
       });
+      console.log(data);
       emitter.emit(GECKO_GET_COINS_RETURNED, await data.data);
     } catch (err) {
       console.log(err.message);

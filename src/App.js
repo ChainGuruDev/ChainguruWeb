@@ -589,7 +589,6 @@ class App extends Component {
               />
               <Profile />
             </Route>
-
             <Route path="/">
               <Home />
             </Route>

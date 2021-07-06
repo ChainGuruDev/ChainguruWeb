@@ -68,7 +68,7 @@ class AvatarSelectModal extends Component {
     };
   }
 
-  componentWillMount() {
+  componentDidMount() {
     emitter.on(ERROR, this.error);
     emitter.on(DB_NEW_AVATAR_RETURNED, this.newAvatarReturned);
   }

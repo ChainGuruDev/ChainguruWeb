@@ -51,7 +51,7 @@ class Gift extends Component {
     };
   }
 
-  componentWillMount() {
+  componentDidMount() {
     emitter.on(ERROR, this.error);
   }
 

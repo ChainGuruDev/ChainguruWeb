@@ -11,12 +11,14 @@ import SearchIcon from "@material-ui/icons/Search";
 import SyncAltRoundedIcon from "@material-ui/icons/SyncAltRounded";
 import FlashOnIcon from "@material-ui/icons/FlashOn";
 import CompareArrowsIcon from "@material-ui/icons/CompareArrows";
+import LensIcon from "@material-ui/icons/Lens";
 
 //Load Tools
 import CryptoDetective from "../tools/cryptoDetective";
 import CryptoCompare from "../tools/cryptoCompare";
 import Favorites from "../tools/favorites";
 import Transactions from "../tools/transactions";
+import CoinList from "../tools/coins";
 
 import {
   PING_COINGECKO,
@@ -215,6 +217,7 @@ class Medium extends Component {
               icon={<SearchIcon />}
               {...a11yProps(2)}
             />
+            <Tab label="Coins" icon={<LensIcon />} {...a11yProps(3)} />
           </Tabs>
         </AppBar>
         <TabPanel value={valueTab} index={0}>
@@ -226,6 +229,9 @@ class Medium extends Component {
         <TabPanel value={valueTab} index={2}>
           {coinID && <CryptoDetective coinID={coinID} />}
           {!coinID && <CryptoDetective />}
+        </TabPanel>
+        <TabPanel value={valueTab} index={3}>
+          <CoinList timeFrame="medium" />
         </TabPanel>
       </Grid>
     );

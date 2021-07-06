@@ -84,7 +84,7 @@ class Unlock extends Component {
     };
   }
 
-  componentWillMount() {
+  componentDidMount() {
     emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
     emitter.on(ERROR, this.error);
