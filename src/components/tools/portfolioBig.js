@@ -11,6 +11,8 @@ import ArrowDropUpRoundedIcon from "@material-ui/icons/ArrowDropUpRounded";
 import RefreshRoundedIcon from "@material-ui/icons/RefreshRounded";
 import BackspaceRoundedIcon from "@material-ui/icons/BackspaceRounded";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
+import AddCircleRoundedIcon from "@material-ui/icons/AddCircleRounded";
+import ArrowBackIosRoundedIcon from "@material-ui/icons/ArrowBackIosRounded";
 
 import {
   Card,
@@ -34,6 +36,7 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   IconButton,
+  TextField,
 } from "@material-ui/core";
 
 import Skeleton from "@material-ui/lab/Skeleton";
@@ -49,12 +52,28 @@ import {
   DB_UPDATE_PORTFOLIO_RETURNED,
   DB_SET_USER_WALLET_NICKNAME_RETURNED,
   DB_REMOVE_USER_WALLET_NICKNAME_RETURNED,
+  CHECK_ACCOUNT,
+  CHECK_ACCOUNT_RETURNED,
+  DB_ADD_WALLET,
+  DB_ADD_WALLET_RETURNED,
+  DB_DEL_WALLET,
+  DB_DEL_WALLET_RETURNED,
 } from "../../constants";
 
+import {
+  GET_TOKEN_COMPONENTS,
+  GET_PROTOCOLS_BALANCES,
+} from "../../constants/defiSDK.js";
+
 import Store from "../../stores";
+import DefiSDKStore from "../../stores/defiSDK_store.js";
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
 const store = Store.store;
+
+const emitterDefi = DefiSDKStore.emitter;
+const storeDefi = DefiSDKStore.store;
+const dispatcherDefi = DefiSDKStore.dispatcher;
 
 const styles = (theme) => ({
   root: {
@@ -97,6 +116,12 @@ const styles = (theme) => ({
     textAlign: "center",
     minHeight: "100%",
   },
+  walletInput: {
+    width: "100%",
+    minWidth: "-moz-available" /* WebKit-based browsers will ignore this. */,
+    minWidth:
+      "-webkit-fill-available" /* Mozilla-based browsers will ignore this. */,
+  },
 });
 
 class PortfolioBig extends Component {
@@ -117,6 +142,9 @@ class PortfolioBig extends Component {
       walletNicknames: [],
       walletNicknameModal: false,
       error: false,
+      addWallet: false,
+      errMsgWallet: "",
+      errorWallet: false,
     };
 
     // IF USER IS CONNECTED GET THE PORTFOLIO DATA
@@ -142,6 +170,9 @@ class PortfolioBig extends Component {
       DB_REMOVE_USER_WALLET_NICKNAME_RETURNED,
       this.setNicknameReturned
     );
+    emitter.on(CHECK_ACCOUNT_RETURNED, this.checkAccountReturned);
+    emitter.on(DB_ADD_WALLET_RETURNED, this.dbWalletReturned);
+    emitter.on(DB_DEL_WALLET_RETURNED, this.dbWalletReturned);
   }
 
   componentWillUnmount() {
@@ -168,6 +199,10 @@ class PortfolioBig extends Component {
       DB_REMOVE_USER_WALLET_NICKNAME_RETURNED,
       this.setNicknameReturned
     );
+    emitter.removeListener(CHECK_ACCOUNT_RETURNED, this.checkAccountReturned);
+    emitter.removeListener(DB_ADD_WALLET_RETURNED, this.dbWalletReturned);
+    emitter.removeListener(DB_DEL_WALLET_RETURNED, this.dbWalletReturned);
+
     this._isMounted = false;
   }
 
@@ -201,6 +236,13 @@ class PortfolioBig extends Component {
     });
   };
 
+  removeWALLET = (wallet) => {
+    dispatcher.dispatch({
+      type: DB_DEL_WALLET,
+      wallet: wallet,
+    });
+  };
+
   setNicknameReturned = (data) => {
     console.log(data);
     this.setState({
@@ -215,10 +257,16 @@ class PortfolioBig extends Component {
       const walletProfitValue = data[0].profit_value;
       let assets = data[0].assets;
       let walletBalance = 0;
+      let lpTokens = [];
       for (var i = 0; i < assets.length; i++) {
         walletBalance += assets[i].quote;
+        if (assets[i].balance > 0 && assets[i].contract_ticker === "UNI-V2") {
+          lpTokens.push(assets[i]);
+        }
+
         // console.log(sortedRows[i].quote);
       }
+      console.log(lpTokens);
       this.setState({
         error: false,
         loading: false,
@@ -226,12 +274,17 @@ class PortfolioBig extends Component {
         portfolioData: data,
         portfolioProfit: walletProfitValue,
         portfolioBalance: walletBalance,
+        lpTokens: lpTokens,
       });
     }
   };
 
   error = () => {
     this.setState({ error: true });
+  };
+
+  getLP_Tokens = () => {
+    console.log(this.state.lpTokens);
   };
 
   //END EMITTER EVENT FUNCTIONS
@@ -475,17 +528,14 @@ class PortfolioBig extends Component {
               >
                 <RefreshRoundedIcon />
               </IconButton>
-              {
-                // TODO DELETE WALLET FUNCTION
-                // {this.state.account.address != wallet.wallet && (
-                //   <IconButton
-                //     aria-label="remove"
-                //     onClick={() => this.removeWALLET(wallet.wallet)}
-                //   >
-                //     <BackspaceRoundedIcon />
-                //   </IconButton>
-                // )}
-              }
+              {this.state.account.address != wallet.wallet && (
+                <IconButton
+                  aria-label="remove"
+                  onClick={() => this.removeWALLET(wallet.wallet)}
+                >
+                  <BackspaceRoundedIcon />
+                </IconButton>
+              )}
             </ListItemSecondaryAction>
           </ListItem>
         </div>
@@ -494,6 +544,55 @@ class PortfolioBig extends Component {
     wallets.forEach((item, i) => {
       console.log(item.wallet);
     });
+  };
+
+  toggleAddWallet = () => {
+    let _addingWallet = this.state.addWallet;
+    this.setState({
+      addWallet: !_addingWallet,
+    });
+  };
+
+  handleChange = (event) => {
+    switch (event.target.id) {
+      case "walletAdd":
+        this.setState({ addWallet: event.target.value });
+        this.setState({ errorWallet: false });
+        dispatcher.dispatch({
+          type: CHECK_ACCOUNT,
+          content: event.target.value,
+        });
+        break;
+
+      default:
+        break;
+    }
+  };
+
+  addWallet = (wallet) => {
+    if (wallet) {
+      dispatcher.dispatch({
+        type: DB_ADD_WALLET,
+        wallet: wallet,
+      });
+    } else {
+      this.setState({ errorWallet: true });
+    }
+  };
+
+  checkAccountReturned = (_isAccount) => {
+    if (!_isAccount) {
+      this.setState({ errMsgWallet: "Not a valid ethereum address" });
+      this.setState({ errorWallet: true });
+    } else {
+      this.setState({ errMsgWallet: "" });
+      this.setState({ errorWallet: false });
+    }
+    this.setState({ errorAccount: !_isAccount });
+  };
+
+  dbWalletReturned = (payload) => {
+    this.setState({ userWallets: payload.wallets });
   };
 
   render() {
@@ -508,6 +607,7 @@ class PortfolioBig extends Component {
       userWallets,
       walletNicknameModal,
       error,
+      addWallet,
     } = this.state;
 
     return (
@@ -551,7 +651,77 @@ class PortfolioBig extends Component {
               <>
                 <Grid item xs={6}>
                   <div className={classes.walletGrid}>
-                    <Typography variant={"h4"}>Wallets</Typography>
+                    <Grid
+                      item
+                      container
+                      direction="row"
+                      justify="space-between"
+                      alignItems="center"
+                      xs={12}
+                    >
+                      <Typography variant={"h4"}>Wallets</Typography>
+                      {!addWallet && (
+                        <Button
+                          startIcon={<AddCircleRoundedIcon />}
+                          variant="outlined"
+                          size="small"
+                          color="primary"
+                          onClick={this.toggleAddWallet}
+                        >
+                          New
+                        </Button>
+                      )}
+                      {addWallet && (
+                        <Button
+                          startIcon={<ArrowBackIosRoundedIcon />}
+                          variant="contained"
+                          size="small"
+                          color="secondary"
+                          onClick={this.toggleAddWallet}
+                        >
+                          Back
+                        </Button>
+                      )}
+                    </Grid>
+                    {addWallet && (
+                      <>
+                        <Divider style={{ marginTop: 10 }} />
+                        <Grid
+                          item
+                          container
+                          direction="row"
+                          justify="space-between"
+                          alignItems="center"
+                          xs={12}
+                        >
+                          <Grid item xs={9}>
+                            <TextField
+                              className={classes.walletInput}
+                              id="walletAdd"
+                              label="Wallet Address"
+                              onChange={this.handleChange}
+                              helperText={this.state.errMsgWallet}
+                              error={this.state.errorWallet}
+                            />
+                          </Grid>
+                          <Grid item style={{ textAlign: "end" }} xs={3}>
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              color="primary"
+                              className={classes.button}
+                              startIcon={<AddCircleRoundedIcon />}
+                              onClick={() => {
+                                this.addWallet(addWallet);
+                              }}
+                              disabled={this.state.errorWallet}
+                            >
+                              Add
+                            </Button>
+                          </Grid>
+                        </Grid>
+                      </>
+                    )}
                     <List
                       className={classes.walletList}
                       component="nav"

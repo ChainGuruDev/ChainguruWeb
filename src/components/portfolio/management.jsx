@@ -181,9 +181,6 @@ class PortfolioManagement extends Component {
       case "portfolioRadar":
         toolID = 4;
         break;
-      case "wallets":
-        toolID = 5;
-        break;
       default:
         break;
     }
@@ -207,9 +204,6 @@ class PortfolioManagement extends Component {
         break;
       case 4:
         tool = "portfolioRadar";
-        break;
-      case 5:
-        tool = "wallets";
         break;
       default:
         tool = "";
@@ -283,11 +277,6 @@ class PortfolioManagement extends Component {
               {...a11yProps(0)}
             />
             <PortfolioTab
-              label="Transactions"
-              icon={<FlashOnIcon />}
-              {...a11yProps(1)}
-            />
-            <PortfolioTab
               label="HeatMap"
               icon={<ViewQuiltIcon />}
               {...a11yProps(2)}
@@ -302,19 +291,12 @@ class PortfolioManagement extends Component {
               icon={<TrackChangesRoundedIcon />}
               {...a11yProps(4)}
             />
-            <PortfolioTab
-              label="Wallets"
-              icon={<BusinessCenterRoundedIcon />}
-              {...a11yProps(5)}
-            />
           </PortfolioTabs>
         </AppBar>
         <TabPanel value={valueTab} index={0}>
           <Dashboard />
         </TabPanel>
-        <TabPanel value={valueTab} index={1}>
-          <Transactions />
-        </TabPanel>
+
         <TabPanel value={valueTab} index={2}>
           <PortfolioHeatMap />
         </TabPanel>
@@ -323,9 +305,6 @@ class PortfolioManagement extends Component {
         </TabPanel>
         <TabPanel value={valueTab} index={4}>
           <PortfolioRadar />
-        </TabPanel>
-        <TabPanel value={valueTab} index={5}>
-          <Portfolio />
         </TabPanel>
       </Grid>
     );
