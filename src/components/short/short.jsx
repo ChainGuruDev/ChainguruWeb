@@ -1,8 +1,17 @@
-import React, { Component, useEffect } from "react";
+import React, { Component, Suspense } from "react";
 import PropTypes from "prop-types";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import { Typography, AppBar, Tabs, Tab, Box, Grid } from "@material-ui/core";
+import {
+  Typography,
+  AppBar,
+  Tabs,
+  Tab,
+  Box,
+  Grid,
+  CircularProgress,
+  Card,
+} from "@material-ui/core";
 import { withTranslation } from "react-i18next";
 
 import LensIcon from "@material-ui/icons/Lens";
@@ -10,11 +19,13 @@ import FlashOnIcon from "@material-ui/icons/FlashOn";
 import CompareArrowsIcon from "@material-ui/icons/CompareArrows";
 import TrendingUpIcon from "@material-ui/icons/TrendingUp";
 import SearchIcon from "@material-ui/icons/Search";
-import CryptoDetective from "../tools/cryptoDetective";
-import CryptoCompare from "../tools/cryptoCompare";
-import Favorites from "../tools/favorites";
-import LongShort from "../tools/longShort";
-import CoinList from "../tools/coins";
+
+//LOAD TOOLS now with reactLazy
+// import CryptoDetective from "../tools/cryptoDetective";
+// import CryptoCompare from "../tools/cryptoCompare";
+// import Favorites from "../tools/favorites";
+// import LongShort from "../tools/longShort";
+// import CoinList from "../tools/coins";
 
 import {
   PING_COINGECKO,
@@ -26,6 +37,13 @@ import Store from "../../stores";
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
 const store = Store.store;
+
+//LOAD TOOLS ReactLazy
+const CryptoDetective = React.lazy(() => import("../tools/cryptoDetective.js"));
+const CryptoCompare = React.lazy(() => import("../tools/cryptoCompare.js"));
+const Favorites = React.lazy(() => import("../tools/favorites.js"));
+const LongShort = React.lazy(() => import("../tools/longShort.js"));
+const CoinList = React.lazy(() => import("../tools/coins.js"));
 
 const styles = (theme) => ({
   root: {
@@ -290,20 +308,70 @@ class Short extends Component {
           </Tabs>
         </AppBar>
         <TabPanel value={valueTab} index={0}>
-          <CryptoCompare toolTimeframe={"short"} />
+          <Suspense
+            fallback={
+              <div style={{ textAlign: "center" }}>
+                <Card className={classes.favCard} elevation={3}>
+                  <CircularProgress />
+                </Card>
+              </div>
+            }
+          >
+            <CryptoCompare toolTimeframe={"short"} />
+          </Suspense>
         </TabPanel>
         <TabPanel value={valueTab} index={1}>
-          <Favorites />
+          <Suspense
+            fallback={
+              <div style={{ textAlign: "center" }}>
+                <Card className={classes.favCard} elevation={3}>
+                  <CircularProgress />
+                </Card>
+              </div>
+            }
+          >
+            <Favorites />
+          </Suspense>
         </TabPanel>
         <TabPanel value={valueTab} index={2}>
-          {coinID && <CryptoDetective coinID={coinID} />}
-          {!coinID && <CryptoDetective />}
+          <Suspense
+            fallback={
+              <div style={{ textAlign: "center" }}>
+                <Card className={classes.favCard} elevation={3}>
+                  <CircularProgress />
+                </Card>
+              </div>
+            }
+          >
+            {coinID && <CryptoDetective coinID={coinID} />}
+            {!coinID && <CryptoDetective />}
+          </Suspense>
         </TabPanel>
         <TabPanel value={valueTab} index={3}>
-          <LongShort />
+          <Suspense
+            fallback={
+              <div style={{ textAlign: "center" }}>
+                <Card className={classes.favCard} elevation={3}>
+                  <CircularProgress />
+                </Card>
+              </div>
+            }
+          >
+            <LongShort />
+          </Suspense>
         </TabPanel>
         <TabPanel value={valueTab} index={4}>
-          <CoinList timeFrame="short" />
+          <Suspense
+            fallback={
+              <div style={{ textAlign: "center" }}>
+                <Card className={classes.favCard} elevation={3}>
+                  <CircularProgress />
+                </Card>
+              </div>
+            }
+          >
+            <CoinList timeFrame="short" />
+          </Suspense>
         </TabPanel>
       </Grid>
     );

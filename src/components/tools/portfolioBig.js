@@ -5,6 +5,7 @@ import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
 import { formatMoney, formatMoneyMCAP } from "../helpers";
 import WalletNicknameModal from "../components/walletNicknameModal.js";
+import WalletRemoveModal from "../components/walletRemoveModal.js";
 
 import ArrowDropDownRoundedIcon from "@material-ui/icons/ArrowDropDownRounded";
 import ArrowDropUpRoundedIcon from "@material-ui/icons/ArrowDropUpRounded";
@@ -144,7 +145,7 @@ class PortfolioBig extends Component {
       error: false,
       addWallet: false,
       errMsgWallet: "",
-      errorWallet: false,
+      errorWallet: true,
     };
 
     // IF USER IS CONNECTED GET THE PORTFOLIO DATA
@@ -237,10 +238,20 @@ class PortfolioBig extends Component {
   };
 
   removeWALLET = (wallet) => {
-    dispatcher.dispatch({
-      type: DB_DEL_WALLET,
-      wallet: wallet,
-    });
+    const walletNick = this.state.walletNicknames.find(
+      (ele) => ele.wallet === wallet
+    );
+    if (walletNick) {
+      this.setState({
+        deleteWalletModal: true,
+        removeWALLET: [wallet, walletNick.nickname],
+      });
+    } else {
+      this.setState({
+        deleteWalletModal: true,
+        removeWALLET: [wallet],
+      });
+    }
   };
 
   setNicknameReturned = (data) => {
@@ -550,13 +561,15 @@ class PortfolioBig extends Component {
     let _addingWallet = this.state.addWallet;
     this.setState({
       addWallet: !_addingWallet,
+      newWallet: "",
+      errorWallet: true,
     });
   };
 
   handleChange = (event) => {
     switch (event.target.id) {
       case "walletAdd":
-        this.setState({ addWallet: event.target.value });
+        this.setState({ newWallet: event.target.value });
         this.setState({ errorWallet: false });
         dispatcher.dispatch({
           type: CHECK_ACCOUNT,
@@ -571,6 +584,7 @@ class PortfolioBig extends Component {
 
   addWallet = (wallet) => {
     if (wallet) {
+      console.log(wallet);
       dispatcher.dispatch({
         type: DB_ADD_WALLET,
         wallet: wallet,
@@ -606,8 +620,10 @@ class PortfolioBig extends Component {
       sortOrder,
       userWallets,
       walletNicknameModal,
+      deleteWalletModal,
       error,
       addWallet,
+      newWallet,
     } = this.state;
 
     return (
@@ -712,7 +728,7 @@ class PortfolioBig extends Component {
                               className={classes.button}
                               startIcon={<AddCircleRoundedIcon />}
                               onClick={() => {
-                                this.addWallet(addWallet);
+                                this.addWallet(newWallet);
                               }}
                               disabled={this.state.errorWallet}
                             >
@@ -828,6 +844,7 @@ class PortfolioBig extends Component {
           </Grid>
         </Card>
         {walletNicknameModal && this.renderModal()}
+        {deleteWalletModal && this.renderWalletDeleteModal()}
       </>
     );
   }
@@ -840,17 +857,32 @@ class PortfolioBig extends Component {
     this.props.history.push(screen);
   };
 
-  closeModal = () => {
+  closeModalNick = () => {
     this.setState({ walletNicknameModal: false });
+  };
+
+  closeModalDelete = () => {
+    this.setState({ deleteWalletModal: false });
   };
 
   renderModal = (wallet, nickname) => {
     return (
       <WalletNicknameModal
-        closeModal={this.closeModal}
+        closeModal={this.closeModalNick}
         modalOpen={this.state.walletNicknameModal}
         wallet={this.state.selectedWallet}
         nickname={this.state.oldNickname}
+      />
+    );
+  };
+
+  renderWalletDeleteModal = (wallet) => {
+    return (
+      <WalletRemoveModal
+        closeModal={this.closeModalDelete}
+        modalOpen={this.state.deleteWalletModal}
+        wallet={this.state.removeWALLET[0]}
+        nickname={this.state.removeWALLET[1]}
       />
     );
   };

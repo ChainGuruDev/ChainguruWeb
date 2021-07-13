@@ -169,17 +169,14 @@ class PortfolioManagement extends Component {
       case "dashboard":
         toolID = 0;
         break;
-      case "transactions":
+      case "heatmap":
         toolID = 1;
         break;
-      case "heatmap":
+      case "cryptoConverter":
         toolID = 2;
         break;
-      case "cryptoConverter":
-        toolID = 3;
-        break;
       case "portfolioRadar":
-        toolID = 4;
+        toolID = 3;
         break;
       default:
         break;
@@ -194,15 +191,12 @@ class PortfolioManagement extends Component {
         tool = "dashboard";
         break;
       case 1:
-        tool = "transactions";
-        break;
-      case 2:
         tool = "heatmap";
         break;
-      case 3:
+      case 2:
         tool = "cryptoConverter";
         break;
-      case 4:
+      case 3:
         tool = "portfolioRadar";
         break;
       default:
@@ -279,17 +273,17 @@ class PortfolioManagement extends Component {
             <PortfolioTab
               label="HeatMap"
               icon={<ViewQuiltIcon />}
-              {...a11yProps(2)}
+              {...a11yProps(1)}
             />
             <PortfolioTab
               label="CryptoConverter"
               icon={<ShuffleIcon />}
-              {...a11yProps(3)}
+              {...a11yProps(2)}
             />
             <PortfolioTab
               label="Portfolio Radar"
               icon={<TrackChangesRoundedIcon />}
-              {...a11yProps(4)}
+              {...a11yProps(3)}
             />
           </PortfolioTabs>
         </AppBar>
@@ -297,13 +291,13 @@ class PortfolioManagement extends Component {
           <Dashboard />
         </TabPanel>
 
-        <TabPanel value={valueTab} index={2}>
+        <TabPanel value={valueTab} index={1}>
           <PortfolioHeatMap />
         </TabPanel>
-        <TabPanel value={valueTab} index={3}>
+        <TabPanel value={valueTab} index={2}>
           <CryptoConverter />
         </TabPanel>
-        <TabPanel value={valueTab} index={4}>
+        <TabPanel value={valueTab} index={3}>
           <PortfolioRadar />
         </TabPanel>
       </Grid>
