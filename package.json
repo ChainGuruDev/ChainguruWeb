@@ -1,6 +1,6 @@
 {
-  "name": "lfweb2",
-  "version": "0.1.5",
+  "name": "ChainGuru",
+  "version": "0.2.5",
   "private": true,
   "engines": {
     "npm": "7.11.2",
