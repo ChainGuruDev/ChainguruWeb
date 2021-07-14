@@ -64,4 +64,32 @@ function formatMoneyMCAP(
   }
 }
 
-export { formatMoney, formatMoneyMCAP };
+function timeConversion(millisec) {
+  var seconds = (millisec / 1000).toFixed(1);
+
+  var minutes = (millisec / (1000 * 60)).toFixed(1);
+
+  var hours = (millisec / (1000 * 60 * 60)).toFixed(1);
+
+  var days = (millisec / (1000 * 60 * 60 * 24)).toFixed(1);
+
+  if (seconds < 60) {
+    return seconds + " Sec";
+  } else if (minutes < 60) {
+    return minutes + " Min";
+  } else if (hours < 24) {
+    if (hours <= 1) {
+      return hours + " Hr";
+    } else {
+      return hours + " Hrs";
+    }
+  } else {
+    if (days <= 1) {
+      return days + " Day";
+    } else {
+      return days + " Days";
+    }
+  }
+}
+
+export { formatMoney, formatMoneyMCAP, timeConversion };

@@ -227,18 +227,28 @@ class CryptoConverter extends Component {
 
   handleChangeFrom = (event, newValue) => {
     this.setState({ fromAmount: event.target.value });
+    this.swapCalc(event.target.value);
   };
 
-  swapCalc = () => {
+  swapCalc = (ammount) => {
     const { fromPrice, toPrice, fromAmount, vsCoin } = this.state;
     if (fromPrice) {
       if (toPrice) {
-        let toAmmount = (fromPrice * fromAmount) / toPrice;
-        this.setState({
-          toAmmount: toAmmount,
-          errorFrom: false,
-          errorTo: false,
-        });
+        if (ammount) {
+          let toAmmount = (fromPrice * ammount) / toPrice;
+          this.setState({
+            toAmmount: toAmmount,
+            errorFrom: false,
+            errorTo: false,
+          });
+        } else {
+          let toAmmount = (fromPrice * fromAmount) / toPrice;
+          this.setState({
+            toAmmount: toAmmount,
+            errorFrom: false,
+            errorTo: false,
+          });
+        }
       } else {
         this.setState({ errorTo: true });
       }

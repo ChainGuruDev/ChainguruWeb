@@ -1,8 +1,9 @@
-import React, { Component } from "react";
-import Chart from "react-apexcharts";
+import React, { Component, Suspense } from "react";
+// import Chart from "react-apexcharts";
 import { withStyles } from "@material-ui/core/styles";
 
 import { colors } from "../../theme";
+import { CircularProgress, Card } from "@material-ui/core";
 
 import {
   COIN_DATA_RETURNED,
@@ -16,6 +17,8 @@ import Store from "../../stores";
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
 const store = Store.store;
+
+const Chart = React.lazy(() => import("react-apexcharts"));
 
 const styles = (theme) => ({
   root: {
@@ -206,13 +209,23 @@ class PriceChart extends Component {
     const { classes } = this.props;
     return (
       <div className={classes.root}>
-        <Chart
-          options={this.state.options}
-          series={this.state.series}
-          type="area"
-          width="100%"
-          height="100%"
-        />
+        <Suspense
+          fallback={
+            <div style={{ textAlign: "center" }}>
+              <Card className={classes.favCard} elevation={3}>
+                <CircularProgress />
+              </Card>
+            </div>
+          }
+        >
+          <Chart
+            options={this.state.options}
+            series={this.state.series}
+            type="area"
+            width="100%"
+            height="100%"
+          />
+        </Suspense>
       </div>
     );
   }

@@ -1,7 +1,9 @@
-import React, { Component } from "react";
-import Chart from "react-apexcharts";
+import React, { Component, Suspense } from "react";
+// import Chart from "react-apexcharts";
 import { withStyles } from "@material-ui/core/styles";
-import { Paper } from "@material-ui/core";
+import { Paper, CircularProgress, Card } from "@material-ui/core";
+
+const Chart = React.lazy(() => import("react-apexcharts"));
 
 const styles = (theme) => ({
   root: {
@@ -57,13 +59,23 @@ class AlltimeChart extends Component {
     const { classes } = this.props;
     return (
       <div className={classes.root}>
-        <Paper className={classes.paper} variant="outlined" spacing={3}>
-          <Chart
-            className={classes.chart}
-            options={this.state.options}
-            series={this.state.series}
-          />
-        </Paper>
+        <Suspense
+          fallback={
+            <div style={{ textAlign: "center" }}>
+              <Card className={classes.favCard} elevation={3}>
+                <CircularProgress />
+              </Card>
+            </div>
+          }
+        >
+          <Paper className={classes.paper} variant="outlined" spacing={3}>
+            <Chart
+              className={classes.chart}
+              options={this.state.options}
+              series={this.state.series}
+            />
+          </Paper>
+        </Suspense>
       </div>
     );
   }

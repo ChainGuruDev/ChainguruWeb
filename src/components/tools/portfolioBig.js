@@ -92,6 +92,16 @@ const styles = (theme) => ({
   },
   tokenLogo: {
     maxHeight: 30,
+    minWidth: 30,
+    marginTop: 3,
+  },
+  winLoseGrid: {
+    cursor: "pointer",
+    alignItems: "center",
+    "&:hover": {
+      background: "rgba(255,255,255, 0.05)",
+      transition: "0.5s",
+    },
   },
   profit_green: {
     color: colors.cgGreen,
@@ -278,6 +288,38 @@ class PortfolioBig extends Component {
         // console.log(sortedRows[i].quote);
       }
       console.log(lpTokens);
+
+      function dynamicSort(property) {
+        var sortOrder = 1;
+        if (property[0] === "-") {
+          sortOrder = -1;
+          property = property.substr(1);
+        }
+        return function (a, b) {
+          var result =
+            a[property] < b[property] ? -1 : a[property] > b[property] ? 1 : 0;
+
+          return result * sortOrder;
+        };
+      }
+
+      console.log(data);
+      let winnersLosers;
+
+      winnersLosers = data[0].assets.sort(dynamicSort("-profit_value"));
+
+      this.setState({
+        winners: winnersLosers.slice(0, 5),
+        losers: winnersLosers
+          .slice(winnersLosers.length - 5, winnersLosers.length)
+          .reverse(),
+      });
+      console.log({
+        winners: winnersLosers.slice(0, 5),
+        losers: winnersLosers
+          .slice(winnersLosers.length - 5, winnersLosers.length)
+          .reverse(),
+      });
       this.setState({
         error: false,
         loading: false,
@@ -336,12 +378,12 @@ class PortfolioBig extends Component {
 
     let sortedRows;
     let formatedRows = [];
-
-    if (sortOrder === "asc") {
+    if (this.state.sortOrder === "asc") {
       sortedRows = filteredData.sort(dynamicSort(sortBy));
     } else {
       sortedRows = filteredData.sort(dynamicSort(`-${sortBy}`));
     }
+
     if (sortedRows.length > 0) {
       return sortedRows.map((row) => (
         <TableRow
@@ -609,6 +651,104 @@ class PortfolioBig extends Component {
     this.setState({ userWallets: payload.wallets });
   };
 
+  //Send token data in data and type "win" / "lose"
+  drawWinnersLosers = (data, type) => {
+    const { classes } = this.props;
+    if (type === "win") {
+      console.log(data);
+      if (data.length > 0) {
+        let filtered = [];
+        for (var i = 0; i < data.length; i++) {
+          if (data[i].profit_value > 0) filtered.push(data[i]);
+        }
+        return (
+          <Grid
+            container
+            direction="column"
+            justify="flex-start"
+            alignItems="stretch"
+          >
+            {filtered.map((row) => (
+              <>
+                <Grid
+                  item
+                  key={row.contract_address}
+                  container
+                  direction="row"
+                  justify="space-between"
+                  align="center"
+                  className={classes.winLoseGrid}
+                  onClick={() => this.winLoseClick(row.contract_address)}
+                >
+                  <Grid item>
+                    <img
+                      className={classes.tokenLogo}
+                      alt=""
+                      src={row.logo_url}
+                    />
+                  </Grid>
+                  <Grid style={{ textAlign: "left" }} item>
+                    {row.contract_name}
+                  </Grid>
+                  <Grid item>{formatMoney(row.profit_value)}</Grid>
+                </Grid>
+                <Divider />
+              </>
+            ))}
+          </Grid>
+        );
+      }
+    } else {
+      console.log(data);
+      if (data.length > 0) {
+        let filtered = [];
+        for (var i = 0; i < data.length; i++) {
+          if (data[i].profit_value < 0) filtered.push(data[i]);
+        }
+        return (
+          <Grid
+            container
+            direction="column"
+            justify="flex-start"
+            alignItems="stretch"
+          >
+            {filtered.map((row) => (
+              <>
+                <Grid
+                  item
+                  key={row.contract_address}
+                  container
+                  direction="row"
+                  justify="space-between"
+                  alignItems="center"
+                  className={classes.winLoseGrid}
+                  onClick={() => this.winLoseClick(row.contract_address)}
+                >
+                  <Grid item>
+                    <img
+                      className={classes.tokenLogo}
+                      alt=""
+                      src={row.logo_url}
+                    />
+                  </Grid>
+                  <Grid style={{ textAlign: "left" }} item>
+                    {row.contract_name}
+                  </Grid>
+                  <Grid item>{formatMoney(row.profit_value)}</Grid>
+                </Grid>
+                <Divider />
+              </>
+            ))}
+          </Grid>
+        );
+      }
+    }
+  };
+
+  winLoseClick = (tokenName) => {
+    this.nav(`/short/detective/${tokenName}`);
+  };
+
   render() {
     const { classes, t } = this.props;
     const {
@@ -648,16 +788,14 @@ class PortfolioBig extends Component {
             )}
             {!error && !dbDataLoaded && (
               <Grid item xs={12} style={{ textAlign: "center" }}>
-                <Typography inline variant={"h4"}>
-                  Please give us a moment
-                </Typography>
-                <Typography inline variant={"h4"}>
+                <Typography variant={"h4"}>Please give us a moment</Typography>
+                <Typography variant={"h4"}>
                   while we prepare your portfolio data...
                 </Typography>
-                <Typography inline style={{ marginTop: "10px" }} variant={"h4"}>
+                <Typography style={{ marginTop: "10px" }} variant={"h4"}>
                   (The first time on a wallet with lots of transactions
                 </Typography>
-                <Typography inline variant={"h4"}>
+                <Typography variant={"h4"}>
                   might take a couple of minutes to complete)
                 </Typography>
                 <LinearProgress style={{ marginTop: "10px" }} />
@@ -749,12 +887,45 @@ class PortfolioBig extends Component {
                 </Grid>
                 <Grid item xs={6}>
                   <div className={classes.graphGrid}>
-                    <Typography variant={"h4"} inline>
+                    <Typography variant={"h4"}>
                       Balance: {this.state.portfolioBalance}
                     </Typography>
-                    <Typography variant={"h4"} inline>
+                    <Typography variant={"h4"}>
                       Profit/Loss: {this.state.portfolioProfit}
                     </Typography>
+                    <Grid
+                      style={{ marginTop: 10, minWidth: "100%" }}
+                      container
+                      direction="column"
+                      justify="flex-start"
+                      alignItems="stretch"
+                    >
+                      <Grid
+                        item
+                        container
+                        direction="row"
+                        justify="space-around"
+                        alignItems="center"
+                      >
+                        <Grid item>Winners</Grid>
+                        <Grid item>Losers</Grid>
+                      </Grid>
+                      <Divider />
+                      <Grid
+                        direction="row"
+                        item
+                        container
+                        spacing={3}
+                        style={{ marginTop: 1 }}
+                      >
+                        <Grid xs={6} item>
+                          {this.drawWinnersLosers(this.state.winners, "win")}
+                        </Grid>
+                        <Grid item xs={6}>
+                          {this.drawWinnersLosers(this.state.losers, "lose")}
+                        </Grid>
+                      </Grid>
+                    </Grid>
                   </div>
                 </Grid>
                 <Grid item xs={12}>
