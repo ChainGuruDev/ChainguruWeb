@@ -3,9 +3,6 @@ import { withRouter, Link } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
-import Bottleneck from "bottleneck";
-
-import TransactionList from "../components/transactionList.js";
 
 import {
   Card,
@@ -13,64 +10,47 @@ import {
   Grid,
   Divider,
   Button,
-  TextField,
   CircularProgress,
+  IconButton,
+  TextField,
   List,
   ListItem,
   ListItemText,
   ListItemSecondaryAction,
-  IconButton,
-  Table,
-  TableCell,
-  TableRow,
-  TableBody,
-  TableHead,
+  LinearProgress,
 } from "@material-ui/core";
-
-import RefreshRoundedIcon from "@material-ui/icons/RefreshRounded";
-import AddCircleRoundedIcon from "@material-ui/icons/AddCircleRounded";
-import BackspaceRoundedIcon from "@material-ui/icons/BackspaceRounded";
 
 import {
   DB_GET_USERDATA,
   DB_USERDATA_RETURNED,
-  DB_ADD_WALLET,
-  DB_DEL_WALLET,
+  DB_GET_PORTFOLIO,
+  DB_GET_PORTFOLIO_RETURNED,
+  DB_UPDATE_PORTFOLIO_RETURNED,
+  DB_SET_USER_WALLET_NICKNAME_RETURNED,
+  DB_REMOVE_USER_WALLET_NICKNAME_RETURNED,
+  CHECK_ACCOUNT_RETURNED,
   DB_ADD_WALLET_RETURNED,
   DB_DEL_WALLET_RETURNED,
   CONNECTION_CONNECTED,
   CONNECTION_DISCONNECTED,
+  DB_UPDATE_PORTFOLIO,
   CHECK_ACCOUNT,
-  CHECK_ACCOUNT_RETURNED,
-  DB_UPDATE_WALLET_MOVEMENTS,
-  DB_UPDATE_WALLET_MOVEMENTS_RETURNED,
-  DB_UPDATE_WALLET_MOVEMENTS_PRICES,
-  DB_UPDATE_WALLET_MOVEMENTS_PRICES_RETURNED,
-  COINLIST_RETURNED,
-  GET_COIN_LIST,
-  COINGECKO_POPULATE_TXLIST,
-  COINGECKO_POPULATE_TXLIST_RETURNED,
-  DB_UPDATE_ONE_MOV_RETURNED,
+  DB_ADD_WALLET,
 } from "../../constants";
+
+import WalletNicknameModal from "../components/walletNicknameModal.js";
+import WalletRemoveModal from "../components/walletRemoveModal.js";
+
+import AddCircleRoundedIcon from "@material-ui/icons/AddCircleRounded";
+import ArrowBackIosRoundedIcon from "@material-ui/icons/ArrowBackIosRounded";
+import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
+import BackspaceRoundedIcon from "@material-ui/icons/BackspaceRounded";
+import RefreshRoundedIcon from "@material-ui/icons/RefreshRounded";
 
 import Store from "../../stores";
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
 const store = Store.store;
-const axios = require("axios").default;
-
-const CoinGecko = require("coingecko-api");
-const CoinGeckoClient = new CoinGecko();
-
-const limiter = new Bottleneck({
-  reservoir: 50, // initial value
-  reservoirRefreshAmount: 50,
-  reservoirRefreshInterval: 60 * 1100, // must be divisible by 250
-
-  // also use maxConcurrent and/or minTime for safety
-  maxConcurrent: 1,
-  minTime: 1100, // pick a value that makes sense for your use case
-});
 
 const styles = (theme) => ({
   root: {
@@ -80,26 +60,21 @@ const styles = (theme) => ({
     minHeight: "100%",
     justifyContent: "space-around",
   },
-  txCard: {
+  walletGrid: {
+    borderColor: "#777",
+    borderRadius: "10px",
+    borderStyle: "solid",
+    borderWidth: "thin",
+    padding: "10px",
+    background: `#9991`,
+    minHeight: "100%",
+  },
+  favCard: {
+    background: "rgba(255,255,255,0.05)",
     padding: 10,
+    margin: 10,
     display: "flex",
     flex: 1,
-    direction: "row",
-    alignItems: "stretch",
-    background: "rgba(125,125,125,0.1)",
-    border: `2px solid ${colors.cgGreen}`,
-  },
-  walletsCard: {
-    background: "rgba(125,125,125,0.1)",
-    border: `2px solid ${colors.cgGreen}`,
-  },
-  walletsGrid: {
-    display: "flex",
-    flex: 1,
-    alignItems: "stretch",
-  },
-  button: {
-    margin: 15,
   },
 });
 
@@ -112,16 +87,12 @@ class Transactions extends Component {
     this.state = {
       account: account,
       loading: false,
-      selectedWallet: "updating",
-      updatingWallet: "",
+      dbDataLoaded: false,
+      addWallet: false,
       userWallets: [],
-      userMovements: [],
-      filteredMovements: [],
+      error: false,
       errMsgWallet: "",
-      errorWallet: false,
-      userBalance: [],
-      coinList: [],
-      list: [],
+      errorWallet: true,
     };
     if (account && account.address) {
       dispatcher.dispatch({
@@ -136,24 +107,16 @@ class Transactions extends Component {
     emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
     emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
+    emitter.on(DB_GET_PORTFOLIO_RETURNED, this.dbGetPortfolioReturned);
+    emitter.on(DB_UPDATE_PORTFOLIO_RETURNED, this.dbGetPortfolioReturned);
+    emitter.on(DB_SET_USER_WALLET_NICKNAME_RETURNED, this.setNicknameReturned);
+    emitter.on(
+      DB_REMOVE_USER_WALLET_NICKNAME_RETURNED,
+      this.setNicknameReturned
+    );
     emitter.on(CHECK_ACCOUNT_RETURNED, this.checkAccountReturned);
     emitter.on(DB_ADD_WALLET_RETURNED, this.dbWalletReturned);
     emitter.on(DB_DEL_WALLET_RETURNED, this.dbWalletReturned);
-    emitter.on(DB_UPDATE_ONE_MOV_RETURNED, this.dbUpdateOneReturned);
-    emitter.on(
-      DB_UPDATE_WALLET_MOVEMENTS_RETURNED,
-      this.dbUpdateWalletMovementsReturned
-    );
-    emitter.on(
-      DB_UPDATE_WALLET_MOVEMENTS_PRICES_RETURNED,
-      this.dbUpdateMovPriceReturned
-    );
-    emitter.on(COINLIST_RETURNED, this.coinlistReturned);
-    emitter.on(COINGECKO_POPULATE_TXLIST_RETURNED, this.populateTxListReturned);
-    this._isMounted &&
-      dispatcher.dispatch({
-        type: GET_COIN_LIST,
-      });
   }
 
   componentWillUnmount() {
@@ -163,26 +126,26 @@ class Transactions extends Component {
       this.connectionDisconnected
     );
     emitter.removeListener(DB_USERDATA_RETURNED, this.dbUserDataReturned);
+    emitter.removeListener(
+      DB_GET_PORTFOLIO_RETURNED,
+      this.dbGetPortfolioReturned
+    );
+    emitter.removeListener(
+      DB_UPDATE_PORTFOLIO_RETURNED,
+      this.dbGetPortfolioReturned
+    );
+    emitter.removeListener(
+      DB_SET_USER_WALLET_NICKNAME_RETURNED,
+      this.setNicknameReturned
+    );
+    emitter.removeListener(
+      DB_REMOVE_USER_WALLET_NICKNAME_RETURNED,
+      this.setNicknameReturned
+    );
     emitter.removeListener(CHECK_ACCOUNT_RETURNED, this.checkAccountReturned);
     emitter.removeListener(DB_ADD_WALLET_RETURNED, this.dbWalletReturned);
     emitter.removeListener(DB_DEL_WALLET_RETURNED, this.dbWalletReturned);
-    emitter.removeListener(
-      DB_UPDATE_ONE_MOV_RETURNED,
-      this.dbUpdateOneReturned
-    );
-    emitter.removeListener(
-      DB_UPDATE_WALLET_MOVEMENTS_PRICES_RETURNED,
-      this.dbUpdateMovPriceReturned
-    );
-    emitter.removeListener(
-      DB_UPDATE_WALLET_MOVEMENTS_RETURNED,
-      this.dbUpdateWalletMovementsReturned
-    );
-    emitter.removeListener(COINLIST_RETURNED, this.coinlistReturned);
-    emitter.removeListener(
-      COINGECKO_POPULATE_TXLIST_RETURNED,
-      this.populateTxListReturned
-    );
+
     this._isMounted = false;
   }
 
@@ -195,310 +158,128 @@ class Transactions extends Component {
     this.setState({ account: store.getStore("account") });
   };
 
-  dbUserDataReturned = (payload) => {
-    this._isMounted &&
-      this.setState({
-        userWallets: payload.wallets,
-        userMovements: payload.movements.movements,
-        selectedWallet: "ALL",
-      });
-    this.getCoinIDs(payload.movements.movements);
-    // this._isMounted && this.getMovements("ALL");
-  };
-
-  dbWalletReturned = (payload) => {
-    this._isMounted && this.setState({ userWallets: payload.wallets });
-  };
-
-  dbUpdateOneReturned = (payload) => {
-    console.log(payload);
-    this._isMounted &&
-      this.setState({
-        userMovements: payload[0],
-      });
-    this._isMounted && this.getMovements(this.state.selectedWallet);
-  };
-
-  dbUpdateMovPriceReturned = (payload) => {
-    console.log(payload);
-  };
-
-  coinlistReturned = (data) => {
-    this._isMounted && this.setState({ coinList: data });
-  };
-
-  addWallet = (wallet) => {
-    if (wallet) {
+  dbUserDataReturned = (data) => {
+    let wallets = [];
+    data.wallets.forEach((item, i) => {
+      wallets.push(item.wallet);
+    });
+    if (!this.state.loading) {
       this._isMounted &&
         dispatcher.dispatch({
-          type: DB_ADD_WALLET,
-          wallet: wallet,
+          type: DB_GET_PORTFOLIO,
+          wallet: wallets[0],
         });
+    }
+    this.setState({
+      loading: true,
+      selectedWallet: wallets[0],
+      userWallets: data.wallets,
+      walletNicknames: data.walletNicknames,
+    });
+  };
+
+  removeWALLET = (wallet) => {
+    const walletNick = this.state.walletNicknames.find(
+      (ele) => ele.wallet === wallet
+    );
+    if (walletNick) {
+      this.setState({
+        deleteWalletModal: true,
+        removeWALLET: [wallet, walletNick.nickname],
+      });
     } else {
-      this._isMounted && this.setState({ errorWallet: true });
+      this.setState({
+        deleteWalletModal: true,
+        removeWALLET: [wallet],
+      });
     }
   };
 
-  updateWallet = (wallet) => {
-    this.getAllResults(this.state.list);
-
-    // this._isMounted &&
-    //   dispatcher.dispatch({
-    //     type: DB_UPDATE_WALLET_MOVEMENTS,
-    //     wallet: wallet,
-    //   });
-    // this._isMounted && this.setState({ selectedWallet: "updating" });
+  setNicknameReturned = (data) => {
+    console.log(data);
+    this.setState({
+      walletNicknames: data,
+    });
   };
 
-  dbUpdateWalletMovementsReturned = (payload) => {
-    this._isMounted &&
+  dbGetPortfolioReturned = (data) => {
+    console.log(data);
+    if (data) {
+      let walletData = {};
+      const walletProfitValue = data[0].profit_value;
+      let assets = data[0].assets;
+      let walletBalance = 0;
+      let lpTokens = [];
+      for (var i = 0; i < assets.length; i++) {
+        walletBalance += assets[i].quote;
+        if (assets[i].balance > 0 && assets[i].contract_ticker === "UNI-V2") {
+          lpTokens.push(assets[i]);
+        }
+
+        // console.log(sortedRows[i].quote);
+      }
+      console.log(lpTokens);
+
+      function dynamicSort(property) {
+        var sortOrder = 1;
+        if (property[0] === "-") {
+          sortOrder = -1;
+          property = property.substr(1);
+        }
+        return function (a, b) {
+          var result =
+            a[property] < b[property] ? -1 : a[property] > b[property] ? 1 : 0;
+
+          return result * sortOrder;
+        };
+      }
+
+      // Sort tokens with most profit and losses and store as state
+      let winnersLosers;
+      winnersLosers = data[0].assets.sort(dynamicSort("-profit_value"));
+
       this.setState({
-        selectedWallet: payload[1],
+        winners: winnersLosers.slice(0, 5),
+        losers: winnersLosers
+          .slice(winnersLosers.length - 5, winnersLosers.length)
+          .reverse(),
       });
-    this.getCoinIDs(payload[0]);
-  };
 
-  handleChange = (event) => {
-    switch (event.target.id) {
-      case "walletAdd":
-        this.setState({ addWallet: event.target.value, errorWallet: false });
-        this._isMounted &&
-          dispatcher.dispatch({
-            type: CHECK_ACCOUNT,
-            content: event.target.value,
-          });
-        break;
-
-      default:
-        break;
+      this.setState({
+        error: false,
+        loading: false,
+        dbDataLoaded: true,
+        portfolioData: data,
+        portfolioProfit: walletProfitValue,
+        portfolioBalance: walletBalance,
+        lpTokens: lpTokens,
+      });
     }
   };
 
   checkAccountReturned = (_isAccount) => {
     if (!_isAccount) {
-      this.setState({
-        errMsgAccount: "Not a valid ethereum address",
-        errorWallet: true,
-      });
+      this.setState({ errMsgWallet: "Not a valid ethereum address" });
+      this.setState({ errorWallet: true });
     } else {
-      this.setState({ errMsgAccount: "", errorWallet: false });
+      this.setState({ errMsgWallet: "" });
+      this.setState({ errorWallet: false });
     }
-    this._isMounted && this.setState({ errorAccount: !_isAccount });
+    this.setState({ errorAccount: !_isAccount });
   };
 
-  walletClicked = (wallet) => {
-    this.setState({ selectedWallet: "updating" });
-    this.getMovements(wallet);
-  };
-
-  getMovements = (wallet) => {
-    const { userMovements } = this.state;
-
-    console.log(userMovements);
-    console.log(wallet);
-
-    let newMovements;
-    if (wallet === "ALL") {
-      newMovements = userMovements;
-    } else {
-      if (userMovements) {
-        const result = userMovements.filter((item) => item.wallet === wallet);
-        newMovements = result;
-      }
-    }
-    console.log(newMovements);
-    this._isMounted &&
-      dispatcher.dispatch({
-        type: COINGECKO_POPULATE_TXLIST,
-        data: newMovements,
-      });
-
-    this._isMounted &&
-      this.setState({
-        filteredMovements: newMovements,
-        updatingWallet: wallet,
-      });
-  };
-
-  createData = (
-    _id,
-    id,
-    image,
-    operation,
-    timeStamp,
-    value,
-    wallet,
-    current_price,
-    buyPrice,
-    gasUsed,
-    gasPrice,
-    tokenSymbol,
-    tokenName,
-    tokenDecimal
-  ) => {
-    return {
-      _id,
-      id,
-      image,
-      operation,
-      timeStamp,
-      value,
-      wallet,
-      current_price,
-      buyPrice,
-      gasUsed,
-      gasPrice,
-      tokenSymbol,
-      tokenName,
-      tokenDecimal,
-    };
-  };
-
-  populateTxListReturned = (txList) => {
-    const movements = this.state.filteredMovements;
-    let rows = [];
-    movements.forEach((item, i) => {
-      let objIndex = txList.findIndex((obj) => obj.id === item.tokenID);
-      if (objIndex > -1) {
-        let rowData = this.createData(
-          item._id,
-          txList[objIndex].id,
-          txList[objIndex].image,
-          item.operation,
-          item.timeStamp,
-          item.value,
-          item.wallet,
-          txList[objIndex].current_price,
-          item.buyPrice,
-          item.gasUsed,
-          item.gasPrice,
-          item.tokenSymbol,
-          txList[objIndex].name,
-          item.tokenDecimal
-        );
-        rows.push(rowData);
-      }
-    });
-    // this.setState({ rowData: rows, loadingData: false });
-
-    // if (this.state.updatingWallet !== "ALL") {
-    //   this.getAllResults(rows);
-    // } else {
-    //   this._isMounted &&
-    //     this.setState({
-    //       list: rows,
-    //       selectedWallet: this.state.updatingWallet,
-    //     });
-    // }
-
-    this._isMounted &&
-      this.setState({
-        list: rows,
-        selectedWallet: this.state.updatingWallet,
-      });
-  };
-
-  updateBuyPrice = async (tokenData) => {
-    let prices = {};
-    let vsCoin = ["usd", "eur", "btc", "eth"];
-    const from = parseInt(tokenData.timeStamp) - 100;
-    const to = parseInt(tokenData.timeStamp) + 10000;
-    try {
-      if (tokenData.buyPrice) {
-        console.log("token already has price");
-        return tokenData;
-      } else {
-        let date = new Date(parseInt(tokenData.timeStamp) * 1000);
-        const queryDate = `${date.getDate()}-${date.getMonth()}-${date.getFullYear()}`;
-        const _urlUSD = await `https://api.coingecko.com/api/v3/coins/${tokenData.id}/market_chart/range?vs_currency=${vsCoin[0]}&from=${from}&to=${to}`;
-        const _urlEUR = await `https://api.coingecko.com/api/v3/coins/${tokenData.id}/market_chart/range?vs_currency=${vsCoin[1]}&from=${from}&to=${to}`;
-        const _urlBTC = await `https://api.coingecko.com/api/v3/coins/${tokenData.id}/market_chart/range?vs_currency=${vsCoin[2]}&from=${from}&to=${to}`;
-        const _urlETH = await `https://api.coingecko.com/api/v3/coins/${tokenData.id}/market_chart/range?vs_currency=${vsCoin[3]}&from=${from}&to=${to}`;
-
-        const geckoUSD = await axios.get(_urlUSD);
-        const geckoEUR = await axios.get(_urlEUR);
-        const geckoBTC = await axios.get(_urlBTC);
-        const geckoETH = await axios.get(_urlETH);
-
-        prices = {
-          usd: await geckoUSD.data.prices[0][1],
-          eur: await geckoEUR.data.prices[0][1],
-          btc: await geckoBTC.data.prices[0][1],
-          eth: await geckoETH.data.prices[0][1],
-        };
-        tokenData.buyPrice = await prices;
-
-        return await tokenData;
-      }
-    } catch (err) {
-      console.log(err.message);
-      return tokenData;
-    }
-  };
-
-  updateBuyPriceMany = async (tokenData) => {
-    console.log(tokenData);
-    let itemIds = [];
-    tokenData.forEach((item, i) => {
-      if (itemIds.indexOf(item.id) === -1) {
-        itemIds.push(item.id);
-      }
-    });
-    console.log(itemIds);
-  };
-
-  limitedUpdatePrices = limiter.wrap(this.updateBuyPrice);
-  //limitedUpdatePrices = this.updateBuyPriceMany;
-
-  getAllResults = async (data) => {
-    console.log(data);
-    const newMovements = [];
-    this.updateBuyPriceMany(data);
-    const allThePromises = data.map((item) => {
-      if (!item.buyPrice) {
-        return this.limitedUpdatePrices(item);
-      } else {
-        console.log("token already has price");
-        return item;
-      }
-    });
-    try {
-      const results = await Promise.all(allThePromises);
-      this.setState(
-        {
-          list: results,
-          selectedWallet: this.state.updatingWallet,
-        },
-        () => {
-          dispatcher.dispatch({
-            type: DB_UPDATE_WALLET_MOVEMENTS_PRICES,
-            newMovements: results,
-            selectedWallet: this.state.updatingWallet,
-          });
-        }
-      );
-    } catch (err) {
-      console.log(err);
-    }
-    // for (let i = 0; i < count; i++) {
-    //   sourceIds.push({
-    //     id: i,
-    //   });
-    // } // Map over all the results and call our pretend API, stashing the promises in a new array
-    // const allThePromises = sourceIds.map((item) => {
-    //   return throttledGetMyData(item);
-    // });
-    // try {
-    //   const results = await Promise.all(allThePromises);
-    //   console.log(results);
-    // } catch (err) {
-    //   console.log(err);
-    // }
+  dbWalletReturned = (payload) => {
+    this.setState({ userWallets: payload.wallets });
   };
 
   userWalletList = (wallets) => {
+    const { walletNicknames } = this.state;
     const { classes, t } = this.props;
+    const walletIndex = wallets.findIndex(
+      (wallets) => wallets.wallet === wallets.wallet
+    );
     if (wallets.length > 0) {
+      let data;
       return wallets.map((wallet) => (
         <div key={wallet._id}>
           <Divider />
@@ -518,19 +299,38 @@ class Transactions extends Component {
                     className={classes.inline}
                     color="textPrimary"
                   >
-                    {wallet.wallet.substring(0, 6) +
-                      "..." +
-                      wallet.wallet.substring(
-                        wallet.wallet.length - 4,
-                        wallet.wallet.length
-                      )}
+                    {(data = walletNicknames.find(
+                      (ele) => ele.wallet === wallet.wallet
+                    )) &&
+                      data.nickname +
+                        " (" +
+                        wallet.wallet.substring(0, 6) +
+                        "..." +
+                        wallet.wallet.substring(
+                          wallet.wallet.length - 4,
+                          wallet.wallet.length
+                        ) +
+                        ")"}
+                    {!walletNicknames.some((e) => e.wallet === wallet.wallet) &&
+                      wallet.wallet.substring(0, 6) +
+                        "..." +
+                        wallet.wallet.substring(
+                          wallet.wallet.length - 4,
+                          wallet.wallet.length
+                        )}
                   </Typography>
                 </React.Fragment>
               }
             />
             <ListItemSecondaryAction>
               <IconButton
-                aria-label="updateTX"
+                aria-label="rename"
+                onClick={() => this.renameWallet(wallet.wallet)}
+              >
+                <MoreHorizIcon />
+              </IconButton>
+              <IconButton
+                aria-label="update"
                 onClick={() => this.updateWallet(wallet.wallet)}
               >
                 <RefreshRoundedIcon />
@@ -553,143 +353,250 @@ class Transactions extends Component {
     });
   };
 
-  getCoinIDs = async (data) => {
-    if (this.state.coinList) {
-      let coinList = [...this.state.coinList];
-      let prevTxList = data;
-      let newTxList = [];
-      for (var i = 0; i < prevTxList.length; i++) {
-        let item = { ...prevTxList[i] };
-        if (item.tokenSymbol === "EWTB") {
-          item.tokenID = "energy-web-token";
-          // newTxList.push(item);
-        } else if (item.tokenSymbol === "XOR") {
-          item.tokenID = "sora";
-          // newTxList.push(item);
-        } else {
-          let objIndex = this.state.coinList.findIndex(
-            (obj) => obj.name === item.tokenName
-          );
-          if (objIndex > -1) {
-            item.tokenID = coinList[objIndex].id;
-          } else {
-            //IF name is not a match look for match in item.symbol
-            //check for more than 1 token with same symbol
-            let symbolRepeats = this.state.coinList.filter(
-              (obj) => obj.symbol === item.tokenSymbol.toLowerCase()
-            ).length;
-            if (symbolRepeats === 1) {
-              objIndex = this.state.coinList.findIndex(
-                (obj) => obj.symbol === item.tokenSymbol.toLowerCase()
-              );
-              if (objIndex > -1) {
-                item.tokenID = coinList[objIndex].id;
-              }
-            } else {
-              if (symbolRepeats === 0) {
-                // HERE ENDS LIQUIDITY POOLS, STAKING, AND SCAM SHITCOINS
-                // ADD LOGIC FOR CONNECTING WITHw LPs, STAKING TOKENS
-                // console.log("missing from geckoList");
-                // console.log(item);
-              }
-              if (symbolRepeats > 1) {
-                // console.log("repeated item in geckoList");
-                // console.log(item);
-                //LOOK TOKEN DATA USING CONTRACT ADDRESS
-                let zrx = item.tokenContract;
-                try {
-                  let data = await CoinGeckoClient.coins.fetchCoinContractInfo(
-                    zrx
-                  );
-                  if (await data) {
-                    item.tokenID = data.data.id;
-                  }
-                } catch (err) {
-                  if (err) {
-                    console.log(err.message);
-                  }
-                }
-              }
-            }
-          }
-        }
-        newTxList.push(item);
-      }
-      this._isMounted && this.setState({ userMovements: newTxList });
-      this.getMovements(this.state.selectedWallet);
+  walletClicked = (wallet) => {
+    this._isMounted &&
+      dispatcher.dispatch({
+        type: DB_GET_PORTFOLIO,
+        wallet: wallet,
+      });
+    this.setState({ selectedWallet: wallet, dbDataLoaded: false });
+  };
+
+  updateWallet = (wallet) => {
+    this._isMounted &&
+      dispatcher.dispatch({
+        type: DB_UPDATE_PORTFOLIO,
+        wallet: wallet,
+      });
+    this.setState({ dbDataLoaded: false });
+  };
+
+  renameWallet = (wallet) => {
+    const data = this.state.walletNicknames.find(
+      (ele) => ele.wallet === wallet
+    );
+    this.setState({
+      walletNicknameModal: true,
+      selectedWallet: wallet,
+      oldNickname: data ? data.nickname : "",
+      dbDataLoaded: false,
+    });
+    this._isMounted &&
+      dispatcher.dispatch({
+        type: DB_GET_PORTFOLIO,
+        wallet: wallet,
+      });
+  };
+
+  toggleAddWallet = () => {
+    let _addingWallet = this.state.addWallet;
+    this.setState({
+      addWallet: !_addingWallet,
+      newWallet: "",
+      errorWallet: true,
+    });
+  };
+
+  handleChange = (event) => {
+    switch (event.target.id) {
+      case "walletAdd":
+        this.setState({ newWallet: event.target.value });
+        this.setState({ errorWallet: false });
+        dispatcher.dispatch({
+          type: CHECK_ACCOUNT,
+          content: event.target.value,
+        });
+        break;
+
+      default:
+        break;
+    }
+  };
+
+  addWallet = (wallet) => {
+    if (wallet) {
+      console.log(wallet);
+      dispatcher.dispatch({
+        type: DB_ADD_WALLET,
+        wallet: wallet,
+      });
+    } else {
+      this.setState({ errorWallet: true });
     }
   };
 
   render() {
     const { classes, t } = this.props;
-    const { account, loading, addWallet, userWallets } = this.state;
+    const {
+      account,
+      loading,
+      dbDataLoaded,
+      addWallet,
+      newWallet,
+      userWallets,
+      walletNicknameModal,
+      deleteWalletModal,
+      error,
+    } = this.state;
 
     return (
       <div className={classes.root}>
         {!account.address && <div>CONNECT WALLET</div>}
         {account.address && (
-          <Grid className={classes.portfolioGrid} spacing={3} container>
-            <Grid item xs={2}>
-              <Card className={classes.walletsCard} elevation={3}>
-                <Grid
-                  className={classes.walletsGrid}
-                  container
-                  direction="column"
-                  justify="center"
-                  alignItems="center"
-                >
-                  <TextField
-                    className={classes.button}
-                    id="walletAdd"
-                    label="Wallet Address"
-                    onChange={this.handleChange}
-                    helperText={this.state.errMsgAccount}
-                    error={this.state.errorWallet}
-                  />
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    className={classes.button}
-                    startIcon={<AddCircleRoundedIcon />}
-                    onClick={() => {
-                      this.addWallet(addWallet);
-                    }}
-                    disabled={this.state.errorWallet}
-                  >
-                    Add
-                  </Button>
-                  <List
-                    className={classes.walletList}
-                    component="nav"
-                    aria-label="user wallet list"
-                  >
-                    <ListItem
-                      key={"_ALL"}
-                      button
-                      selected={this.state.selectedWallet === "ALL"}
-                      onClick={() => this.walletClicked("ALL")}
-                      className={classes.list}
-                    >
-                      <ListItemText primary="All assets" />
-                    </ListItem>
-                    {this.userWalletList(userWallets)}
-                  </List>
+          <Grid container>
+            {error && (
+              <Grid item xs={12} style={{ textAlign: "center" }}>
+                <Typography inline variant={"h4"}>
+                  Portfolio dashboard in development
+                </Typography>
+                <Typography inline variant={"h4"}>
+                  Please try again later. Sorry!
+                </Typography>
+              </Grid>
+            )}
+            {!error && !dbDataLoaded && (
+              <Grid item xs={12} style={{ textAlign: "center" }}>
+                <Typography variant={"h4"}>Please give us a moment</Typography>
+                <Typography variant={"h4"}>
+                  while we prepare your portfolio data...
+                </Typography>
+                <Typography style={{ marginTop: "10px" }} variant={"h4"}>
+                  (The first time on a wallet with lots of transactions
+                </Typography>
+                <Typography variant={"h4"}>
+                  might take a couple of minutes to complete)
+                </Typography>
+                <LinearProgress style={{ marginTop: "10px" }} />
+              </Grid>
+            )}
+            {dbDataLoaded && (
+              <>
+                <Grid item xs={9}>
+                  Aca van las TX
                 </Grid>
-              </Card>
-            </Grid>
-            <Grid item xs={10}>
-              <Card className={classes.txCard} elevation={3}>
-                <TransactionList
-                  list={this.state.list}
-                  selectedWallet={this.state.selectedWallet}
-                />
-              </Card>
-            </Grid>
+                <Grid item xs={3}>
+                  <Card className={classes.favCard} elevation={3}>
+                    <Grid item style={{ minWidth: "100%" }}>
+                      <Grid
+                        item
+                        container
+                        direction="row"
+                        justify="space-between"
+                        alignItems="center"
+                        xs={12}
+                      >
+                        <Typography variant={"h4"}>Wallets</Typography>
+                        {!addWallet && (
+                          <Button
+                            startIcon={<AddCircleRoundedIcon />}
+                            variant="outlined"
+                            size="small"
+                            color="primary"
+                            onClick={this.toggleAddWallet}
+                          >
+                            New
+                          </Button>
+                        )}
+                        {addWallet && (
+                          <Button
+                            startIcon={<ArrowBackIosRoundedIcon />}
+                            variant="contained"
+                            size="small"
+                            color="secondary"
+                            onClick={this.toggleAddWallet}
+                          >
+                            Back
+                          </Button>
+                        )}
+                      </Grid>
+                      {addWallet && (
+                        <>
+                          <Divider style={{ marginTop: 10 }} />
+                          <Grid
+                            item
+                            container
+                            direction="row"
+                            justify="space-between"
+                            alignItems="center"
+                            xs={12}
+                          >
+                            <Grid item xs={9}>
+                              <TextField
+                                className={classes.walletInput}
+                                id="walletAdd"
+                                label="Wallet Address"
+                                onChange={this.handleChange}
+                                helperText={this.state.errMsgWallet}
+                                error={this.state.errorWallet}
+                              />
+                            </Grid>
+                            <Grid item style={{ textAlign: "end" }} xs={3}>
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                color="primary"
+                                className={classes.button}
+                                startIcon={<AddCircleRoundedIcon />}
+                                onClick={() => {
+                                  this.addWallet(newWallet);
+                                }}
+                                disabled={this.state.errorWallet}
+                              >
+                                Add
+                              </Button>
+                            </Grid>
+                          </Grid>
+                        </>
+                      )}
+                      <List
+                        className={classes.walletList}
+                        component="nav"
+                        aria-label="user wallet list"
+                      >
+                        {this.userWalletList(userWallets)}
+                      </List>
+                    </Grid>
+                  </Card>
+                </Grid>
+              </>
+            )}
           </Grid>
         )}
+        {walletNicknameModal && this.renderModal()}
+        {deleteWalletModal && this.renderWalletDeleteModal()}
       </div>
     );
   }
+
+  closeModalNick = () => {
+    this.setState({ walletNicknameModal: false });
+  };
+
+  closeModalDelete = () => {
+    this.setState({ deleteWalletModal: false });
+  };
+
+  renderModal = (wallet, nickname) => {
+    return (
+      <WalletNicknameModal
+        closeModal={this.closeModalNick}
+        modalOpen={this.state.walletNicknameModal}
+        wallet={this.state.selectedWallet}
+        nickname={this.state.oldNickname}
+      />
+    );
+  };
+
+  renderWalletDeleteModal = (wallet) => {
+    return (
+      <WalletRemoveModal
+        closeModal={this.closeModalDelete}
+        modalOpen={this.state.deleteWalletModal}
+        wallet={this.state.removeWALLET[0]}
+        nickname={this.state.removeWALLET[1]}
+      />
+    );
+  };
 
   nav = (screen) => {
     this.props.history.push(screen);
@@ -697,8 +604,3 @@ class Transactions extends Component {
 }
 
 export default withRouter(withStyles(styles)(Transactions));
-
-// <TxList
-//   data={this.state.userTXs}
-//   selectedWallet={this.state.selectedWallet}
-// />

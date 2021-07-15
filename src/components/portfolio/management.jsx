@@ -15,7 +15,7 @@ import ViewQuiltIcon from "@material-ui/icons/ViewQuilt";
 import ShuffleIcon from "@material-ui/icons/Shuffle";
 import TrackChangesRoundedIcon from "@material-ui/icons/TrackChangesRounded";
 import DashboardIcon from "@material-ui/icons/Dashboard";
-
+import ReceiptIcon from "@material-ui/icons/Receipt";
 //Load Tools
 import CryptoDetective from "../tools/cryptoDetective";
 import Transactions from "../tools/transactions";
@@ -169,14 +169,17 @@ class PortfolioManagement extends Component {
       case "dashboard":
         toolID = 0;
         break;
-      case "heatmap":
+      case "transactions":
         toolID = 1;
         break;
-      case "cryptoConverter":
+      case "heatmap":
         toolID = 2;
         break;
-      case "portfolioRadar":
+      case "cryptoConverter":
         toolID = 3;
+        break;
+      case "portfolioRadar":
+        toolID = 4;
         break;
       default:
         break;
@@ -191,12 +194,15 @@ class PortfolioManagement extends Component {
         tool = "dashboard";
         break;
       case 1:
-        tool = "heatmap";
+        tool = "transactions";
         break;
       case 2:
-        tool = "cryptoConverter";
+        tool = "heatmap";
         break;
       case 3:
+        tool = "cryptoConverter";
+        break;
+      case 4:
         tool = "portfolioRadar";
         break;
       default:
@@ -271,33 +277,40 @@ class PortfolioManagement extends Component {
               {...a11yProps(0)}
             />
             <PortfolioTab
+              label="Transactions"
+              icon={<ReceiptIcon />}
+              {...a11yProps(1)}
+            />
+            <PortfolioTab
               label="HeatMap"
               icon={<ViewQuiltIcon />}
-              {...a11yProps(1)}
+              {...a11yProps(2)}
             />
             <PortfolioTab
               label="CryptoConverter"
               icon={<ShuffleIcon />}
-              {...a11yProps(2)}
+              {...a11yProps(3)}
             />
             <PortfolioTab
               label="Portfolio Radar"
               icon={<TrackChangesRoundedIcon />}
-              {...a11yProps(3)}
+              {...a11yProps(4)}
             />
           </PortfolioTabs>
         </AppBar>
         <TabPanel value={valueTab} index={0}>
           <Dashboard />
         </TabPanel>
-
         <TabPanel value={valueTab} index={1}>
-          <PortfolioHeatMap />
+          <Transactions />
         </TabPanel>
         <TabPanel value={valueTab} index={2}>
-          <CryptoConverter />
+          <PortfolioHeatMap />
         </TabPanel>
         <TabPanel value={valueTab} index={3}>
+          <CryptoConverter />
+        </TabPanel>
+        <TabPanel value={valueTab} index={4}>
           <PortfolioRadar />
         </TabPanel>
       </Grid>

@@ -115,16 +115,16 @@ const styles = (theme) => ({
     borderStyle: "solid",
     borderWidth: "thin",
     padding: "10px",
-    background: `#7772`,
+    background: `#9991`,
+    minHeight: "100%",
   },
   graphGrid: {
-    borderColor: colors.cgYellow,
+    borderColor: "#777",
     borderRadius: "10px",
     borderStyle: "solid",
     borderWidth: "thin",
     padding: "10px",
-    background: `${colors.cgYellow}25`,
-    textAlign: "center",
+    background: `#9991`,
     minHeight: "100%",
   },
   walletInput: {
@@ -303,9 +303,8 @@ class PortfolioBig extends Component {
         };
       }
 
-      console.log(data);
+      // Sort tokens with most profit and losses and store as state
       let winnersLosers;
-
       winnersLosers = data[0].assets.sort(dynamicSort("-profit_value"));
 
       this.setState({
@@ -314,12 +313,7 @@ class PortfolioBig extends Component {
           .slice(winnersLosers.length - 5, winnersLosers.length)
           .reverse(),
       });
-      console.log({
-        winners: winnersLosers.slice(0, 5),
-        losers: winnersLosers
-          .slice(winnersLosers.length - 5, winnersLosers.length)
-          .reverse(),
-      });
+
       this.setState({
         error: false,
         loading: false,
@@ -651,97 +645,69 @@ class PortfolioBig extends Component {
     this.setState({ userWallets: payload.wallets });
   };
 
-  //Send token data in data and type "win" / "lose"
+  //Send token data as data and type "win" / "lose"
+  //Returns a list of items sorted by most profit / most loses
   drawWinnersLosers = (data, type) => {
     const { classes } = this.props;
-    if (type === "win") {
-      console.log(data);
-      if (data.length > 0) {
-        let filtered = [];
+    if (data.length > 0) {
+      let filtered = [];
+      if (type === "win") {
         for (var i = 0; i < data.length; i++) {
           if (data[i].profit_value > 0) filtered.push(data[i]);
         }
-        return (
-          <Grid
-            container
-            direction="column"
-            justify="flex-start"
-            alignItems="stretch"
-          >
-            {filtered.map((row) => (
-              <>
-                <Grid
-                  item
-                  key={row.contract_address}
-                  container
-                  direction="row"
-                  justify="space-between"
-                  align="center"
-                  className={classes.winLoseGrid}
-                  onClick={() => this.winLoseClick(row.contract_address)}
-                >
-                  <Grid item>
-                    <img
-                      className={classes.tokenLogo}
-                      alt=""
-                      src={row.logo_url}
-                    />
-                  </Grid>
-                  <Grid style={{ textAlign: "left" }} item>
-                    {row.contract_name}
-                  </Grid>
-                  <Grid item>{formatMoney(row.profit_value)}</Grid>
-                </Grid>
-                <Divider />
-              </>
-            ))}
-          </Grid>
-        );
-      }
-    } else {
-      console.log(data);
-      if (data.length > 0) {
-        let filtered = [];
+      } else {
         for (var i = 0; i < data.length; i++) {
           if (data[i].profit_value < 0) filtered.push(data[i]);
         }
-        return (
-          <Grid
-            container
-            direction="column"
-            justify="flex-start"
-            alignItems="stretch"
-          >
-            {filtered.map((row) => (
-              <>
-                <Grid
-                  item
-                  key={row.contract_address}
-                  container
-                  direction="row"
-                  justify="space-between"
-                  alignItems="center"
-                  className={classes.winLoseGrid}
-                  onClick={() => this.winLoseClick(row.contract_address)}
-                >
-                  <Grid item>
-                    <img
-                      className={classes.tokenLogo}
-                      alt=""
-                      src={row.logo_url}
-                    />
-                  </Grid>
-                  <Grid style={{ textAlign: "left" }} item>
-                    {row.contract_name}
-                  </Grid>
-                  <Grid item>{formatMoney(row.profit_value)}</Grid>
-                </Grid>
-                <Divider />
-              </>
-            ))}
-          </Grid>
-        );
       }
+
+      return (
+        <Grid
+          container
+          direction="column"
+          justify="flex-start"
+          alignItems="stretch"
+          key={type === "win" ? "winList" : "loseList"}
+        >
+          {filtered.map((row) => (
+            <>
+              <Grid
+                item
+                key={
+                  type === "win"
+                    ? "win" + row.contract_address
+                    : "lose" + row.contract_address
+                }
+                container
+                direction="row"
+                justify="space-between"
+                align="center"
+                className={classes.winLoseGrid}
+                onClick={() => this.winLoseClick(row.contract_address)}
+              >
+                <Grid item>
+                  <img
+                    className={classes.tokenLogo}
+                    alt=""
+                    src={row.logo_url}
+                  />
+                </Grid>
+                <Grid style={{ textAlign: "left" }} item>
+                  <Typography color={type === "win" ? "primary" : "secondary"}>
+                    {row.contract_name}
+                  </Typography>
+                </Grid>
+                <Grid item>
+                  <Typography color={type === "win" ? "primary" : "secondary"}>
+                    {formatMoney(row.profit_value)}
+                  </Typography>
+                </Grid>
+              </Grid>
+              <Divider />
+            </>
+          ))}
+        </Grid>
+      );
     }
   };
 

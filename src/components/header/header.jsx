@@ -29,7 +29,8 @@ import {
 
 import Brightness2OutlinedIcon from "@material-ui/icons/Brightness2Outlined";
 import Brightness2RoundedIcon from "@material-ui/icons/Brightness2Rounded";
-import LocalGasStationOutlinedIcon from "@material-ui/icons/LocalGasStationOutlined";
+import EvStationIcon from "@material-ui/icons/EvStation";
+
 import SettingsIcon from "@material-ui/icons/Settings";
 
 import UnlockModal from "../unlock/unlockModal.jsx";
@@ -221,7 +222,11 @@ class Header extends Component {
     const vsCoin = store.getStore("vsCoin");
 
     if (account) {
-      this.setAddressEnsName();
+      try {
+        this.setAddressEnsName();
+      } catch (err) {
+        console.log(err.message);
+      }
     }
 
     this.state = {
@@ -343,7 +348,11 @@ class Header extends Component {
       address: _acc.address,
     });
 
-    this.setAddressEnsName();
+    try {
+      this.setAddressEnsName();
+    } catch (err) {
+      console.log(err.message);
+    }
   };
 
   connectionDisconnected = () => {
@@ -492,7 +501,7 @@ class Header extends Component {
               className={classes.gasPrice}
               style={{ border: `2px solid ${this.state.gasColor}` }}
             >
-              <LocalGasStationOutlinedIcon
+              <EvStationIcon
                 style={{ color: this.state.gasColor }}
                 onClick={() => {
                   dispatcher.dispatch({
