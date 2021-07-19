@@ -3,9 +3,11 @@ import { withRouter, Link } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
+import { formatMoney } from "../helpers";
 
 import {
   Card,
+  Paper,
   Typography,
   Grid,
   Divider,
@@ -95,6 +97,9 @@ const styles = (theme) => ({
     maxHeight: 30,
     minWidth: 30,
     marginTop: 3,
+  },
+  container: {
+    maxHeight: 500,
   },
 });
 
@@ -534,8 +539,46 @@ class Transactions extends Component {
             <Typography>{tx.dateFormated}</Typography>
           </TableCell>
           <TableCell padding="none" align="left">
-            <img className={classes.tokenLogo} alt="" src={tx.logo_url} />
-            <Typography variant={"h4"}>{tx.contract_name}</Typography>
+            <Grid container direction={"row"}>
+              <img
+                onError={(e) => {
+                  e.target.style.display = "none";
+                }}
+                className={classes.tokenLogo}
+                alt=""
+                src={tx.logo_url}
+              />
+              <Typography style={{ marginLeft: 10 }} variant={"h4"}>
+                {tx.contract_name}
+              </Typography>
+            </Grid>
+          </TableCell>
+          <TableCell align={"right"}>
+            <Typography>{formatMoney(tx.amount)}</Typography>
+          </TableCell>
+          <TableCell align={"right"}>
+            <Typography color={tx.profit_percent > 0 ? "primary" : "secondary"}>
+              $ {formatMoney(tx.rate_at_tx)}
+            </Typography>
+            <Typography color={tx.profit_percent > 0 ? "primary" : "secondary"}>
+              ($ {formatMoney(tx.rate_now)})
+            </Typography>
+          </TableCell>
+          <TableCell align={"right"}>
+            <Typography color={tx.profit_percent > 0 ? "primary" : "secondary"}>
+              $ {formatMoney(tx.worth_at_tx)}
+            </Typography>
+            <Typography color={tx.profit_percent > 0 ? "primary" : "secondary"}>
+              ($ {formatMoney(tx.worth_now)})
+            </Typography>
+          </TableCell>
+          <TableCell align={"right"}>
+            <Typography color={tx.profit_percent > 0 ? "primary" : "secondary"}>
+              {formatMoney(tx.profit_percent)} %
+            </Typography>
+            <Typography color={tx.profit_percent > 0 ? "primary" : "secondary"}>
+              ($ {formatMoney(tx.profit_value)})
+            </Typography>
           </TableCell>
         </TableRow>
       ));
@@ -600,14 +643,18 @@ class Transactions extends Component {
         {account.address && dbDataLoaded && (
           <>
             <Grid item xs={9}>
-              <Card className={classes.favCard} elevation={3}>
-                <TableContainer size="small">
-                  <Table className={classes.table} aria-label="assetList">
+              <Paper className={classes.favCard} elevation={3}>
+                <TableContainer className={classes.container} size="small">
+                  <Table
+                    stickyHeader
+                    className={classes.table}
+                    aria-label="assetList"
+                  >
                     <TableHead>
                       <TableRow>
                         <TableCell
                           style={{ width: "30px", height: "30px" }}
-                          align="left"
+                          align="center"
                           padding="none"
                         >
                           <TableSortLabel
@@ -618,7 +665,7 @@ class Transactions extends Component {
                             Type
                           </TableSortLabel>
                         </TableCell>
-                        <TableCell align="left" padding="none">
+                        <TableCell align="center" padding="none">
                           <TableSortLabel
                             active={sortBy === "block_signed_at"}
                             direction={sortOrder}
@@ -651,7 +698,10 @@ class Transactions extends Component {
                             direction={sortOrder}
                             onClick={() => this.sortBy("rate_at_tx")}
                           >
-                            Price
+                            <Grid container direction={"column"}>
+                              <Typography>Price at tx</Typography>
+                              <Typography>(Price Now)</Typography>
+                            </Grid>
                           </TableSortLabel>
                         </TableCell>
                         <TableCell align="right">
@@ -660,7 +710,10 @@ class Transactions extends Component {
                             direction={sortOrder}
                             onClick={() => this.sortBy("worth_at_tx")}
                           >
-                            Worth
+                            <Grid container direction={"column"}>
+                              <Typography>Value at tx</Typography>
+                              <Typography>(Value Now)</Typography>
+                            </Grid>
                           </TableSortLabel>
                         </TableCell>
                         <TableCell align="right">
@@ -669,7 +722,10 @@ class Transactions extends Component {
                             direction={sortOrder}
                             onClick={() => this.sortBy("profit_percent")}
                           >
-                            Profit
+                            <Grid container direction={"column"}>
+                              <Typography>Profit %</Typography>
+                              <Typography>(Profit in $)</Typography>
+                            </Grid>
                           </TableSortLabel>
                         </TableCell>
                       </TableRow>
@@ -679,7 +735,7 @@ class Transactions extends Component {
                     </TableBody>
                   </Table>
                 </TableContainer>
-              </Card>
+              </Paper>
             </Grid>
             <Grid item xs={3}>
               <Card className={classes.favCard} elevation={3}>
