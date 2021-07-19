@@ -302,29 +302,29 @@ class LongShort extends Component {
           />
         );
       }
-      for (var i = 0; i < remaining; i++) {
+      for (var l = 0; l < remaining; l++) {
         combo.push(
           <RadioButtonUncheckedIcon
-            key={`unchecked_${i}`}
+            key={`unchecked_${l}`}
             fontSize="small"
             color="disabled"
           />
         );
       }
     } else {
-      for (var i = 0; i < number; i++) {
+      for (var j = 0; j < number; j++) {
         combo.push(
           <RadioButtonCheckedIcon
-            key={`checked_${i}`}
+            key={`checked_${j}`}
             fontSize="small"
             color="primary"
           />
         );
       }
-      for (var i = 0; i < remaining; i++) {
+      for (var k = 0; k < remaining; k++) {
         combo.push(
           <RadioButtonUncheckedIcon
-            key={`checked_left${i}`}
+            key={`checked_left${k}`}
             fontSize="small"
             color="disabled"
           />
@@ -738,8 +738,7 @@ class LongShort extends Component {
                           <Grid item container xs={4}>
                             <Grid className={classes.comboBar} item xs={4}>
                               <Typography
-                                style={{ marginLeft: "10px" }}
-                                style={{ marginTop: 5 }}
+                                style={{ marginLeft: "10px", marginTop: 5 }}
                                 variant={"h4"}
                                 gutterBottom
                                 color="primary"

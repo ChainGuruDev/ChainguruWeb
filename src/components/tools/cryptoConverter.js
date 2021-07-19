@@ -1,7 +1,6 @@
 import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
 
 import CoinSearchBar from "../components/CoinSearchBar.js";
@@ -12,22 +11,13 @@ import {
   Card,
   Typography,
   Grid,
-  Divider,
-  Button,
-  ButtonGroup,
   TextField,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
   IconButton,
   CircularProgress,
 } from "@material-ui/core";
 
 //import Constants
 import {
-  CONNECTION_CONNECTED,
-  CONNECTION_DISCONNECTED,
   GET_COIN_LIST,
   COINLIST_RETURNED,
   COIN_DATA_RETURNED,
@@ -70,7 +60,6 @@ class CryptoConverter extends Component {
     super();
 
     let vsCoin = store.getStore("vsCoin");
-    const account = store.getStore("account");
     this.state = {
       loadingFrom: false,
       loadingTo: false,
@@ -89,8 +78,6 @@ class CryptoConverter extends Component {
   componentDidMount() {
     this._isMounted = true;
     emitter.on(COIN_DATA_RETURNED, this.coinDataReturned);
-    emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
-    emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
     emitter.on(GET_COIN_DATA, this.getCoinData);
     emitter.on(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
@@ -103,11 +90,6 @@ class CryptoConverter extends Component {
 
   componentWillUnmount() {
     emitter.removeListener(COIN_DATA_RETURNED, this.coinDataReturned);
-    emitter.removeListener(CONNECTION_CONNECTED, this.connectionConnected);
-    emitter.removeListener(
-      CONNECTION_DISCONNECTED,
-      this.connectionDisconnected
-    );
     emitter.removeListener(COINLIST_RETURNED, this.coinlistReturned);
     emitter.removeListener(GET_COIN_DATA, this.getCoinData);
     emitter.removeListener(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
@@ -185,12 +167,6 @@ class CryptoConverter extends Component {
     }
   };
 
-  connectionConnected = () => {
-    const { t } = this.props;
-  };
-
-  connectionDisconnected = () => {};
-
   coinlistReturned = (data) => {
     this._isMounted && this.setState({ coinList: data });
   };
@@ -231,7 +207,7 @@ class CryptoConverter extends Component {
   };
 
   swapCalc = (ammount) => {
-    const { fromPrice, toPrice, fromAmount, vsCoin } = this.state;
+    const { fromPrice, toPrice, fromAmount } = this.state;
     if (fromPrice) {
       if (toPrice) {
         if (ammount) {
@@ -261,16 +237,8 @@ class CryptoConverter extends Component {
   };
 
   render() {
-    const { classes, t } = this.props;
-    const {
-      fromData,
-      fromPrice,
-      toPrice,
-      toData,
-      loadingFrom,
-      loadingTo,
-      vsCoin,
-    } = this.state;
+    const { classes } = this.props;
+    const { loadingFrom, loadingTo } = this.state;
 
     return (
       <div className={classes.root}>

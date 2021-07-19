@@ -399,14 +399,8 @@ class Header extends Component {
   };
 
   render() {
-    const { classes, t, vsCoin } = this.props;
-    const {
-      account,
-      addressEnsName,
-      modalOpen,
-      darkMode,
-      darkModeBool,
-    } = this.state;
+    const { classes, t } = this.props;
+    const { account, addressEnsName, modalOpen, darkModeBool } = this.state;
 
     var address = null;
     if (account.address) {
@@ -460,7 +454,7 @@ class Header extends Component {
               className={classes.vsCoinDIV}
               style={{ border: `2px solid ${this.state.cgLogoColor}` }}
             >
-              {this.state.vsCoin == "usd" && (
+              {this.state.vsCoin === "usd" && (
                 <Usd
                   className={classes.vsCoinIcon}
                   fill={this.state.cgLogoColor}

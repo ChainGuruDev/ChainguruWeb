@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import { colors } from "../../theme";
 import { formatMoney, formatMoneyMCAP } from "../helpers";
 import SparklineChart from "../components/SparklineChart.js";
 import LastPageIcon from "@material-ui/icons/LastPage";
@@ -28,7 +27,6 @@ import FirstPageIcon from "@material-ui/icons/FirstPage";
 import KeyboardArrowLeft from "@material-ui/icons/KeyboardArrowLeft";
 import KeyboardArrowRight from "@material-ui/icons/KeyboardArrowRight";
 import {
-  ERROR,
   GECKO_GET_COINS,
   GECKO_GET_COINS_RETURNED,
   SWITCH_VS_COIN_RETURNED,
@@ -124,14 +122,7 @@ class CoinList extends Component {
   }
 
   componentDidMount() {
-    const {
-      page,
-      rows,
-      perPage,
-      sortBy,
-      sortOrder,
-      reqPercentage,
-    } = this.state;
+    const { page, perPage, sortBy, sortOrder, reqPercentage } = this.state;
 
     this._isMounted = true;
     this.setState({ geckoDataLoaded: false });
@@ -167,14 +158,7 @@ class CoinList extends Component {
   };
 
   vsCoinReturned = () => {
-    const {
-      page,
-      rows,
-      perPage,
-      sortBy,
-      sortOrder,
-      reqPercentage,
-    } = this.state;
+    const { page, perPage, sortBy, sortOrder, reqPercentage } = this.state;
 
     this._isMounted &&
       dispatcher.dispatch({
@@ -270,14 +254,7 @@ class CoinList extends Component {
   };
 
   sortBy(_sortBy) {
-    const {
-      page,
-      rows,
-      perPage,
-      sortBy,
-      sortOrder,
-      reqPercentage,
-    } = this.state;
+    const { page, perPage, sortBy, reqPercentage } = this.state;
     let _prevSortBy = sortBy;
     let _sortOrder;
     if (_prevSortBy === _sortBy) {
@@ -320,7 +297,7 @@ class CoinList extends Component {
 
   sortedList = () => {
     const { classes } = this.props;
-    const { sortBy, sortOrder, geckoData } = this.state;
+    const { geckoData } = this.state;
 
     if (geckoData.length > 0) {
       return geckoData.map((row) => (
@@ -490,7 +467,7 @@ class CoinList extends Component {
   };
 
   render() {
-    const { classes, t } = this.props;
+    const { classes } = this.props;
     const {
       geckoDataLoaded,
       geckoData,
@@ -500,7 +477,6 @@ class CoinList extends Component {
       perPage,
       coins,
       reqPercentage,
-      timeFrame,
       labelA,
       labelB,
       labelC,

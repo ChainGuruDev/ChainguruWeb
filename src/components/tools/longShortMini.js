@@ -12,13 +12,9 @@ import LSResultDonutChart from "../components/LS_ResultDonutChart.js";
 //LSTABLEACTIVE MINI
 import LSTableActiveMini from "../components/LS_Table_ActiveMini.js";
 
-import { colors } from "../../theme";
-
 import {
   Grid,
   Card,
-  Button,
-  Avatar,
   Typography,
   CircularProgress,
   Divider,
@@ -208,29 +204,29 @@ class LongShortMini extends Component {
           />
         );
       }
-      for (var i = 0; i < remaining; i++) {
+      for (var j = 0; j < remaining; j++) {
         combo.push(
           <RadioButtonUncheckedIcon
-            key={`unchecked_${i}`}
+            key={`unchecked_${j}`}
             fontSize="small"
             color="disabled"
           />
         );
       }
     } else {
-      for (var i = 0; i < number; i++) {
+      for (var k = 0; k < number; k++) {
         combo.push(
           <RadioButtonCheckedIcon
-            key={`checked_${i}`}
+            key={`checked_${k}`}
             fontSize="small"
             color="primary"
           />
         );
       }
-      for (var i = 0; i < remaining; i++) {
+      for (var l = 0; l < remaining; l++) {
         combo.push(
           <RadioButtonUncheckedIcon
-            key={`checked_left${i}`}
+            key={`checked_left${l}`}
             fontSize="small"
             color="disabled"
           />
@@ -244,19 +240,13 @@ class LongShortMini extends Component {
     const { classes } = this.props;
     const { loading } = this.state;
     const {
-      account,
       countTotals,
       countLong,
       countShort,
-      completeLS,
       incompleteLS,
       modalOpen,
       modalData,
-      longCombo,
-      shortCombo,
-      activeLS,
     } = this.state;
-    const darkMode = store.getStore("theme") === "dark" ? true : false;
 
     return (
       <>

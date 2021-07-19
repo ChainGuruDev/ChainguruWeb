@@ -13,8 +13,6 @@ import {
 
 import { ERROR, DB_DEL_WALLET, DB_DEL_WALLET_RETURNED } from "../../constants";
 
-import { colors } from "../../theme";
-
 import Store from "../../stores";
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
@@ -75,7 +73,7 @@ class WalletRemoveModal extends Component {
   };
 
   render() {
-    const { closeModal, modalOpen, classes, wallet, nickname } = this.props;
+    const { closeModal, modalOpen, wallet, nickname } = this.props;
     const { loading } = this.state;
     const fullScreen = window.innerWidth < 450;
 

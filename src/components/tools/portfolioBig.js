@@ -1,14 +1,11 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
-import { formatMoney, formatMoneyMCAP } from "../helpers";
+import { formatMoney } from "../helpers";
 import WalletNicknameModal from "../components/walletNicknameModal.js";
 import WalletRemoveModal from "../components/walletRemoveModal.js";
 
-import ArrowDropDownRoundedIcon from "@material-ui/icons/ArrowDropDownRounded";
-import ArrowDropUpRoundedIcon from "@material-ui/icons/ArrowDropUpRounded";
 import RefreshRoundedIcon from "@material-ui/icons/RefreshRounded";
 import BackspaceRoundedIcon from "@material-ui/icons/BackspaceRounded";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
@@ -20,16 +17,13 @@ import {
   Grid,
   Divider,
   Button,
-  CircularProgress,
   LinearProgress,
-  Paper,
   Typography,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
-  TablePagination,
   TableRow,
   TableSortLabel,
   List,
@@ -39,8 +33,6 @@ import {
   IconButton,
   TextField,
 } from "@material-ui/core";
-
-import Skeleton from "@material-ui/lab/Skeleton";
 
 import {
   ERROR,
@@ -57,24 +49,13 @@ import {
   CHECK_ACCOUNT_RETURNED,
   DB_ADD_WALLET,
   DB_ADD_WALLET_RETURNED,
-  DB_DEL_WALLET,
   DB_DEL_WALLET_RETURNED,
 } from "../../constants";
 
-import {
-  GET_TOKEN_COMPONENTS,
-  GET_PROTOCOLS_BALANCES,
-} from "../../constants/defiSDK.js";
-
 import Store from "../../stores";
-import DefiSDKStore from "../../stores/defiSDK_store.js";
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
 const store = Store.store;
-
-const emitterDefi = DefiSDKStore.emitter;
-const storeDefi = DefiSDKStore.store;
-const dispatcherDefi = DefiSDKStore.dispatcher;
 
 const styles = (theme) => ({
   root: {
@@ -219,7 +200,6 @@ class PortfolioBig extends Component {
 
   //EMITTER EVENTS FUNCTIONS
   connectionConnected = () => {
-    const { t } = this.props;
     this.setState({ account: store.getStore("account") });
   };
 
@@ -274,7 +254,6 @@ class PortfolioBig extends Component {
   dbGetPortfolioReturned = (data) => {
     console.log(data);
     if (data) {
-      let walletData = {};
       const walletProfitValue = data[0].profit_value;
       let assets = data[0].assets;
       let walletBalance = 0;
@@ -337,12 +316,7 @@ class PortfolioBig extends Component {
   //END EMITTER EVENT FUNCTIONS
   sortedList = () => {
     const { classes } = this.props;
-    const {
-      sortBy,
-      sortOrder,
-      portfolioData,
-      hideLowBalanceCoins,
-    } = this.state;
+    const { sortBy, portfolioData, hideLowBalanceCoins } = this.state;
 
     function dynamicSort(property) {
       var sortOrder = 1;
@@ -371,7 +345,6 @@ class PortfolioBig extends Component {
     }
 
     let sortedRows;
-    let formatedRows = [];
     if (this.state.sortOrder === "asc") {
       sortedRows = filteredData.sort(dynamicSort(sortBy));
     } else {
@@ -408,7 +381,7 @@ class PortfolioBig extends Component {
             </Typography>
           </TableCell>
           <TableCell align="right">
-            {row.avg_buy != 0 && (
+            {row.avg_buy !== 0 && (
               <>
                 <Typography variant={"body1"}>
                   ${formatMoney(row.avg_buy)}
@@ -514,10 +487,8 @@ class PortfolioBig extends Component {
 
   userWalletList = (wallets) => {
     const { walletNicknames } = this.state;
-    const { classes, t } = this.props;
-    const walletIndex = wallets.findIndex(
-      (wallets) => wallets.wallet === wallets.wallet
-    );
+    const { classes } = this.props;
+
     if (wallets.length > 0) {
       let data;
       return wallets.map((wallet) => (
@@ -575,7 +546,7 @@ class PortfolioBig extends Component {
               >
                 <RefreshRoundedIcon />
               </IconButton>
-              {this.state.account.address != wallet.wallet && (
+              {this.state.account.address !== wallet.wallet && (
                 <IconButton
                   aria-label="remove"
                   onClick={() => this.removeWALLET(wallet.wallet)}
@@ -656,8 +627,8 @@ class PortfolioBig extends Component {
           if (data[i].profit_value > 0) filtered.push(data[i]);
         }
       } else {
-        for (var i = 0; i < data.length; i++) {
-          if (data[i].profit_value < 0) filtered.push(data[i]);
+        for (var j = 0; j < data.length; j++) {
+          if (data[j].profit_value < 0) filtered.push(data[j]);
         }
       }
 
@@ -716,10 +687,8 @@ class PortfolioBig extends Component {
   };
 
   render() {
-    const { classes, t } = this.props;
+    const { classes } = this.props;
     const {
-      account,
-      loading,
       dbDataLoaded,
       portfolioData,
       sortBy,

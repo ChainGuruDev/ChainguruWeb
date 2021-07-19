@@ -13,11 +13,8 @@ import {
   Card,
 } from "@material-ui/core";
 import { withTranslation } from "react-i18next";
-import { colors } from "../../theme";
 
-import BusinessCenterRoundedIcon from "@material-ui/icons/BusinessCenterRounded";
 import SearchIcon from "@material-ui/icons/Search";
-import SyncAltRoundedIcon from "@material-ui/icons/SyncAltRounded";
 import FlashOnIcon from "@material-ui/icons/FlashOn";
 import CompareArrowsIcon from "@material-ui/icons/CompareArrows";
 import LensIcon from "@material-ui/icons/Lens";
@@ -200,7 +197,7 @@ class Medium extends Component {
   };
 
   render() {
-    const { classes, t, location } = this.props;
+    const { classes } = this.props;
     const { valueTab, coinID } = this.state;
 
     const handleChangeTabs = (event, newValueTab) => {

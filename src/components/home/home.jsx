@@ -206,7 +206,7 @@ class Home extends Component {
   }
 
   render() {
-    const { classes, t, location } = this.props;
+    const { classes, t } = this.props;
 
     return (
       <div className={classes.root}>

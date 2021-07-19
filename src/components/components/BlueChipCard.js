@@ -1,22 +1,14 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import {
-  Typography,
-  Paper,
-  Grid,
-  Button,
-  CircularProgress,
-} from "@material-ui/core";
+import { Typography, Paper, Grid, CircularProgress } from "@material-ui/core";
 import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
 import AlltimeChart from "../components/AlltimeChart";
-import Skeleton from "@material-ui/lab/Skeleton";
 
 import {
   COINGECKO_GET_ALLTIME_CHART,
   COINGECKO_ALLTIME_CHART_RETURNED,
-  UNISWAP_TRADE,
 } from "../../constants";
 
 import Store from "../../stores";

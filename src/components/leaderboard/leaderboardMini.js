@@ -1,27 +1,18 @@
 import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
 
 import {
   Card,
   Grid,
   Divider,
-  Button,
-  TextField,
   CircularProgress,
   Avatar,
-  Paper,
   Typography,
 } from "@material-ui/core";
 
-import AddCircleRoundedIcon from "@material-ui/icons/AddCircleRounded";
-
 import {
-  ERROR,
-  CONNECTION_CONNECTED,
-  CONNECTION_DISCONNECTED,
   DB_GET_LEADERBOARD,
   DB_GET_LEADERBOARD_RETURNED,
 } from "../../constants";
@@ -209,7 +200,7 @@ class LeaderboardMini extends Component {
   };
 
   render() {
-    const { classes, t } = this.props;
+    const { classes } = this.props;
     const { loading } = this.state;
     const darkMode = store.getStore("theme") === "dark" ? true : false;
 

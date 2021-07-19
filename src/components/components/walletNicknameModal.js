@@ -20,8 +20,6 @@ import {
   DB_REMOVE_USER_WALLET_NICKNAME_RETURNED,
 } from "../../constants";
 
-import { colors } from "../../theme";
-
 import Store from "../../stores";
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
@@ -117,8 +115,8 @@ class WalletNicknameModal extends Component {
   };
 
   render() {
-    const { closeModal, modalOpen, classes } = this.props;
-    const { selectedAvatar, wallet, oldNickname, loading } = this.state;
+    const { closeModal, modalOpen } = this.props;
+    const { wallet, oldNickname, loading } = this.state;
     const fullScreen = window.innerWidth < 450;
 
     return (

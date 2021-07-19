@@ -28,7 +28,7 @@ class PieChart extends Component {
     // console.log(props.data);
     let categories = [];
     let count = [];
-    for (var [key, value] of Object.entries(props.data)) {
+    for (var [, value] of Object.entries(props.data)) {
       categories.push(value.categorie);
       count.push(value.amount);
     }

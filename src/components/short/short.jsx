@@ -268,8 +268,8 @@ class Short extends Component {
   };
 
   render() {
-    const { classes, t, location } = this.props;
-    const { bigChart, valueTab, coinID } = this.state;
+    const { classes } = this.props;
+    const { valueTab, coinID } = this.state;
     const handleChangeTabs = (event, newValueTab) => {
       this.setState({ valueTab: newValueTab });
       let newScreen = this.toolID2tool(newValueTab);

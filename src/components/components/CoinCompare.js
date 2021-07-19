@@ -460,13 +460,10 @@ class CoinCompare extends Component {
     switch (toolTimeframe) {
       case "short":
         return shortTimeframe();
-        break;
       case "medium":
         return mediumTimeframe();
-        break;
       default:
         return shortTimeframe();
-        break;
     }
   };
 

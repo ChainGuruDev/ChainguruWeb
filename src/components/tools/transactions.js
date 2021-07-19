@@ -1,8 +1,6 @@
 import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import { withTranslation } from "react-i18next";
-import { colors } from "../../theme";
 import { formatMoney } from "../helpers";
 
 import {
@@ -12,7 +10,6 @@ import {
   Grid,
   Divider,
   Button,
-  CircularProgress,
   IconButton,
   TextField,
   List,
@@ -177,7 +174,6 @@ class Transactions extends Component {
   }
 
   connectionConnected = () => {
-    const { t } = this.props;
     this.setState({ account: store.getStore("account") });
   };
 
@@ -232,7 +228,6 @@ class Transactions extends Component {
   dbGetPortfolioReturned = (data) => {
     console.log(data);
     if (data) {
-      let walletData = {};
       const walletProfitValue = data[0].profit_value;
       let assets = data[0].assets;
       let walletBalance = 0;
@@ -301,10 +296,8 @@ class Transactions extends Component {
 
   userWalletList = (wallets) => {
     const { walletNicknames } = this.state;
-    const { classes, t } = this.props;
-    const walletIndex = wallets.findIndex(
-      (wallets) => wallets.wallet === wallets.wallet
-    );
+    const { classes } = this.props;
+
     if (wallets.length > 0) {
       let data;
       return wallets.map((wallet) => (
@@ -362,7 +355,7 @@ class Transactions extends Component {
               >
                 <RefreshRoundedIcon />
               </IconButton>
-              {this.state.account.address != wallet.wallet && (
+              {this.state.account.address !== wallet.wallet && (
                 <IconButton
                   aria-label="remove"
                   onClick={() => this.removeWALLET(wallet.wallet)}
@@ -468,7 +461,7 @@ class Transactions extends Component {
 
   drawTransactions = (data) => {
     const { classes } = this.props;
-    const { sortBy, sortOrder } = this.state;
+    const { sortBy } = this.state;
 
     function dynamicSort(property) {
       var sortOrder = 1;
@@ -586,10 +579,9 @@ class Transactions extends Component {
   };
 
   render() {
-    const { classes, t } = this.props;
+    const { classes } = this.props;
     const {
       account,
-      loading,
       dbDataLoaded,
       addWallet,
       newWallet,

@@ -52,7 +52,6 @@ import {
   COIN_DATA_RETURNED,
   GET_COIN_PRICECHART,
   COIN_PRICECHART_RETURNED,
-  GET_WALLET_TOKENS_BALANCE,
   SET_ALLOWED_ARTIST,
   ALLOWED_ARTIST_RETURNED,
   IS_ALLOWED_ARTIST,
@@ -261,9 +260,6 @@ class Store {
           case GET_COIN_DATA:
             this.getCoinData(payload);
             break;
-          case GET_WALLET_TOKENS_BALANCE:
-            this.getWalletTokenBalance(payload);
-            break;
           case SET_ALLOWED_ARTIST:
             this.setAllowedArtist(payload);
             break;
@@ -419,7 +415,6 @@ class Store {
       config.lfOriginalsContract
     );
 
-    let _isAccount = false;
     try {
       const address = web3.utils.toChecksumAddress(payload.destAccount);
       lfOriginalsContract.methods
@@ -433,7 +428,6 @@ class Store {
           gasPrice: web3.utils.toWei(await this._getGasPrice(), "gwei"),
         });
     } catch (e) {
-      _isAccount = false;
       return emitter.emit(ERROR, "NOT A VALID ACCOUNT");
     }
   };
@@ -442,13 +436,7 @@ class Store {
     const web3 = new Web3(store.getStore("web3context").library.provider);
     const account = store.getStore("account");
 
-    const {
-      artistAccount,
-      artistCommission,
-      price,
-      tokenURI,
-      maxSupply,
-    } = payload.content;
+    const { artistCommission, price, tokenURI, maxSupply } = payload.content;
 
     let _price = web3.utils.toWei(price);
 
@@ -625,7 +613,7 @@ class Store {
       );
       console.log(_account.content);
       try {
-        const address = web3.utils.toChecksumAddress(_account.content);
+        // const address = web3.utils.toChecksumAddress(_account.content);
         if (_account.content) {
           isAdmin = await lfOriginalsContract.methods
             .hasRole(web3.utils.keccak256("ADMIN_ROLE"), _account.content)
@@ -658,7 +646,7 @@ class Store {
       );
       let _isAccount = false;
       try {
-        const address = web3.utils.toChecksumAddress(payload.account);
+        // const address = web3.utils.toChecksumAddress(payload.account);
         _isAccount = true;
         if (_isAccount) {
           if (payload.role === 1) {
@@ -747,7 +735,7 @@ class Store {
 
   isAllowedArtist = async () => {
     if (store.getStore("web3context")) {
-      let _isAllowed = false;
+      // let _isAllowed = false;
       const account = store.getStore("account");
       const web3 = new Web3(store.getStore("web3context").library.provider);
       let selfServiceAccessControls = new web3.eth.Contract(
@@ -773,7 +761,7 @@ class Store {
       );
       let _isAccount = false;
       try {
-        const address = web3.utils.toChecksumAddress(payload.account);
+        // const address = web3.utils.toChecksumAddress(payload.account);
         _isAccount = true;
         if (_isAccount) {
           await selfServiceAccessControls.methods
@@ -815,7 +803,7 @@ class Store {
       );
       let _isAccount = false;
       try {
-        const address = web3.utils.toChecksumAddress(payload.account);
+        // const address = web3.utils.toChecksumAddress(payload.account);
         _isAccount = true;
         if (_isAccount) {
           if (payload.role === 1) {
@@ -1233,19 +1221,18 @@ class Store {
       let list = this.store.coinList;
       if (this.store.userFavorites && this.store.userFavorites.length > 0) {
         const userFav = this.store.userFavorites;
-        const listFavFirst = [];
 
         userFav.forEach((item, i) => {
           list.sort(function (x, y) {
-            return x.id == item ? -1 : y.id == item ? 1 : 0;
+            return x.id === item ? -1 : y.id === item ? 1 : 0;
           });
         });
       }
       list.sort(function (x, y) {
-        return x.id == "ethereum" ? -1 : y.id == "ethereum" ? 1 : 0;
+        return x.id === "ethereum" ? -1 : y.id === "ethereum" ? 1 : 0;
       });
       list.sort(function (x, y) {
-        return x.id == "bitcoin" ? -1 : y.id == "bitcoin" ? 1 : 0;
+        return x.id === "bitcoin" ? -1 : y.id === "bitcoin" ? 1 : 0;
       });
       emitter.emit(COINLIST_RETURNED, this.store.coinList);
     } else {
@@ -1255,19 +1242,18 @@ class Store {
       let list = data.data;
       if (this.store.userFavorites && this.store.userFavorites.length > 0) {
         const userFav = this.store.userFavorites;
-        const listFavFirst = [];
 
         userFav.forEach((item, i) => {
           list.sort(function (x, y) {
-            return x.id == item ? -1 : y.id == item ? 1 : 0;
+            return x.id === item ? -1 : y.id === item ? 1 : 0;
           });
         });
       }
       list.sort(function (x, y) {
-        return x.id == "ethereum" ? -1 : y.id == "ethereum" ? 1 : 0;
+        return x.id === "ethereum" ? -1 : y.id === "ethereum" ? 1 : 0;
       });
       list.sort(function (x, y) {
-        return x.id == "bitcoin" ? -1 : y.id == "bitcoin" ? 1 : 0;
+        return x.id === "bitcoin" ? -1 : y.id === "bitcoin" ? 1 : 0;
       });
       store.setStore({ coinList: list });
       emitter.emit(COINLIST_RETURNED, this.store.coinList);
@@ -1277,8 +1263,6 @@ class Store {
   };
 
   getCoinData = async (coin) => {
-    let data;
-
     if (coin.content.startsWith("0x") && coin.content.length > 3) {
       console.log("bla");
       //TODO GET COINDATA FROM CONTRACT ADDRESS
@@ -1340,7 +1324,6 @@ class Store {
   };
 
   geckoPopulateFavList = async (payload) => {
-    let data;
     let vsCoin = store.getStore("vsCoin");
     // console.log(payload);
     // console.log(payload.lsType);
@@ -1377,7 +1360,6 @@ class Store {
   };
 
   geckoPopulateTxList = async (payload) => {
-    let data;
     let vsCoin = store.getStore("vsCoin");
     let itemIDs = [];
     for (var i = 0; i < payload.data.length; i++) {
@@ -1427,50 +1409,7 @@ class Store {
     ]);
   };
 
-  getWalletTokenBalance = async () => {
-    console.log("Getting balances");
-    const web3 = new Web3(store.getStore("web3context").library.provider);
-
-    var subscription = web3.eth
-      .subscribe(
-        "logs",
-        {
-          fromBlock: 1,
-          address: "0xda0aed568d9a2dbdcbafc1576fedc633d28eee9a",
-        },
-        function () {}
-      )
-      .on("data", function (trxData) {
-        function formatAddress(data) {
-          var step1 = web3.utils.hexToBytes(data);
-          for (var i = 0; i < step1.length; i++)
-            if (step1[0] === 0) step1.splice(0, 1);
-          return web3.utils.bytesToHex(step1);
-        }
-
-        console.log("Register new transfer: " + trxData.transactionHash);
-        console.log(
-          "Contract " +
-            trxData.address +
-            " has transaction of " +
-            web3.utils.hexToNumberString(trxData.data) +
-            " from " +
-            formatAddress(trxData.topics["1"]) +
-            " to " +
-            formatAddress(trxData.topics["2"])
-        );
-        //console.log(trxData);
-        web3.eth.getTransactionReceipt(trxData.transactionHash, function (
-          error,
-          reciept
-        ) {
-          console.log("Sent by " + reciept.from + " to contract " + reciept.to);
-        });
-      });
-  };
-
   db_getUserData = async (payload) => {
-    const account = store.getStore("account");
     try {
       let _userExists = await axios.get(
         `https://chainguru-db.herokuapp.com/users/${payload.address}`
@@ -1577,11 +1516,9 @@ class Store {
   };
 
   db_updateWallet = async (payload) => {
-    const account = store.getStore("account");
-
     let _dbUpdateWalletBal;
     try {
-      let _dbUpdateWallet = await axios
+      await axios
         .put(`https://chainguru-db.herokuapp.com/wallets/updateOne`, {
           wallet: payload.wallet,
         })
@@ -1644,7 +1581,7 @@ class Store {
     let _dbUpdateWalletTX;
 
     try {
-      let _dbUpdateWallet = await axios
+      await axios
         .put(`https://chainguru-db.herokuapp.com/wallets/updateOne`, {
           wallet: payload.wallet,
         })
@@ -1876,7 +1813,6 @@ class Store {
   };
 
   geckoGetCoins = async (payload) => {
-    let data;
     let vsCoin = store.getStore("vsCoin");
     try {
       let data = await CoinGeckoClient.coins.markets({

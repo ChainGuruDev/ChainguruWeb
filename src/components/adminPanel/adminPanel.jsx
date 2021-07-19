@@ -23,14 +23,12 @@ import {
   ERROR,
   CONNECTION_CONNECTED,
   CONNECTION_DISCONNECTED,
-  CHECK_ACCOUNT,
   CHECK_ACCOUNT_RETURNED,
   CHECK_ROLES,
   CHECK_ROLES_RETURNED,
   SET_ROLES,
   REVOKE_ROLES,
   SET_ALLOWED_ARTIST,
-  SET_OPEN_TO_ALL_ARTISTS,
   ALLOWED_ARTIST_RETURNED,
 } from "../../constants";
 
@@ -304,7 +302,7 @@ class AdminPanel extends Component {
 
   render() {
     const { classes, t } = this.props;
-    const { loading, snackbarMessage, accountAddress, isAdmin } = this.state;
+    const { loading, snackbarMessage } = this.state;
 
     return (
       <div className={classes.background}>

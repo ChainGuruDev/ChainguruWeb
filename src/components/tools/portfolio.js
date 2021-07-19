@@ -285,7 +285,7 @@ class Portfolio extends Component {
   };
 
   userWalletList = (wallets) => {
-    const { classes, t } = this.props;
+    const { classes } = this.props;
     if (wallets.length > 0) {
       return wallets.map((wallet) => (
         <div key={wallet._id}>
@@ -323,7 +323,7 @@ class Portfolio extends Component {
               >
                 <RefreshRoundedIcon />
               </IconButton>
-              {this.state.account.address != wallet.wallet && (
+              {this.state.account.address !== wallet.wallet && (
                 <IconButton
                   aria-label="remove"
                   onClick={() => this.removeWALLET(wallet.wallet)}
@@ -369,15 +369,8 @@ class Portfolio extends Component {
   };
 
   render() {
-    const { classes, t } = this.props;
-    const {
-      account,
-      loading,
-      favList,
-      selectedID,
-      userWallets,
-      addWallet,
-    } = this.state;
+    const { classes } = this.props;
+    const { account, userWallets, addWallet } = this.state;
 
     return (
       <div className={classes.root}>

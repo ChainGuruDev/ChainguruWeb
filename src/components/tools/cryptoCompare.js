@@ -18,13 +18,11 @@ import {
   COIN_DATA_RETURNED,
   GRAPH_TIMEFRAME_CHANGED,
   SWITCH_VS_COIN_RETURNED,
-  GET_COIN_PRICECHART,
 } from "../../constants";
 
 import Store from "../../stores";
 const emitter = Store.emitter;
 const store = Store.store;
-const dispatcher = Store.dispatch;
 
 const styles = (theme) => ({
   root: {

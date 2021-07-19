@@ -1,8 +1,6 @@
 import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import { withTranslation } from "react-i18next";
-import { colors } from "../../theme";
 
 import {
   Card,
@@ -12,17 +10,13 @@ import {
   TextField,
   CircularProgress,
   Avatar,
-  Paper,
   Typography,
 } from "@material-ui/core";
 
 import Snackbar from "../snackbar";
 import AvatarSelectModal from "./avatarSelectModal.js";
 
-import AddCircleRoundedIcon from "@material-ui/icons/AddCircleRounded";
-
 import {
-  ERROR,
   CONNECTION_CONNECTED,
   CONNECTION_DISCONNECTED,
   DB_GET_USERDATA,
@@ -108,7 +102,6 @@ class Profile extends Component {
   }
 
   connectionConnected = () => {
-    const { t } = this.props;
     this.setState({ account: store.getStore("account") });
   };
 
@@ -265,7 +258,7 @@ class Profile extends Component {
   };
 
   renderProfile = () => {
-    const { classes, t } = this.props;
+    const { classes } = this.props;
     const { avatar } = this.state;
 
     return (
@@ -324,12 +317,14 @@ class Profile extends Component {
             />
           </Grid>
           <Grid
-            style={{
-              padding: 10,
-            }}
             item
             xs={12}
-            style={{ marginTop: 10, display: "flex", justifyContent: "end" }}
+            style={{
+              marginTop: 10,
+              display: "flex",
+              justifyContent: "end",
+              padding: 10,
+            }}
           >
             <Button
               color="secondary"
@@ -358,7 +353,7 @@ class Profile extends Component {
   //   <Paper className={classes.paper}>wallet y sus nicks</Paper>
   // </Grid>
   render() {
-    const { classes, t } = this.props;
+    const { classes } = this.props;
     const { account, loading, snackbarMessage, avatarModalOpen } = this.state;
 
     return (
