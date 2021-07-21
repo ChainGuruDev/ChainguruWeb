@@ -64,6 +64,9 @@ const styles = (theme) => ({
     width: "100%",
     minHeight: "100%",
   },
+  container: {
+    maxHeight: 500,
+  },
   favCard: {
     background: "rgba(255,255,255,0.05)",
     padding: 10,
@@ -866,8 +869,12 @@ class PortfolioBig extends Component {
                 <Grid item xs={12}>
                   <Typography variant={"h4"}>Assets</Typography>
                   <Divider />
-                  <TableContainer size="small">
-                    <Table className={classes.table} aria-label="assetList">
+                  <TableContainer className={classes.container} size="small">
+                    <Table
+                      stickyHeader
+                      className={classes.table}
+                      aria-label="assetList"
+                    >
                       <TableHead>
                         <TableRow>
                           <TableCell

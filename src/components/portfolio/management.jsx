@@ -1,4 +1,4 @@
-import React, { Component, useEffect } from "react";
+import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
@@ -6,20 +6,13 @@ import { Grid, AppBar, Tabs, Tab, Box, Typography } from "@material-ui/core";
 import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
 
-import BusinessCenterRoundedIcon from "@material-ui/icons/BusinessCenterRounded";
-import SearchIcon from "@material-ui/icons/Search";
-import SyncAltRoundedIcon from "@material-ui/icons/SyncAltRounded";
-import FlashOnIcon from "@material-ui/icons/FlashOn";
-import CompareArrowsIcon from "@material-ui/icons/CompareArrows";
 import ViewQuiltIcon from "@material-ui/icons/ViewQuilt";
 import ShuffleIcon from "@material-ui/icons/Shuffle";
 import TrackChangesRoundedIcon from "@material-ui/icons/TrackChangesRounded";
 import DashboardIcon from "@material-ui/icons/Dashboard";
 import ReceiptIcon from "@material-ui/icons/Receipt";
 //Load Tools
-import CryptoDetective from "../tools/cryptoDetective";
 import Transactions from "../tools/transactions";
-import Portfolio from "../tools/portfolio";
 import PortfolioHeatMap from "../tools/portfolioHeatMap";
 import CryptoConverter from "../tools/cryptoConverter";
 import PortfolioRadar from "../tools/portfolioRadar";
@@ -250,8 +243,8 @@ class PortfolioManagement extends Component {
   };
 
   render() {
-    const { classes, t, location } = this.props;
-    const { valueTab, coinID } = this.state;
+    const { classes } = this.props;
+    const { valueTab } = this.state;
 
     const handleChangeTabs = (event, newValueTab) => {
       this.setState({ valueTab: newValueTab });

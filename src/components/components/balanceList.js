@@ -15,38 +15,25 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TablePagination,
   TableRow,
-  TableSortLabel,
-  Toolbar,
   Typography,
   Paper,
-  Checkbox,
-  Tooltip,
   FormGroup,
   FormControlLabel,
   Switch,
   IconButton,
-  LinearProgress,
   Grid,
 } from "@material-ui/core";
 
 import DeleteIcon from "@material-ui/icons/Delete";
-import FilterListIcon from "@material-ui/icons/FilterList";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 import RestoreFromTrashRoundedIcon from "@material-ui/icons/RestoreFromTrashRounded";
 
-import {
-  GET_TOKEN_COMPONENTS,
-  GET_PROTOCOLS_BALANCES,
-} from "../../constants/defiSDK.js";
+import { GET_TOKEN_COMPONENTS } from "../../constants/defiSDK.js";
 
 import {
   COIN_DATA_RETURNED,
   DB_USERDATA_RETURNED,
-  DB_ADD_FAVORITE_RETURNED,
-  DB_DEL_FAVORITE,
-  DB_DEL_FAVORITE_RETURNED,
   DB_DEL_BLACKLIST,
   DB_ADD_BLACKLIST,
   DB_ADDDEL_BLACKLIST_RETURNED,
@@ -61,12 +48,9 @@ import {
 import Store from "../../stores";
 import DefiSDKStore from "../../stores/defiSDK_store.js";
 
-const store = Store.store;
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
 
-const emitterDefi = DefiSDKStore.emitter;
-const storeDefi = DefiSDKStore.store;
 const dispatcherDefi = DefiSDKStore.dispatcher;
 
 const CoinGecko = require("coingecko-api");
@@ -186,12 +170,13 @@ class BalanceList extends Component {
 
       if (this.state.hideBlacklisted) {
         for (var i = 0; i < prevBalanceList.length; i++) {
+          let index = i;
           if (
             userBlacklist.tokenIDs.includes(prevBalanceList[i].contractAddress)
           ) {
             let blacklistedIndex = prevBalanceList.findIndex(
               (obj) =>
-                obj.contractAddress === prevBalanceList[i].contractAddress
+                obj.contractAddress === prevBalanceList[index].contractAddress
             );
             prevBalanceList.splice(blacklistedIndex, 1);
             i--;
@@ -200,20 +185,21 @@ class BalanceList extends Component {
       }
 
       if (this.state.hideLowBalanceCoins) {
-        for (var i = 0; i < prevBalanceList.length; i++) {
-          if (!prevBalanceList[i].balance > 0) {
+        for (var k = 0; k < prevBalanceList.length; k++) {
+          let index = k;
+          if (!prevBalanceList[k].balance > 0) {
             let blacklistedIndex = prevBalanceList.findIndex(
               (obj) =>
-                obj.contractAddress === prevBalanceList[i].contractAddress
+                obj.contractAddress === prevBalanceList[index].contractAddress
             );
             prevBalanceList.splice(blacklistedIndex, 1);
-            i--;
+            k--;
           }
         }
       }
 
-      for (var i = 0; i < prevBalanceList.length; i++) {
-        let item = { ...prevBalanceList[i] };
+      for (var j = 0; j < prevBalanceList.length; j++) {
+        let item = { ...prevBalanceList[j] };
         if (item.tokenSymbol === "EWTB") {
           item.id = "energy-web-token";
         } else if (item.tokenSymbol === "XOR") {
@@ -289,7 +275,7 @@ class BalanceList extends Component {
     });
 
     if (tokenIDs.length > 0) {
-      let geckoData = await dispatcher.dispatch({
+      await dispatcher.dispatch({
         type: COINGECKO_POPULATE_FAVLIST,
         tokenIDs: tokenIDs,
       });
@@ -366,7 +352,6 @@ class BalanceList extends Component {
   };
 
   dataSorting = (data) => {
-    let rows = [];
     let sort = [];
     let totalValue = 0;
     data.forEach((item, i) => {
@@ -712,8 +697,8 @@ class BalanceList extends Component {
   };
 
   render() {
-    const { classes, t } = this.props;
-    const { coinData, loading, rowData, sortData } = this.state;
+    const { classes } = this.props;
+    const { sortData } = this.state;
 
     const openMenu = (event) => {
       this.setState({ anchorMenu: event.currentTarget });
@@ -724,7 +709,7 @@ class BalanceList extends Component {
       });
     };
     const switchLowBalance = async () => {
-      const newState = await this.setState(
+      await this.setState(
         {
           hideLowBalanceCoins: !this.state.hideLowBalanceCoins,
         },
@@ -749,6 +734,7 @@ class BalanceList extends Component {
             component={Paper}
             elevation={2}
             size="small"
+            stickyHeader
           >
             <CargaLineal />
             <Table className={classes.table} aria-label="favoritesList">
