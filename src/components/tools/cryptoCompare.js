@@ -97,6 +97,8 @@ class CryptoCompare extends Component {
       selectB: false,
       timeFrame: 7,
       vs: vsCoin,
+      tradeableA: false,
+      tradeableB: false,
     };
   }
   componentDidMount() {
@@ -163,12 +165,23 @@ class CryptoCompare extends Component {
   };
 
   coinDataReturned = (data) => {
+    let tradeable = false;
+    if (data[0].contract_address || data[0].id === "ethereum") {
+      console.log("tradeable token");
+      tradeable = true;
+    }
     if (data[1] === "A") {
-      this.setState({ coinDataA: data[0] });
-      this.setState({ selectA: true });
+      this.setState({
+        coinDataA: data[0],
+        selectA: true,
+        tradeableA: tradeable,
+      });
     } else if (data[1] === "B") {
-      this.setState({ coinDataB: data[0] });
-      this.setState({ selectB: true });
+      this.setState({
+        coinDataB: data[0],
+        selectB: true,
+        tradeableB: tradeable,
+      });
     }
   };
 
@@ -186,6 +199,8 @@ class CryptoCompare extends Component {
       coinDataB,
       timeFrame,
       vs,
+      tradeableA,
+      tradeableB,
     } = this.state;
 
     return (
@@ -207,9 +222,11 @@ class CryptoCompare extends Component {
               <CoinCompare id={"B"} toolTimeframe={toolTimeframe} />
             </Grid>
             <Grid item style={{ padding: 10 }}>
-              <IconButton className={classes.swapBTN} aria-label="swap">
-                <SwapHorizIcon size="large" />
-              </IconButton>
+              {tradeableA === true && tradeableB === true && (
+                <IconButton className={classes.swapBTN} aria-label="swap">
+                  <SwapHorizIcon size="large" />
+                </IconButton>
+              )}
               {selectA && selectB && (
                 <IconButton
                   onClick={() => {
@@ -245,9 +262,11 @@ class CryptoCompare extends Component {
                 />
               </Grid>
               <Grid item style={{ padding: 10 }}>
-                <IconButton className={classes.swapBTN} aria-label="swap">
-                  <SwapHorizIcon size="large" />
-                </IconButton>
+                {tradeableA === true && tradeableB === true && (
+                  <IconButton className={classes.swapBTN} aria-label="swap">
+                    <SwapHorizIcon size="large" />
+                  </IconButton>
+                )}
                 <IconButton
                   onClick={() => {
                     this.handleBigChart();

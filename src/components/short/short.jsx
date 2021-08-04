@@ -19,6 +19,7 @@ import FlashOnIcon from "@material-ui/icons/FlashOn";
 import CompareArrowsIcon from "@material-ui/icons/CompareArrows";
 import TrendingUpIcon from "@material-ui/icons/TrendingUp";
 import SearchIcon from "@material-ui/icons/Search";
+import SwapHorizIcon from "@material-ui/icons/SwapHoriz";
 
 //LOAD TOOLS now with reactLazy
 // import CryptoDetective from "../tools/cryptoDetective";
@@ -44,6 +45,7 @@ const CryptoCompare = React.lazy(() => import("../tools/cryptoCompare.js"));
 const Favorites = React.lazy(() => import("../tools/favorites.js"));
 const LongShort = React.lazy(() => import("../tools/longShort.js"));
 const CoinList = React.lazy(() => import("../tools/coins.js"));
+const Swap = React.lazy(() => import("../tools/swap.js"));
 
 const styles = (theme) => ({
   root: {
@@ -172,6 +174,9 @@ class Short extends Component {
       case "coins":
         toolID = 4;
         break;
+      case "swap":
+        toolID = 5;
+        break;
       default:
         break;
     }
@@ -195,6 +200,9 @@ class Short extends Component {
         break;
       case 4:
         tool = "coins";
+        break;
+      case 5:
+        tool = "swap";
         break;
       default:
         tool = "";
@@ -305,6 +313,7 @@ class Short extends Component {
               {...a11yProps(3)}
             />
             <Tab label="Coins" icon={<LensIcon />} {...a11yProps(4)} />
+            <Tab label="Swap" icon={<SwapHorizIcon />} {...a11yProps(5)} />
           </Tabs>
         </AppBar>
         <TabPanel value={valueTab} index={0}>
@@ -371,6 +380,19 @@ class Short extends Component {
             }
           >
             <CoinList timeFrame="short" />
+          </Suspense>
+        </TabPanel>
+        <TabPanel value={valueTab} index={5}>
+          <Suspense
+            fallback={
+              <div style={{ textAlign: "center" }}>
+                <Card className={classes.favCard} elevation={3}>
+                  <CircularProgress />
+                </Card>
+              </div>
+            }
+          >
+            <Swap />
           </Suspense>
         </TabPanel>
       </Grid>

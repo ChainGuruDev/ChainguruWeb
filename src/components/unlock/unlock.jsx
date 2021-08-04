@@ -76,7 +76,7 @@ const styles = (theme) => ({
 class Unlock extends Component {
   constructor(props) {
     super();
-
+    let _isMounted = false;
     this.state = {
       error: null,
       metamaskLoading: false,
@@ -85,6 +85,7 @@ class Unlock extends Component {
   }
 
   componentDidMount() {
+    this._isMounted = true;
     emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
     emitter.on(ERROR, this.error);
@@ -97,16 +98,17 @@ class Unlock extends Component {
       this.connectionDisconnected
     );
     emitter.removeListener(ERROR, this.error);
+    this._isMounted = false;
   }
 
-  navigateInvest = () => {
-    this.props.history.push("/invest");
-  };
+  // navigateInvest = () => {
+  //   this.props.history.push("/invest");
+  // };
 
   // unlockMetamask = () => {
-  //   this.setState({ metamaskLoading: true })
-  //   dispatcher.dispatch({ type: CONNECT_METAMASK, content: {} })
-  // }
+  // this.setState({ metamaskLoading: true });
+  // dispatcher.dispatch({ type: CONNECT_METAMASK, content: {} });
+  // };
   //
   // unlockLedger = () => {
   //   this.setState({ ledgerLoading: true })
@@ -192,11 +194,13 @@ function onConnectionClicked(
 }
 
 function onDeactivateClicked(deactivate, connector) {
+  console.log(deactivate, connector);
   if (deactivate) {
     deactivate();
   }
-  if (connector && connector.close) {
-    connector.close();
+  if (connector && connector.disconnect) {
+    connector.disconnect();
+    connector.deactivate();
   }
   store.setStore({ account: {}, web3context: null });
   emitter.emit(CONNECTION_DISCONNECTED);
