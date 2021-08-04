@@ -134,6 +134,9 @@ class Swap extends Component {
       currentAllowance: 0,
       fromToken: null,
       toToken: null,
+      valueFrom: null,
+      valueTo: null,
+      txCostFiat: null,
     };
   }
 
@@ -304,14 +307,20 @@ class Swap extends Component {
   };
 
   getQuote = (fromToken, fromAmount, toToken) => {
-    this.setState({ swapReady: false, loadingQuote: true });
+    this.setState({
+      swapReady: false,
+      loadingQuote: true,
+      valueFrom: null,
+      valueTo: null,
+      txCostFiat: null,
+    });
     if (fromToken && toToken && fromAmount > 0) {
       dispatcher1Inch.dispatch({
         type: ONEINCH_GET_QUOTE,
-        from: fromToken.address,
+        from: fromToken,
         amount: fromAmount,
         fromDecimals: fromToken.decimals,
-        to: toToken.address,
+        to: toToken,
       });
     } else {
       if (!fromToken) {
@@ -365,7 +374,6 @@ class Swap extends Component {
   };
 
   oneInchGetQuoteReturned = (data) => {
-    console.log(data);
     let swapRoute = [];
     if (data.protocols > 0 < 6) {
       swapRoute.push(this.state.fromToken.symbol);
@@ -377,11 +385,67 @@ class Swap extends Component {
         }
       });
     }
+    //Get current gas price
+    let _gasPrice = store.getStore("universalGasPrice");
+    //estimatedGas cost + 25%
+    let _txGas =
+      data.estimatedGas + parseInt(((data.estimatedGas * 25) / 100).toFixed(0));
+    //estimatedGas in gwei to Eth
+    let costInEth = (_txGas * _gasPrice) / Math.pow(10, 9);
+
+    const _txCostFiat = formatMoney(costInEth * data.prices[0].quote_rate);
+    let _valueFrom = 0;
+    let _valueTo = 0;
+
+    if (data.prices.length === 3) {
+      if (data.prices[1].contract_address === this.state.fromToken.address) {
+        _valueFrom = formatMoney(
+          (data.fromTokenAmount / Math.pow(10, data.fromToken.decimals)) *
+            data.prices[1].quote_rate
+        );
+      }
+      if (data.prices[2].contract_address === this.state.toToken.address) {
+        _valueTo = formatMoney(
+          (data.toTokenAmount / Math.pow(10, data.toToken.decimals)) *
+            data.prices[2].quote_rate
+        );
+      }
+    } else {
+      if (data.prices.length === 2) {
+        if (data.prices[1].contract_address === this.state.fromToken.address) {
+          _valueFrom = formatMoney(
+            (data.fromTokenAmount / Math.pow(10, data.fromToken.decimals)) *
+              data.prices[1].quote_rate
+          );
+        }
+        if (data.prices[1].contract_address === this.state.toToken.address) {
+          _valueTo = formatMoney(
+            (data.toTokenAmount / Math.pow(10, data.toToken.decimals)) *
+              data.prices[1].quote_rate
+          );
+        }
+      }
+    }
+    if (this.state.fromToken.symbol === "ETH") {
+      _valueFrom = formatMoney(
+        (data.fromTokenAmount / Math.pow(10, data.fromToken.decimals)) *
+          data.prices[0].quote_rate
+      );
+    } else if (this.state.toToken.symbol === "ETH") {
+      _valueTo = formatMoney(
+        (data.toTokenAmount / Math.pow(10, data.toToken.decimals)) *
+          data.prices[0].quote_rate
+      );
+    }
+
     this.setState({
       toAmount: data.toTokenAmount / Math.pow(10, data.toToken.decimals),
       swapReady: this.state.fromAmount > 0 ? true : false,
       loadingQuote: false,
       swapRoute: swapRoute,
+      txCostFiat: _txCostFiat,
+      valueFrom: parseInt(_valueFrom) > 0 ? _valueFrom : "-",
+      valueTo: parseInt(_valueTo) > 0 ? _valueTo : "-",
     });
   };
 
@@ -614,21 +678,37 @@ class Swap extends Component {
                     {fromToken && (
                       <Grid
                         item
-                        style={{
-                          textAlign: "left",
-                          marginTop: "5px",
-                          cursor: "pointer",
-                          marginLeft: "20px",
-                        }}
-                        onClick={() =>
-                          this.setMaxAvailableFrom(
-                            this.state.fromAvailableBalance
-                          )
-                        }
-                        xs={12}
+                        container
+                        direction="row"
+                        style={{ marginInline: "15px", marginTop: "15px" }}
                       >
-                        balance: {this.state.fromAvailableBalance}
-                        <div className={classes.maxButton}>(max)</div>
+                        <Grid
+                          item
+                          style={{
+                            textAlign: "left",
+                            cursor: "pointer",
+                          }}
+                          onClick={() =>
+                            this.setMaxAvailableFrom(
+                              this.state.fromAvailableBalance
+                            )
+                          }
+                          xs={6}
+                        >
+                          balance: {this.state.fromAvailableBalance}
+                          <div className={classes.maxButton}>(max)</div>
+                        </Grid>
+                        {swapReady && (
+                          <Grid
+                            item
+                            style={{
+                              textAlign: "right",
+                            }}
+                            xs={6}
+                          >
+                            value: ${this.state.valueFrom}
+                          </Grid>
+                        )}
                       </Grid>
                     )}
                     {fromToken && fromToken.customToken && (
@@ -695,19 +775,35 @@ class Swap extends Component {
                     {toToken && (
                       <Grid
                         item
-                        style={{
-                          textAlign: "left",
-                          marginTop: "5px",
-                          marginLeft: "20px",
-                        }}
-                        onClick={() =>
-                          this.setMaxAvailableFrom(
-                            this.state.fromAvailableBalance
-                          )
-                        }
-                        xs={12}
+                        container
+                        direction="row"
+                        style={{ marginInline: "15px", marginTop: "15px" }}
                       >
-                        balance: {this.state.toAvailableBalance}
+                        <Grid
+                          item
+                          style={{
+                            textAlign: "left",
+                          }}
+                          onClick={() =>
+                            this.setMaxAvailableFrom(
+                              this.state.fromAvailableBalance
+                            )
+                          }
+                          xs={6}
+                        >
+                          balance: {this.state.toAvailableBalance}
+                        </Grid>
+                        {swapReady && (
+                          <Grid
+                            item
+                            style={{
+                              textAlign: "right",
+                            }}
+                            xs={6}
+                          >
+                            value: ${this.state.valueTo}
+                          </Grid>
+                        )}
                       </Grid>
                     )}
                     {toToken && toToken.customToken && (
@@ -770,7 +866,7 @@ class Swap extends Component {
                     {swapReady &&
                       parseInt(currentAllowance) > parseInt(fromAmount) &&
                       parseInt(fromAmount) <=
-                      parseInt(fromAvailableBalance) && (
+                        parseInt(fromAvailableBalance) && (
                         <Button
                           color={"primary"}
                           variant={"contained"}
@@ -785,6 +881,10 @@ class Swap extends Component {
                   {swapReady && (
                     <Grid>
                       <Divider variant="middle" style={{ marginTop: 10 }} />
+                      <Typography color="primary">
+                        Estimated Swap Tx Cost ${this.state.txCostFiat}
+                      </Typography>
+
                       <Typography>Swap Route</Typography>
                       <Breadcrumbs
                         separator={<NavigateNextIcon fontSize="small" />}

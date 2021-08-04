@@ -1120,6 +1120,7 @@ class Store {
       const priceString = await rp(url);
       const priceJSON = JSON.parse(priceString);
       if (priceJSON) {
+        store.setStore({ universalGasPrice: priceJSON.result.ProposeGasPrice });
         return priceJSON.result.ProposeGasPrice;
       }
       return store.getStore("universalGasPrice");

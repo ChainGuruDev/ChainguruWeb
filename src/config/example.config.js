@@ -1,6 +1,8 @@
 // ganache-cli --fork https://mainnet.infura.io/v3/da08cbb0e0604f3ab2f57742f776c115  --mnemonic "dose genre earn problem pole addict blanket cricket problem announce crowd must" --unlock 0x6b175474e89094c44da98b954eedeac495271d0f
 
 const config = {
+  covalentApi: "ckey_02a25913a8bc440a8a9c5b139d6",
+  chainguruWallet: "0xDb4F469CE9Dc5cF2804cdB2F0cd531a3B0c00799",
   infuraProviderMain:
     "https://mainnet.infura.io/v3/da08cbb0e0604f3ab2f57742f776c115",
 

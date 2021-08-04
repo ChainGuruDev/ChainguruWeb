@@ -46,7 +46,6 @@ class App extends Component {
 
     this.setState({ headerValue: newValue });
   };
-
   componentDidMount = async () => {
     let web3 = new Web3(Web3.givenProvider);
 

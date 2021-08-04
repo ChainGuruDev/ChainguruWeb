@@ -32,6 +32,7 @@
     "coingecko-api": "^1.0.10",
     "dayjs": "^1.10.4",
     "defi-sdk": "0.0.1",
+    "dotenv": "^8.2.0",
     "ethers": "^5.0.31",
     "ethjs-ens": "^2.0.1",
     "flux": "^3.1.3",

@@ -167,7 +167,6 @@ class CryptoCompare extends Component {
   coinDataReturned = (data) => {
     let tradeable = false;
     if (data[0].contract_address || data[0].id === "ethereum") {
-      console.log("tradeable token");
       tradeable = true;
     }
     if (data[1] === "A") {

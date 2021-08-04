@@ -215,8 +215,9 @@ class OneInch_Store {
     }
     try {
       let data = await axios.get(
-        `https://api.1inch.exchange/v3.0/1/quote?fromTokenAddress=${payload.from}&toTokenAddress=${payload.to}&amount=${fromAmountDecimals}&fee=3`
+        `https://api.1inch.exchange/v3.0/1/quote?fromTokenAddress=${payload.from.address}&toTokenAddress=${payload.to.address}&amount=${fromAmountDecimals}&fee=3`
       );
+      // GET TOKEN ROUTE CONNECTORS TOKEN NAME
       data.data.protocols[0].forEach((item, i) => {
         let objIndex = this.store.connectorsERC20.findIndex(
           (obj) => obj.address === item[0].toTokenAddress
@@ -228,8 +229,17 @@ class OneInch_Store {
         }
       });
 
+      // GET GAS COST AND TOKEN PRICES
+
+      let _tokenTickers = `weth%2C${payload.from.symbol}%2C${payload.to.symbol}`;
+      let pricesRequest = await axios.get(
+        `https://api.covalenthq.com/v1/pricing/tickers/?tickers=${_tokenTickers}&key=${config.covalentApi}`
+      );
+      //Add token prices to response
+      data.data.prices = pricesRequest.data.data.items;
       emitter.emit(ONEINCH_GET_QUOTE_RETURNED, data.data);
     } catch (err) {
+      console.log(err);
       console.log(err.message);
       emitter.emit(ERROR, err.message);
     }
@@ -241,7 +251,7 @@ class OneInch_Store {
 
     let data = await axios
       .get(
-        `https://api.1inch.exchange/v3.0/1/swap?fromTokenAddress=${payload.from}&toTokenAddress=${payload.to}&amount=${payload.amount}&fromAddress=${fromAccount.address}&slippage=1&referrerAddress=0xF8D82A09590F6558d3F1F33fB02ab730a6F3f256&fee=3`
+        `https://api.1inch.exchange/v3.0/1/swap?fromTokenAddress=${payload.from}&toTokenAddress=${payload.to}&amount=${payload.amount}&fromAddress=${fromAccount.address}&slippage=1&referrerAddress=${config.chainguruWallet}&fee=3`
       )
       .then((response) => {
         const tx = response.data.tx;
