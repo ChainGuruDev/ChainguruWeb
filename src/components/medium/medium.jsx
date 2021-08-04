@@ -18,6 +18,7 @@ import SearchIcon from "@material-ui/icons/Search";
 import FlashOnIcon from "@material-ui/icons/FlashOn";
 import CompareArrowsIcon from "@material-ui/icons/CompareArrows";
 import LensIcon from "@material-ui/icons/Lens";
+import SwapHorizIcon from "@material-ui/icons/SwapHoriz";
 
 //Load Tools NOW USING REACT.LAzy
 // import CryptoDetective from "../tools/cryptoDetective";
@@ -40,6 +41,7 @@ const CryptoDetective = React.lazy(() => import("../tools/cryptoDetective.js"));
 const CryptoCompare = React.lazy(() => import("../tools/cryptoCompare.js"));
 const Favorites = React.lazy(() => import("../tools/favorites.js"));
 const CoinList = React.lazy(() => import("../tools/coins.js"));
+const Swap = React.lazy(() => import("../tools/swap.js"));
 
 const styles = (theme) => ({
   root: {
@@ -228,6 +230,7 @@ class Medium extends Component {
               {...a11yProps(2)}
             />
             <Tab label="Coins" icon={<LensIcon />} {...a11yProps(3)} />
+            <Tab label="Swap" icon={<SwapHorizIcon />} {...a11yProps(4)} />
           </Tabs>
         </AppBar>
         <TabPanel value={valueTab} index={0}>
@@ -284,6 +287,19 @@ class Medium extends Component {
             }
           >
             <CoinList timeFrame="medium" />
+          </Suspense>
+        </TabPanel>
+        <TabPanel value={valueTab} index={4}>
+          <Suspense
+            fallback={
+              <div style={{ textAlign: "center" }}>
+                <Card className={classes.favCard} elevation={3}>
+                  <CircularProgress />
+                </Card>
+              </div>
+            }
+          >
+            <Swap />
           </Suspense>
         </TabPanel>
       </Grid>

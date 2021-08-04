@@ -1,8 +1,17 @@
-import React, { Component } from "react";
+import React, { Component, Suspense } from "react";
 import PropTypes from "prop-types";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import { Grid, AppBar, Tabs, Tab, Box, Typography } from "@material-ui/core";
+import {
+  Grid,
+  AppBar,
+  Tabs,
+  Tab,
+  Box,
+  Typography,
+  Card,
+  CircularProgress,
+} from "@material-ui/core";
 import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
 
@@ -11,6 +20,8 @@ import ShuffleIcon from "@material-ui/icons/Shuffle";
 import TrackChangesRoundedIcon from "@material-ui/icons/TrackChangesRounded";
 import DashboardIcon from "@material-ui/icons/Dashboard";
 import ReceiptIcon from "@material-ui/icons/Receipt";
+import SwapHorizIcon from "@material-ui/icons/SwapHoriz";
+
 //Load Tools
 import Transactions from "../tools/transactions";
 import PortfolioHeatMap from "../tools/portfolioHeatMap";
@@ -28,6 +39,8 @@ import Store from "../../stores";
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
 const store = Store.store;
+
+const Swap = React.lazy(() => import("../tools/swap.js"));
 
 const styles = (theme) => ({
   root: {
@@ -174,6 +187,9 @@ class PortfolioManagement extends Component {
       case "portfolioRadar":
         toolID = 4;
         break;
+      case "swap":
+        toolID = 5;
+        break;
       default:
         break;
     }
@@ -197,6 +213,9 @@ class PortfolioManagement extends Component {
         break;
       case 4:
         tool = "portfolioRadar";
+        break;
+      case 5:
+        tool = "swap";
         break;
       default:
         tool = "";
@@ -289,6 +308,11 @@ class PortfolioManagement extends Component {
               icon={<TrackChangesRoundedIcon />}
               {...a11yProps(4)}
             />
+            <PortfolioTab
+              label="Swap"
+              icon={<SwapHorizIcon />}
+              {...a11yProps(5)}
+            />
           </PortfolioTabs>
         </AppBar>
         <TabPanel value={valueTab} index={0}>
@@ -305,6 +329,19 @@ class PortfolioManagement extends Component {
         </TabPanel>
         <TabPanel value={valueTab} index={4}>
           <PortfolioRadar />
+        </TabPanel>
+        <TabPanel value={valueTab} index={5}>
+          <Suspense
+            fallback={
+              <div style={{ textAlign: "center" }}>
+                <Card className={classes.favCard} elevation={3}>
+                  <CircularProgress />
+                </Card>
+              </div>
+            }
+          >
+            <Swap />
+          </Suspense>
         </TabPanel>
       </Grid>
     );

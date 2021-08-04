@@ -903,6 +903,12 @@ class Swap extends Component {
                       </Breadcrumbs>
                     </Grid>
                   )}
+                  <Grid>
+                    <Divider variant="middle" style={{ marginTop: 10 }} />
+                    <Typography color="primary" style={{ textAlign: "right" }}>
+                      Swap engine powered by 1inch
+                    </Typography>
+                  </Grid>
                 </Grid>
               </Grid>
             </Card>

@@ -1,7 +1,16 @@
-import React, { Component } from "react";
+import React, { Component, Suspense } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import { Typography, Grid, Box, AppBar, Tabs, Tab } from "@material-ui/core";
+import {
+  Typography,
+  Grid,
+  Box,
+  AppBar,
+  Tabs,
+  Tab,
+  CircularProgress,
+  Card,
+} from "@material-ui/core";
 import { withTranslation } from "react-i18next";
 import PropTypes from "prop-types";
 import { colors } from "../../theme";
@@ -10,10 +19,11 @@ import { colors } from "../../theme";
 import ShowChartIcon from "@material-ui/icons/ShowChart";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import LensIcon from "@material-ui/icons/Lens";
+import SwapHorizIcon from "@material-ui/icons/SwapHoriz";
 
-import CoinList from "../tools/coins";
-import DollarCostAverage from "../tools/dollarCostAverage.js";
-import BlueChips from "../tools/blueChips.js";
+// import CoinList from "../tools/coins";
+// import DollarCostAverage from "../tools/dollarCostAverage.js";
+// import BlueChips from "../tools/blueChips.js";
 
 import Snackbar from "../snackbar";
 
@@ -21,6 +31,13 @@ import { ERROR } from "../../constants";
 
 import Store from "../../stores";
 const emitter = Store.emitter;
+
+const Swap = React.lazy(() => import("../tools/swap.js"));
+const CoinList = React.lazy(() => import("../tools/coins"));
+const DollarCostAverage = React.lazy(() =>
+  import("../tools/dollarCostAverage.js")
+);
+const BlueChips = React.lazy(() => import("../tools/blueChips.js"));
 
 const styles = (theme) => ({
   background: {
@@ -184,16 +201,60 @@ class Long extends Component {
               {...a11yProps(1)}
             />
             <Tab label="Coins" icon={<LensIcon />} {...a11yProps(2)} />
+            <Tab label="Swap" icon={<SwapHorizIcon />} {...a11yProps(3)} />
           </LongTabs>
         </AppBar>
         <TabPanel value={valueTab} index={0}>
-          <BlueChips />
+          <Suspense
+            fallback={
+              <div style={{ textAlign: "center" }}>
+                <Card className={classes.favCard} elevation={3}>
+                  <CircularProgress />
+                </Card>
+              </div>
+            }
+          >
+            <BlueChips />
+          </Suspense>
         </TabPanel>
         <TabPanel value={valueTab} index={1}>
-          <DollarCostAverage />
+          <Suspense
+            fallback={
+              <div style={{ textAlign: "center" }}>
+                <Card className={classes.favCard} elevation={3}>
+                  <CircularProgress />
+                </Card>
+              </div>
+            }
+          >
+            <DollarCostAverage />
+          </Suspense>
         </TabPanel>
         <TabPanel value={valueTab} index={2}>
-          <CoinList timeFrame="long" />
+          <Suspense
+            fallback={
+              <div style={{ textAlign: "center" }}>
+                <Card className={classes.favCard} elevation={3}>
+                  <CircularProgress />
+                </Card>
+              </div>
+            }
+          >
+            <CoinList timeFrame="long" />
+          </Suspense>
+        </TabPanel>
+        <TabPanel value={valueTab} index={3}>
+          <Suspense
+            fallback={
+              <div style={{ textAlign: "center" }}>
+                <Card className={classes.favCard} elevation={3}>
+                  <CircularProgress />
+                </Card>
+              </div>
+            }
+          >
+            <Swap />
+          </Suspense>
         </TabPanel>
         {snackbarMessage && this.renderSnackbar()}
       </Grid>
