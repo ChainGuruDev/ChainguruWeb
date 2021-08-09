@@ -21,6 +21,7 @@ import {
   ONEINCH_SET_ALLOWANCE_RETURNED,
   CHECK_BALANCE,
   CHECK_BALANCE_RETURNED,
+  ONEINCH_TXHASH_RETURNED,
 } from "../../constants/constantsOneInch.js";
 
 import {
@@ -157,6 +158,7 @@ class Swap extends Component {
     emitter1Inch.on(ONEINCH_SET_ALLOWANCE_RETURNED, this.setAllowanceReturned);
     emitter1Inch.on(CHECK_BALANCE_RETURNED, this.checkBalanceReturned);
     emitter1Inch.on(ONEINCH_DO_SWAP_RETURNED, this.swapReturned);
+    emitter1Inch.on(ONEINCH_TXHASH_RETURNED, this.txHashReturned);
     emitter1Inch.on(ERROR, this.error);
 
     const account = store.getStore("account");
@@ -214,6 +216,7 @@ class Swap extends Component {
     );
     emitter1Inch.removeListener(ONEINCH_DO_SWAP_RETURNED, this.swapReturned);
     emitter1Inch.removeListener(ERROR, this.error);
+    emitter1Inch.removeListener(ONEINCH_TXHASH_RETURNED, this.txHashReturned);
 
     this._isMounted = false;
   }
@@ -574,6 +577,10 @@ class Swap extends Component {
       amount: _fromAmountBN,
       to: this.state.toToken.address,
     });
+  };
+
+  txHashReturned = async (hash) => {
+    console.log(hash);
   };
 
   swapReturned = async (data) => {

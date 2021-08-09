@@ -11,6 +11,7 @@ import {
   ONEINCH_DO_SWAP_RETURNED,
   ONEINCH_CHECK_HEALTH,
   ONEINCH_CHECK_HEALTH_RETURNED,
+  ONEINCH_TXHASH_RETURNED,
   GET_SWAP_TOKENLIST,
   GET_SWAP_TOKENLIST_RETURNED,
   CHECK_ALLOWANCE,
@@ -36,6 +37,8 @@ const emitter = new Emitter();
 
 class OneInch_Store {
   constructor() {
+    // network setting
+    // 1 for ethMainnet, 56 for BSC, 137 for polygon
     this.store = {
       oneInchStatusOK: false,
       tokens: [],
@@ -64,6 +67,7 @@ class OneInch_Store {
         { name: "BAL", address: "0xba100000625a3754423978a60c9317c58a424e3d" },
         { name: "sUSD", address: "0x57ab1ec28d129707052df4df418d58a2d46d5f51" },
       ],
+      network: "56",
     };
 
     dispatcher.register(
@@ -124,8 +128,11 @@ class OneInch_Store {
   };
 
   getSwapTokenList = async () => {
+    const network = this.getStore("network");
     try {
-      let data = await axios.get(`https://api.1inch.exchange/v3.0/1/tokens`);
+      let data = await axios.get(
+        `https://api.1inch.exchange/v3.0/${network}/tokens`
+      );
       store.setStore({ tokens: await data.data.tokens });
       emitter.emit(GET_SWAP_TOKENLIST_RETURNED, await data.data.tokens);
     } catch (err) {
@@ -204,6 +211,8 @@ class OneInch_Store {
   };
 
   oneInchGetQuote = async (payload) => {
+    const network = this.getStore("network");
+
     const web3 = new Web3(storeRoot.getStore("web3context").library.provider);
     let fromAmountDecimals;
     try {
@@ -215,7 +224,7 @@ class OneInch_Store {
     }
     try {
       let data = await axios.get(
-        `https://api.1inch.exchange/v3.0/1/quote?fromTokenAddress=${payload.from.address}&toTokenAddress=${payload.to.address}&amount=${fromAmountDecimals}&fee=3`
+        `https://api.1inch.exchange/v3.0/${network}/quote?fromTokenAddress=${payload.from.address}&toTokenAddress=${payload.to.address}&amount=${fromAmountDecimals}&fee=3`
       );
       // GET TOKEN ROUTE CONNECTORS TOKEN NAME
       data.data.protocols[0].forEach((item, i) => {
@@ -248,10 +257,11 @@ class OneInch_Store {
   oneInchDoSwap = async (payload) => {
     const fromAccount = storeRoot.getStore("account");
     const web3 = new Web3(storeRoot.getStore("web3context").library.provider);
+    const network = this.getStore("network");
 
     let data = await axios
       .get(
-        `https://api.1inch.exchange/v3.0/1/swap?fromTokenAddress=${payload.from}&toTokenAddress=${payload.to}&amount=${payload.amount}&fromAddress=${fromAccount.address}&slippage=1&referrerAddress=${config.chainguruWallet}&fee=3`
+        `https://api.1inch.exchange/v3.0/${network}/swap?fromTokenAddress=${payload.from}&toTokenAddress=${payload.to}&amount=${payload.amount}&fromAddress=${fromAccount.address}&slippage=1&referrerAddress=${config.chainguruWallet}&fee=3`
       )
       .then((response) => {
         const tx = response.data.tx;
@@ -263,6 +273,9 @@ class OneInch_Store {
             to: tx.to,
             data: tx.data,
             value: tx.value,
+          })
+          .on("transactionHash", function (hash) {
+            emitter.emit(ONEINCH_TXHASH_RETURNED, hash);
           })
           .on("receipt", function (receipt) {
             emitter.emit(ONEINCH_DO_SWAP_RETURNED, receipt);
@@ -277,9 +290,11 @@ class OneInch_Store {
   };
 
   oneInchCheckHealth = async () => {
+    const network = this.getStore("network");
+
     try {
       let data = await axios.get(
-        `https://api.1inch.exchange/v3.0/1/healthcheck`
+        `https://api.1inch.exchange/v3.0/${network}/healthcheck`
       );
       emitter.emit(ONEINCH_CHECK_HEALTH_RETURNED, await data.data);
     } catch (err) {
@@ -288,12 +303,14 @@ class OneInch_Store {
   };
 
   getSpender = async () => {
+    const network = this.getStore("network");
+
     if (store.getStore("spenderContract")) {
       console.log("spender set already");
     } else {
       try {
         let data = await axios.get(
-          `https://api.1inch.exchange/v3.0/1/approve/spender`
+          `https://api.1inch.exchange/v3.0/${network}/approve/spender`
         );
         this.setStore({ spenderContract: data.data.address });
         emitter.emit(ONEINCH_GET_SPENDER_RETURNED, await data.data);
