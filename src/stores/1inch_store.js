@@ -67,7 +67,7 @@ class OneInch_Store {
         { name: "BAL", address: "0xba100000625a3754423978a60c9317c58a424e3d" },
         { name: "sUSD", address: "0x57ab1ec28d129707052df4df418d58a2d46d5f51" },
       ],
-      network: "56",
+      network: "1",
     };
 
     dispatcher.register(
@@ -156,6 +156,7 @@ class OneInch_Store {
             let balance = await tokenToCheck.methods
               .balanceOf(account.address)
               .call();
+
             emitter.emit(CHECK_BALANCE_RETURNED, [
               payload.tokenContract,
               await balance,
@@ -173,7 +174,7 @@ class OneInch_Store {
             let balance = await web3.eth.getBalance(account.address);
             emitter.emit(CHECK_BALANCE_RETURNED, [
               payload.tokenContract,
-              await balance,
+              await balance.toString(),
             ]);
           }
         }
@@ -306,7 +307,6 @@ class OneInch_Store {
     const network = this.getStore("network");
 
     if (store.getStore("spenderContract")) {
-      console.log("spender set already");
     } else {
       try {
         let data = await axios.get(

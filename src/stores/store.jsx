@@ -117,6 +117,8 @@ import {
   DB_REMOVE_USER_WALLET_NICKNAME_RETURNED,
   GECKO_GET_COINS,
   GECKO_GET_COINS_RETURNED,
+  GET_TRANSACTION_RECEIPT,
+  GET_TRANSACTION_RECEIPT_RETURNED,
 } from "../constants";
 
 import {
@@ -373,6 +375,9 @@ class Store {
             break;
           case GECKO_GET_COINS:
             this.geckoGetCoins(payload);
+            break;
+          case GET_TRANSACTION_RECEIPT:
+            this.getTransactionReceipt(payload);
             break;
           default: {
             break;
@@ -1828,6 +1833,22 @@ class Store {
       emitter.emit(GECKO_GET_COINS_RETURNED, await data.data);
     } catch (err) {
       console.log(err.message);
+    }
+  };
+
+  getTransactionReceipt = async (payload) => {
+    if (store.getStore("web3context")) {
+      const web3 = new Web3(store.getStore("web3context").library.provider);
+      var answer = web3.eth.getTransactionReceipt(
+        payload.txHash,
+        (error, result) => {
+          if (!error) {
+            emitter.emit(GET_TRANSACTION_RECEIPT_RETURNED, result);
+          } else {
+            emitter.emit(ERROR, error.message);
+          }
+        }
+      );
     }
   };
 

@@ -30,6 +30,8 @@ import {
   CONNECTION_DISCONNECTED,
   DB_GET_PORTFOLIO,
   DB_GET_PORTFOLIO_RETURNED,
+  GET_TRANSACTION_RECEIPT,
+  GET_TRANSACTION_RECEIPT_RETURNED,
 } from "../../constants";
 
 import Snackbar from "../snackbar";
@@ -40,16 +42,25 @@ import {
   Grid,
   CircularProgress,
   Button,
+  ButtonGroup,
   IconButton,
   Divider,
   TextField,
   Typography,
   Breadcrumbs,
+  Tooltip,
+  Link,
 } from "@material-ui/core";
 
 import NavigateNextIcon from "@material-ui/icons/NavigateNext";
+import ExitToAppRoundedIcon from "@material-ui/icons/ExitToAppRounded";
 import LinkRoundedIcon from "@material-ui/icons/LinkRounded";
 import SwapCallsIcon from "@material-ui/icons/SwapCalls";
+import RefreshIcon from "@material-ui/icons/Refresh";
+import TuneRoundedIcon from "@material-ui/icons/TuneRounded";
+import CancelRoundedIcon from "@material-ui/icons/CancelRounded";
+import CheckCircleRoundedIcon from "@material-ui/icons/CheckCircleRounded";
+import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
 
 import SwapTokenSearch from "../components/SwapTokenSearch";
 import OneInch_Store from "../../stores/1inch_store.js";
@@ -128,6 +139,7 @@ class Swap extends Component {
       loadingSwap: false,
       loadingQuote: false,
       fromAmount: 0,
+      fromAmountBN: 0,
       fromAvailableBalance: 0,
       toAvailableBalance: 0,
       toAmount: "0",
@@ -138,6 +150,12 @@ class Swap extends Component {
       valueFrom: null,
       valueTo: null,
       txCostFiat: null,
+      slippage: 1,
+      customSlippage: "",
+      errorCustomSlippage: false,
+      customSlippageErrorMessage: "Wrong",
+      errorMsgFromAmount: "",
+      pendingTX: [],
     };
   }
 
@@ -154,6 +172,11 @@ class Swap extends Component {
     emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
     emitter.on(DB_GET_PORTFOLIO_RETURNED, this.dbGetPortfolioReturned);
+    emitter.on(
+      GET_TRANSACTION_RECEIPT_RETURNED,
+      this.getTransactionReceiptReturned
+    );
+
     emitter1Inch.on(CHECK_ALLOWANCE_RETURNED, this.checkAllowanceReturned);
     emitter1Inch.on(ONEINCH_SET_ALLOWANCE_RETURNED, this.setAllowanceReturned);
     emitter1Inch.on(CHECK_BALANCE_RETURNED, this.checkBalanceReturned);
@@ -191,6 +214,10 @@ class Swap extends Component {
     emitter1Inch.removeListener(
       GET_SWAP_TOKENLIST_RETURNED,
       this.coinlistReturned
+    );
+    emitter.removeListener(
+      GET_TRANSACTION_RECEIPT_RETURNED,
+      this.getTransactionReceiptReturned
     );
     emitter.removeListener(ERROR, this.error);
     emitter.removeListener(CONNECTION_CONNECTED, this.connectionConnected);
@@ -481,6 +508,7 @@ class Swap extends Component {
     if (this.state.fromToken && this.state.fromToken.address === balance[0]) {
       let _newBalance =
         balance[1] / Math.pow(10, this.state.fromToken.decimals);
+
       this.setState({
         fromAvailableBalance: formatMoney(_newBalance),
         fromAvailableBalanceBN: balance[1],
@@ -503,38 +531,75 @@ class Swap extends Component {
   };
 
   setMaxAvailableFrom = (maxAvailable) => {
-    document.getElementById(`fromAmountInput`).value = maxAvailable;
+    const { fromToken } = this.state;
+    const position = maxAvailable.length - fromToken.decimals;
+    let maxAvailableDecimals;
+    if (position > 0) {
+      maxAvailableDecimals = [
+        maxAvailable.slice(0, position),
+        ".",
+        maxAvailable.slice(position),
+      ].join("");
+    } else if (position < 0) {
+      maxAvailableDecimals = [
+        "0.",
+        "0".repeat(Math.abs(position)),
+        maxAvailable,
+      ].join("");
+    } else {
+      maxAvailableDecimals = ["0.", maxAvailable].join("");
+    }
     if (maxAvailable > 0) {
-      this.newFromAmount(maxAvailable);
+      this.doDelayedQuote(maxAvailableDecimals);
     }
     this.setState({
-      fromAmount: maxAvailable,
+      fromAmount: maxAvailableDecimals,
     });
   };
 
   doDelayedQuote = (val) => {
+    const {
+      fromToken,
+      fromAvailableBalance,
+      fromAvailableBalanceBN,
+    } = this.state;
+    let valBN = val * Math.pow(10, fromToken.decimals);
     if (this.state.timeout) {
       clearTimeout(this.state.timeout);
     }
     let that = this;
+    let errorMsg = "";
+    if (parseFloat(valBN) > parseFloat(fromAvailableBalanceBN)) {
+      errorMsg = "token balance is not enough";
+    }
+    if (val) {
+      this.setState({
+        fromAmount: val,
+        fromAmountBN: valBN,
+        errorMsgFromAmount: errorMsg,
+      });
+    } else {
+      this.setState({
+        fromAmount: "",
+        fromAmountBN: "",
+        errorMsgFromAmount: errorMsg,
+      });
+    }
     this.state.timeout = setTimeout(function () {
       that.newFromAmount(val); //this is your existing function
     }, 600);
   };
 
   newFromAmount = (value) => {
+    const { fromToken, toToken } = this.state;
     if (value && value > 0) {
-      this.setState({
-        fromAmount: value,
-      });
-      if (this.state.toToken) {
-        this.getQuote(this.state.fromToken, value, this.state.toToken);
+      if (toToken) {
+        this.getQuote(fromToken, value, toToken);
       }
     }
   };
 
   setAllowance = async () => {
-    console.log("dispatch set allowance");
     let _fromAmountBN =
       this.state.fromAmount * Math.pow(10, this.state.fromToken.decimals);
     dispatcher1Inch.dispatch({
@@ -558,7 +623,9 @@ class Swap extends Component {
   };
 
   setAllowanceReturned = async (data) => {
-    const temp = this.state.fromAmount;
+    const temp =
+      this.state.fromAmount * Math.pow(10, this.state.fromToken.decimals);
+    console.log({ answer: data, newAllowance: temp });
     this.setState({ currentAllowance: temp, loading: false });
   };
 
@@ -580,7 +647,11 @@ class Swap extends Component {
   };
 
   txHashReturned = async (hash) => {
-    console.log(hash);
+    const { pendingTX } = this.state;
+    var updatedTX = [...pendingTX];
+    let newTX = { hash: hash, status: null };
+    updatedTX.unshift(newTX);
+    this.setState({ pendingTX: updatedTX });
   };
 
   swapReturned = async (data) => {
@@ -589,6 +660,7 @@ class Swap extends Component {
       tokenContract: this.state.fromToken.address,
       decimals: this.state.fromToken.decimals,
     });
+    this.getTransactionReceiptReturned(data);
     this.setState({ loadingSwap: false });
   };
 
@@ -626,6 +698,154 @@ class Swap extends Component {
     if (newWindow) newWindow.opener = null;
   };
 
+  setSlippage = (newSlippage) => {
+    const { customSlippage } = this.state;
+    this.setState({
+      slippage: newSlippage,
+      customSlippage: "",
+      errorCustomSlippage: false,
+      customSlippageErrorMessage: "",
+    });
+  };
+
+  handleChangeCustomSlippage = (event) => {
+    let newValueString = event.target.value.replace(",", ".");
+    let newSlippage = 1;
+    if (newValueString[0] === ".") {
+      newSlippage = parseFloat("0" + newValueString);
+      newValueString = "0" + newValueString;
+    } else {
+      newSlippage = parseFloat(newValueString);
+    }
+    let error = false;
+    let errorMessage = "";
+    if (event.target.value === "") {
+      newSlippage = 1;
+      error = false;
+    }
+    if (!isNaN(newValueString)) {
+      if (newSlippage <= 0) {
+        newSlippage = 1;
+      } else if (newSlippage <= 50) {
+        if (newSlippage > 5) {
+          errorMessage = `You may receive ${newSlippage}% less with this level of slippage tolerance`;
+        }
+      } else {
+        errorMessage = `Slippage tolerance can't be more than 50%`;
+        error = true;
+        newSlippage = 1;
+      }
+    } else {
+      error = true;
+      errorMessage = `Slippage has to be a number`;
+      newSlippage = 1;
+    }
+
+    this.setState({
+      customSlippage: newValueString,
+      slippage: newSlippage,
+      errorCustomSlippage: error,
+      customSlippageErrorMessage: errorMessage,
+    });
+  };
+
+  renderPendingTX = (pendingTX) => {
+    const { classes } = this.props;
+
+    return (
+      <>
+        <Typography color="primary" style={{ marginBottom: 10 }}>
+          Your transactions
+        </Typography>
+        <Grid container direction="column" justify="flex-start" align="stretch">
+          {pendingTX.map((tx) => (
+            <Grid
+              container
+              direction="row"
+              justify="center"
+              align="flex-start"
+              item
+              key={tx.hash}
+            >
+              <Tooltip title="delete tx">
+                <IconButton
+                  aria-label="delete"
+                  size="small"
+                  onClick={() => this.deletePendingTX(tx.hash)}
+                >
+                  <DeleteForeverIcon fontSize="inherit" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Check tx at etherscan">
+                <Link
+                  target="_blank"
+                  href={`https://bscscan.com/tx/${tx.hash}`}
+                >
+                  <IconButton aria-label="check tx at etherscan" size="small">
+                    <ExitToAppRoundedIcon fontSize="inherit" />
+                  </IconButton>
+                </Link>
+              </Tooltip>
+              <div style={{ marginRight: 10 }}>
+                {[
+                  tx.hash.slice(0, 6),
+                  "...",
+                  tx.hash.slice(tx.hash.length - 6, tx.hash.length),
+                ].join("")}
+              </div>
+              {tx.status === "confirmed" ? (
+                <CheckCircleRoundedIcon color="primary" />
+              ) : tx.status === "failed" ? (
+                <CancelRoundedIcon color="secondary" />
+              ) : (
+                <CircularProgress size={20} />
+              )}
+            </Grid>
+          ))}
+        </Grid>
+      </>
+    );
+  };
+
+  deletePendingTX = (hash) => {
+    const { pendingTX } = this.state;
+    const allPendingTX = pendingTX;
+
+    const updatedPendingTX = allPendingTX.filter((tx) => tx.hash !== hash);
+    this.setState({ pendingTX: updatedPendingTX });
+  };
+
+  getTransactionReceiptReturned = (data) => {
+    const { pendingTX } = this.state;
+    var updatedTX = [...pendingTX];
+    const oldTX = updatedTX.filter((tx) => tx.hash === data.transactionHash)[0];
+    var newTX = { ...oldTX };
+
+    if (!data) {
+      newTX.status = null;
+    } else {
+      if (data.status) {
+        newTX.status = "confirmed";
+      } else {
+        newTX.status = "failed";
+      }
+    }
+    if (oldTX.status !== newTX.status) {
+      updatedTX = updatedTX.map((tx) =>
+        tx.hash === newTX.hash ? { ...tx, status: newTX.status } : tx
+      );
+
+      this.setState({ pendingTX: updatedTX });
+    }
+  };
+
+  getTransactionReceipt = (hash) => {
+    dispatcher.dispatch({
+      type: GET_TRANSACTION_RECEIPT,
+      txHash: hash,
+    });
+  };
+
   render() {
     const { classes } = this.props;
     const {
@@ -637,11 +857,16 @@ class Swap extends Component {
       fromToken,
       toToken,
       fromAmount,
+      fromAmountBN,
       currentAllowance,
       swapReady,
       fromAvailableBalance,
+      fromAvailableBalanceBN,
       loadingQuote,
       snackbarMessage,
+      slippage,
+      customSlippage,
+      errorMsgFromAmount,
     } = this.state;
 
     return (
@@ -676,9 +901,11 @@ class Swap extends Component {
                         <TextField
                           label="Amount"
                           id="fromAmountInput"
-                          defaultValue="0"
                           className={classes.textField}
+                          value={fromAmount}
                           onChange={(e) => this.doDelayedQuote(e.target.value)}
+                          helperText={errorMsgFromAmount}
+                          error={errorMsgFromAmount.length > 0}
                         />
                       )}
                     </Grid>
@@ -697,7 +924,7 @@ class Swap extends Component {
                           }}
                           onClick={() =>
                             this.setMaxAvailableFrom(
-                              this.state.fromAvailableBalance
+                              this.state.fromAvailableBalanceBN
                             )
                           }
                           xs={6}
@@ -750,6 +977,21 @@ class Swap extends Component {
                     >
                       <SwapCallsIcon />
                     </IconButton>
+                    {fromToken && fromAmount > 0 && toToken && (
+                      <IconButton
+                        style={{ marginLeft: 10 }}
+                        onClick={() =>
+                          this.getQuote(fromToken, fromAmount, toToken)
+                        }
+                      >
+                        <RefreshIcon />
+                      </IconButton>
+                    )}
+                    {
+                      // <IconButton style={{ marginLeft: 10 }}>
+                      // <TuneRoundedIcon />
+                      // </IconButton>
+                    }
                   </Grid>
                   <Grid
                     container
@@ -838,6 +1080,89 @@ class Swap extends Component {
                       </>
                     )}
                   </Grid>
+                  {swapReady && (
+                    <Grid
+                      container
+                      justify="center"
+                      direction={"row"}
+                      item
+                      className={classes.fromToGrid}
+                      style={{ marginTop: 10 }}
+                    >
+                      <Grid
+                        item
+                        container
+                        xs={12}
+                        direction="row"
+                        justify="center"
+                        alignItems="center"
+                      >
+                        Slippage
+                        <ButtonGroup
+                          color="primary"
+                          aria-label="slippage tolerance button group"
+                          style={{ marginLeft: 10 }}
+                        >
+                          <Button
+                            onClick={() => this.setSlippage(0.1)}
+                            variant={slippage === 0.1 ? "contained" : ""}
+                          >
+                            0.1%
+                          </Button>
+                          <Button
+                            onClick={() => this.setSlippage(0.5)}
+                            variant={slippage === 0.5 ? "contained" : ""}
+                          >
+                            0.5%
+                          </Button>
+                          <Button
+                            onClick={() => this.setSlippage(1)}
+                            variant={slippage === 1 ? "contained" : ""}
+                          >
+                            1%
+                          </Button>
+                          <Button
+                            onClick={() => this.setSlippage(3)}
+                            variant={slippage === 3 ? "contained" : ""}
+                          >
+                            3%
+                          </Button>
+                        </ButtonGroup>
+                        <TextField
+                          id="custom-slippage"
+                          label={customSlippage > 0 ? "Custom" : ""}
+                          variant="outlined"
+                          style={{
+                            marginLeft: 10,
+                            width: "70px",
+                          }}
+                          value={customSlippage}
+                          onChange={(event) =>
+                            this.handleChangeCustomSlippage(event)
+                          }
+                          error={this.state.errorCustomSlippage}
+                        />
+                        {this.state.errorCustomSlippage && (
+                          <Grid item xs={12} style={{ marginTop: 10 }}>
+                            <Typography color={"secondary"}>
+                              {this.state.customSlippageErrorMessage}
+                            </Typography>
+                            <Typography color={"secondary"}>
+                              Using default value of 1% instead
+                            </Typography>
+                          </Grid>
+                        )}
+                        {parseFloat(customSlippage) > 5 &&
+                          !this.state.errorCustomSlippage && (
+                            <Grid item xs={12} style={{ marginTop: 10 }}>
+                              <Typography color={"secondary"}>
+                                {this.state.customSlippageErrorMessage}
+                              </Typography>
+                            </Grid>
+                          )}
+                      </Grid>
+                    </Grid>
+                  )}
                   <Grid
                     container
                     justify="center"
@@ -845,71 +1170,89 @@ class Swap extends Component {
                     item
                     style={{ marginTop: 10 }}
                   >
-                    {parseInt(currentAllowance) < parseInt(fromAmount) && (
-                      <>
-                        <Button
-                          color={"primary"}
-                          variant={"contained"}
-                          onClick={() => this.setAllowance()}
-                          disabled={loading}
-                        >
-                          {loading && <CircularProgress />}
-                          {!loading && `Set ${this.state.fromAmount} Allowance`}
-                        </Button>
-                        {!loading && (
+                    <Grid item xs={12}>
+                      {fromToken &&
+                        parseInt(currentAllowance) <
+                          parseFloat(fromAmount) *
+                            Math.pow(10, fromToken.decimals) && (
+                          <>
+                            <Button
+                              color={"primary"}
+                              variant={"contained"}
+                              onClick={() => this.setAllowance()}
+                              disabled={loading}
+                            >
+                              {loading && <CircularProgress />}
+                              {!loading &&
+                                `Set ${this.state.fromAmount} Allowance`}
+                            </Button>
+                            {!loading && (
+                              <Button
+                                color={"primary"}
+                                variant={"contained"}
+                                onClick={() => this.setUnlimitedAllowance()}
+                                disabled={loading}
+                                style={{ marginLeft: 10 }}
+                              >
+                                {loading && <CircularProgress />}
+                                {!loading && "Unlimited Allowance"}
+                              </Button>
+                            )}
+                          </>
+                        )}
+                      {swapReady &&
+                        parseInt(currentAllowance) > parseInt(fromAmountBN) &&
+                        parseInt(fromAmountBN) <=
+                          parseInt(fromAvailableBalanceBN) && (
                           <Button
                             color={"primary"}
                             variant={"contained"}
-                            onClick={() => this.setUnlimitedAllowance()}
-                            disabled={loading}
+                            onClick={() => this.doSwapCheck()}
+                            disabled={loadingSwap}
                             style={{ marginLeft: 10 }}
                           >
-                            {loading && <CircularProgress />}
-                            {!loading && "Unlimited Allowance"}
+                            {loadingSwap && <CircularProgress />}
+                            {!loadingSwap && "Swap"}
                           </Button>
                         )}
-                      </>
-                    )}
-                    {swapReady &&
-                      parseInt(currentAllowance) > parseInt(fromAmount) &&
-                      parseInt(fromAmount) <=
-                        parseInt(fromAvailableBalance) && (
-                        <Button
-                          color={"primary"}
-                          variant={"contained"}
-                          onClick={() => this.doSwapCheck()}
-                          disabled={loadingSwap}
-                        >
-                          {loadingSwap && <CircularProgress />}
-                          {!loadingSwap && "Swap"}
-                        </Button>
-                      )}
-                  </Grid>
-                  {swapReady && (
-                    <Grid>
-                      <Divider variant="middle" style={{ marginTop: 10 }} />
-                      <Typography color="primary">
-                        Estimated Swap Tx Cost ${this.state.txCostFiat}
-                      </Typography>
-
-                      <Typography>Swap Route</Typography>
-                      <Breadcrumbs
-                        separator={<NavigateNextIcon fontSize="small" />}
-                        aria-label="breadcrumb"
-                        style={{
-                          marginTop: 10,
-                          justifyContent: "center",
-                          display: "grid",
-                        }}
-                      >
-                        {this.state.swapRoute.map((routeStep) => (
-                          <Typography key={routeStep} color="textPrimary">
-                            {routeStep}
-                          </Typography>
-                        ))}
-                      </Breadcrumbs>
                     </Grid>
-                  )}
+                    {this.state.pendingTX.length > 0 && (
+                      <Grid item xs={12}>
+                        <Divider variant="middle" style={{ marginTop: 10 }} />
+                        <Grid item xs={12}>
+                          {this.renderPendingTX(this.state.pendingTX)}
+                        </Grid>
+                      </Grid>
+                    )}
+                  </Grid>
+                  {
+                    // Display swapRoute
+                    swapReady && (
+                      <Grid>
+                        <Divider variant="middle" style={{ marginTop: 10 }} />
+                        <Typography color="primary">
+                          Estimated Swap Tx Cost ${this.state.txCostFiat}
+                        </Typography>
+
+                        <Typography>Swap Route</Typography>
+                        <Breadcrumbs
+                          separator={<NavigateNextIcon fontSize="small" />}
+                          aria-label="breadcrumb"
+                          style={{
+                            marginTop: 10,
+                            justifyContent: "center",
+                            display: "grid",
+                          }}
+                        >
+                          {this.state.swapRoute.map((routeStep) => (
+                            <Typography key={routeStep} color="textPrimary">
+                              {routeStep}
+                            </Typography>
+                          ))}
+                        </Breadcrumbs>
+                      </Grid>
+                    )
+                  }
                   <Grid>
                     <Divider variant="middle" style={{ marginTop: 10 }} />
                     <Typography color="primary" style={{ textAlign: "right" }}>
