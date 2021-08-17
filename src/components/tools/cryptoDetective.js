@@ -7,7 +7,7 @@ import ReactHtmlParser from "react-html-parser";
 import CoinSearchBar from "../components/CoinSearchBar.js";
 import PriceChart from "../components/Chart.js";
 import LSvoteResultModal from "../components/lsVoteResultModal.js";
-
+import { formatMoney, formatMoneyMCAP } from "../helpers";
 import { colors } from "../../theme";
 
 //IMPORT MaterialUI elements
@@ -23,6 +23,7 @@ import {
   AccordionDetails,
   Link,
   LinearProgress,
+  CircularProgress,
 } from "@material-ui/core";
 
 //IMPORT ICONS
@@ -47,6 +48,7 @@ import {
   GRAPH_TIMEFRAME_CHANGED,
   SWITCH_VS_COIN_RETURNED,
   GET_COIN_PRICECHART,
+  COIN_PRICECHART_RETURNED,
   DB_GET_TOKEN_LS,
   DB_GET_TOKEN_LS_RETURNED,
   DB_GET_USER_TOKEN_LS,
@@ -142,6 +144,7 @@ class CryptoDetective extends Component {
       lsEnabled: false,
       lsLoaded: false,
       modalOpen: false,
+      loadingPriceChart: true,
     };
   }
 
@@ -154,6 +157,7 @@ class CryptoDetective extends Component {
     emitter.on(DB_GET_USER_TOKEN_LS_RETURNED, this.db_getUserTokenLSReturned);
     emitter.on(DB_CREATE_LS_RETURNED, this.db_createLSReturned);
     emitter.on(DB_CHECK_LS_RESULT_RETURNED, this.db_checkLSResultReturned);
+    emitter.on(COIN_PRICECHART_RETURNED, this.priceChartReturned);
 
     if (this.props.coinID) {
       dispatcher.dispatch({
@@ -184,6 +188,7 @@ class CryptoDetective extends Component {
       DB_CHECK_LS_RESULT_RETURNED,
       this.db_checkLSResultReturned
     );
+    emitter.removeListener(COIN_PRICECHART_RETURNED, this.priceChartReturned);
   }
 
   coinlistReturned = (payload) => {
@@ -195,7 +200,10 @@ class CryptoDetective extends Component {
       type: DB_GET_TOKEN_LS,
       tokenID: data[0].id,
     });
-    this.setState({ coinData: data[0], dataLoaded: true });
+    this.setState({
+      coinData: data[0],
+      dataLoaded: true,
+    });
   };
 
   getVsCoin = () => {
@@ -229,40 +237,13 @@ class CryptoDetective extends Component {
 
   graphTimeFrameChanged = (data) => {
     const { coinData, vs } = this.state;
-    this.setState({ timeFrame: data });
+    this.setState({ timeFrame: data, loadingPriceChart: true });
+
     if (coinData.id) {
       dispatcher.dispatch({
         type: GET_COIN_PRICECHART,
         content: [coinData.id, this.props.id, data, vs],
       });
-    }
-  };
-
-  formatMoney = (amount, decimalCount = 2, decimal = ".", thousands = ",") => {
-    try {
-      decimalCount = Math.abs(decimalCount);
-      decimalCount = isNaN(decimalCount) ? 2 : decimalCount;
-
-      const negativeSign = amount < 0 ? "-" : "";
-
-      let i = parseInt(
-        (amount = Math.abs(Number(amount) || 0).toFixed(decimalCount))
-      ).toString();
-      let j = i.length > 3 ? i.length % 3 : 0;
-
-      return (
-        negativeSign +
-        (j ? i.substr(0, j) + thousands : "") +
-        i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousands) +
-        (decimalCount
-          ? decimal +
-            Math.abs(amount - i)
-              .toFixed(decimalCount)
-              .slice(2)
-          : "")
-      );
-    } catch (e) {
-      console.log(e);
     }
   };
 
@@ -363,6 +344,10 @@ class CryptoDetective extends Component {
       tokenID: this.state.coinData.id,
       vote: "short",
     });
+  };
+
+  priceChartReturned = () => {
+    this.setState({ loadingPriceChart: false });
   };
 
   dataDisplaySide = () => {
@@ -473,36 +458,51 @@ class CryptoDetective extends Component {
                     xs={12}
                     padding={5}
                   >
-                    <Grid item container direction="row">
+                    <Grid
+                      item
+                      container
+                      direction="row"
+                      justify="space-between"
+                    >
                       <Typography>Marketcap: </Typography>
                       <Typography variant="subtitle1">
-                        {this.formatMoney(
-                          coinData.market_data.market_cap[vs],
-                          2
-                        )}{" "}
-                        {[vs]}
+                        {formatMoney(coinData.market_data.market_cap[vs], "0")}
                       </Typography>
                     </Grid>
-                    <Grid item container direction="row">
+                    <Grid
+                      item
+                      container
+                      direction="row"
+                      justify="space-between"
+                    >
                       <Typography>Fully diluted: </Typography>
                       <Typography variant="subtitle1">
-                        {this.formatMoney(
+                        {formatMoney(
                           coinData.market_data.fully_diluted_valuation[vs],
-                          2
-                        )}{" "}
-                        {[vs]}
+                          "0"
+                        )}
                       </Typography>
                     </Grid>
-                    <Grid item container direction="row">
+                    <Grid
+                      item
+                      container
+                      direction="row"
+                      justify="space-between"
+                    >
                       <Typography>Max Supply: </Typography>
                       <Typography variant="subtitle1">
-                        {this.formatMoney(coinData.market_data.max_supply, 0)}
+                        {formatMoney(coinData.market_data.max_supply, 0)}
                       </Typography>
                     </Grid>
-                    <Grid item container direction="row">
+                    <Grid
+                      item
+                      container
+                      direction="row"
+                      justify="space-between"
+                    >
                       <Typography>Circulating Supply: </Typography>
                       <Typography variant="subtitle1">
-                        {this.formatMoney(
+                        {formatMoney(
                           coinData.market_data.circulating_supply,
                           0
                         )}
@@ -754,7 +754,7 @@ class CryptoDetective extends Component {
                   >
                     <Grid
                       container
-                      direction="row"
+                      direction="column"
                       justify="center"
                       alignItems="center"
                       spacing={1}
@@ -910,14 +910,14 @@ class CryptoDetective extends Component {
 
   dataDisplayMain = () => {
     const { classes } = this.props;
-    const { coinData, vs } = this.state;
+    const { coinData, vs, loadingPriceChart } = this.state;
 
     const handleClick = (timeFrame) => {
       dispatcher.dispatch({
         type: GET_COIN_PRICECHART,
         content: [coinData.id, null, timeFrame, vs],
       });
-      this.setState({ timeFrame: timeFrame });
+      this.setState({ timeFrame: timeFrame, loadingPriceChart: true });
     };
 
     return (
@@ -957,6 +957,21 @@ class CryptoDetective extends Component {
                       <Grid item>
                         <Chip
                           variant="outlined"
+                          style={
+                            this.state.timeFrame === 1
+                              ? {
+                                  background:
+                                    coinData.market_data
+                                      .price_change_percentage_24h_in_currency[
+                                      vs
+                                    ] > 0
+                                      ? colors.cgGreen
+                                      : colors.cgOrange,
+                                  color: "#000",
+                                  fontSize: "16px",
+                                }
+                              : {}
+                          }
                           color={
                             coinData.market_data
                               .price_change_percentage_24h_in_currency[vs] > 0
@@ -975,7 +990,10 @@ class CryptoDetective extends Component {
                           onClick={() => {
                             handleClick(1);
                           }}
-                          label={`${coinData.market_data.price_change_percentage_24h_in_currency[vs]}%`}
+                          label={`${formatMoney(
+                            coinData.market_data
+                              .price_change_percentage_24h_in_currency[vs]
+                          )}%`}
                         />
                       </Grid>
                     </Grid>
@@ -1006,10 +1024,24 @@ class CryptoDetective extends Component {
                           }}
                           style={
                             this.state.timeFrame === 7
-                              ? { background: colors.cgOrange + 25 }
+                              ? {
+                                  background:
+                                    coinData.market_data
+                                      .price_change_percentage_7d_in_currency[
+                                      vs
+                                    ] > 0
+                                      ? colors.cgGreen
+                                      : colors.cgOrange,
+                                  color: "#000",
+                                  fontSize: "16px",
+                                }
                               : {}
                           }
-                          label={`${coinData.market_data.price_change_percentage_7d_in_currency[vs]}%`}
+                          label={`${formatMoney(
+                            coinData.market_data
+                              .price_change_percentage_7d_in_currency[vs],
+                            2
+                          )}%`}
                         />
                       </Grid>
                     </Grid>
@@ -1042,10 +1074,23 @@ class CryptoDetective extends Component {
                           }}
                           style={
                             this.state.timeFrame === 30
-                              ? { background: colors.cgOrange + 25 }
+                              ? {
+                                  background:
+                                    coinData.market_data
+                                      .price_change_percentage_30d_in_currency[
+                                      vs
+                                    ] > 0
+                                      ? colors.cgGreen
+                                      : colors.cgOrange,
+                                  color: "#000",
+                                  fontSize: "16px",
+                                }
                               : {}
                           }
-                          label={`${coinData.market_data.price_change_percentage_30d_in_currency[vs]}%`}
+                          label={`${formatMoney(
+                            coinData.market_data
+                              .price_change_percentage_30d_in_currency[vs]
+                          )}%`}
                         />
                       </Grid>
                     </Grid>
@@ -1078,10 +1123,23 @@ class CryptoDetective extends Component {
                           }}
                           style={
                             this.state.timeFrame === 60
-                              ? { background: colors.cgOrange + 25 }
+                              ? {
+                                  background:
+                                    coinData.market_data
+                                      .price_change_percentage_60d_in_currency[
+                                      vs
+                                    ] > 0
+                                      ? colors.cgGreen
+                                      : colors.cgOrange,
+                                  color: "#000",
+                                  fontSize: "16px",
+                                }
                               : {}
                           }
-                          label={`${coinData.market_data.price_change_percentage_60d_in_currency[vs]}%`}
+                          label={`${formatMoney(
+                            coinData.market_data
+                              .price_change_percentage_60d_in_currency[vs]
+                          )}%`}
                         />
                       </Grid>
                     </Grid>
@@ -1114,10 +1172,23 @@ class CryptoDetective extends Component {
                           }}
                           style={
                             this.state.timeFrame === 365
-                              ? { background: colors.cgOrange + 25 }
+                              ? {
+                                  background:
+                                    coinData.market_data
+                                      .price_change_percentage_1y_in_currency[
+                                      vs
+                                    ] > 0
+                                      ? colors.cgGreen
+                                      : colors.cgOrange,
+                                  fontSize: "16px",
+                                  color: "#000",
+                                }
                               : {}
                           }
-                          label={`${coinData.market_data.price_change_percentage_1y_in_currency[vs]}%`}
+                          label={`${formatMoney(
+                            coinData.market_data
+                              .price_change_percentage_1y_in_currency[vs]
+                          )}%`}
                         />
                       </Grid>
                     </Grid>
@@ -1133,7 +1204,11 @@ class CryptoDetective extends Component {
                           }}
                           style={
                             this.state.timeFrame === "max"
-                              ? { background: colors.cgOrange + 25 }
+                              ? {
+                                  background: colors.cgGreen,
+                                  color: "#000",
+                                  fontSize: "16px",
+                                }
                               : {}
                           }
                           label={"All"}
@@ -1147,12 +1222,33 @@ class CryptoDetective extends Component {
           </Card>
         </Grid>
         <Grid item xs={12} id="coinChart">
-          <PriceChart
-            id={this.props.id}
-            coinID={coinData.id}
-            vsCoin={vs}
-            timeFrame={this.state.timeFrame}
-          />
+          {loadingPriceChart && (
+            <Grid
+              item
+              container
+              style={{ minHeight: "50vh" }}
+              justify="center"
+              alignItems="center"
+            >
+              <CircularProgress />
+            </Grid>
+          )}
+          <Grid
+            item
+            style={{
+              height: loadingPriceChart ? "0" : "100%",
+              transition: !loadingPriceChart ? "0.5s" : "0s",
+              opacity: !loadingPriceChart ? 100 : 0,
+            }}
+          >
+            <PriceChart
+              style={{}}
+              id={this.props.id}
+              coinID={coinData.id}
+              vsCoin={vs}
+              timeFrame={this.state.timeFrame}
+            />
+          </Grid>
         </Grid>
         <Accordion>
           <AccordionSummary

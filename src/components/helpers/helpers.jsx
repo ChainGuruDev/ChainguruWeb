@@ -3,12 +3,19 @@ function formatMoney(amount, decimalCount = 5, decimal = ".", thousands = ",") {
     decimalCount = Math.abs(decimalCount);
     decimalCount = isNaN(decimalCount) ? 5 : decimalCount;
     const negativeSign = amount < 0 ? "-" : "";
-
     let num = parseInt((amount = Math.abs(Number(amount) || 0)));
     if (num > 0) {
-      decimalCount = 2;
+      if (num < 0.01) {
+        decimalCount = 5;
+      } else {
+        decimalCount = decimalCount !== 5 ? decimalCount : 2;
+      }
     } else {
-      decimalCount = 5;
+      if (num > -0.01) {
+        decimalCount = 2;
+      } else {
+        decimalCount = 5;
+      }
     }
     let i = parseInt(
       (amount = Math.abs(Number(amount) || 0).toFixed(decimalCount))

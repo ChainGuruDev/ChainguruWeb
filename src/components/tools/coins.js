@@ -77,31 +77,41 @@ class CoinList extends Component {
     let labelA = "";
     let labelB = "";
     let labelC = "";
+    let labelD = "";
+    let labelE = "";
 
     switch (props.timeFrame) {
       case "short":
-        reqPercentage = "1h,24h,7d";
+        reqPercentage = "1h,24h,7d,30d,1y";
         labelA = "price 1h";
         labelB = "price 24h";
         labelC = "price 7d";
+        labelD = "price 30d";
+        labelE = "price 1y";
         break;
       case "medium":
-        reqPercentage = "14d,30d,200d";
-        labelA = "price 14d";
-        labelB = "price 30d";
-        labelC = "price 200d";
+        reqPercentage = "24h,14d,30d,200d,1y";
+        labelA = "price 24h";
+        labelB = "price 14d";
+        labelC = "price 30d";
+        labelD = "price 200d";
+        labelE = "price 1y";
         break;
       case "long":
-        reqPercentage = "30d,200d,1y";
-        labelA = "price 30d";
-        labelB = "price 200d";
-        labelC = "price 1y";
+        reqPercentage = "7d,14d,30d,200d,1y";
+        labelA = "price 7d";
+        labelB = "price 14d";
+        labelC = "price 30d";
+        labelD = "price 200d";
+        labelE = "price 1y";
         break;
       default:
-        reqPercentage = "1h,24h,7d";
-        labelA = "price 1h";
-        labelB = "price 24h";
-        labelC = "price 7d";
+        reqPercentage = "24h,7d,30d,200d,1y";
+        labelA = "price 24h";
+        labelB = "price 7d";
+        labelC = "price 30d";
+        labelD = "price 200d";
+        labelE = "price 1y";
         break;
     }
 
@@ -118,6 +128,8 @@ class CoinList extends Component {
       labelA: labelA,
       labelB: labelB,
       labelC: labelC,
+      labelD: labelD,
+      labelE: labelE,
     };
   }
 
@@ -180,6 +192,8 @@ class CoinList extends Component {
     price_change_percentage_A,
     price_change_percentage_B,
     price_change_percentage_C,
+    price_change_percentage_D,
+    price_change_percentage_E,
     market_cap,
     market_cap_change_percentage_24h,
     sparkline_in_7d
@@ -193,6 +207,8 @@ class CoinList extends Component {
       price_change_percentage_A,
       price_change_percentage_B,
       price_change_percentage_C,
+      price_change_percentage_D,
+      price_change_percentage_E,
       market_cap,
       market_cap_change_percentage_24h,
       sparkline_in_7d,
@@ -203,6 +219,8 @@ class CoinList extends Component {
     let priceChangeA;
     let priceChangeB;
     let priceChangeC;
+    let priceChangeD;
+    let priceChangeE;
 
     let geckoData = [];
 
@@ -211,21 +229,29 @@ class CoinList extends Component {
         priceChangeA = "price_change_percentage_1h_in_currency";
         priceChangeB = "price_change_percentage_24h_in_currency";
         priceChangeC = "price_change_percentage_7d_in_currency";
+        priceChangeD = "price_change_percentage_30d_in_currency";
+        priceChangeE = "price_change_percentage_1y_in_currency";
         break;
       case "medium":
-        priceChangeA = "price_change_percentage_14d_in_currency";
-        priceChangeB = "price_change_percentage_30d_in_currency";
-        priceChangeC = "price_change_percentage_200d_in_currency";
+        priceChangeA = "price_change_percentage_24h_in_currency";
+        priceChangeB = "price_change_percentage_14d_in_currency";
+        priceChangeC = "price_change_percentage_30d_in_currency";
+        priceChangeD = "price_change_percentage_200d_in_currency";
+        priceChangeE = "price_change_percentage_1y_in_currency";
         break;
       case "long":
-        priceChangeA = "price_change_percentage_30d_in_currency";
-        priceChangeB = "price_change_percentage_200d_in_currency";
-        priceChangeC = "price_change_percentage_1y_in_currency";
+        priceChangeA = "price_change_percentage_7d_in_currency";
+        priceChangeB = "price_change_percentage_14d_in_currency";
+        priceChangeC = "price_change_percentage_30d_in_currency";
+        priceChangeD = "price_change_percentage_200d_in_currency";
+        priceChangeE = "price_change_percentage_1y_in_currency";
         break;
       default:
-        priceChangeA = "price_change_percentage_1h_in_currency";
-        priceChangeB = "price_change_percentage_24h_in_currency";
-        priceChangeC = "price_change_percentage_7d_in_currency";
+        priceChangeA = "price_change_percentage_24h_in_currency";
+        priceChangeB = "price_change_percentage_7d_in_currency";
+        priceChangeC = "price_change_percentage_30d_in_currency";
+        priceChangeD = "price_change_percentage_200d_in_currency";
+        priceChangeE = "price_change_percentage_1y_in_currency";
         break;
     }
     data.forEach((item, i) => {
@@ -238,6 +264,8 @@ class CoinList extends Component {
         item[priceChangeA],
         item[priceChangeB],
         item[priceChangeC],
+        item[priceChangeD],
+        item[priceChangeE],
         item.market_cap,
         item.market_cap_change_percentage_24h,
         item.sparkline_in_7d.price
@@ -311,10 +339,8 @@ class CoinList extends Component {
             <img className={classes.tokenLogo} alt="" src={row.image} />
           </TableCell>
           <TableCell padding="none" align="left">
-            <Typography inline variant={"h4"}>
-              {row.name}
-            </Typography>
-            <Typography inline style={{ opacity: 0.6 }} variant={"subtitle2"}>
+            <Typography variant={"h4"}>{row.name}</Typography>
+            <Typography style={{ opacity: 0.6 }} variant={"subtitle2"}>
               {row.symbol}
             </Typography>
           </TableCell>
@@ -354,11 +380,30 @@ class CoinList extends Component {
             </Typography>
           </TableCell>
           <TableCell align="right">
+            <Typography
+              variant={"body1"}
+              color={
+                row.price_change_percentage_D > 0 ? "primary" : "secondary"
+              }
+            >
+              {formatMoney(row.price_change_percentage_D)} %
+            </Typography>
+          </TableCell>
+          <TableCell align="right">
+            <Typography
+              variant={"body1"}
+              color={
+                row.price_change_percentage_E > 0 ? "primary" : "secondary"
+              }
+            >
+              {formatMoney(row.price_change_percentage_E)} %
+            </Typography>
+          </TableCell>
+          <TableCell align="right">
             <Typography variant={"body1"}>
-              {formatMoneyMCAP(row.market_cap)}
+              {formatMoneyMCAP(row.market_cap, 0)}
             </Typography>
             <Typography
-              inline
               variant={"body1"}
               color={
                 row.market_cap_change_percentage_24h > 0
@@ -480,6 +525,8 @@ class CoinList extends Component {
       labelA,
       labelB,
       labelC,
+      labelD,
+      labelE,
     } = this.state;
 
     const handleChangeRowsPerPage = (event) => {
@@ -531,6 +578,8 @@ class CoinList extends Component {
                       <TableCell align="right">{labelA}</TableCell>
                       <TableCell align="right">{labelB}</TableCell>
                       <TableCell align="right">{labelC}</TableCell>
+                      <TableCell align="right">{labelD}</TableCell>
+                      <TableCell align="right">{labelE}</TableCell>
                       <TableCell align="right">
                         <TableSortLabel
                           active={sortBy === "market_cap"}
@@ -556,6 +605,7 @@ class CoinList extends Component {
                           inputProps: { "aria-label": "rows per page" },
                           native: true,
                         }}
+                        onChangePage={() => console.log()}
                         onChangeRowsPerPage={handleChangeRowsPerPage}
                         ActionsComponent={this.TablePaginationActions}
                       />
