@@ -145,6 +145,10 @@ class Long extends Component {
       newTab = 0;
     } else if (props.match.params.toolID === "dca") {
       newTab = 1;
+    } else if (props.match.params.toolID === "coins") {
+      newTab = 2;
+    } else if (props.match.params.toolID === "swap") {
+      newTab = 3;
     }
 
     this.state = { snackbarMessage: "", valueTab: newTab };
@@ -200,8 +204,8 @@ class Long extends Component {
               icon={<ShowChartIcon />}
               {...a11yProps(1)}
             />
-            <Tab label="Coins" icon={<LensIcon />} {...a11yProps(2)} />
-            <Tab label="Swap" icon={<SwapHorizIcon />} {...a11yProps(3)} />
+            <LongTab label="Coins" icon={<LensIcon />} {...a11yProps(2)} />
+            <LongTab label="Swap" icon={<SwapHorizIcon />} {...a11yProps(3)} />
           </LongTabs>
         </AppBar>
         <TabPanel value={valueTab} index={0}>
