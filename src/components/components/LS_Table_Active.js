@@ -110,7 +110,6 @@ class LSTableActive extends Component {
       this.props.data.forEach((item, i) => {
         tokenIDs.push(item.tokenID);
       });
-      console.log(tokenIDs);
       if (tokenIDs.length > 0) {
         dispatcher.dispatch({
           type: COINGECKO_POPULATE_FAVLIST,
@@ -234,12 +233,13 @@ class LSTableActive extends Component {
     }
   };
 
-  checkResult = (id) => {
+  checkResult = (e, id) => {
     this.setState({ loadingResult: true });
     dispatcher.dispatch({
       type: DB_CHECK_LS_RESULT,
       tokenID: id,
     });
+    e.stopPropagation();
   };
 
   sortedList = (rowData) => {
@@ -305,27 +305,21 @@ class LSTableActive extends Component {
         ? newRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
         : newRows
       ).map((row) => (
-        <TableRow hover={true} key={row.name}>
-          <TableCell
-            style={{ cursor: "pointer" }}
-            onClick={() => this.detective(row.id)}
-            component="th"
-            scope="row"
-          >
+        <TableRow
+          hover={true}
+          key={row.name}
+          style={{ cursor: "pointer" }}
+          onClick={() => this.detective(row.id)}
+        >
+          <TableCell component="th" scope="row">
             <img
               className={classes.tokenLogo}
               alt="coin-icon"
               src={row.image}
             />
           </TableCell>
-          <TableCell
-            style={{ cursor: "pointer" }}
-            onClick={() => this.detective(row.id)}
-            align="left"
-          >
-            <Typography variant={"h4"} onClick={() => this.detective(row.id)}>
-              {row.name}
-            </Typography>
+          <TableCell align="left">
+            <Typography variant={"h4"}>{row.name}</Typography>
             <Typography variant="subtitle1">{row.symbol}</Typography>
           </TableCell>
           <TableCell align="right">
@@ -349,7 +343,11 @@ class LSTableActive extends Component {
           </TableCell>
           <TableCell align="center">
             {row.vote && (
-              <ButtonGroup color="primary" aria-label="LongShort_ButtonGroup">
+              <ButtonGroup
+                color="primary"
+                aria-label="LongShort_ButtonGroup"
+                style={{ pointerEvents: "none" }}
+              >
                 <Button
                   startIcon={<TrendingUpIcon />}
                   color="primary"
@@ -363,7 +361,11 @@ class LSTableActive extends Component {
               </ButtonGroup>
             )}
             {!row.vote && (
-              <ButtonGroup color="primary" aria-label="LongShort_ButtonGroup">
+              <ButtonGroup
+                color="primary"
+                aria-label="LongShort_ButtonGroup"
+                style={{ pointerEvents: "none" }}
+              >
                 <Button
                   disabled
                   startIcon={<TrendingUpIcon />}
@@ -395,7 +397,7 @@ class LSTableActive extends Component {
               <Button
                 startIcon={<AssignmentTurnedInIcon />}
                 variant="outlined"
-                onClick={() => this.checkResult(row.id)}
+                onClick={(event) => this.checkResult(event, row.id)}
                 color="primary"
               >
                 Results

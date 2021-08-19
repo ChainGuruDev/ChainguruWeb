@@ -270,7 +270,7 @@ class Medium extends Component {
             }
           >
             {coinID && <CryptoDetective coinID={coinID} />}
-            {!coinID && <CryptoDetective />}
+            {!coinID && <CryptoDetective coinID={"bitcoin"} />}
           </Suspense>
         </TabPanel>
         <TabPanel value={valueTab} index={3}>

@@ -350,54 +350,64 @@ class CoinList extends Component {
             </Typography>
           </TableCell>
           <TableCell align="right">
-            <Typography
-              variant={"body1"}
-              color={
-                row.price_change_percentage_A > 0 ? "primary" : "secondary"
-              }
-            >
-              {formatMoney(row.price_change_percentage_A)} %
-            </Typography>
+            {row.price_change_percentage_A && (
+              <Typography
+                variant={"body1"}
+                color={
+                  row.price_change_percentage_A > 0 ? "primary" : "secondary"
+                }
+              >
+                {formatMoney(row.price_change_percentage_A)} %
+              </Typography>
+            )}
           </TableCell>
           <TableCell align="right">
-            <Typography
-              variant={"body1"}
-              color={
-                row.price_change_percentage_B > 0 ? "primary" : "secondary"
-              }
-            >
-              {formatMoney(row.price_change_percentage_B)} %
-            </Typography>
+            {row.price_change_percentage_B && (
+              <Typography
+                variant={"body1"}
+                color={
+                  row.price_change_percentage_B > 0 ? "primary" : "secondary"
+                }
+              >
+                {formatMoney(row.price_change_percentage_B)} %
+              </Typography>
+            )}
           </TableCell>
           <TableCell align="right">
-            <Typography
-              variant={"body1"}
-              color={
-                row.price_change_percentage_C > 0 ? "primary" : "secondary"
-              }
-            >
-              {formatMoney(row.price_change_percentage_C)} %
-            </Typography>
+            {row.price_change_percentage_C && (
+              <Typography
+                variant={"body1"}
+                color={
+                  row.price_change_percentage_C > 0 ? "primary" : "secondary"
+                }
+              >
+                {formatMoney(row.price_change_percentage_C)} %
+              </Typography>
+            )}
           </TableCell>
           <TableCell align="right">
-            <Typography
-              variant={"body1"}
-              color={
-                row.price_change_percentage_D > 0 ? "primary" : "secondary"
-              }
-            >
-              {formatMoney(row.price_change_percentage_D)} %
-            </Typography>
+            {row.price_change_percentage_D && (
+              <Typography
+                variant={"body1"}
+                color={
+                  row.price_change_percentage_D > 0 ? "primary" : "secondary"
+                }
+              >
+                {formatMoney(row.price_change_percentage_D)} %
+              </Typography>
+            )}
           </TableCell>
           <TableCell align="right">
-            <Typography
-              variant={"body1"}
-              color={
-                row.price_change_percentage_E > 0 ? "primary" : "secondary"
-              }
-            >
-              {formatMoney(row.price_change_percentage_E)} %
-            </Typography>
+            {row.price_change_percentage_E && (
+              <Typography
+                variant={"body1"}
+                color={
+                  row.price_change_percentage_E > 0 ? "primary" : "secondary"
+                }
+              >
+                {formatMoney(row.price_change_percentage_E)} %
+              </Typography>
+            )}
           </TableCell>
           <TableCell align="right">
             <Typography variant={"body1"}>

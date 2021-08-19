@@ -1212,7 +1212,7 @@ class Store {
       try {
         let data = await CoinGeckoClient.ping();
         this.store.geckoOnline = true;
-        console.log(data.data);
+        //TODO DISPATCH GECKO PING OK >> SNACKBAR POWERED BY GECKO
       } catch (err) {
         this.store.geckoOnline = false;
         return emitter.emit(ERROR, err.message);
@@ -1642,7 +1642,7 @@ class Store {
     try {
       let data = await CoinGeckoClient.coins.markets({
         ids:
-          "bitcoin, ethereum, polkadot, kusama, energy-web-token, ocean-protocol, robonomics-network, unibright, iota, cosmos, neo, darwinia-network-native-token, maker, ontology, waves, republic-protocol, enjincoin, iexec-rlc, aave, chainlink, sora",
+          "bitcoin, ethereum, chainlink, polkadot, kusama, unibright, energy-web-token, sora, sora-validator-token, polkaswap, alchemist, iexec-rlc, aave, enjincoin, ocean-protocol, waves, dao-maker, compound-governance-token, iota",
         vs_currency: "usd",
         price_change_percentage: "1y",
       });
@@ -1829,7 +1829,6 @@ class Store {
         price_change_percentage: payload.priceChangePercentage,
         order: payload.order,
       });
-      console.log(data);
       emitter.emit(GECKO_GET_COINS_RETURNED, await data.data);
     } catch (err) {
       console.log(err.message);

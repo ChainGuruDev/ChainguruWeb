@@ -42,10 +42,15 @@ const styles = (theme) => ({
     color: theme.palette.text.primary,
     background: `${colors.cgBlue}65`,
     border: `2px solid ${colors.cgBlue}`,
+    webkitBoxShadow: "0px 0px 00px 0px #0005",
+    boxShadow: "0px 0px 0px 0px #0005",
     transition: "0.5s",
     "&:hover": {
       background: `${colors.cgBlue}95`,
+      webkitBoxShadow: "0px 0px 10px 5px #0004",
+      boxShadow: "0px 0px 10px 5px #0004",
     },
+
     cursor: "pointer",
   },
   paperDark: {
@@ -54,9 +59,13 @@ const styles = (theme) => ({
     color: theme.palette.text.primary,
     background: `${colors.cgBlue}52`,
     border: `2px solid ${colors.cgBlue}`,
+    webkitBoxShadow: "0px 0px 00px 0px #9de2f9",
+    boxShadow: "0px 0px 0px 0px #0005",
     transition: "0.5s",
     "&:hover": {
       background: `${colors.cgBlue}75`,
+      webkitBoxShadow: "0px 0px 10px 5px #9de2f952",
+      boxShadow: "0px 0px 10px 5px #9de2f952",
     },
     cursor: "pointer",
   },
@@ -97,7 +106,15 @@ class BlueChipCard extends Component {
 
   geckoAlltimeChart = (data) => {
     if (data[1] === this.props.data.id) {
-      this.setState({ chartData: data[0].prices });
+      console.log(data[0]);
+      for (var i = 1; i < data[0].prices.length; i += 2) {
+        delete data[0].prices[i];
+        i++;
+        delete data[0].prices[i];
+      }
+      const filteredData = data[0].prices.filter((a) => a);
+      console.log(filteredData);
+      this.setState({ chartData: filteredData });
       this.setState({ loadingChart: false });
       emitter.removeListener(
         COINGECKO_ALLTIME_CHART_RETURNED,
@@ -116,7 +133,7 @@ class BlueChipCard extends Component {
       <Grid item xs={6}>
         <Paper
           className={darkMode ? classes.paperDark : classes.paper}
-          elevation={10}
+          elevation={0}
         >
           <Grid
             onClick={
@@ -135,43 +152,91 @@ class BlueChipCard extends Component {
             )}
             {!loadingChart && (
               <>
-                <Grid item xs={2}>
-                  <img
-                    className={classes.img}
-                    alt="coin-icon"
-                    src={data.image}
-                  />
-                </Grid>
                 <Grid
-                  style={{ zIndex: 1 }}
                   item
-                  xs
                   container
-                  direction="column"
+                  direction="row"
+                  justifyContent="flex-start"
+                  alignItems="stretch"
+                  xs={7}
                   spacing={2}
                 >
-                  <Typography align="left" variant="h2">
-                    {data.name}
-                  </Typography>
-                  <Typography align="left" variant="h3">
-                    {data.current_price}
-                  </Typography>
-                  <Typography align="left" variant="body2">
-                    Marketcap: {data.market_cap}
-                  </Typography>
-                  {data.fully_diluted_valuation > 0 && (
-                    <Typography align="left" variant="body2">
-                      Fully diluted valuation: {data.fully_diluted_valuation}
+                  <Grid
+                    item
+                    xs={2}
+                    style={{ alignContent: "center", display: "grid" }}
+                  >
+                    <img
+                      className={classes.img}
+                      alt="coin-icon"
+                      src={data.image}
+                    />
+                  </Grid>
+                  <Grid
+                    style={{ zIndex: 1, margin: "0px 10px" }}
+                    item
+                    xs
+                    container
+                    direction="column"
+                    spacing={2}
+                  >
+                    <Typography align="left" variant="h2">
+                      {data.name}
                     </Typography>
-                  )}
-                  {data.price_change_percentage_1y_in_currency > 0 && (
-                    <Typography align="left" variant="body2">
-                      price change 1Y:{" "}
-                      {data.price_change_percentage_1y_in_currency}%
+                    <Typography align="left" variant="h3">
+                      {data.current_price}
                     </Typography>
-                  )}
+                    {parseInt(data.market_cap) > 0 && (
+                      <Grid
+                        item
+                        container
+                        direction="row"
+                        style={{ padding: 0 }}
+                        justify="space-between"
+                      >
+                        <Typography align="left" variant="body2">
+                          Marketcap:
+                        </Typography>
+                        <Typography align="left" variant="body2">
+                          {data.market_cap}
+                        </Typography>
+                      </Grid>
+                    )}
+                    {parseInt(data.fully_diluted_valuation) > 0 && (
+                      <Grid
+                        item
+                        container
+                        direction="row"
+                        style={{ padding: 0 }}
+                        justify="space-between"
+                      >
+                        <Typography align="left" variant="body2">
+                          Fully diluted valuation:
+                        </Typography>
+                        <Typography align="left" variant="body2">
+                          {data.fully_diluted_valuation}
+                        </Typography>
+                      </Grid>
+                    )}
+                    {data.price_change_percentage_1y_in_currency > 0 && (
+                      <Grid
+                        item
+                        container
+                        direction="row"
+                        style={{ padding: 0 }}
+                        justify="space-between"
+                      >
+                        <Typography align="left" variant="body2">
+                          price change 1Y:
+                        </Typography>
+                        <Typography align="left" variant="body2">
+                          {data.price_change_percentage_1y_in_currency}%
+                        </Typography>
+                      </Grid>
+                    )}
+                  </Grid>
                 </Grid>
-                <Grid item xs>
+                <Grid item xs={5}>
                   <AlltimeChart id={data.symbol} data={chartData} />
                 </Grid>
               </>

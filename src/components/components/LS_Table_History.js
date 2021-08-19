@@ -1,5 +1,3 @@
-//KEY.ID de los rows cambiar por el ID de la votacion de la DB
-
 //Table component to draw the active Long&Short
 
 import React, { Component } from "react";
@@ -171,7 +169,6 @@ class LSTableHistory extends Component {
   };
 
   geckoDataReturned = (data) => {
-    console.log(data);
     if (data[1] === "complete") {
       // console.log("data returned to complete list");
       // Create array with items to sort later in table
@@ -278,27 +275,21 @@ class LSTableHistory extends Component {
         ? newRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
         : newRows
       ).map((row) => (
-        <TableRow hover={true} key={row.dbid}>
-          <TableCell
-            style={{ cursor: "pointer" }}
-            onClick={() => this.detective(row.id)}
-            component="th"
-            scope="row"
-          >
+        <TableRow
+          hover={true}
+          key={row.dbid}
+          style={{ cursor: "pointer" }}
+          onClick={() => this.detective(row.id)}
+        >
+          <TableCell component="th" scope="row">
             <img
               className={classes.tokenLogo}
               alt="coin-icon"
               src={row.image}
             />
           </TableCell>
-          <TableCell
-            style={{ cursor: "pointer" }}
-            onClick={() => this.detective(row.id)}
-            align="left"
-          >
-            <Typography variant={"h4"} onClick={() => this.detective(row.id)}>
-              {row.name}
-            </Typography>
+          <TableCell align="left">
+            <Typography variant={"h4"}>{row.name}</Typography>
             <Typography variant="subtitle1">{row.symbol}</Typography>
           </TableCell>
           <TableCell align="right">
@@ -325,7 +316,11 @@ class LSTableHistory extends Component {
           </TableCell>
           <TableCell align="center">
             {row.vote && (
-              <ButtonGroup color="primary" aria-label="LongShort_ButtonGroup">
+              <ButtonGroup
+                color="primary"
+                aria-label="LongShort_ButtonGroup"
+                style={{ pointerEvents: "none" }}
+              >
                 <Button
                   startIcon={<TrendingUpIcon />}
                   color="primary"
@@ -339,7 +334,11 @@ class LSTableHistory extends Component {
               </ButtonGroup>
             )}
             {!row.vote && (
-              <ButtonGroup color="primary" aria-label="LongShort_ButtonGroup">
+              <ButtonGroup
+                color="primary"
+                aria-label="LongShort_ButtonGroup"
+                style={{ pointerEvents: "none" }}
+              >
                 <Button
                   disabled
                   startIcon={<TrendingUpIcon />}
@@ -347,8 +346,6 @@ class LSTableHistory extends Component {
                 ></Button>
                 <Button
                   endIcon={<TrendingDownIcon />}
-                  disableRipple={true}
-                  disableFocusRipple={true}
                   variant="contained"
                   color="secondary"
                 ></Button>
@@ -361,8 +358,11 @@ class LSTableHistory extends Component {
                 startIcon={<AssignmentTurnedInIcon />}
                 variant="outlined"
                 color="primary"
+                style={{ pointerEvents: "none" }}
+                disableElevation
+                disableRipple
               >
-                Good
+                Right
               </Button>
             )}
             {!row.result && (
@@ -370,8 +370,9 @@ class LSTableHistory extends Component {
                 startIcon={<AssignmentTurnedInIcon />}
                 variant="outlined"
                 color="secondary"
+                style={{ pointerEvents: "none" }}
               >
-                Bad
+                Wrong
               </Button>
             )}
           </TableCell>

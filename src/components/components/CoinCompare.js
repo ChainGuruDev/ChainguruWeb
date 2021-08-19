@@ -161,7 +161,6 @@ class CoinCompare extends Component {
 
   coinDataReturned = (data) => {
     if (data[1] === this.props.id) {
-      console.log(data);
       this.setState({ coinData: data[0], loading: false });
     }
   };

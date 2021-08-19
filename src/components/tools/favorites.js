@@ -25,6 +25,7 @@ import {
   CONNECTION_CONNECTED,
   CONNECTION_DISCONNECTED,
   DB_ADD_FAVORITE,
+  DB_ADD_FAVORITE_RETURNED,
   COINGECKO_POPULATE_FAVLIST,
 } from "../../constants";
 
@@ -81,6 +82,7 @@ class Favorites extends Component {
       validSelection: false,
       favList: [],
       progressBar: 0,
+      isAddingFav: false,
     };
     if (account && account.address) {
       dispatcher.dispatch({
@@ -111,6 +113,8 @@ class Favorites extends Component {
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
     emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
+    emitter.on(DB_ADD_FAVORITE_RETURNED, this.dbAddFavoriteReturned);
+
     //emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
     this.interval = setInterval(() => this.updateFavorites(), 1000);
   }
@@ -123,6 +127,8 @@ class Favorites extends Component {
       this.connectionDisconnected
     );
     emitter.removeListener(COINLIST_RETURNED, this.coinlistReturned);
+    emitter.on(DB_ADD_FAVORITE_RETURNED, this.dbAddFavoriteReturned);
+
     //emitter.removeListener(DB_USERDATA_RETURNED, this.dbUserDataReturned);
     clearInterval(this.interval);
   }
@@ -139,6 +145,10 @@ class Favorites extends Component {
     if (data.favorites.tokenIDs.length > 0) {
       this.setState({ favList: data.favorites.tokenIDs });
     }
+  };
+
+  dbAddFavoriteReturned = () => {
+    this.setState({ isAddingFav: false });
   };
 
   coinlistReturned = (payload) => {
@@ -171,7 +181,7 @@ class Favorites extends Component {
       type: DB_ADD_FAVORITE,
       content: tokenID,
     });
-    this.setState({ validSelection: false, selectedID: "" });
+    this.setState({ validSelection: false, selectedID: "", isAddingFav: true });
   };
 
   render() {
@@ -234,7 +244,7 @@ class Favorites extends Component {
                       this.addFavorite(selectedID);
                     }}
                   >
-                    Add
+                    {this.state.isAddingFav ? <CircularProgress /> : "Add"}
                   </Button>
                 </Grid>
               </Grid>

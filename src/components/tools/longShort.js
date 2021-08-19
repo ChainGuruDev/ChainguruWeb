@@ -250,7 +250,6 @@ class LongShort extends Component {
 
   db_checkLSResultReturned = (data) => {
     const { account } = this.state;
-    console.log(data);
     dispatcher.dispatch({
       type: DB_GET_USER_LS,
       address: account.address,
@@ -263,7 +262,6 @@ class LongShort extends Component {
   };
 
   dbUserDataReturned = (data) => {
-    //GET LONG SHORT COMBO STATUS
     this.setState({
       longCombo: data.minigames.longShortStrike.long,
       shortCombo: data.minigames.longShortStrike.short,
@@ -285,7 +283,7 @@ class LongShort extends Component {
   };
 
   drawCombo = (number, type, ls) => {
-    if (number > 7) {
+    if (number > 7 && type !== "combo") {
       number = 7;
     }
     const comboMax = 7;
@@ -293,23 +291,31 @@ class LongShort extends Component {
     const combo = [];
 
     if (type === "combo") {
-      for (var i = 0; i < number; i++) {
+      if (number > 7) {
         combo.push(
-          <CheckCircleIcon
-            key={`active_${i}`}
-            fontSize="small"
-            color={ls === "long" ? "primary" : "secondary"}
-          />
+          <Typography color="primary" variant={"h4"}>
+            {number} (2x Bonus Active)
+          </Typography>
         );
-      }
-      for (var l = 0; l < remaining; l++) {
-        combo.push(
-          <RadioButtonUncheckedIcon
-            key={`unchecked_${l}`}
-            fontSize="small"
-            color="disabled"
-          />
-        );
+      } else {
+        for (var i = 0; i < number; i++) {
+          combo.push(
+            <CheckCircleIcon
+              key={`active_${i}`}
+              fontSize="small"
+              color={ls === "long" ? "primary" : "secondary"}
+            />
+          );
+        }
+        for (var l = 0; l < remaining; l++) {
+          combo.push(
+            <RadioButtonUncheckedIcon
+              key={`unchecked_${l}`}
+              fontSize="small"
+              color="disabled"
+            />
+          );
+        }
       }
     } else {
       for (var j = 0; j < number; j++) {
