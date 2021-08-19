@@ -37,7 +37,7 @@ const styles = (theme) => ({
     marginRight: "auto",
   },
   paper: {
-    padding: theme.spacing(2),
+    padding: theme.spacing(1),
     textAlign: "center",
     color: theme.palette.text.primary,
     background: `${colors.cgBlue}65`,
@@ -54,7 +54,7 @@ const styles = (theme) => ({
     cursor: "pointer",
   },
   paperDark: {
-    padding: theme.spacing(2),
+    padding: theme.spacing(1),
     textAlign: "center",
     color: theme.palette.text.primary,
     background: `${colors.cgBlue}52`,
@@ -106,14 +106,12 @@ class BlueChipCard extends Component {
 
   geckoAlltimeChart = (data) => {
     if (data[1] === this.props.data.id) {
-      console.log(data[0]);
       for (var i = 1; i < data[0].prices.length; i += 2) {
         delete data[0].prices[i];
         i++;
         delete data[0].prices[i];
       }
       const filteredData = data[0].prices.filter((a) => a);
-      console.log(filteredData);
       this.setState({ chartData: filteredData });
       this.setState({ loadingChart: false });
       emitter.removeListener(
@@ -156,7 +154,7 @@ class BlueChipCard extends Component {
                   item
                   container
                   direction="row"
-                  justifyContent="flex-start"
+                  justify="flex-start"
                   alignItems="stretch"
                   xs={7}
                   spacing={2}
@@ -183,7 +181,11 @@ class BlueChipCard extends Component {
                     <Typography align="left" variant="h2">
                       {data.name}
                     </Typography>
-                    <Typography align="left" variant="h3">
+                    <Typography
+                      align="left"
+                      variant="h3"
+                      style={{ marginBottom: 10 }}
+                    >
                       {data.current_price}
                     </Typography>
                     {parseInt(data.market_cap) > 0 && (

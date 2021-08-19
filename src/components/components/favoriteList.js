@@ -68,7 +68,7 @@ class FavoriteList extends Component {
       loading: true,
       rowData: [],
       sortBy: "market_cap",
-      sortOrder: "dsc",
+      sortOrder: "desc",
       sortData: [],
       page: 0,
       rows: 10,
@@ -140,7 +140,6 @@ class FavoriteList extends Component {
   };
 
   dbDelFavoriteReturned = (data) => {
-    console.log(data.tokenIDs);
     this.setState({ isDeleting: null });
     dispatcher.dispatch({
       type: COINGECKO_POPULATE_FAVLIST,
@@ -286,9 +285,9 @@ class FavoriteList extends Component {
     }
 
     if (newRows.length >= 1) {
-      if (newRows.length !== formatedRows.length) {
-        this.setState({ formatedRows: newRows });
-      }
+      // if (newRows.length !== formatedRows.length) {
+      //   this.setState({ formatedRows: newRows });
+      // }
       return (rowsPerPage > 0
         ? newRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
         : newRows
@@ -379,7 +378,7 @@ class FavoriteList extends Component {
           </TableCell>
           <TableCell padding="none">
             <IconButton
-              disabled={this.state.isDeleting}
+              disabled={this.state.isDeleting === row.id ? true : false}
               aria-label="delete"
               style={{ marginRight: 10 }}
               onClick={(e) => this.deleteFav(row.id, e)}
@@ -396,12 +395,12 @@ class FavoriteList extends Component {
     let _prevSortBy = this.state.sortBy;
     if (_prevSortBy === _sortBy) {
       if (this.state.sortOrder === "asc") {
-        this.setState({ sortBy: _sortBy, sortOrder: "dsc" });
+        this.setState({ sortBy: _sortBy, sortOrder: "desc" });
       } else {
         this.setState({ sortBy: _sortBy, sortOrder: "asc" });
       }
     } else {
-      this.setState({ sortBy: _sortBy, sortOrder: "dsc" });
+      this.setState({ sortBy: _sortBy, sortOrder: "desc" });
     }
   }
 
@@ -415,8 +414,8 @@ class FavoriteList extends Component {
 
   TablePaginationActions = (props) => {
     const { classes } = this.props;
-    const { formatedRows, page, rowsPerPage } = this.state;
-    const count = formatedRows.length;
+    const { page, rowsPerPage, sortData } = this.state;
+    const count = sortData.length;
 
     const handleFirstPageButtonClick = (event) => {
       this.setState({ page: 0 });
@@ -479,6 +478,7 @@ class FavoriteList extends Component {
       page,
       rowsPerPage,
       formatedRows,
+      rowData,
     } = this.state;
 
     const handleChangePage = (newPage) => {
@@ -595,7 +595,7 @@ class FavoriteList extends Component {
               <TablePagination
                 rowsPerPageOptions={[5, 10, 25, { label: "All", value: -1 }]}
                 colSpan={3}
-                count={formatedRows.length}
+                count={sortData.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 SelectProps={{
