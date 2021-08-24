@@ -1,7 +1,18 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import { Typography, Paper, Grid, CircularProgress } from "@material-ui/core";
+import {
+  Typography,
+  Paper,
+  Grid,
+  CircularProgress,
+  Button,
+  Divider,
+} from "@material-ui/core";
+
+import DeleteIcon from "@material-ui/icons/Delete";
+import { formatMoney, formatMoneyMCAP } from "../helpers";
+
 import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
 import AlltimeChart from "../components/AlltimeChart";
@@ -9,6 +20,8 @@ import AlltimeChart from "../components/AlltimeChart";
 import {
   COINGECKO_GET_ALLTIME_CHART,
   COINGECKO_ALLTIME_CHART_RETURNED,
+  DB_DEL_BLUECHIPS_GURU,
+  DB_DEL_BLUECHIPS,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -61,11 +74,11 @@ const styles = (theme) => ({
     border: `2px solid ${colors.cgBlue}`,
     webkitBoxShadow: "0px 0px 00px 0px #9de2f9",
     boxShadow: "0px 0px 0px 0px #0005",
-    transition: "0.5s",
+    transition: "ease-in-out 0.3s",
     "&:hover": {
       background: `${colors.cgBlue}75`,
-      webkitBoxShadow: "0px 0px 10px 5px #9de2f952",
-      boxShadow: "0px 0px 10px 5px #9de2f952",
+      webkitBoxShadow: "0px 0px 8px 4px #9de2f952",
+      boxShadow: "0px 0px 8px 4px #9de2f952",
     },
     cursor: "pointer",
   },
@@ -86,15 +99,26 @@ const styles = (theme) => ({
 class BlueChipCard extends Component {
   constructor(props) {
     super();
-    this.state = { loadingChart: true, chartData: [] };
+
+    this.state = {
+      loadingChart: true,
+      chartData: [],
+      editMode: props.editMode,
+      loading: false,
+      type: props.type,
+    };
   }
 
   componentDidMount() {
+    this._isMounted = true;
+
     emitter.on(COINGECKO_ALLTIME_CHART_RETURNED, this.geckoAlltimeChart);
-    dispatcher.dispatch({
-      type: COINGECKO_GET_ALLTIME_CHART,
-      payload: this.props.data.id,
-    });
+
+    this._isMounted &&
+      dispatcher.dispatch({
+        type: COINGECKO_GET_ALLTIME_CHART,
+        payload: this.props.data.id,
+      });
   }
 
   componentWillUnmount() {
@@ -102,6 +126,14 @@ class BlueChipCard extends Component {
       COINGECKO_ALLTIME_CHART_RETURNED,
       this.geckoAlltimeChart
     );
+
+    this._isMounted = false;
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.editMode !== this.props.editMode) {
+      this._isMounted && this.setState({ editMode: this.props.editMode });
+    }
   }
 
   geckoAlltimeChart = (data) => {
@@ -112,8 +144,7 @@ class BlueChipCard extends Component {
         delete data[0].prices[i];
       }
       const filteredData = data[0].prices.filter((a) => a);
-      this.setState({ chartData: filteredData });
-      this.setState({ loadingChart: false });
+      this.setState({ chartData: filteredData, loadingChart: false });
       emitter.removeListener(
         COINGECKO_ALLTIME_CHART_RETURNED,
         this.geckoAlltimeChart
@@ -121,16 +152,38 @@ class BlueChipCard extends Component {
     }
   };
 
+  guruRemoveChip = (e, id) => {
+    e.stopPropagation();
+    this.setState({ loading: true });
+    if (this.props.type === "USER") {
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: DB_DEL_BLUECHIPS,
+          tokenID: id,
+        });
+    } else {
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: DB_DEL_BLUECHIPS_GURU,
+          tokenID: id,
+        });
+    }
+  };
+
   render() {
     const { classes, data } = this.props;
-    const { loadingChart, chartData } = this.state;
+    const { loadingChart, chartData, editMode } = this.state;
     const darkMode = store.getStore("theme") === "dark" ? true : false;
-
     let id = data.id;
     return (
-      <Grid item xs={6}>
+      <Grid item xs={6} style={{ padding: 10 }}>
         <Paper
           className={darkMode ? classes.paperDark : classes.paper}
+          style={{
+            opacity: loadingChart ? 0 : 100,
+            transition: "all 0.5s cubic-bezier(.46,.03,.52,.96) 0s",
+            minHeight: "100%",
+          }}
           elevation={0}
         >
           <Grid
@@ -142,14 +195,28 @@ class BlueChipCard extends Component {
             container
             direction="row"
             spacing={2}
+            justify="space-between"
           >
-            {loadingChart && (
-              <Grid item className={classes.skeletonChart}>
-                <CircularProgress />
-              </Grid>
-            )}
             {!loadingChart && (
               <>
+                {editMode && (
+                  <Grid item xs={12}>
+                    <Button
+                      color="secondary"
+                      variant="outlined"
+                      style={{
+                        marginBottom: 10,
+                        marginRight: 0,
+                        marginLeft: "auto",
+                      }}
+                      startIcon={<DeleteIcon />}
+                      onClick={(e) => this.guruRemoveChip(e, data.id)}
+                    >
+                      {this.state.loading ? <CircularProgress /> : "REMOVE"}
+                    </Button>
+                    <Divider variant="middle" />
+                  </Grid>
+                )}
                 <Grid
                   item
                   container
@@ -196,10 +263,10 @@ class BlueChipCard extends Component {
                         style={{ padding: 0 }}
                         justify="space-between"
                       >
-                        <Typography align="left" variant="body2">
+                        <Typography align="left" variant="body1">
                           Marketcap:
                         </Typography>
-                        <Typography align="left" variant="body2">
+                        <Typography align="left" variant="body1">
                           {data.market_cap}
                         </Typography>
                       </Grid>
@@ -212,10 +279,10 @@ class BlueChipCard extends Component {
                         style={{ padding: 0 }}
                         justify="space-between"
                       >
-                        <Typography align="left" variant="body2">
-                          Fully diluted valuation:
+                        <Typography align="left" variant="body1">
+                          Fully diluted:
                         </Typography>
-                        <Typography align="left" variant="body2">
+                        <Typography align="left" variant="body1">
                           {data.fully_diluted_valuation}
                         </Typography>
                       </Grid>
@@ -228,41 +295,48 @@ class BlueChipCard extends Component {
                         style={{ padding: 0 }}
                         justify="space-between"
                       >
-                        <Typography align="left" variant="body2">
+                        <Typography align="left" variant="body1">
                           price change 1Y:
                         </Typography>
-                        <Typography align="left" variant="body2">
+                        <Typography align="left" variant="body1">
                           {data.price_change_percentage_1y_in_currency}%
                         </Typography>
                       </Grid>
                     )}
                   </Grid>
                 </Grid>
-                <Grid item xs={5}>
+                <Grid
+                  item
+                  container
+                  xs={5}
+                  style={{
+                    display: "flex",
+                  }}
+                >
                   <AlltimeChart id={data.symbol} data={chartData} />
                 </Grid>
               </>
             )}
           </Grid>
           {/*<Grid
-            className={classes.buttonGrid}
-            item
-            xs
-            container
-            direction="row"
-            spacing={2}
-          >
-            <Button
-              variant="contained"
-              className={classes.button}
-              color="primary"
-              onClick={() => {
-                dispatcher.dispatch({ type: UNISWAP_TRADE, id: id });
-              }}
+              className={classes.buttonGrid}
+              item
+              xs
+              container
+              direction="row"
+              spacing={2}
             >
-              Get Some
-            </Button>
-          </Grid>*/}
+              <Button
+                variant="contained"
+                className={classes.button}
+                color="primary"
+                onClick={() => {
+                  dispatcher.dispatch({ type: UNISWAP_TRADE, id: id });
+                }}
+              >
+                Get Some
+              </Button>
+            </Grid>*/}
         </Paper>
       </Grid>
     );
@@ -272,23 +346,5 @@ class BlueChipCard extends Component {
     this.props.history.push(screen);
   };
 }
-
-// <Button
-//   spacing={2}
-//   style={{
-//     marginLeft: 10,
-//   }}
-//   variant="outlined"
-//   onClick={this.overlayClicked}
-//   className={classes.button}
-//   color="primary"
-//   onClick={() => {
-//     window.location.assign(
-//       "https://app.uniswap.org/#/swap?inputCurrency=ETH&outputCurrency=0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"
-//     );
-//   }}
-// >
-//   More Info
-// </Button>
 
 export default withTranslation()(withRouter(withStyles(styles)(BlueChipCard)));

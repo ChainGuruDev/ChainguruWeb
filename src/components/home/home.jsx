@@ -182,11 +182,8 @@ const styles = (theme) => ({
     },
   },
   title: {
-    padding: "24px",
     paddingBottom: "0px",
-    [theme.breakpoints.up("sm")]: {
-      paddingBottom: "24px",
-    },
+    [theme.breakpoints.up("sm")]: {},
   },
   icon: {
     maxHeight: "250px",
@@ -220,6 +217,9 @@ class Home extends Component {
           <Typography variant={"h3"} className={`${classes.title} title`}>
             {t("Home.short")}
           </Typography>
+          <Typography variant={"h3"} className={`${classes.title} title`}>
+            Strategy
+          </Typography>
         </Card>
 
         <Card
@@ -229,9 +229,11 @@ class Home extends Component {
           }}
         >
           <MediumIcon fill={colors.white} className={`${classes.icon} icon`} />
-
           <Typography variant={"h3"} className={`${classes.title} title`}>
             {t("Home.medium")}
+          </Typography>
+          <Typography variant={"h3"} className={`${classes.title} title`}>
+            Strategy
           </Typography>
         </Card>
         <Card
@@ -243,6 +245,9 @@ class Home extends Component {
           <LongIcon stroke={colors.white} className={`${classes.icon} icon`} />
           <Typography variant={"h3"} className={`${classes.title} title`}>
             {t("Home.long")}
+          </Typography>
+          <Typography variant={"h3"} className={`${classes.title} title`}>
+            Strategy
           </Typography>
         </Card>
 

@@ -1,14 +1,30 @@
-function formatMoney(amount, decimalCount = 5, decimal = ".", thousands = ",") {
+import React from "react";
+
+import Web3 from "web3";
+
+function formatMoney(amount, decimalCount, decimal = ".", thousands = ",") {
   try {
     decimalCount = Math.abs(decimalCount);
     decimalCount = isNaN(decimalCount) ? 5 : decimalCount;
     const negativeSign = amount < 0 ? "-" : "";
-    let num = parseInt((amount = Math.abs(Number(amount) || 0)));
+    let num = parseFloat((amount = Math.abs(Number(amount) || 0)));
     if (num > 0) {
       if (num < 0.01) {
         decimalCount = 5;
+        const myNum = num.toString().split(".");
+        decimalCount = 0;
+        for (var k = 0; k < myNum[1].length; k++) {
+          if (myNum[1][k] === "0") {
+            decimalCount += 1;
+          } else {
+            decimalCount += 2;
+            k = myNum[1].length;
+          }
+        }
+      } else if (num > 1000) {
+        decimalCount = 0;
       } else {
-        decimalCount = decimalCount !== 5 ? decimalCount : 2;
+        decimalCount = 2;
       }
     } else {
       if (num > -0.01) {
@@ -99,4 +115,14 @@ function timeConversion(millisec) {
   }
 }
 
-export { formatMoney, formatMoneyMCAP, timeConversion };
+function getHash(toHash) {
+  try {
+    const web3 = new Web3();
+    let hash = web3.utils.soliditySha3(toHash);
+    return hash;
+  } catch (err) {
+    console.log(err.message);
+  }
+}
+
+export { formatMoney, formatMoneyMCAP, timeConversion, getHash };

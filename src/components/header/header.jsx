@@ -369,8 +369,12 @@ class Header extends Component {
       const network = provider.networkVersion;
       if (network === "1") {
         const ens = new ENS({ provider, network });
-        const addressEnsName = await ens.reverse(address).catch(() => {});
-        this.setState({ addressEnsName });
+        if (ens) {
+          const addressEnsName = await ens.reverse(address).catch(() => {});
+          if (addressEnsName) {
+            this.setState({ addressEnsName });
+          }
+        }
       }
     }
   };
@@ -618,16 +622,7 @@ class Header extends Component {
           this.nav(screen);
         }}
       >
-        <Typography
-          variant={"h4"}
-          style={
-            currentSection === screen
-              ? {
-                  textTransform: "uppercase",
-                  color: this.state.cgLogoColor,
-                }
-              : { textTransform: "uppercase" }
-          }
+        <span
           className={
             currentSection === screen
               ? classes.titleActive
@@ -642,8 +637,36 @@ class Header extends Component {
               : classes.titleMarket
           }
         >
-          {t("Home." + screen)}
-        </Typography>
+          <Typography
+            variant={"h4"}
+            style={
+              currentSection === screen
+                ? {
+                    textTransform: "uppercase",
+                    color: this.state.cgLogoColor,
+                  }
+                : { textTransform: "uppercase" }
+            }
+          >
+            {t("Home." + screen)}
+          </Typography>
+          {(screen === "short" || screen === "medium" || screen === "long") && (
+            <Typography
+              variant={"body2"}
+              style={
+                currentSection === screen
+                  ? {
+                      textTransform: "uppercase",
+                      color: this.state.cgLogoColor,
+                      textAlign: "center",
+                    }
+                  : { textTransform: "uppercase", textAlign: "center" }
+              }
+            >
+              strategy
+            </Typography>
+          )}
+        </span>
       </div>
     );
   };

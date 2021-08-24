@@ -1,7 +1,6 @@
 import config from "../config";
 import Web3 from "web3";
 import Bottleneck from "bottleneck";
-
 import {
   ERROR,
   CONNECT_LEDGER,
@@ -68,7 +67,6 @@ import {
   DB_ADD_BLACKLIST,
   DB_DEL_BLACKLIST,
   DB_ADDDEL_BLACKLIST_RETURNED,
-  DB_GET_BLUECHIPS,
   DB_ADD_WALLET,
   DB_DEL_WALLET,
   DB_ADD_WALLET_RETURNED,
@@ -119,6 +117,20 @@ import {
   GECKO_GET_COINS_RETURNED,
   GET_TRANSACTION_RECEIPT,
   GET_TRANSACTION_RECEIPT_RETURNED,
+  DB_GET_BLUECHIPS,
+  DB_GET_BLUECHIPS_RETURNED,
+  DB_GET_BLUECHIPS_USER,
+  DB_GET_BLUECHIPS_USER_RETURNED,
+  DB_ADD_BLUECHIPS_GURU,
+  DB_ADD_BLUECHIPS_GURU_RETURNED,
+  DB_DEL_BLUECHIPS_GURU,
+  DB_DEL_BLUECHIPS_GURU_RETURNED,
+  DB_ADD_BLUECHIPS,
+  DB_DEL_BLUECHIPS,
+  DB_ADD_BLUECHIPS_RETURNED,
+  DB_DEL_BLUECHIPS_RETURNED,
+  DB_BLUECHIPS_CHECK,
+  DB_BLUECHIPS_CHECK_RETURNED,
 } from "../constants";
 
 import {
@@ -129,6 +141,8 @@ import {
   trezor,
   frame,
 } from "./connectors";
+
+import { getHash } from "../components/helpers";
 
 const limiterGecko = new Bottleneck({
   reservoir: 50, // initial value
@@ -307,9 +321,6 @@ class Store {
           case DB_UPDATE_ONE_MOV:
             this.db_updateOneMov(payload);
             break;
-          case DB_GET_BLUECHIPS:
-            this.limitedGetChips();
-            break;
           case COINGECKO_POPULATE_FAVLIST:
             this.geckoPopulateFavList(payload);
             break;
@@ -378,6 +389,27 @@ class Store {
             break;
           case GET_TRANSACTION_RECEIPT:
             this.getTransactionReceipt(payload);
+            break;
+          case DB_GET_BLUECHIPS:
+            this.limitedGetChips();
+            break;
+          case DB_GET_BLUECHIPS_USER:
+            this.db_getBluechipsUser();
+            break;
+          case DB_BLUECHIPS_CHECK:
+            this.db_bluechipsCheck();
+            break;
+          case DB_ADD_BLUECHIPS_GURU:
+            this.db_AddBluechipsGuru(payload);
+            break;
+          case DB_DEL_BLUECHIPS_GURU:
+            this.db_DelBluechipsGuru(payload);
+            break;
+          case DB_ADD_BLUECHIPS:
+            this.db_AddBluechips(payload);
+            break;
+          case DB_DEL_BLUECHIPS:
+            this.db_DelBluechip(payload);
             break;
           default: {
             break;
@@ -1639,16 +1671,143 @@ class Store {
   };
 
   db_getBluechips = async () => {
+    // TODO UPDATE TO ONLINE DB https://chainguru-db.herokuapp.com/
+    let data = await axios.get(
+      `https://chainguru-db.herokuapp.com/bluechips/guru`
+    );
+
+    const tokenIDs = data.data[0].tokenIDs;
     try {
       let data = await CoinGeckoClient.coins.markets({
-        ids:
-          "bitcoin, ethereum, chainlink, polkadot, kusama, unibright, energy-web-token, sora, sora-validator-token, polkaswap, alchemist, iexec-rlc, aave, enjincoin, ocean-protocol, waves, dao-maker, compound-governance-token, iota",
+        ids: tokenIDs,
         vs_currency: "usd",
         price_change_percentage: "1y",
       });
-      emitter.emit(COINGECKO_POPULATE_FAVLIST_RETURNED, await data.data);
+      emitter.emit(DB_GET_BLUECHIPS_RETURNED, await data.data);
     } catch (err) {
       console.log(err);
+    }
+  };
+
+  db_getBluechipsUser = async () => {
+    const from = store.getStore("account").address;
+    // TODO UPDATE TO ONLINE DB https://chainguru-db.herokuapp.com/
+    let data = await axios.post(
+      `https://chainguru-db.herokuapp.com/bluechips/user/`,
+      {
+        userID: from,
+      }
+    );
+
+    const tokenIDs = data.data.tokenIDs;
+    try {
+      if (tokenIDs.length > 0) {
+        let data = await CoinGeckoClient.coins.markets({
+          ids: tokenIDs,
+          vs_currency: "usd",
+          price_change_percentage: "1y",
+        });
+        emitter.emit(DB_GET_BLUECHIPS_USER_RETURNED, await data.data);
+      } else {
+        emitter.emit(DB_GET_BLUECHIPS_USER_RETURNED, []);
+      }
+    } catch (err) {
+      console.log(err.message);
+    }
+  };
+
+  db_bluechipsCheck = async () => {
+    if (store.getStore("account").address) {
+      const from = getHash(store.getStore("account").address);
+      try {
+        let data = await axios.post(
+          "https://chainguru-db.herokuapp.com/blueChips/guru/check",
+          {
+            from: from,
+          }
+        );
+        emitter.emit(DB_BLUECHIPS_CHECK_RETURNED, await data.data);
+      } catch (err) {
+        if (err) {
+          console.log(err.message);
+        }
+      }
+    }
+  };
+
+  db_AddBluechips = async (payload) => {
+    const from = store.getStore("account").address;
+    try {
+      let data = await axios.post(
+        "https://chainguru-db.herokuapp.com/bluechips/user/add",
+        {
+          user: from,
+          tokenID: payload.tokenID,
+        }
+      );
+      emitter.emit(DB_ADD_BLUECHIPS_RETURNED, await data.data);
+    } catch (err) {
+      if (err) {
+        console.log(err.message);
+      }
+    }
+  };
+
+  db_DelBluechip = async (payload) => {
+    const from = store.getStore("account").address;
+    try {
+      let data = await axios.delete(
+        "https://chainguru-db.herokuapp.com/bluechips/user/del",
+        {
+          data: {
+            user: from,
+            tokenID: payload.tokenID,
+          },
+        }
+      );
+      emitter.emit(DB_DEL_BLUECHIPS_RETURNED, await data.data);
+    } catch (err) {
+      if (err) {
+        console.log(err.message);
+      }
+    }
+  };
+
+  db_AddBluechipsGuru = async (payload) => {
+    const from = getHash(store.getStore("account").address);
+    try {
+      let data = await axios.post(
+        "https://chainguru-db.herokuapp.com/blueChips/guru",
+        {
+          from: from,
+          tokenID: payload.tokenID,
+        }
+      );
+      emitter.emit(DB_ADD_BLUECHIPS_GURU_RETURNED, await data.data);
+    } catch (err) {
+      if (err) {
+        console.log(err.message);
+      }
+    }
+  };
+
+  db_DelBluechipsGuru = async (payload) => {
+    const from = getHash(store.getStore("account").address);
+    try {
+      let data = await axios.delete(
+        "https://chainguru-db.herokuapp.com/blueChips/guru",
+        {
+          data: {
+            from: from,
+            tokenID: payload.tokenID,
+          },
+        }
+      );
+      emitter.emit(DB_DEL_BLUECHIPS_GURU_RETURNED, await data.data);
+    } catch (err) {
+      if (err) {
+        console.log(err.message);
+      }
     }
   };
 
@@ -1783,6 +1942,8 @@ class Store {
   };
 
   limitedGetChips = limiterGecko.wrap(this.db_getBluechips);
+
+  limitedGetChipsUser = limiterGecko.wrap(this.db_getBluechipsUser);
 
   coingeckoGetAllTimeChart = async (payload) => {
     let chartData = [];

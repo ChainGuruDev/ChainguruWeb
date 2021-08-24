@@ -195,7 +195,7 @@ class App extends Component {
           lineHeight: 1.2,
         },
         body1: {
-          fontSize: "16px",
+          fontSize: "18px",
           fontWeight: "300",
           WebkitFontSmoothing: "antialiased",
           MozOsxFontSmoothing: "grayscale",

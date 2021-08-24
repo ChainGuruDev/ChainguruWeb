@@ -20,6 +20,9 @@ class SparklineChart extends Component {
     this.state = {
       options: {
         chart: {
+          animations: {
+            enabled: false,
+          },
           type: "line",
           width: 150,
           height: 35,

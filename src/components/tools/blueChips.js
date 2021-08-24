@@ -4,16 +4,47 @@ import { withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
 import InfiniteScroll from "react-infinite-scroll-component";
+import { formatMoney, formatMoneyMCAP } from "../helpers";
 
 //Import UI elements
-import { Typography, Grid, Paper } from "@material-ui/core";
+import {
+  Typography,
+  Grid,
+  Paper,
+  IconButton,
+  TextField,
+  Button,
+  CircularProgress,
+} from "@material-ui/core";
+
+import Autocomplete from "@material-ui/lab/Autocomplete";
 
 import BlueChipCard from "../components/BlueChipCard.js";
 
+import SettingsIcon from "@material-ui/icons/Settings";
+import AddCircleRoundedIcon from "@material-ui/icons/AddCircleRounded";
+import KeyboardArrowDownRoundedIcon from "@material-ui/icons/KeyboardArrowDownRounded";
+import KeyboardArrowUpRoundedIcon from "@material-ui/icons/KeyboardArrowUpRounded";
+
 import {
+  CONNECTION_CONNECTED,
+  CONNECTION_DISCONNECTED,
   ERROR,
   DB_GET_BLUECHIPS,
-  COINGECKO_POPULATE_FAVLIST_RETURNED,
+  DB_GET_BLUECHIPS_RETURNED,
+  DB_GET_BLUECHIPS_USER,
+  DB_GET_BLUECHIPS_USER_RETURNED,
+  DB_BLUECHIPS_CHECK,
+  DB_BLUECHIPS_RETURNED,
+  DB_BLUECHIPS_CHECK_RETURNED,
+  DB_ADD_BLUECHIPS_GURU,
+  DB_ADD_BLUECHIPS_GURU_RETURNED,
+  DB_DEL_BLUECHIPS_GURU_RETURNED,
+  DB_ADD_BLUECHIPS,
+  DB_ADD_BLUECHIPS_RETURNED,
+  DB_DEL_BLUECHIPS_RETURNED,
+  GET_COIN_LIST,
+  COINLIST_RETURNED,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -23,7 +54,6 @@ const dispatcher = Store.dispatcher;
 
 const styles = (theme) => ({
   root: {
-    padding: theme.spacing(2),
     justifyContent: "center",
     alignItems: "center",
     flexGrow: 1,
@@ -31,14 +61,12 @@ const styles = (theme) => ({
     maxHeight: "100%",
   },
   paper: {
-    padding: theme.spacing(2),
     textAlign: "center",
     color: theme.palette.text.primary,
     backgroundColor: `${colors.cgBlue}85`,
     border: `2px solid ${colors.cgBlue}`,
   },
   paperDark: {
-    padding: theme.spacing(2),
     textAlign: "center",
     color: theme.palette.text.primary,
     backgroundColor: `${colors.cgBlue}52`,
@@ -52,16 +80,50 @@ class BlueChips extends Component {
 
     this.state = {
       chipData: [],
+      chipDataUser: [],
       hasMore: true,
       count: { prev: 0, next: 6 },
-      current: [],
+      bluechipsGuru: [],
+      bluechipsUser: [],
+      isAdmin: false,
+      editMode: false,
+      editModeUser: false,
+      selectedID: "",
+      validSelection: false,
+      isAddingBlueChip: false,
+      loading: false,
+      showGuruChips: true,
+      showUserChips: true,
+      items: [],
     };
   }
 
   componentDidMount() {
     emitter.setMaxListeners(this.state.chipData.length);
     emitter.on(ERROR, this.errorReturned);
-    emitter.on(COINGECKO_POPULATE_FAVLIST_RETURNED, this.geckoBluechipData);
+    emitter.on(CONNECTION_CONNECTED, this.connected);
+    emitter.on(DB_GET_BLUECHIPS_RETURNED, this.geckoBluechipData);
+    emitter.on(DB_GET_BLUECHIPS_USER_RETURNED, this.geckoBluechipDataUser);
+    emitter.on(DB_BLUECHIPS_CHECK_RETURNED, this.bluechipsCheckReturned);
+    emitter.on(
+      DB_DEL_BLUECHIPS_GURU_RETURNED,
+      this.db_addDelBluechipGuruReturned
+    );
+    emitter.on(
+      DB_ADD_BLUECHIPS_GURU_RETURNED,
+      this.db_addDelBluechipGuruReturned
+    );
+    emitter.on(DB_ADD_BLUECHIPS_RETURNED, this.db_addDelBluechipReturned);
+    emitter.on(DB_DEL_BLUECHIPS_RETURNED, this.db_addDelBluechipReturned);
+    emitter.on(COINLIST_RETURNED, this.coinlistReturned);
+    if (store.getStore("account").address) {
+      dispatcher.dispatch({
+        type: DB_GET_BLUECHIPS_USER,
+      });
+      dispatcher.dispatch({
+        type: DB_BLUECHIPS_CHECK,
+      });
+    }
     dispatcher.dispatch({
       type: DB_GET_BLUECHIPS,
     });
@@ -69,11 +131,89 @@ class BlueChips extends Component {
 
   componentWillUnmount() {
     emitter.removeListener(ERROR, this.errorReturned);
+    emitter.removeListener(CONNECTION_CONNECTED, this.connected);
+    emitter.removeListener(DB_GET_BLUECHIPS_RETURNED, this.geckoBluechipData);
     emitter.removeListener(
-      COINGECKO_POPULATE_FAVLIST_RETURNED,
-      this.geckoBluechipData
+      DB_GET_BLUECHIPS_USER_RETURNED,
+      this.geckoBluechipDataUser
     );
+
+    emitter.removeListener(
+      DB_BLUECHIPS_CHECK_RETURNED,
+      this.bluechipsCheckReturned
+    );
+    emitter.removeListener(
+      DB_DEL_BLUECHIPS_GURU_RETURNED,
+      this.db_addDelBluechipGuruReturned
+    );
+    emitter.removeListener(
+      DB_ADD_BLUECHIPS_GURU_RETURNED,
+      this.db_addDelBluechipGuruReturned
+    );
+    emitter.removeListener(
+      DB_ADD_BLUECHIPS_RETURNED,
+      this.db_addDelBluechipReturned
+    );
+    emitter.removeListener(
+      DB_DEL_BLUECHIPS_RETURNED,
+      this.db_addDelBluechipReturned
+    );
+
+    emitter.removeListener(COINLIST_RETURNED, this.coinlistReturned);
   }
+
+  coinlistReturned = (payload) => {
+    // console.log(payload);
+    this.setState({ loading: false, items: payload, progressBar: 0 });
+  };
+
+  connected = (data) => {
+    if (store.getStore("account").address) {
+      dispatcher.dispatch({
+        type: DB_GET_BLUECHIPS_USER,
+      });
+      dispatcher.dispatch({
+        type: DB_BLUECHIPS_CHECK,
+      });
+    }
+  };
+
+  db_addDelBluechipGuruReturned = (data) => {
+    if (data.nModified >= 1) {
+      let newbluechipsGuru = [];
+      this.setState({
+        chipData: [],
+        hasMore: true,
+        count: { prev: 0, next: 6 },
+        bluechipsGuru: [],
+        isAddingBlueChip: false,
+      });
+      dispatcher.dispatch({
+        type: DB_GET_BLUECHIPS,
+      });
+    }
+  };
+
+  db_addDelBluechipReturned = (data) => {
+    if (data.tokenIDs.length != 0) {
+      this.setState({
+        isAddingBlueChip: false,
+      });
+      dispatcher.dispatch({
+        type: DB_GET_BLUECHIPS_USER,
+      });
+    } else {
+      this.setState({
+        isAddingBlueChip: false,
+        bluechipsUser: [],
+        editModeUser: true,
+      });
+    }
+  };
+
+  bluechipsCheckReturned = (isAdmin) => {
+    this.setState({ isAdmin });
+  };
 
   errorReturned = (error) => {
     const snackbarObj = { snackbarMessage: null, snackbarType: null };
@@ -89,34 +229,6 @@ class BlueChips extends Component {
     });
   };
 
-  formatMoney = (amount, decimalCount = 2, decimal = ".", thousands = ",") => {
-    try {
-      decimalCount = Math.abs(decimalCount);
-      decimalCount = isNaN(decimalCount) ? 2 : decimalCount;
-
-      const negativeSign = amount < 0 ? "-" : "";
-
-      let i = parseInt(
-        (amount = Math.abs(Number(amount) || 0).toFixed(decimalCount))
-      ).toString();
-      let j = i.length > 3 ? i.length % 3 : 0;
-
-      return (
-        negativeSign +
-        (j ? i.substr(0, j) + thousands : "") +
-        i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousands) +
-        (decimalCount
-          ? decimal +
-            Math.abs(amount - i)
-              .toFixed(decimalCount)
-              .slice(2)
-          : "")
-      );
-    } catch (e) {
-      console.log(e);
-    }
-  };
-
   geckoBluechipData = (payload) => {
     const { count } = this.state;
     let chips = [];
@@ -126,16 +238,41 @@ class BlueChips extends Component {
         item.name,
         item.id,
         item.symbol,
-        this.formatMoney(item.current_price, 2),
+        formatMoney(item.current_price, 2),
         parseFloat(item.price_change_percentage_1y_in_currency).toFixed(2),
-        this.formatMoney(item.market_cap, 0),
-        this.formatMoney(item.fully_diluted_valuation, 0)
+        formatMoneyMCAP(item.market_cap, 0),
+        formatMoneyMCAP(item.fully_diluted_valuation, 0)
       );
       chips.push(chipData);
     });
     this.setState({
+      hasMore: true,
       chipData: chips,
-      current: chips.slice(count.prev, count.next),
+      bluechipsGuru: chips.slice(count.prev, count.next),
+    });
+  };
+
+  geckoBluechipDataUser = (payload) => {
+    const { countUser } = this.state;
+    let chips = [];
+
+    payload.forEach((item, i) => {
+      let chipData = this.createBluechip(
+        item.image,
+        item.name,
+        item.id,
+        item.symbol,
+        formatMoney(item.current_price),
+        parseFloat(item.price_change_percentage_1y_in_currency).toFixed(2),
+        formatMoneyMCAP(item.market_cap, 0),
+        formatMoneyMCAP(item.fully_diluted_valuation, 0)
+      );
+      chips.push(chipData);
+    });
+
+    this.setState({
+      bluechipsUser: chips,
+      editModeUser: chips.length === 0 ? true : this.state.editModeUser,
     });
   };
 
@@ -161,19 +298,230 @@ class BlueChips extends Component {
     };
   };
 
+  toggleEditMode = () => {
+    const edit = !this.state.editMode;
+    this.setState({ editMode: edit });
+  };
+
+  toggleEditModeUser = () => {
+    const edit = !this.state.editModeUser;
+    this.setState({ editModeUser: edit });
+  };
+
+  coinSelect = (newValue) => {
+    if (newValue) {
+      this.setState({ validSelection: true, selectedID: newValue.id });
+    } else {
+      this.setState({ validSelection: false, selectedID: "" });
+    }
+  };
+
+  coinSelectUser = (newValue) => {
+    if (newValue) {
+      this.setState({ validSelection: true, selectedID: newValue.id });
+    } else {
+      this.setState({ validSelection: false, selectedID: "" });
+    }
+  };
+
+  openSearch = () => {
+    this.setState({ loading: true });
+    dispatcher.dispatch({
+      type: GET_COIN_LIST,
+      content: {},
+    });
+  };
+
+  addBlueChip = (tokenID) => {
+    dispatcher.dispatch({
+      type: DB_ADD_BLUECHIPS_GURU,
+      tokenID: tokenID,
+    });
+    this.setState({
+      validSelection: false,
+      selectedID: "",
+      isAddingBlueChip: true,
+    });
+  };
+
+  addBlueChipUser = (tokenID) => {
+    dispatcher.dispatch({
+      type: DB_ADD_BLUECHIPS,
+      tokenID: tokenID,
+    });
+    this.setState({
+      validSelection: false,
+      selectedID: "",
+      isAddingBlueChip: true,
+    });
+  };
+
+  showHideGuruChips = () => {
+    const { showGuruChips } = this.state;
+    const display = !showGuruChips;
+    this.setState({ showGuruChips: display });
+  };
+
+  showHideUserChips = () => {
+    const { showUserChips } = this.state;
+    const display = !showUserChips;
+    this.setState({ showUserChips: display });
+  };
+
+  drawUserBluechips = (bluechipsUser, darkMode) => {
+    const { classes } = this.props;
+    const { showUserChips, editModeUser, items, selectedID } = this.state;
+
+    return (
+      <>
+        <Grid item xs={12} style={{ padding: 0 }}>
+          <Paper
+            className={darkMode ? classes.paperDark : classes.paper}
+            elevation={3}
+            style={{ justifyContent: "space-between" }}
+          >
+            <Grid container direction="row" style={{ padding: 10 }}>
+              <Grid item xs={1}></Grid>
+              <Grid item xs={10}>
+                <Typography variant="h2">My BLUECHIPS</Typography>
+              </Grid>
+              <Grid item xs={1}>
+                <IconButton onClick={() => this.toggleEditModeUser()}>
+                  <SettingsIcon />
+                </IconButton>
+                {
+                  <IconButton onClick={() => this.showHideUserChips()}>
+                    {showUserChips ? (
+                      <KeyboardArrowDownRoundedIcon />
+                    ) : (
+                      <KeyboardArrowUpRoundedIcon />
+                    )}
+                  </IconButton>
+                }
+              </Grid>
+              {editModeUser && (
+                <Grid item xs={12}>
+                  <Grid
+                    item
+                    container
+                    direction={"row"}
+                    style={{
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Grid item xs={9}>
+                      <Autocomplete
+                        id="coin-search-bar"
+                        options={items}
+                        open={this.state.openSearch}
+                        onOpen={() => {
+                          this.openSearch();
+                        }}
+                        getOptionSelected={(option, value) =>
+                          option.name === value.name
+                        }
+                        getOptionLabel={(option) =>
+                          `${option.name} (${option.symbol})`
+                        }
+                        onChange={(event, newValue) => {
+                          this.coinSelectUser(newValue, this.props.id);
+                        }}
+                        loading={this.state.loadingBar}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Coin Search"
+                            variant="outlined"
+                            InputProps={{
+                              ...params.InputProps,
+                              endAdornment: (
+                                <React.Fragment>
+                                  {this.state.loading ? (
+                                    <CircularProgress
+                                      color="inherit"
+                                      size={20}
+                                    />
+                                  ) : null}
+                                  {params.InputProps.endAdornment}
+                                </React.Fragment>
+                              ),
+                            }}
+                          />
+                        )}
+                      />
+                    </Grid>
+                    <Grid item xs={1} style={{ marginLeft: 10 }}>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        className={classes.button}
+                        startIcon={<AddCircleRoundedIcon />}
+                        disabled={!this.state.validSelection}
+                        onClick={() => {
+                          this.addBlueChipUser(selectedID);
+                        }}
+                      >
+                        {this.state.isAddingBlueChip ? (
+                          <CircularProgress />
+                        ) : (
+                          "Add"
+                        )}
+                      </Button>
+                    </Grid>
+                  </Grid>
+                </Grid>
+              )}
+            </Grid>
+          </Paper>
+        </Grid>
+        <Grid
+          item
+          container
+          xs={12}
+          direction={"row"}
+          justify="center"
+          style={{ padding: 0, marginBottom: 10 }}
+        >
+          {showUserChips &&
+            bluechipsUser.map((bluechip) => (
+              <BlueChipCard
+                key={bluechip.id}
+                data={bluechip}
+                editMode={editModeUser}
+                type="USER"
+              />
+            ))}
+        </Grid>
+      </>
+    );
+  };
+
   render() {
     const { classes } = this.props;
-    const { chipData, current, hasMore, count } = this.state;
+    const {
+      chipData,
+      bluechipsGuru,
+      bluechipsUser,
+      hasMore,
+      count,
+      isAdmin,
+      editMode,
+      editModeUser,
+      selectedID,
+      showGuruChips,
+      showUserChips,
+    } = this.state;
     const darkMode = store.getStore("theme") === "dark" ? true : false;
 
     const getMoreData = () => {
-      if (current.length === chipData.length) {
+      if (bluechipsGuru.length === chipData.length) {
         this.setState({ hasMore: false });
         return;
       }
       setTimeout(() => {
         this.setState({
-          current: current.concat(
+          bluechipsGuru: bluechipsGuru.concat(
             chipData.slice(
               count.prev === 0 ? count.prev + 6 : count.prev + 4,
               count.next + 4
@@ -194,34 +542,134 @@ class BlueChips extends Component {
 
     return (
       <>
-        <Grid style={{ maxWidth: "90%", margin: "auto" }}>
-          <Grid style={{ marginBottom: 20 }} item xs={12}>
+        <Grid container style={{ maxWidth: "90%", margin: "auto" }} spacing={3}>
+          {this.drawUserBluechips(bluechipsUser, darkMode)}
+          <Grid item xs={12} style={{ padding: 0 }}>
             <Paper
               className={darkMode ? classes.paperDark : classes.paper}
               elevation={3}
+              style={{ justifyContent: "space-between" }}
             >
-              <Typography variant="h2">BLUECHIPS</Typography>
+              <Grid container direction="row" style={{ padding: 10 }}>
+                <Grid item xs={1}></Grid>
+                <Grid item xs={10}>
+                  <Typography variant="h2">GURU's BLUECHIPS</Typography>
+                </Grid>
+                <Grid item xs={1}>
+                  {isAdmin && (
+                    <IconButton onClick={() => this.toggleEditMode()}>
+                      <SettingsIcon />
+                    </IconButton>
+                  )}
+                  <IconButton onClick={() => this.showHideGuruChips()}>
+                    {showGuruChips ? (
+                      <KeyboardArrowDownRoundedIcon />
+                    ) : (
+                      <KeyboardArrowUpRoundedIcon />
+                    )}
+                  </IconButton>
+                </Grid>
+                {editMode && (
+                  <Grid item xs={12}>
+                    <Grid
+                      item
+                      container
+                      direction={"row"}
+                      style={{
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Grid item xs={9}>
+                        <Autocomplete
+                          id="coin-search-bar"
+                          options={this.state.items}
+                          open={this.state.openSearch}
+                          onOpen={() => {
+                            this.openSearch();
+                          }}
+                          getOptionSelected={(option, value) =>
+                            option.name === value.name
+                          }
+                          getOptionLabel={(option) =>
+                            `${option.name} (${option.symbol})`
+                          }
+                          onChange={(event, newValue) => {
+                            this.coinSelect(newValue, this.props.id);
+                          }}
+                          loading={this.state.loadingBar}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="Coin Search"
+                              variant="outlined"
+                              InputProps={{
+                                ...params.InputProps,
+                                endAdornment: (
+                                  <React.Fragment>
+                                    {this.state.loading ? (
+                                      <CircularProgress
+                                        color="inherit"
+                                        size={20}
+                                      />
+                                    ) : null}
+                                    {params.InputProps.endAdornment}
+                                  </React.Fragment>
+                                ),
+                              }}
+                            />
+                          )}
+                        />
+                      </Grid>
+                      <Grid item xs={1} style={{ marginLeft: 10 }}>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          className={classes.button}
+                          startIcon={<AddCircleRoundedIcon />}
+                          disabled={!this.state.validSelection}
+                          onClick={() => {
+                            this.addBlueChip(selectedID);
+                          }}
+                        >
+                          {this.state.isAddingBlueChip ? (
+                            <CircularProgress />
+                          ) : (
+                            "Add"
+                          )}
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                )}
+              </Grid>
             </Paper>
           </Grid>
-          <Grid item>
-            <InfiniteScroll
-              dataLength={current.length}
-              next={getMoreData}
-              hasMore={hasMore}
-              loader={
-                <div style={{ textAlign: "center", marginTop: 15 }}>
-                  Loading...
-                </div>
-              }
-              style={{ overflow: false }}
-            >
-              <Grid container spacing={3}>
-                {current.map((bluechip) => (
-                  <BlueChipCard key={bluechip.id} data={bluechip} />
-                ))}
-              </Grid>
-            </InfiniteScroll>
-          </Grid>
+          {showGuruChips && (
+            <Grid item style={{ padding: 10, minWidth: "100%" }}>
+              <InfiniteScroll
+                dataLength={bluechipsGuru.length}
+                next={getMoreData}
+                hasMore={hasMore}
+                loader={
+                  <div style={{ textAlign: "center", marginTop: 15 }}>
+                    Loading...
+                  </div>
+                }
+                style={{ overflow: false, minWidth: "100%" }}
+              >
+                <Grid container spacing={2}>
+                  {bluechipsGuru.map((bluechip) => (
+                    <BlueChipCard
+                      key={bluechip.id}
+                      data={bluechip}
+                      editMode={editMode}
+                    />
+                  ))}
+                </Grid>
+              </InfiniteScroll>
+            </Grid>
+          )}
         </Grid>
       </>
     );
