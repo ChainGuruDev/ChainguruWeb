@@ -68,9 +68,8 @@ const styles = (theme) => ({
     maxHeight: 500,
   },
   favCard: {
-    background: "rgba(255,255,255,0.05)",
     padding: 10,
-    margin: 10,
+    margin: "10px 0px",
     display: "flex",
     flex: 1,
   },
@@ -875,7 +874,7 @@ class PortfolioBig extends Component {
                       className={classes.table}
                       aria-label="assetList"
                     >
-                      <TableHead>
+                      <TableHead style={{ backgroundColor: "#fafafa" }}>
                         <TableRow>
                           <TableCell
                             style={{ width: "30px", height: "30px" }}

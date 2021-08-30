@@ -70,23 +70,18 @@ const styles = (theme) => ({
     justifyContent: "space-around",
   },
   walletGrid: {
-    borderColor: "#777",
     borderRadius: "10px",
-    borderStyle: "solid",
-    borderWidth: "thin",
     padding: "10px",
     background: `#9991`,
     minHeight: "100%",
   },
   favCard: {
-    background: "rgba(255,255,255,0.05)",
     padding: 10,
     margin: 10,
     display: "flex",
     flex: 1,
   },
   card: {
-    background: "rgba(255,255,255,0.05)",
     padding: 10,
     margin: 10,
   },

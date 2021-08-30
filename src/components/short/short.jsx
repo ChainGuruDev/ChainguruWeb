@@ -32,6 +32,7 @@ import {
   PING_COINGECKO,
   COINLIST_RETURNED,
   COIN_DATA_RETURNED,
+  DARKMODE_SWITCH_RETURN,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -56,6 +57,8 @@ const styles = (theme) => ({
     alignItems: "center",
   },
   rootTabs: {
+    display: "flex",
+    flexDirection: "column",
     flexGrow: 1,
     width: "100%",
     borderRadius: 0,
@@ -85,7 +88,6 @@ const styles = (theme) => ({
     justifyContent: "space-between",
     direction: "row",
     alignItems: "stretch",
-    background: "rgba(255,255,255,0.25)",
   },
   divider: {
     alignItems: "center",
@@ -142,7 +144,20 @@ class Short extends Component {
 
     let toolID = this.tool2toolID(this.props.match.params.tool);
 
+    function getMode() {
+      let savedmode;
+      try {
+        savedmode = JSON.parse(localStorage.getItem("dark"));
+        return savedmode || false;
+      } catch (err) {
+        return false;
+      }
+    }
+
+    const theme = getMode();
+
     this.state = {
+      darkMode: theme,
       account: account,
       loading: false,
       coinList: [],
@@ -245,6 +260,7 @@ class Short extends Component {
   componentDidMount() {
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
     emitter.on(COIN_DATA_RETURNED, this.coinDataReturned);
+    emitter.on(DARKMODE_SWITCH_RETURN, this.darkModeSwitch);
 
     dispatcher.dispatch({
       type: PING_COINGECKO,
@@ -255,8 +271,12 @@ class Short extends Component {
   componentWillUnmount() {
     emitter.removeListener(COINLIST_RETURNED, this.coinlistReturned);
     emitter.removeListener(COIN_DATA_RETURNED, this.coinDataReturned);
+    emitter.removeListener(DARKMODE_SWITCH_RETURN, this.darkModeSwitch);
   }
 
+  darkModeSwitch = (mode) => {
+    this.setState({ darkMode: mode });
+  };
   coinlistReturned = (payload) => {
     this.setState({ coinList: payload });
   };
@@ -277,16 +297,15 @@ class Short extends Component {
 
   render() {
     const { classes } = this.props;
-    const { valueTab, coinID } = this.state;
+    const { valueTab, coinID, darkMode } = this.state;
     const handleChangeTabs = (event, newValueTab) => {
       this.setState({ valueTab: newValueTab });
       let newScreen = this.toolID2tool(newValueTab);
       this.nav("/short/" + newScreen);
     };
-
     return (
-      <Grid className={classes.rootTabs}>
-        <AppBar position="static" color="default">
+      <div className={classes.rootTabs} id="rootShort">
+        <AppBar position="static" color="default" style={{ height: "72px" }}>
           <Tabs
             value={valueTab}
             onChange={handleChangeTabs}
@@ -316,86 +335,95 @@ class Short extends Component {
             <Tab label="Swap" icon={<SwapHorizIcon />} {...a11yProps(5)} />
           </Tabs>
         </AppBar>
-        <TabPanel value={valueTab} index={0}>
-          <Suspense
-            fallback={
-              <div style={{ textAlign: "center" }}>
-                <Card className={classes.favCard} elevation={3}>
-                  <CircularProgress />
-                </Card>
-              </div>
-            }
-          >
-            <CryptoCompare toolTimeframe={"short"} />
-          </Suspense>
-        </TabPanel>
-        <TabPanel value={valueTab} index={1}>
-          <Suspense
-            fallback={
-              <div style={{ textAlign: "center" }}>
-                <Card className={classes.favCard} elevation={3}>
-                  <CircularProgress />
-                </Card>
-              </div>
-            }
-          >
-            <Favorites />
-          </Suspense>
-        </TabPanel>
-        <TabPanel value={valueTab} index={2}>
-          <Suspense
-            fallback={
-              <div style={{ textAlign: "center" }}>
-                <Card className={classes.favCard} elevation={3}>
-                  <CircularProgress />
-                </Card>
-              </div>
-            }
-          >
-            {coinID && <CryptoDetective coinID={coinID} />}
-            {!coinID && <CryptoDetective coinID={"bitcoin"} />}
-          </Suspense>
-        </TabPanel>
-        <TabPanel value={valueTab} index={3}>
-          <Suspense
-            fallback={
-              <div style={{ textAlign: "center" }}>
-                <Card className={classes.favCard} elevation={3}>
-                  <CircularProgress />
-                </Card>
-              </div>
-            }
-          >
-            <LongShort />
-          </Suspense>
-        </TabPanel>
-        <TabPanel value={valueTab} index={4}>
-          <Suspense
-            fallback={
-              <div style={{ textAlign: "center" }}>
-                <Card className={classes.favCard} elevation={3}>
-                  <CircularProgress />
-                </Card>
-              </div>
-            }
-          >
-            <CoinList timeFrame="short" />
-          </Suspense>
-        </TabPanel>
-        <TabPanel value={valueTab} index={5}>
-          <Suspense
-            fallback={
-              <div style={{ textAlign: "center" }}>
-                <Card className={classes.favCard} elevation={3}>
-                  <CircularProgress />
-                </Card>
-              </div>
-            }
-          >
-            <Swap />
-          </Suspense>
-        </TabPanel>
-      </Grid>
+        <div
+          style={{
+            flex: 1,
+            backgroundImage: darkMode
+              ? "radial-gradient(ellipse at center top, rgb(121, 80, 56), rgb(21, 12, 7))"
+              : "radial-gradient(ellipse at center top, rgb(247, 157, 107), rgba(247, 157, 107, 0.27))",
+          }}
+        >
+          <TabPanel value={valueTab} index={0}>
+            <Suspense
+              fallback={
+                <div style={{ textAlign: "center" }}>
+                  <Card className={classes.favCard} elevation={3}>
+                    <CircularProgress />
+                  </Card>
+                </div>
+              }
+            >
+              <CryptoCompare toolTimeframe={"short"} />
+            </Suspense>
+          </TabPanel>
+          <TabPanel value={valueTab} index={1}>
+            <Suspense
+              fallback={
+                <div style={{ textAlign: "center" }}>
+                  <Card className={classes.favCard} elevation={3}>
+                    <CircularProgress />
+                  </Card>
+                </div>
+              }
+            >
+              <Favorites />
+            </Suspense>
+          </TabPanel>
+          <TabPanel value={valueTab} index={2}>
+            <Suspense
+              fallback={
+                <div style={{ textAlign: "center" }}>
+                  <Card className={classes.favCard} elevation={3}>
+                    <CircularProgress />
+                  </Card>
+                </div>
+              }
+            >
+              {coinID && <CryptoDetective coinID={coinID} />}
+              {!coinID && <CryptoDetective coinID={"bitcoin"} />}
+            </Suspense>
+          </TabPanel>
+          <TabPanel value={valueTab} index={3}>
+            <Suspense
+              fallback={
+                <div style={{ textAlign: "center" }}>
+                  <Card className={classes.favCard} elevation={3}>
+                    <CircularProgress />
+                  </Card>
+                </div>
+              }
+            >
+              <LongShort />
+            </Suspense>
+          </TabPanel>
+          <TabPanel value={valueTab} index={4}>
+            <Suspense
+              fallback={
+                <div style={{ textAlign: "center" }}>
+                  <Card className={classes.favCard} elevation={3}>
+                    <CircularProgress />
+                  </Card>
+                </div>
+              }
+            >
+              <CoinList timeFrame="short" />
+            </Suspense>
+          </TabPanel>
+          <TabPanel value={valueTab} index={5}>
+            <Suspense
+              fallback={
+                <div style={{ textAlign: "center" }}>
+                  <Card className={classes.favCard} elevation={3}>
+                    <CircularProgress />
+                  </Card>
+                </div>
+              }
+            >
+              <Swap />
+            </Suspense>
+          </TabPanel>
+        </div>
+      </div>
     );
   }
 

@@ -103,7 +103,7 @@ class Dashboard extends Component {
       <div className={classes.root}>
         {!account.address && <div>CONNECT WALLET</div>}
         {account.address && (
-          <Grid container>
+          <Grid container spacing={3}>
             <Grid item xs={9}>
               {this.renderBig(tools)}
             </Grid>

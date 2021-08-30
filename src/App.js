@@ -36,18 +36,17 @@ const store = Store.store;
 class App extends Component {
   state = {
     headerValue: null,
-    darkMode: false,
+    darkMode: null,
     theme: createMuiTheme(),
     vsCoin: "usd",
   };
 
   setHeaderValue = (newValue) => {
-    console.log(newValue);
-
     this.setState({ headerValue: newValue });
   };
   componentDidMount = async () => {
     let web3 = new Web3(Web3.givenProvider);
+    this.darkModeSwitch(this.getMode());
 
     // dispatcherDefi.dispatch({
     //   type: GET_PROTOCOL_NAMES,
@@ -86,7 +85,6 @@ class App extends Component {
 
     emitter.on(DARKMODE_SWITCH_RETURN, this.darkModeSwitch);
 
-    this.darkModeSwitch(this.getMode());
     this.setState({ vsCoin: this.getVsCoin() });
   };
 
@@ -117,7 +115,7 @@ class App extends Component {
 
   darkModeSwitch = (state) => {
     localStorage.setItem("dark", JSON.stringify(state));
-    const mainPrimaryColor = state ? colors.cgGreen : colors.cgGreen;
+    const mainPrimaryColor = state ? colors.cgGreen : colors.cgDarkGreen;
     const mainSecondaryColor = state ? colors.cgOrange : colors.cgOrange;
     // const Roboto = {
     //   fontFamily: "Roboto",
@@ -357,7 +355,19 @@ class App extends Component {
             },
           },
         },
+        MuiCard: {
+          root: {
+            background: state
+              ? "rgba(255,255,255,0.1)"
+              : "rgba(255, 255, 255, 0.75)",
+          },
+        },
         MuiPaper: {
+          root: {
+            background: state
+              ? "rgba(255,255,255,0.1)"
+              : "rgba(255, 255, 255, 0.75)",
+          },
           elevation1: {
             boxShadow: "none",
           },
@@ -443,7 +453,7 @@ class App extends Component {
                 setHeaderValue={this.setHeaderValue}
                 headerValue={headerValue}
               />
-              <Short tool="detective" />
+              <Short tool="detective" darkMode={darkMode} />
             </Route>
             <Route path="/short/:tool/:coinID/:coinID_B">
               <Header
@@ -451,7 +461,7 @@ class App extends Component {
                 headerValue={headerValue}
                 darkMode={darkMode}
               />
-              <Short />
+              <Short darkMode={darkMode} />
             </Route>
             <Route path="/short/:tool/:coinID">
               <Header
@@ -459,7 +469,7 @@ class App extends Component {
                 headerValue={headerValue}
                 darkMode={darkMode}
               />
-              <Short />
+              <Short darkMode={darkMode} />
             </Route>
             <Route path="/short/:tool/">
               <Header
@@ -467,7 +477,7 @@ class App extends Component {
                 headerValue={headerValue}
                 darkMode={darkMode}
               />
-              <Short />
+              <Short darkMode={darkMode} />
             </Route>
             <Route path="/short">
               <Header
@@ -476,7 +486,7 @@ class App extends Component {
                 darkMode={darkMode}
                 vsCoin={this.state.vsCoin}
               />
-              <Short />
+              <Short darkMode={darkMode} />
             </Route>
             <Route path="/medium/:tool/:coinID/:coinID_B">
               <Header

@@ -45,8 +45,6 @@ const styles = (theme) => ({
     flex: 1,
     direction: "row",
     alignItems: "stretch",
-    background: "rgba(125,125,125,0.1)",
-    border: `2px solid ${colors.cgGreen}`,
     textAlign: "center",
     justifyContent: "space-evenly",
   },

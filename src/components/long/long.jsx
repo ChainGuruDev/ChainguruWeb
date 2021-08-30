@@ -27,7 +27,7 @@ import SwapHorizIcon from "@material-ui/icons/SwapHoriz";
 
 import Snackbar from "../snackbar";
 
-import { ERROR } from "../../constants";
+import { ERROR, DARKMODE_SWITCH_RETURN } from "../../constants";
 
 import Store from "../../stores";
 const emitter = Store.emitter;
@@ -43,19 +43,21 @@ const styles = (theme) => ({
   background: {
     flex: 1,
     display: "flex",
-    width: "90%",
+    width: "100%",
     minHeight: "100%",
-
     justifyContent: "space-around",
   },
   root: {
     padding: theme.spacing(2),
-    justifyContent: "center",
-    alignItems: "center",
-    flexGrow: 1,
+    flex: 1,
+    display: "flex",
     width: "100%",
+    justifyContent: "space-around",
+    alignItems: "center",
   },
   rootTabs: {
+    display: "flex",
+    flexDirection: "column",
     flexGrow: 1,
     width: "100%",
     borderRadius: 0,
@@ -64,7 +66,15 @@ const styles = (theme) => ({
     padding: theme.spacing(2),
     textAlign: "center",
     color: theme.palette.text.primary,
-    backgroundColor: "rgba(255, 255, 255, 0.2);",
+  },
+  favCard: {
+    padding: 10,
+    marginTop: 10,
+    marginBottom: 10,
+    display: "flex",
+    flex: 1,
+    direction: "row",
+    alignItems: "stretch",
   },
   image: {
     width: 64,
@@ -151,16 +161,34 @@ class Long extends Component {
       newTab = 3;
     }
 
-    this.state = { snackbarMessage: "", valueTab: newTab };
+    function getMode() {
+      let savedmode;
+      try {
+        savedmode = JSON.parse(localStorage.getItem("dark"));
+        return savedmode || false;
+      } catch (err) {
+        return false;
+      }
+    }
+
+    const theme = getMode();
+
+    this.state = { snackbarMessage: "", valueTab: newTab, darkMode: theme };
   }
 
   componentDidMount() {
     emitter.on(ERROR, this.errorReturned);
+    emitter.on(DARKMODE_SWITCH_RETURN, this.darkModeSwitch);
   }
 
   componentWillUnmount() {
     emitter.removeListener(ERROR, this.errorReturned);
+    emitter.removeListener(DARKMODE_SWITCH_RETURN, this.darkModeSwitch);
   }
+
+  darkModeSwitch = (mode) => {
+    this.setState({ darkMode: mode });
+  };
 
   errorReturned = (error) => {
     const snackbarObj = { snackbarMessage: null, snackbarType: null };
@@ -178,7 +206,7 @@ class Long extends Component {
 
   render() {
     const { classes } = this.props;
-    const { snackbarMessage, valueTab } = this.state;
+    const { snackbarMessage, valueTab, darkMode } = this.state;
     const handleChangeTabs = (event, newValueTab) => {
       this.setState({ valueTab: newValueTab });
     };
@@ -208,58 +236,67 @@ class Long extends Component {
             <LongTab label="Swap" icon={<SwapHorizIcon />} {...a11yProps(3)} />
           </LongTabs>
         </AppBar>
-        <TabPanel value={valueTab} index={0}>
-          <Suspense
-            fallback={
-              <div style={{ textAlign: "center" }}>
-                <Card className={classes.favCard} elevation={3}>
-                  <CircularProgress />
-                </Card>
-              </div>
-            }
-          >
-            <BlueChips />
-          </Suspense>
-        </TabPanel>
-        <TabPanel value={valueTab} index={1}>
-          <Suspense
-            fallback={
-              <div style={{ textAlign: "center" }}>
-                <Card className={classes.favCard} elevation={3}>
-                  <CircularProgress />
-                </Card>
-              </div>
-            }
-          >
-            <DollarCostAverage />
-          </Suspense>
-        </TabPanel>
-        <TabPanel value={valueTab} index={2}>
-          <Suspense
-            fallback={
-              <div style={{ textAlign: "center" }}>
-                <Card className={classes.favCard} elevation={3}>
-                  <CircularProgress />
-                </Card>
-              </div>
-            }
-          >
-            <CoinList timeFrame="long" />
-          </Suspense>
-        </TabPanel>
-        <TabPanel value={valueTab} index={3}>
-          <Suspense
-            fallback={
-              <div style={{ textAlign: "center" }}>
-                <Card className={classes.favCard} elevation={3}>
-                  <CircularProgress />
-                </Card>
-              </div>
-            }
-          >
-            <Swap />
-          </Suspense>
-        </TabPanel>
+        <div
+          style={{
+            flex: 1,
+            backgroundImage: darkMode
+              ? "radial-gradient(circle at center top, rgb(56, 81, 89), rgb(0, 30, 40))"
+              : "radial-gradient(circle at center top, rgb(157, 226, 249), rgba(157, 226, 249, 0.1))",
+          }}
+        >
+          <TabPanel value={valueTab} index={0}>
+            <Suspense
+              fallback={
+                <div style={{ textAlign: "center" }}>
+                  <Card className={classes.favCard} elevation={3}>
+                    <CircularProgress />
+                  </Card>
+                </div>
+              }
+            >
+              <BlueChips />
+            </Suspense>
+          </TabPanel>
+          <TabPanel value={valueTab} index={1}>
+            <Suspense
+              fallback={
+                <div style={{ textAlign: "center" }}>
+                  <Card className={classes.favCard} elevation={3}>
+                    <CircularProgress />
+                  </Card>
+                </div>
+              }
+            >
+              <DollarCostAverage />
+            </Suspense>
+          </TabPanel>
+          <TabPanel value={valueTab} index={2}>
+            <Suspense
+              fallback={
+                <div style={{ textAlign: "center" }}>
+                  <Card className={classes.favCard} elevation={3}>
+                    <CircularProgress />
+                  </Card>
+                </div>
+              }
+            >
+              <CoinList timeFrame="long" />
+            </Suspense>
+          </TabPanel>
+          <TabPanel value={valueTab} index={3}>
+            <Suspense
+              fallback={
+                <div style={{ textAlign: "center" }}>
+                  <Card className={classes.favCard} elevation={3}>
+                    <CircularProgress />
+                  </Card>
+                </div>
+              }
+            >
+              <Swap />
+            </Suspense>
+          </TabPanel>
+        </div>
         {snackbarMessage && this.renderSnackbar()}
       </Grid>
     );

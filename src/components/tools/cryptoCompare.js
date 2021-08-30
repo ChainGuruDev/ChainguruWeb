@@ -18,6 +18,7 @@ import {
   COIN_DATA_RETURNED,
   GRAPH_TIMEFRAME_CHANGED,
   SWITCH_VS_COIN_RETURNED,
+  DARKMODE_SWITCH_RETURN,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -42,7 +43,6 @@ const styles = (theme) => ({
     display: "flex",
     width: "100%",
     minHeight: "100%",
-
     justifyContent: "space-around",
   },
   compareGrid: {
@@ -62,7 +62,18 @@ const styles = (theme) => ({
     justifyContent: "space-between",
     direction: "row",
     alignItems: "stretch",
-    background: "rgba(255,255,255,0.05)",
+  },
+  compareCardDarkMode: {
+    padding: 10,
+    minHeight: "70%",
+    marginTop: 10,
+    marginBottom: 10,
+    display: "flex",
+    flex: 1,
+    textAlign: "center",
+    justifyContent: "space-between",
+    direction: "row",
+    alignItems: "stretch",
   },
   divider: {
     alignItems: "center",
@@ -85,7 +96,9 @@ class CryptoCompare extends Component {
     let vsCoin = store.getStore("vsCoin");
 
     const account = store.getStore("account");
+    const theme = store.getStore("theme");
     this.state = {
+      theme: theme,
       account: account,
       loading: false,
       coinList: [],
@@ -99,6 +112,7 @@ class CryptoCompare extends Component {
       vs: vsCoin,
       tradeableA: false,
       tradeableB: false,
+      darkMode: theme === "dark" ? true : false,
     };
   }
   componentDidMount() {
@@ -106,6 +120,8 @@ class CryptoCompare extends Component {
     emitter.on(COIN_DATA_RETURNED, this.coinDataReturned);
     emitter.on(GRAPH_TIMEFRAME_CHANGED, this.graphTimeframeChanged);
     emitter.on(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
+    emitter.on(DARKMODE_SWITCH_RETURN, this.darkModeSwitch);
+
     if (!this.state.vs) {
       this.getVsCoin();
     }
@@ -116,7 +132,12 @@ class CryptoCompare extends Component {
     emitter.removeListener(COIN_DATA_RETURNED, this.coinDataReturned);
     emitter.removeListener(GRAPH_TIMEFRAME_CHANGED, this.graphTimeframeChanged);
     emitter.removeListener(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
+    emitter.removeListener(DARKMODE_SWITCH_RETURN, this.darkModeSwitch);
   }
+
+  darkModeSwitch = (mode) => {
+    this.setState({ darkMode: mode });
+  };
 
   getVsCoin = () => {
     let vsCoin;
@@ -200,6 +221,7 @@ class CryptoCompare extends Component {
       vs,
       tradeableA,
       tradeableB,
+      darkMode,
     } = this.state;
 
     return (
@@ -213,7 +235,12 @@ class CryptoCompare extends Component {
           container
           id="cryptoCompSmall"
         >
-          <Card className={classes.compareCard} elevation={3}>
+          <Card
+            className={
+              darkMode ? classes.compareCardDarkMode : classes.compareCard
+            }
+            elevation={3}
+          >
             <Grid item xs={6} style={{ marginRight: 10 }}>
               <CoinCompare id={"A"} toolTimeframe={toolTimeframe} />
             </Grid>

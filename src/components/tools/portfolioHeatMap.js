@@ -69,14 +69,9 @@ const styles = (theme) => ({
     flex: 1,
     direction: "row",
     alignItems: "stretch",
-    background: "rgba(125,125,125,0.1)",
-    border: `2px solid ${colors.cgGreen}`,
     minHeight: "100%",
   },
-  walletsCard: {
-    background: "rgba(125,125,125,0.1)",
-    border: `2px solid ${colors.cgGreen}`,
-  },
+  walletsCard: {},
   walletsGrid: {
     display: "flex",
     flex: 1,

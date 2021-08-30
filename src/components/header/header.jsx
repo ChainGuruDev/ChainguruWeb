@@ -49,6 +49,8 @@ const styles = (theme) => ({
   },
   headerV2: {
     width: "100%",
+    minHeight: "110px",
+    height: "110px",
     display: "flex",
     padding: "17px 24px",
   },
@@ -56,6 +58,7 @@ const styles = (theme) => ({
     display: "flex",
     justifyContent: "flex-start",
     alignItems: "flex-start",
+    alignSelf: "center",
     cursor: "pointer",
     maxHeight: "50px",
     maxWidth: "100px",
@@ -77,7 +80,7 @@ const styles = (theme) => ({
     display: "flex",
     flex: "auto",
     width: "inherit",
-    alignItems: "center",
+    alignItems: "flex-start",
     justifyContent: "center",
   },
   link: {
@@ -168,18 +171,22 @@ const styles = (theme) => ({
     },
   },
   gasPrice: {
+    maxHeight: "50px",
     padding: "12px",
     borderRadius: "50px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     marginRight: "25px",
+    alignSelf: "center",
     cursor: "pointer",
     "&:hover": {
       background: "rgba(47, 128, 237, 0.1)",
     },
   },
   vsCoinDIV: {
+    alignSelf: "center",
+    maxHeight: "50px",
     padding: "0px",
     borderRadius: "50px",
     display: "flex",

@@ -33,6 +33,7 @@ import {
   PING_COINGECKO,
   COINLIST_RETURNED,
   COIN_DATA_RETURNED,
+  DARKMODE_SWITCH_RETURN,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -51,6 +52,8 @@ const styles = (theme) => ({
     alignItems: "center",
   },
   rootTabs: {
+    display: "flex",
+    flexDirection: "column",
     flexGrow: 1,
     width: "100%",
     borderRadius: 0,
@@ -156,7 +159,21 @@ class PortfolioManagement extends Component {
     const account = store.getStore("account");
 
     let toolID = this.tool2toolID(this.props.match.params.tool);
+
+    function getMode() {
+      let savedmode;
+      try {
+        savedmode = JSON.parse(localStorage.getItem("dark"));
+        return savedmode || false;
+      } catch (err) {
+        return false;
+      }
+    }
+
+    const theme = getMode();
+
     this.state = {
+      darkMode: theme,
       account: account,
       loading: false,
       coinList: [],
@@ -236,6 +253,8 @@ class PortfolioManagement extends Component {
   componentDidMount() {
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
     emitter.on(COIN_DATA_RETURNED, this.coinDataReturned);
+    emitter.on(DARKMODE_SWITCH_RETURN, this.darkModeSwitch);
+
     dispatcher.dispatch({
       type: PING_COINGECKO,
       content: {},
@@ -245,7 +264,12 @@ class PortfolioManagement extends Component {
   componentWillUnmount() {
     emitter.removeListener(COINLIST_RETURNED, this.coinlistReturned);
     emitter.removeListener(COIN_DATA_RETURNED, this.coinDataReturned);
+    emitter.removeListener(DARKMODE_SWITCH_RETURN, this.darkModeSwitch);
   }
+
+  darkModeSwitch = (mode) => {
+    this.setState({ darkMode: mode });
+  };
 
   coinlistReturned = (payload) => {
     this.setState({ coinList: payload });
@@ -263,7 +287,7 @@ class PortfolioManagement extends Component {
 
   render() {
     const { classes } = this.props;
-    const { valueTab } = this.state;
+    const { valueTab, darkMode } = this.state;
 
     const handleChangeTabs = (event, newValueTab) => {
       this.setState({ valueTab: newValueTab });
@@ -315,34 +339,43 @@ class PortfolioManagement extends Component {
             />
           </PortfolioTabs>
         </AppBar>
-        <TabPanel value={valueTab} index={0}>
-          <Dashboard />
-        </TabPanel>
-        <TabPanel value={valueTab} index={1}>
-          <Transactions />
-        </TabPanel>
-        <TabPanel value={valueTab} index={2}>
-          <PortfolioHeatMap />
-        </TabPanel>
-        <TabPanel value={valueTab} index={3}>
-          <CryptoConverter />
-        </TabPanel>
-        <TabPanel value={valueTab} index={4}>
-          <PortfolioRadar />
-        </TabPanel>
-        <TabPanel value={valueTab} index={5}>
-          <Suspense
-            fallback={
-              <div style={{ textAlign: "center" }}>
-                <Card className={classes.favCard} elevation={3}>
-                  <CircularProgress />
-                </Card>
-              </div>
-            }
-          >
-            <Swap />
-          </Suspense>
-        </TabPanel>
+        <div
+          style={{
+            flex: 1,
+            backgroundImage: darkMode
+              ? "radial-gradient(at center top, rgb(91, 71, 46), rgb(28, 15, 0))"
+              : "radial-gradient(at center top, rgb(252, 201, 139), rgba(252, 201, 139, 0.1))",
+          }}
+        >
+          <TabPanel value={valueTab} index={0}>
+            <Dashboard />
+          </TabPanel>
+          <TabPanel value={valueTab} index={1}>
+            <Transactions />
+          </TabPanel>
+          <TabPanel value={valueTab} index={2}>
+            <PortfolioHeatMap />
+          </TabPanel>
+          <TabPanel value={valueTab} index={3}>
+            <CryptoConverter />
+          </TabPanel>
+          <TabPanel value={valueTab} index={4}>
+            <PortfolioRadar />
+          </TabPanel>
+          <TabPanel value={valueTab} index={5}>
+            <Suspense
+              fallback={
+                <div style={{ textAlign: "center" }}>
+                  <Card className={classes.favCard} elevation={3}>
+                    <CircularProgress />
+                  </Card>
+                </div>
+              }
+            >
+              <Swap />
+            </Suspense>
+          </TabPanel>
+        </div>
       </Grid>
     );
   }

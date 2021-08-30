@@ -20,6 +20,7 @@ export const colors = {
   cgYellow: "#fcc98b",
   cgBlue: "#9de2f9",
   cgGreen: "#79d8a2",
+  cgDarkGreen: "#569973",
   white: "#ffffff",
   black: "#000000",
   darkBlue: "#2c3b57",
@@ -44,6 +45,16 @@ export const colors = {
   buttonPrimary: "#0b8f92",
   buttonSecondary: "#ed4337",
 };
+
+function getMode() {
+  let savedmode;
+  try {
+    savedmode = JSON.parse(localStorage.getItem("dark"));
+    return savedmode || false;
+  } catch (err) {
+    return false;
+  }
+}
 
 const breakpoints = createBreakpoints({
   keys: ["xs", "sm", "md", "lg", "xl"],
@@ -115,7 +126,7 @@ const cgTheme = {
     },
   },
   palette: {
-    type: "light",
+    type: getMode() ? "dark" : "light",
   },
   overrides: {
     MuiCssBaseline: {
@@ -256,6 +267,11 @@ const cgTheme = {
       },
     },
     MuiPaper: {
+      root: {
+        background: getMode()
+          ? "rgba(255,255,255,0.1)"
+          : "rgba(255, 255, 255, 0.75)",
+      },
       elevation1: {
         boxShadow: "none",
       },

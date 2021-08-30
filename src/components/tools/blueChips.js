@@ -11,6 +11,7 @@ import {
   Typography,
   Grid,
   Paper,
+  Card,
   IconButton,
   TextField,
   Button,
@@ -63,14 +64,10 @@ const styles = (theme) => ({
   paper: {
     textAlign: "center",
     color: theme.palette.text.primary,
-    backgroundColor: `${colors.cgBlue}85`,
-    border: `2px solid ${colors.cgBlue}`,
   },
   paperDark: {
     textAlign: "center",
     color: theme.palette.text.primary,
-    backgroundColor: `${colors.cgBlue}52`,
-    border: `2px solid ${colors.cgBlue}`,
   },
 });
 
@@ -375,7 +372,7 @@ class BlueChips extends Component {
     return (
       <>
         <Grid item xs={12} style={{ padding: 0 }}>
-          <Paper
+          <Card
             className={darkMode ? classes.paperDark : classes.paper}
             elevation={3}
             style={{ justifyContent: "space-between" }}
@@ -473,7 +470,7 @@ class BlueChips extends Component {
                 </Grid>
               )}
             </Grid>
-          </Paper>
+          </Card>
         </Grid>
         <Grid
           item
@@ -545,7 +542,7 @@ class BlueChips extends Component {
         <Grid container style={{ maxWidth: "90%", margin: "auto" }} spacing={3}>
           {this.drawUserBluechips(bluechipsUser, darkMode)}
           <Grid item xs={12} style={{ padding: 0 }}>
-            <Paper
+            <Card
               className={darkMode ? classes.paperDark : classes.paper}
               elevation={3}
               style={{ justifyContent: "space-between" }}
@@ -643,7 +640,7 @@ class BlueChips extends Component {
                   </Grid>
                 )}
               </Grid>
-            </Paper>
+            </Card>
           </Grid>
           {showGuruChips && (
             <Grid item style={{ padding: 10, minWidth: "100%" }}>

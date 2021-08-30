@@ -92,7 +92,6 @@ const styles = (theme) => ({
     alignContent: "center",
     textAlign: "center",
     justifyContent: "center",
-    background: "rgba(255,255,255,0.05)",
   },
   fromToGrid: {
     padding: 15,

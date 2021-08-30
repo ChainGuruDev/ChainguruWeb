@@ -29,6 +29,7 @@ import SwapHorizIcon from "@material-ui/icons/SwapHoriz";
 import {
   PING_COINGECKO,
   COINLIST_RETURNED,
+  DARKMODE_SWITCH_RETURN,
   COIN_DATA_RETURNED,
 } from "../../constants";
 
@@ -52,6 +53,8 @@ const styles = (theme) => ({
     alignItems: "center",
   },
   rootTabs: {
+    display: "flex",
+    flexDirection: "column",
     flexGrow: 1,
     width: "100%",
     borderRadius: 0,
@@ -135,7 +138,21 @@ class Medium extends Component {
     super(props);
 
     const account = store.getStore("account");
+
+    function getMode() {
+      let savedmode;
+      try {
+        savedmode = JSON.parse(localStorage.getItem("dark"));
+        return savedmode || false;
+      } catch (err) {
+        return false;
+      }
+    }
+
+    const theme = getMode();
+
     this.state = {
+      darkMode: theme,
       account: account,
       loading: false,
       coinList: [],
@@ -172,6 +189,7 @@ class Medium extends Component {
   componentDidMount() {
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
     emitter.on(COIN_DATA_RETURNED, this.coinDataReturned);
+    emitter.on(DARKMODE_SWITCH_RETURN, this.darkModeSwitch);
 
     dispatcher.dispatch({
       type: PING_COINGECKO,
@@ -182,7 +200,12 @@ class Medium extends Component {
   componentWillUnmount() {
     emitter.removeListener(COINLIST_RETURNED, this.coinlistReturned);
     emitter.removeListener(COIN_DATA_RETURNED, this.coinDataReturned);
+    emitter.removeListener(DARKMODE_SWITCH_RETURN, this.darkModeSwitch);
   }
+
+  darkModeSwitch = (mode) => {
+    this.setState({ darkMode: mode });
+  };
 
   coinlistReturned = (payload) => {
     this.setState({ coinList: payload });
@@ -200,7 +223,7 @@ class Medium extends Component {
 
   render() {
     const { classes } = this.props;
-    const { valueTab, coinID } = this.state;
+    const { valueTab, coinID, darkMode } = this.state;
 
     const handleChangeTabs = (event, newValueTab) => {
       this.setState({ valueTab: newValueTab });
@@ -233,75 +256,84 @@ class Medium extends Component {
             <Tab label="Swap" icon={<SwapHorizIcon />} {...a11yProps(4)} />
           </Tabs>
         </AppBar>
-        <TabPanel value={valueTab} index={0}>
-          <Suspense
-            fallback={
-              <div style={{ textAlign: "center" }}>
-                <Card className={classes.favCard} elevation={3}>
-                  <CircularProgress />
-                </Card>
-              </div>
+        <div
+          style={{
+            flex: 1,
+            backgroundImage: darkMode
+              ? "radial-gradient(at center top, rgb(50, 87, 66), rgba(8, 26, 15, 0.98))"
+              : "radial-gradient(at center top, rgb(121, 216, 162), rgba(121, 216, 162, 0.1))",
+          }}
+        >
+          <TabPanel value={valueTab} index={0}>
+            <Suspense
+              fallback={
+                <div style={{ textAlign: "center" }}>
+                  <Card className={classes.favCard} elevation={3}>
+                    <CircularProgress />
+                  </Card>
+                </div>
+              }
+            >
+              <CryptoCompare toolTimeframe={"medium"} />
+            </Suspense>
+          </TabPanel>
+          <TabPanel value={valueTab} index={1}>
+            <Suspense
+              fallback={
+                <div style={{ textAlign: "center" }}>
+                  <Card className={classes.favCard} elevation={3}>
+                    <CircularProgress />
+                  </Card>
+                </div>
+              }
+            >
+              <Favorites />
+            </Suspense>
+          </TabPanel>
+          <TabPanel value={valueTab} index={2}>
+            <Suspense
+              fallback={
+                <div style={{ textAlign: "center" }}>
+                  <Card className={classes.favCard} elevation={3}>
+                    <CircularProgress />
+                  </Card>
+                </div>
+              }
+            >
+              {coinID && <CryptoDetective coinID={coinID} />}
+              {!coinID && <CryptoDetective coinID={"bitcoin"} />}
+            </Suspense>
+          </TabPanel>
+          <TabPanel value={valueTab} index={3}>
+            {
+              //<CoinList timeFrame="medium" />
             }
-          >
-            <CryptoCompare toolTimeframe={"medium"} />
-          </Suspense>
-        </TabPanel>
-        <TabPanel value={valueTab} index={1}>
-          <Suspense
-            fallback={
-              <div style={{ textAlign: "center" }}>
-                <Card className={classes.favCard} elevation={3}>
-                  <CircularProgress />
-                </Card>
-              </div>
-            }
-          >
-            <Favorites />
-          </Suspense>
-        </TabPanel>
-        <TabPanel value={valueTab} index={2}>
-          <Suspense
-            fallback={
-              <div style={{ textAlign: "center" }}>
-                <Card className={classes.favCard} elevation={3}>
-                  <CircularProgress />
-                </Card>
-              </div>
-            }
-          >
-            {coinID && <CryptoDetective coinID={coinID} />}
-            {!coinID && <CryptoDetective coinID={"bitcoin"} />}
-          </Suspense>
-        </TabPanel>
-        <TabPanel value={valueTab} index={3}>
-          {
-            //<CoinList timeFrame="medium" />
-          }
-          <Suspense
-            fallback={
-              <div style={{ textAlign: "center" }}>
-                <Card className={classes.favCard} elevation={3}>
-                  <CircularProgress />
-                </Card>
-              </div>
-            }
-          >
-            <CoinList timeFrame="medium" />
-          </Suspense>
-        </TabPanel>
-        <TabPanel value={valueTab} index={4}>
-          <Suspense
-            fallback={
-              <div style={{ textAlign: "center" }}>
-                <Card className={classes.favCard} elevation={3}>
-                  <CircularProgress />
-                </Card>
-              </div>
-            }
-          >
-            <Swap />
-          </Suspense>
-        </TabPanel>
+            <Suspense
+              fallback={
+                <div style={{ textAlign: "center" }}>
+                  <Card className={classes.favCard} elevation={3}>
+                    <CircularProgress />
+                  </Card>
+                </div>
+              }
+            >
+              <CoinList timeFrame="medium" />
+            </Suspense>
+          </TabPanel>
+          <TabPanel value={valueTab} index={4}>
+            <Suspense
+              fallback={
+                <div style={{ textAlign: "center" }}>
+                  <Card className={classes.favCard} elevation={3}>
+                    <CircularProgress />
+                  </Card>
+                </div>
+              }
+            >
+              <Swap />
+            </Suspense>
+          </TabPanel>
+        </div>
       </Grid>
     );
   }

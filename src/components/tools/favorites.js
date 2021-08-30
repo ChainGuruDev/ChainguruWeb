@@ -50,7 +50,6 @@ const styles = (theme) => ({
     flex: 1,
     direction: "row",
     alignItems: "stretch",
-    background: "rgba(255,255,255,0.05)",
   },
   favTopBar: {
     padding: 5,

@@ -54,14 +54,12 @@ const styles = (theme) => ({
     textAlign: "center",
     color: theme.palette.text.primary,
     background: `${colors.cgBlue}65`,
-    border: `2px solid ${colors.cgBlue}`,
     webkitBoxShadow: "0px 0px 00px 0px #0005",
-    boxShadow: "0px 0px 0px 0px #0005",
-    transition: "0.5s",
+    boxShadow: "0px 0px 2px 1px #0004",
+    transition: "0.15s",
     "&:hover": {
-      background: `${colors.cgBlue}95`,
-      webkitBoxShadow: "0px 0px 10px 5px #0004",
-      boxShadow: "0px 0px 10px 5px #0004",
+      webkitBoxShadow: "0px 0px 7px 3px #0005",
+      boxShadow: "0px 0px 7px 3px #0005",
     },
 
     cursor: "pointer",
@@ -71,14 +69,11 @@ const styles = (theme) => ({
     textAlign: "center",
     color: theme.palette.text.primary,
     background: `${colors.cgBlue}52`,
-    border: `2px solid ${colors.cgBlue}`,
-    webkitBoxShadow: "0px 0px 00px 0px #9de2f9",
-    boxShadow: "0px 0px 0px 0px #0005",
-    transition: "ease-in-out 0.3s",
+    webkitBoxShadow: "0px 0px 2px 1px #9de2f9",
+    boxShadow: "0px 0px 2px 1px #9de2f9",
     "&:hover": {
-      background: `${colors.cgBlue}75`,
-      webkitBoxShadow: "0px 0px 8px 4px #9de2f952",
-      boxShadow: "0px 0px 8px 4px #9de2f952",
+      webkitBoxShadow: "0px 0px 7px 3px #9de2f9",
+      boxShadow: "0px 0px 7px 3px #9de2f9",
     },
     cursor: "pointer",
   },
@@ -181,7 +176,7 @@ class BlueChipCard extends Component {
           className={darkMode ? classes.paperDark : classes.paper}
           style={{
             opacity: loadingChart ? 0 : 100,
-            transition: "all 0.5s cubic-bezier(.46,.03,.52,.96) 0s",
+            transition: "all 0.3s cubic-bezier(.46,.03,.52,.96) 0s",
             minHeight: "100%",
           }}
           elevation={0}

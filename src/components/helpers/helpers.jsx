@@ -8,31 +8,34 @@ function formatMoney(amount, decimalCount, decimal = ".", thousands = ",") {
     decimalCount = isNaN(decimalCount) ? 5 : decimalCount;
     const negativeSign = amount < 0 ? "-" : "";
     let num = parseFloat((amount = Math.abs(Number(amount) || 0)));
-    if (num > 0) {
-      if (num < 0.01) {
-        decimalCount = 5;
-        const myNum = num.toString().split(".");
-        decimalCount = 0;
-        for (var k = 0; k < myNum[1].length; k++) {
-          if (myNum[1][k] === "0") {
-            decimalCount += 1;
-          } else {
-            decimalCount += 2;
-            k = myNum[1].length;
+    if (decimalCount) {
+      if (num > 0) {
+        if (num < 0.01) {
+          decimalCount = 5;
+          const myNum = num.toString().split(".");
+          decimalCount = 0;
+          for (var k = 0; k < myNum[1].length; k++) {
+            if (myNum[1][k] === "0") {
+              decimalCount += 1;
+            } else {
+              decimalCount += 2;
+              k = myNum[1].length;
+            }
           }
+        } else if (num > 1000) {
+          decimalCount = 0;
+        } else {
+          decimalCount = 2;
         }
-      } else if (num > 1000) {
-        decimalCount = 0;
       } else {
-        decimalCount = 2;
-      }
-    } else {
-      if (num > -0.01) {
-        decimalCount = 2;
-      } else {
-        decimalCount = 5;
+        if (num > -0.01) {
+          decimalCount = 2;
+        } else {
+          decimalCount = 5;
+        }
       }
     }
+
     let i = parseInt(
       (amount = Math.abs(Number(amount) || 0).toFixed(decimalCount))
     ).toString();

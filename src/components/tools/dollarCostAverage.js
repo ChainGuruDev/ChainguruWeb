@@ -47,8 +47,6 @@ const styles = (theme) => ({
     display: "flex",
     flex: 1,
     alignItems: "stretch",
-    background: "rgba(255,255,255,0.05)",
-    border: `2px solid ${colors.cgBlue}`,
   },
   dcaCardLight: {
     padding: 10,
@@ -57,8 +55,6 @@ const styles = (theme) => ({
     display: "flex",
     flex: 1,
     alignItems: "stretch",
-    background: "rgba(157,226,249,0.25)",
-    border: `2px solid ${colors.cgBlue}`,
   },
   row: {
     display: "flex",

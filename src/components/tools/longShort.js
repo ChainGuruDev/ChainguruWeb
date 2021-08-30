@@ -68,7 +68,6 @@ const styles = (theme) => ({
     padding: 10,
     marginTop: 10,
     marginBottom: 10,
-    background: "rgba(255,255,255,0.05)",
   },
   favTopBar: {
     marginBottom: 5,
@@ -360,7 +359,7 @@ class LongShort extends Component {
       <div className={classes.root}>
         {!account.address && <div>CONNECT WALLET</div>}
         {account.address && (
-          <Grid container>
+          <Grid container spacing={3}>
             <Grid item xs={9}>
               <Card className={classes.favCard} elevation={3}>
                 <Grid container>

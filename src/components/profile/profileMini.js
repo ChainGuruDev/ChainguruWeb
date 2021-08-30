@@ -34,12 +34,11 @@ const styles = (theme) => ({
   },
   favCard: {
     padding: 10,
-    margin: 10,
+    margin: "10px 0px",
     display: "flex",
     flex: 1,
     direction: "row",
     alignItems: "flex-start",
-    background: "rgba(255,255,255,0.05)",
   },
   largeProfile: {
     width: "75px",
