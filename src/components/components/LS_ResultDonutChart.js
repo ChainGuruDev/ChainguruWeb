@@ -82,7 +82,7 @@ class LSResultDonutChart extends Component {
           pie: {
             expandOnClick: false,
             donut: {
-              size: "65%",
+              size: "60%",
               background: "transparent",
               labels: {
                 show: false,

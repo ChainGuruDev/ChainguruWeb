@@ -263,7 +263,7 @@ class App extends Component {
           },
           root: {
             // border: "none !important",
-            borderRadius: "5px",
+            borderRadius: "10px",
           },
           notchedOutline: {
             // border: "none !important"
@@ -299,9 +299,18 @@ class App extends Component {
           },
         },
         MuiAccordion: {
+          rounded: {
+            borderRadius: 10,
+            "&:last-child": {
+              borderBottomLeftRadius: 10,
+              borderBottomRightRadius: 10,
+
+              //underline color when textfield is inactive
+            },
+          },
           root: {
             border: "1px solid rgba(0,0,0,0.2)",
-            //backgroundColor: "rgba(255,255,255,0.25)",
+            backgroundColor: "rgba(255,255,255,0.15)",
 
             margin: "0px 0px",
             "&:before": {
@@ -312,6 +321,7 @@ class App extends Component {
         },
         MuiAccordionSummary: {
           root: {
+            borderRadius: 25,
             padding: "1px 24px",
             "@media (min-width: 960px)": {
               padding: "1px 24px",
@@ -363,6 +373,9 @@ class App extends Component {
           },
         },
         MuiPaper: {
+          rounded: {
+            borderRadius: 10,
+          },
           root: {
             background: state
               ? "rgba(255,255,255,0.1)"

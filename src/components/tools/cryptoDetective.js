@@ -156,6 +156,9 @@ const styles = (theme) => ({
       color: colors.cgGreen,
     },
   },
+  priceChipTitle: {
+    textAlign: "center",
+  },
 });
 
 class CryptoDetective extends Component {
@@ -172,7 +175,7 @@ class CryptoDetective extends Component {
       dataLoaded: false,
       vs: vsCoin,
       timeFrame: "max",
-      coinData: [],
+      coinData: null,
       tokenLS: [],
       userTokenLS: [],
       lsEnabled: false,
@@ -1234,7 +1237,7 @@ class CryptoDetective extends Component {
               alignItems="flex-start"
               item
             ></Grid>
-            <LongShortMini />
+            <LongShortMini tokenID={coinData.id} />
           </Grid>
         </Grid>
       </div>
@@ -1267,292 +1270,285 @@ class CryptoDetective extends Component {
               variant="outlined"
             >
               <Grid
+                item
+                style={{
+                  margin: "-10px -10px 0px",
+                  padding: "5px 10px",
+                  background: "#0002",
+                }}
+              >
+                <Typography variant="subtitle1">Price Performance</Typography>
+              </Grid>
+              <Grid
+                style={{
+                  marginTop: 3,
+                }}
+                direction="row"
                 container
-                direction="column"
-                justify="flex-start"
-                alignItems="stretch"
+                justify="space-around"
+                alignItems="flex-end"
                 item
                 xs={12}
               >
                 <Grid item>
-                  <Typography variant="subtitle1">Price Performance</Typography>
-                  <Grid
-                    style={{
-                      marginTop: 10,
-                    }}
-                    direction="row"
-                    container
-                    justify="space-around"
-                    alignItems="flex-end"
-                    item
-                    xs={12}
-                  >
+                  <Grid direction="column" align="center" container>
                     <Grid item>
-                      <Grid direction="column" container>
-                        <Grid item>
-                          <Typography variant="subtitle2">24hs</Typography>
-                        </Grid>
-                        <Grid item>
-                          <Chip
-                            variant="outlined"
-                            style={
-                              this.state.timeFrame === 1
-                                ? {
-                                    background:
-                                      coinData.market_data
-                                        .price_change_percentage_24h_in_currency[
-                                        vs
-                                      ] > 0
-                                        ? colors.cgGreen
-                                        : colors.cgOrange,
-                                    color: "#000",
-                                    fontSize: "16px",
-                                  }
-                                : {}
-                            }
-                            color={
-                              coinData.market_data
-                                .price_change_percentage_24h_in_currency[vs] > 0
-                                ? "primary"
-                                : "secondary"
-                            }
-                            icon={
-                              coinData.market_data
-                                .price_change_percentage_24h_in_currency[vs] >
-                              0 ? (
-                                <ArrowDropUpRoundedIcon />
-                              ) : (
-                                <ArrowDropDownRoundedIcon />
-                              )
-                            }
-                            onClick={() => {
-                              handleClick(1);
-                            }}
-                            label={`${formatMoney(
-                              coinData.market_data
-                                .price_change_percentage_24h_in_currency[vs]
-                            )}%`}
-                          />
-                        </Grid>
-                      </Grid>
+                      <Typography variant="subtitle2">24hs</Typography>
                     </Grid>
                     <Grid item>
-                      <Grid direction="column" container>
-                        <Typography variant="subtitle2">7d</Typography>
-                        <Grid item>
-                          <Chip
-                            variant="outlined"
-                            color={
-                              coinData.market_data
-                                .price_change_percentage_7d_in_currency[vs] > 0
-                                ? "primary"
-                                : "secondary"
-                            }
-                            icon={
-                              coinData.market_data
-                                .price_change_percentage_7d_in_currency[vs] >
-                              0 ? (
-                                <ArrowDropUpRoundedIcon />
-                              ) : (
-                                <ArrowDropDownRoundedIcon />
-                              )
-                            }
-                            onClick={() => {
-                              handleClick(7);
-                            }}
-                            style={
-                              this.state.timeFrame === 7
-                                ? {
-                                    background:
-                                      coinData.market_data
-                                        .price_change_percentage_7d_in_currency[
-                                        vs
-                                      ] > 0
-                                        ? colors.cgGreen
-                                        : colors.cgOrange,
-                                    color: "#000",
-                                    fontSize: "16px",
-                                  }
-                                : {}
-                            }
-                            label={`${formatMoney(
-                              coinData.market_data
-                                .price_change_percentage_7d_in_currency[vs],
-                              2
-                            )}%`}
-                          />
-                        </Grid>
-                      </Grid>
+                      <Chip
+                        variant="outlined"
+                        style={
+                          this.state.timeFrame === 1
+                            ? {
+                                background:
+                                  coinData.market_data
+                                    .price_change_percentage_24h_in_currency[
+                                    vs
+                                  ] > 0
+                                    ? colors.cgGreen
+                                    : colors.cgOrange,
+                                color: "#000",
+                                fontSize: "16px",
+                              }
+                            : {}
+                        }
+                        color={
+                          coinData.market_data
+                            .price_change_percentage_24h_in_currency[vs] > 0
+                            ? "primary"
+                            : "secondary"
+                        }
+                        icon={
+                          coinData.market_data
+                            .price_change_percentage_24h_in_currency[vs] > 0 ? (
+                            <ArrowDropUpRoundedIcon />
+                          ) : (
+                            <ArrowDropDownRoundedIcon />
+                          )
+                        }
+                        onClick={() => {
+                          handleClick(1);
+                        }}
+                        label={`${formatMoney(
+                          coinData.market_data
+                            .price_change_percentage_24h_in_currency[vs]
+                        )}%`}
+                      />
+                    </Grid>
+                  </Grid>
+                </Grid>
+                <Grid item>
+                  <Grid direction="column" align="center" container>
+                    <Typography variant="subtitle2">7d</Typography>
+                    <Grid item>
+                      <Chip
+                        variant="outlined"
+                        color={
+                          coinData.market_data
+                            .price_change_percentage_7d_in_currency[vs] > 0
+                            ? "primary"
+                            : "secondary"
+                        }
+                        icon={
+                          coinData.market_data
+                            .price_change_percentage_7d_in_currency[vs] > 0 ? (
+                            <ArrowDropUpRoundedIcon />
+                          ) : (
+                            <ArrowDropDownRoundedIcon />
+                          )
+                        }
+                        onClick={() => {
+                          handleClick(7);
+                        }}
+                        style={
+                          this.state.timeFrame === 7
+                            ? {
+                                background:
+                                  coinData.market_data
+                                    .price_change_percentage_7d_in_currency[
+                                    vs
+                                  ] > 0
+                                    ? colors.cgGreen
+                                    : colors.cgOrange,
+                                color: "#000",
+                                fontSize: "16px",
+                              }
+                            : {}
+                        }
+                        label={`${formatMoney(
+                          coinData.market_data
+                            .price_change_percentage_7d_in_currency[vs],
+                          2
+                        )}%`}
+                      />
+                    </Grid>
+                  </Grid>
+                </Grid>
+                <Grid item>
+                  <Grid direction="column" align="center" container>
+                    <Grid item>
+                      <Typography variant="subtitle2">30d</Typography>
                     </Grid>
                     <Grid item>
-                      <Grid direction="column" container>
-                        <Grid item>
-                          <Typography variant="subtitle2">30d</Typography>
-                        </Grid>
-                        <Grid item>
-                          <Chip
-                            variant="outlined"
-                            color={
-                              coinData.market_data
-                                .price_change_percentage_30d_in_currency[vs] > 0
-                                ? "primary"
-                                : "secondary"
-                            }
-                            icon={
-                              coinData.market_data
-                                .price_change_percentage_30d_in_currency[vs] >
-                              0 ? (
-                                <ArrowDropUpRoundedIcon />
-                              ) : (
-                                <ArrowDropDownRoundedIcon />
-                              )
-                            }
-                            onClick={() => {
-                              handleClick(30);
-                            }}
-                            style={
-                              this.state.timeFrame === 30
-                                ? {
-                                    background:
-                                      coinData.market_data
-                                        .price_change_percentage_30d_in_currency[
-                                        vs
-                                      ] > 0
-                                        ? colors.cgGreen
-                                        : colors.cgOrange,
-                                    color: "#000",
-                                    fontSize: "16px",
-                                  }
-                                : {}
-                            }
-                            label={`${formatMoney(
-                              coinData.market_data
-                                .price_change_percentage_30d_in_currency[vs]
-                            )}%`}
-                          />
-                        </Grid>
-                      </Grid>
+                      <Chip
+                        variant="outlined"
+                        color={
+                          coinData.market_data
+                            .price_change_percentage_30d_in_currency[vs] > 0
+                            ? "primary"
+                            : "secondary"
+                        }
+                        icon={
+                          coinData.market_data
+                            .price_change_percentage_30d_in_currency[vs] > 0 ? (
+                            <ArrowDropUpRoundedIcon />
+                          ) : (
+                            <ArrowDropDownRoundedIcon />
+                          )
+                        }
+                        onClick={() => {
+                          handleClick(30);
+                        }}
+                        style={
+                          this.state.timeFrame === 30
+                            ? {
+                                background:
+                                  coinData.market_data
+                                    .price_change_percentage_30d_in_currency[
+                                    vs
+                                  ] > 0
+                                    ? colors.cgGreen
+                                    : colors.cgOrange,
+                                color: "#000",
+                                fontSize: "16px",
+                              }
+                            : {}
+                        }
+                        label={`${formatMoney(
+                          coinData.market_data
+                            .price_change_percentage_30d_in_currency[vs]
+                        )}%`}
+                      />
+                    </Grid>
+                  </Grid>
+                </Grid>
+                <Grid item>
+                  <Grid direction="column" align="center" container>
+                    <Grid item>
+                      <Typography variant="subtitle2">60d</Typography>
                     </Grid>
                     <Grid item>
-                      <Grid direction="column" container>
-                        <Grid item>
-                          <Typography variant="subtitle2">60d</Typography>
-                        </Grid>
-                        <Grid item>
-                          <Chip
-                            variant="outlined"
-                            color={
-                              coinData.market_data
-                                .price_change_percentage_60d_in_currency[vs] > 0
-                                ? "primary"
-                                : "secondary"
-                            }
-                            icon={
-                              coinData.market_data
-                                .price_change_percentage_60d_in_currency[vs] >
-                              0 ? (
-                                <ArrowDropUpRoundedIcon />
-                              ) : (
-                                <ArrowDropDownRoundedIcon />
-                              )
-                            }
-                            onClick={() => {
-                              handleClick(60);
-                            }}
-                            style={
-                              this.state.timeFrame === 60
-                                ? {
-                                    background:
-                                      coinData.market_data
-                                        .price_change_percentage_60d_in_currency[
-                                        vs
-                                      ] > 0
-                                        ? colors.cgGreen
-                                        : colors.cgOrange,
-                                    color: "#000",
-                                    fontSize: "16px",
-                                  }
-                                : {}
-                            }
-                            label={`${formatMoney(
-                              coinData.market_data
-                                .price_change_percentage_60d_in_currency[vs]
-                            )}%`}
-                          />
-                        </Grid>
-                      </Grid>
+                      <Chip
+                        variant="outlined"
+                        color={
+                          coinData.market_data
+                            .price_change_percentage_60d_in_currency[vs] > 0
+                            ? "primary"
+                            : "secondary"
+                        }
+                        icon={
+                          coinData.market_data
+                            .price_change_percentage_60d_in_currency[vs] > 0 ? (
+                            <ArrowDropUpRoundedIcon />
+                          ) : (
+                            <ArrowDropDownRoundedIcon />
+                          )
+                        }
+                        onClick={() => {
+                          handleClick(60);
+                        }}
+                        style={
+                          this.state.timeFrame === 60
+                            ? {
+                                background:
+                                  coinData.market_data
+                                    .price_change_percentage_60d_in_currency[
+                                    vs
+                                  ] > 0
+                                    ? colors.cgGreen
+                                    : colors.cgOrange,
+                                color: "#000",
+                                fontSize: "16px",
+                              }
+                            : {}
+                        }
+                        label={`${formatMoney(
+                          coinData.market_data
+                            .price_change_percentage_60d_in_currency[vs]
+                        )}%`}
+                      />
+                    </Grid>
+                  </Grid>
+                </Grid>
+                <Grid item>
+                  <Grid direction="column" container>
+                    <Grid item className={classes.priceChipTitle}>
+                      <Typography variant="subtitle2">1Y</Typography>
                     </Grid>
                     <Grid item>
-                      <Grid direction="column" container>
-                        <Grid item>
-                          <Typography variant="subtitle2">1Y</Typography>
-                        </Grid>
-                        <Grid item>
-                          <Chip
-                            variant="outlined"
-                            color={
-                              coinData.market_data
-                                .price_change_percentage_1y_in_currency[vs] > 0
-                                ? "primary"
-                                : "secondary"
-                            }
-                            icon={
-                              coinData.market_data
-                                .price_change_percentage_1y_in_currency[vs] >
-                              0 ? (
-                                <ArrowDropUpRoundedIcon />
-                              ) : (
-                                <ArrowDropDownRoundedIcon />
-                              )
-                            }
-                            onClick={() => {
-                              handleClick(365);
-                            }}
-                            style={
-                              this.state.timeFrame === 365
-                                ? {
-                                    background:
-                                      coinData.market_data
-                                        .price_change_percentage_1y_in_currency[
-                                        vs
-                                      ] > 0
-                                        ? colors.cgGreen
-                                        : colors.cgOrange,
-                                    fontSize: "16px",
-                                    color: "#000",
-                                  }
-                                : {}
-                            }
-                            label={`${formatMoney(
-                              coinData.market_data
-                                .price_change_percentage_1y_in_currency[vs]
-                            )}%`}
-                          />
-                        </Grid>
-                      </Grid>
+                      <Chip
+                        variant="outlined"
+                        color={
+                          coinData.market_data
+                            .price_change_percentage_1y_in_currency[vs] > 0
+                            ? "primary"
+                            : "secondary"
+                        }
+                        icon={
+                          coinData.market_data
+                            .price_change_percentage_1y_in_currency[vs] > 0 ? (
+                            <ArrowDropUpRoundedIcon />
+                          ) : (
+                            <ArrowDropDownRoundedIcon />
+                          )
+                        }
+                        onClick={() => {
+                          handleClick(365);
+                        }}
+                        style={
+                          this.state.timeFrame === 365
+                            ? {
+                                background:
+                                  coinData.market_data
+                                    .price_change_percentage_1y_in_currency[
+                                    vs
+                                  ] > 0
+                                    ? colors.cgGreen
+                                    : colors.cgOrange,
+                                fontSize: "16px",
+                                color: "#000",
+                              }
+                            : {}
+                        }
+                        label={`${formatMoney(
+                          coinData.market_data
+                            .price_change_percentage_1y_in_currency[vs]
+                        )}%`}
+                      />
                     </Grid>
+                  </Grid>
+                </Grid>
+                <Grid item>
+                  <Grid direction="column" container>
                     <Grid item>
-                      <Grid direction="column" container>
-                        <Grid item>
-                          <Chip
-                            variant="outlined"
-                            color={"primary"}
-                            onClick={() => {
-                              handleClick("max");
-                            }}
-                            style={
-                              this.state.timeFrame === "max"
-                                ? {
-                                    background: colors.cgGreen,
-                                    color: "#000",
-                                    fontSize: "16px",
-                                  }
-                                : {}
-                            }
-                            label={"All"}
-                          />
-                        </Grid>
-                      </Grid>
+                      <Chip
+                        variant="outlined"
+                        color={"primary"}
+                        onClick={() => {
+                          handleClick("max");
+                        }}
+                        style={
+                          this.state.timeFrame === "max"
+                            ? {
+                                background: colors.cgGreen,
+                                color: "#000",
+                                fontSize: "16px",
+                              }
+                            : {}
+                        }
+                        label={"All"}
+                      />
                     </Grid>
                   </Grid>
                 </Grid>
@@ -1631,7 +1627,6 @@ class CryptoDetective extends Component {
   render() {
     const { classes } = this.props;
     const { dataLoaded, coinData, modalOpen, modalData } = this.state;
-    console.log(coinData);
 
     return (
       <div className={classes.root}>

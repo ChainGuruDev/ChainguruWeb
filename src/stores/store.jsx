@@ -2015,6 +2015,7 @@ class Store {
   //ROUTES FOR DB TOM WALLET PORTFOLIO stats
   db_getPortfolio = async (payload) => {
     //TODO NOT FINAL API ENDPOINT ROUTE
+    console.log(payload);
     try {
       let data = await axios.get(
         `https://chainguru.fun/api/portfolio/wallet?address=${payload.wallet}&update=false`

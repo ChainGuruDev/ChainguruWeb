@@ -18,6 +18,9 @@ import {
   Typography,
   CircularProgress,
   Divider,
+  Tooltip,
+  Button,
+  ButtonGroup,
 } from "@material-ui/core";
 
 import TrendingDownIcon from "@material-ui/icons/TrendingDown";
@@ -25,13 +28,22 @@ import TrendingUpIcon from "@material-ui/icons/TrendingUp";
 import RadioButtonUncheckedIcon from "@material-ui/icons/RadioButtonUnchecked";
 import RadioButtonCheckedIcon from "@material-ui/icons/RadioButtonChecked";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
+import AssignmentTurnedInIcon from "@material-ui/icons/AssignmentTurnedIn";
+import CancelIcon from "@material-ui/icons/Cancel";
 
 import {
   CONNECTION_CONNECTED,
   CONNECTION_DISCONNECTED,
+  DB_GET_USERDATA,
+  DB_USERDATA_RETURNED,
   DB_GET_USER_LS,
   DB_GET_USER_LS_RETURNED,
+  DB_CHECK_LS_RESULT,
   DB_CHECK_LS_RESULT_RETURNED,
+  DB_GET_USER_TOKEN_LS,
+  DB_CREATE_LS,
+  DB_CREATE_LS_RETURNED,
+  DB_GET_USER_TOKEN_LS_RETURNED,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -70,10 +82,23 @@ const styles = (theme) => ({
     },
     transition: "0.4321s",
   },
+  comboBarBorder: {
+    borderColor: "rgba(255, 255, 255, 0.12)",
+    borderStyle: "solid",
+    borderWidth: "thin",
+    borderRadius: "10px",
+    background: "rgba(255,255,255,0.1)",
+    textAlign: "center",
+  },
+  comboBar: {
+    background: "rgba(255,255,255,0.1)",
+    borderRadius: "10px",
+    textAlign: "center",
+  },
 });
 
 class LongShortMini extends Component {
-  constructor() {
+  constructor(props) {
     super();
     const account = store.getStore("account");
 
@@ -81,6 +106,12 @@ class LongShortMini extends Component {
       account: account,
       loading: true,
       modalOpen: false,
+      activeLS: 0,
+      longCombo: 0,
+      shortCombo: 0,
+      tokenID: props.tokenID,
+      loadingResult: false,
+      loadingNewVote: false,
     };
 
     if (account && account.address) {
@@ -88,6 +119,20 @@ class LongShortMini extends Component {
         type: DB_GET_USER_LS,
         address: account.address,
       });
+      dispatcher.dispatch({
+        type: DB_GET_USERDATA,
+        address: account.address,
+      });
+      if (props.tokenID) {
+        console.log(props.tokenID);
+      }
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.tokenID !== this.props.tokenID) {
+      this.setState({ tokenID: this.props.tokenID });
+      console.log(this.props.tokenID);
     }
   }
 
@@ -96,6 +141,9 @@ class LongShortMini extends Component {
     emitter.on(CONNECTION_DISCONNECTED, this.disconnected);
     emitter.on(DB_GET_USER_LS_RETURNED, this.db_getUserLS);
     emitter.on(DB_CHECK_LS_RESULT_RETURNED, this.db_checkLSResultReturned);
+    emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
+    emitter.on(DB_GET_USER_TOKEN_LS_RETURNED, this.userTokenLSReturned);
+    emitter.on(DB_CREATE_LS_RETURNED, this.db_createLSReturned);
   }
 
   componentWillUnmount() {
@@ -106,6 +154,12 @@ class LongShortMini extends Component {
       DB_CHECK_LS_RESULT_RETURNED,
       this.db_checkLSResultReturned
     );
+    emitter.removeListener(DB_USERDATA_RETURNED, this.dbUserDataReturned);
+    emitter.removeListener(
+      DB_GET_USER_TOKEN_LS_RETURNED,
+      this.userTokenLSReturned
+    );
+    emitter.removeListener(DB_CREATE_LS_RETURNED, this.db_createLSReturned);
   }
 
   connected = () => {
@@ -118,6 +172,10 @@ class LongShortMini extends Component {
       type: DB_GET_USER_LS,
       address: account.address,
     });
+    dispatcher.dispatch({
+      type: DB_GET_USERDATA,
+      address: account.address,
+    });
   };
 
   disconnected = () => {
@@ -127,6 +185,47 @@ class LongShortMini extends Component {
     });
   };
 
+  userTokenLSReturned = (data) => {
+    let complete = false;
+    let vote = false;
+    let active = false;
+
+    if (data[0]) {
+      active = true;
+      if (data[0].complete) {
+        complete = true;
+      }
+      if (data[0].vote) {
+        vote = data[0].vote;
+      }
+    }
+    console.log(data);
+
+    this.setState({
+      loadingNewVote: false,
+      tokenLS_Loading: false,
+      tokenLS_Complete: complete,
+      tokenLS_Active: active,
+      tokenLS_Vote: vote,
+    });
+  };
+
+  checkTokenLS = (tokenID) => {
+    dispatcher.dispatch({
+      type: DB_GET_USER_TOKEN_LS,
+      tokenID: tokenID,
+    });
+  };
+
+  checkResult = (e, id) => {
+    this.setState({ loadingResult: true });
+    dispatcher.dispatch({
+      type: DB_CHECK_LS_RESULT,
+      tokenID: id,
+    });
+    e.stopPropagation();
+  };
+
   db_getUserLS = (data) => {
     // sort complete and incomplete LongShorts
     let completeLS = [];
@@ -134,7 +233,6 @@ class LongShortMini extends Component {
     data.forEach((item, i) => {
       item.complete ? completeLS.push(item) : incompleteLS.push(item);
     });
-
     // sort stats by Type Long / Short
     let countLong = [0, 0];
     let countShort = [0, 0];
@@ -146,7 +244,7 @@ class LongShortMini extends Component {
       }
     });
     let countTotals = {
-      ok: countLong[0] + countShort[0],
+      good: countLong[0] + countShort[0],
       bad: countLong[1] + countShort[1],
     };
 
@@ -163,12 +261,28 @@ class LongShortMini extends Component {
 
   db_checkLSResultReturned = (data) => {
     const { account } = this.state;
-    // console.log(data);
-    dispatcher.dispatch({
-      type: DB_GET_USER_LS,
-      address: account.address,
+    if (data.error === "voting time not complete") {
+      console.log("time not complete");
+      //TODO HANDLE ERRORS
+      this.setState({ loadingResult: false });
+    } else {
+      dispatcher.dispatch({
+        type: DB_GET_USER_LS,
+        address: account.address,
+      });
+      dispatcher.dispatch({
+        type: DB_GET_USERDATA,
+        address: account.address,
+      });
+      this.setState({ modalOpen: true, modalData: data, loadingResult: false });
+    }
+  };
+
+  dbUserDataReturned = (data) => {
+    this.setState({
+      longCombo: data.minigames.longShortStrike.long,
+      shortCombo: data.minigames.longShortStrike.short,
     });
-    this.setState({ modalOpen: true, modalData: data });
   };
 
   closeModal = () => {
@@ -183,6 +297,27 @@ class LongShortMini extends Component {
         modalData={data}
       />
     );
+  };
+
+  newLSvote = (vote) => {
+    this.setState({ loadingNewVote: true });
+    dispatcher.dispatch({
+      type: DB_CREATE_LS,
+      tokenID: this.state.tokenID,
+      vote: vote,
+    });
+  };
+
+  db_createLSReturned = (data) => {
+    const { account } = this.state;
+
+    let data2 = [];
+    data2.push(data);
+    dispatcher.dispatch({
+      type: DB_GET_USER_LS,
+      address: account.address,
+    });
+    this.userTokenLSReturned(data2);
   };
 
   drawCombo = (number, type, ls) => {
@@ -243,9 +378,23 @@ class LongShortMini extends Component {
       countLong,
       countShort,
       incompleteLS,
+      activeLS,
       modalOpen,
       modalData,
+      longCombo,
+      shortCombo,
+      tokenID,
+      loadingNewVote,
     } = this.state;
+
+    const MyComponent = React.forwardRef(function MyComponent(props, ref) {
+      //  Spread the props to the underlying DOM element.
+      return (
+        <div {...props} ref={ref}>
+          Bin
+        </div>
+      );
+    });
 
     return (
       <>
@@ -274,6 +423,7 @@ class LongShortMini extends Component {
                     display: "flex",
                     alignContent: "center",
                     justifyContent: "center",
+                    marginBottom: 5,
                   }}
                 >
                   <div
@@ -301,17 +451,20 @@ class LongShortMini extends Component {
                   item
                   container
                   direction="row"
-                  justify="flex-start"
-                  alignItems="flex-start"
+                  justify="space-between"
+                  alignItems="stretch"
+                  className={classes.comboBarBorder}
                 >
-                  <Grid item container justify="center" xs={12}>
-                    {countLong && (countLong[0] || countShort[0]) && (
+                  {countLong && (countLong[0] || countShort[0]) && (
+                    <div style={{ margin: "0px auto" }}>
                       <Grid
                         item
                         style={{
+                          margin: "0px 10px",
                           minWidth: "120px",
                           maxWidth: "120px",
                           filter: "drop-shadow(1px 1px 1px rgba(0,0,0,0.5))",
+                          alignSelf: "center",
                         }}
                       >
                         <LSResultDonutChart
@@ -320,94 +473,421 @@ class LongShortMini extends Component {
                           }
                         />
                       </Grid>
-                    )}
-                    {countLong && (countLong[0] || countShort[0]) && (
-                      <Grid
-                        style={{
-                          marginLeft: "10px",
-                          filter: "drop-shadow(1px 1px 1px rgba(0,0,0,0.5))",
-                        }}
-                        item
-                      >
-                        <Grid container direction="column">
-                          {countTotals && (
-                            <Grid item>
-                              <Grid item container direction="row">
-                                <Typography variant="h2" color="primary">
-                                  {countTotals.ok}
-                                </Typography>
-                                <Typography variant="h2">/</Typography>
-                                <Typography variant="h2" color="secondary">
-                                  {countTotals.ok + countTotals.bad}
-                                </Typography>
-                              </Grid>
+                    </div>
+                  )}
+                  {countLong && (countLong[0] || countShort[0]) && (
+                    <Grid
+                      style={{
+                        justifyContent: "space-between",
+                      }}
+                      item
+                      container
+                      direction="column"
+                      alignItems="stretch"
+                      className={classes.comboBarBorder}
+                      lg
+                    >
+                      {countTotals && (
+                        <>
+                          <Tooltip
+                            interactive
+                            arrow
+                            title={
+                              <React.Fragment>
+                                <Grid
+                                  style={{ padding: 5, textAlign: "center" }}
+                                >
+                                  <Typography variant={"h4"}>Total</Typography>
+                                  <Divider
+                                    variant="middle"
+                                    style={{ margin: "5px 0px" }}
+                                  />
+                                  <Typography variant={"h4"} color="primary">
+                                    <CheckCircleIcon
+                                      color="primary"
+                                      style={{ marginRight: 5 }}
+                                    />
+                                    {countTotals.good}
+                                  </Typography>
+                                  <Typography variant={"h4"} color="secondary">
+                                    <CancelIcon
+                                      color="secondary"
+                                      style={{ marginRight: 5 }}
+                                    />
+                                    {countTotals.bad + countTotals.good}
+                                  </Typography>
+                                </Grid>
+                              </React.Fragment>
+                            }
+                          >
+                            <Grid
+                              item
+                              container
+                              direction="row"
+                              alignItems="center"
+                              justify="center"
+                              wrap="nowrap"
+                              style={{ padding: "0px 5px" }}
+                            >
                               <Typography variant="h2" color="primary">
                                 {(
-                                  (countTotals.ok /
-                                    (countTotals.ok + countTotals.bad)) *
+                                  (countTotals.good /
+                                    (countTotals.good + countTotals.bad)) *
                                   100
-                                ).toFixed(2)}{" "}
+                                ).toFixed(1)}{" "}
                                 %
                               </Typography>
                             </Grid>
-                          )}
-                          {countLong && (
-                            <Grid item container direction="row">
+                          </Tooltip>
+                          <Divider />
+                        </>
+                      )}
+                      {countLong && (
+                        <>
+                          <Tooltip
+                            interactive
+                            arrow
+                            title={
+                              <React.Fragment>
+                                <Grid
+                                  style={{ padding: 5, textAlign: "center" }}
+                                >
+                                  <Typography variant={"h4"}>
+                                    Total Long
+                                  </Typography>
+                                  <Divider
+                                    variant="middle"
+                                    style={{ margin: "5px 0px" }}
+                                  />
+                                  <Typography variant={"h4"} color="primary">
+                                    <CheckCircleIcon
+                                      color="primary"
+                                      style={{ marginRight: 5 }}
+                                    />
+                                    {countLong[0]}
+                                  </Typography>
+                                  <Typography variant={"h4"} color="secondary">
+                                    <CancelIcon
+                                      color="secondary"
+                                      style={{ marginRight: 5 }}
+                                    />
+                                    {countLong[1]}
+                                  </Typography>
+                                </Grid>
+                              </React.Fragment>
+                            }
+                          >
+                            <Grid
+                              item
+                              container
+                              justify="center"
+                              direction="row"
+                              alignItems="center"
+                              wrap="nowrap"
+                              style={{ padding: "0px 5px" }}
+                            >
                               <TrendingUpIcon
                                 color="primary"
                                 style={{ marginRight: 10 }}
                               />
                               <Typography variant="h3" color="primary">
-                                {countLong[0]}
-                              </Typography>{" "}
-                              <Typography variant="h3">/</Typography>{" "}
-                              <Typography variant="h3" color="secondary">
-                                {countLong[1] + " "}
-                              </Typography>{" "}
-                              <Typography variant="h3" color="primary">
-                                {" ("}
                                 {(
                                   (countLong[0] /
                                     (countLong[0] + countLong[1])) *
                                   100
-                                ).toFixed(2)}{" "}
-                                %)
+                                ).toFixed(1)}{" "}
+                              </Typography>
+                              <Typography
+                                style={{ marginLeft: 5 }}
+                                variant="h4"
+                                inline
+                                color="primary"
+                              >
+                                %
                               </Typography>
                             </Grid>
-                          )}
-                          {countShort && (
-                            <Grid item container direction="row">
+                          </Tooltip>
+                        </>
+                      )}
+                      <Divider display="block" />
+                      {countShort && (
+                        <>
+                          <Tooltip
+                            interactive
+                            arrow
+                            title={
+                              <React.Fragment>
+                                <Grid
+                                  style={{ padding: 5, textAlign: "center" }}
+                                >
+                                  <Typography variant={"h4"}>
+                                    Total Short
+                                  </Typography>
+                                  <Divider
+                                    variant="middle"
+                                    style={{ margin: "5px 0px" }}
+                                  />
+                                  <Typography variant={"h4"} color="primary">
+                                    <CheckCircleIcon
+                                      color="primary"
+                                      style={{ marginRight: 5 }}
+                                    />
+                                    {countShort[0]}
+                                  </Typography>
+                                  <Typography variant={"h4"} color="secondary">
+                                    <CancelIcon
+                                      color="secondary"
+                                      style={{ marginRight: 5 }}
+                                    />
+                                    {countShort[1]}
+                                  </Typography>
+                                </Grid>
+                              </React.Fragment>
+                            }
+                          >
+                            <Grid
+                              item
+                              container
+                              direction="row"
+                              alignItems="center"
+                              justify="center"
+                              wrap="nowrap"
+                              style={{ padding: "0px 5px" }}
+                            >
                               <TrendingDownIcon
                                 color="secondary"
                                 style={{ marginRight: 10 }}
                               />
-                              <Typography variant="h3" color="primary">
-                                {countShort[0]}
-                              </Typography>{" "}
-                              <Typography variant="h3">/</Typography>{" "}
                               <Typography variant="h3" color="secondary">
-                                {countShort[1] + " "}
-                              </Typography>
-                              <Typography variant="h3" color="primary">
-                                {" ("}
                                 {(
                                   (countShort[0] /
                                     (countShort[0] + countShort[1])) *
                                   100
-                                ).toFixed(2)}{" "}
-                                %)
+                                ).toFixed(1)}
+                              </Typography>
+                              <Typography
+                                style={{ marginLeft: 5 }}
+                                variant="h4"
+                                inline
+                                color="secondary"
+                              >
+                                %
                               </Typography>
                             </Grid>
-                          )}
-                        </Grid>
-                      </Grid>
-                    )}
+                          </Tooltip>
+                        </>
+                      )}
+                    </Grid>
+                  )}
+                </Grid>
+                <Grid
+                  className={classes.comboBarBorder}
+                  style={{
+                    marginTop: 10,
+                    padding: 3,
+                  }}
+                  container
+                >
+                  <Grid item container className={classes.comboBarBorder}>
+                    <Grid className={classes.comboBar} item xs={4}>
+                      <Typography
+                        style={{ marginTop: 5 }}
+                        variant={"h4"}
+                        gutterBottom
+                        color="primary"
+                      >
+                        Active
+                      </Typography>
+                    </Grid>
+                    <Grid
+                      container
+                      justify={"space-around"}
+                      item
+                      style={{
+                        flex: 1,
+                        display: "flex",
+                        alignContent: "center",
+                      }}
+                    >
+                      {this.drawCombo(activeLS, "active")}
+                    </Grid>
+                  </Grid>
+                  <Grid
+                    item
+                    container
+                    className={classes.comboBarBorder}
+                    style={{ marginTop: 5 }}
+                  >
+                    <Grid className={classes.comboBar} item xs={4}>
+                      <Typography
+                        style={{ marginTop: 5 }}
+                        variant={"h4"}
+                        gutterBottom
+                        color="primary"
+                      >
+                        Long Combo
+                      </Typography>
+                    </Grid>
+                    <Grid
+                      container
+                      justify={"space-around"}
+                      item
+                      style={{
+                        flex: 1,
+                        display: "flex",
+                        alignContent: "center",
+                      }}
+                    >
+                      {this.drawCombo(longCombo, "combo", "long")}
+                    </Grid>
+                  </Grid>
+                  <Grid
+                    item
+                    container
+                    className={classes.comboBarBorder}
+                    style={{ marginTop: 5 }}
+                  >
+                    <Grid className={classes.comboBar} item xs={4}>
+                      <Typography
+                        style={{ marginTop: 5 }}
+                        variant={"h4"}
+                        gutterBottom
+                        color="primary"
+                      >
+                        Short Combo
+                      </Typography>
+                    </Grid>
+                    <Grid
+                      container
+                      justify={"space-around"}
+                      item
+                      style={{
+                        flex: 1,
+                        display: "flex",
+                        alignContent: "center",
+                      }}
+                    >
+                      {this.drawCombo(shortCombo, "combo", "short")}
+                    </Grid>
                   </Grid>
                 </Grid>
-                <Divider style={{ marginTop: "12px" }} />
-                <Grid item className={classes.favList} xs={12}>
-                  {incompleteLS && <LSTableActiveMini data={incompleteLS} />}
-                </Grid>
+                {activeLS <= 7 &&
+                  !this.state.tokenLS_Active &&
+                  this.state.tokenID && (
+                    <Grid
+                      item
+                      className={classes.comboBarBorder}
+                      style={{ marginTop: 5, overflow: "clip" }}
+                      xs={12}
+                    >
+                      <div style={{ background: "rgba(255,255,255,0.1)" }}>
+                        Set New
+                      </div>
+                      <Divider style={{ marginBottom: 5 }} />
+                      {!this.state.tokenLS_Loading &&
+                        !this.state.tokenLS_Active && (
+                          <ButtonGroup
+                            color="primary"
+                            aria-label="LongShort_ButtonGroup"
+                            style={{ marginBottom: 5 }}
+                          >
+                            <Button
+                              startIcon={
+                                loadingNewVote ? (
+                                  <CircularProgress />
+                                ) : (
+                                  <TrendingUpIcon />
+                                )
+                              }
+                              color="primary"
+                              disabled={activeLS >= 7 || loadingNewVote}
+                              onClick={() => this.newLSvote("long")}
+                            ></Button>
+                            <Button
+                              endIcon={
+                                loadingNewVote ? (
+                                  <CircularProgress />
+                                ) : (
+                                  <TrendingDownIcon />
+                                )
+                              }
+                              color="secondary"
+                              disabled={activeLS >= 7 || loadingNewVote}
+                              onClick={() => this.newLSvote("short")}
+                            ></Button>
+                          </ButtonGroup>
+                        )}
+                      {!this.state.tokenLS_Loading &&
+                        this.state.tokenLS_Active &&
+                        !this.state.tokenLS_Complete && (
+                          <>
+                            {this.state.tokenLS_Vote && (
+                              <ButtonGroup
+                                color="primary"
+                                aria-label="LongShort_ButtonGroup"
+                                style={{ marginBottom: 5 }}
+                              >
+                                <Button
+                                  startIcon={<TrendingUpIcon />}
+                                  color="primary"
+                                  variant="contained"
+                                ></Button>
+                                <Button
+                                  endIcon={<TrendingDownIcon />}
+                                  color="secondary"
+                                ></Button>
+                              </ButtonGroup>
+                            )}
+                            {!this.state.tokenLS_Vote && (
+                              <ButtonGroup
+                                color="primary"
+                                aria-label="LongShort_ButtonGroup"
+                                style={{ marginBottom: 5 }}
+                              >
+                                <Button
+                                  startIcon={<TrendingUpIcon />}
+                                  color="primary"
+                                ></Button>
+                                <Button
+                                  endIcon={<TrendingDownIcon />}
+                                  color="secondary"
+                                  variant="contained"
+                                ></Button>
+                              </ButtonGroup>
+                            )}
+                          </>
+                        )}
+                      {!this.state.tokenLS_Loading &&
+                        this.state.tokenLS_Active &&
+                        this.state.tokenLS_Complete && (
+                          <>
+                            {!this.state.loadingResult && (
+                              <Button
+                                startIcon={<AssignmentTurnedInIcon />}
+                                variant="outlined"
+                                onClick={(event) =>
+                                  this.checkResult(event, tokenID)
+                                }
+                                color="primary"
+                              >
+                                Results
+                              </Button>
+                            )}
+                            {this.state.loadingResult && (
+                              <Button disabled variant="outlined">
+                                <CircularProgress />
+                              </Button>
+                            )}
+                          </>
+                        )}
+                    </Grid>
+                  )}
+                {incompleteLS.length > 0 && (
+                  <Grid item className={classes.favList} xs={12}>
+                    <Divider style={{ marginTop: "12px" }} />
+                    <LSTableActiveMini data={incompleteLS} />
+                  </Grid>
+                )}
               </>
             )}
           </Grid>

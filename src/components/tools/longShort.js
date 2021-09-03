@@ -88,7 +88,7 @@ const styles = (theme) => ({
     maxHeight: "160px",
   },
   comboBar: {
-    background: "rgba(75,75,75,0.8)",
+    background: "rgba(125, 125, 125, 0.15)",
     borderRadius: "10px",
   },
 });
@@ -697,11 +697,11 @@ class LongShort extends Component {
                     >
                       <Grid
                         style={{
-                          borderColor: "rgba(75,75,75,0.5)",
+                          borderColor: "rgba(125, 125, 125, 0.15)",
                           borderStyle: "solid",
                           borderWidth: "thin",
                           borderRadius: "10px",
-                          background: "rgba(75,75,75,0.25)",
+                          background: "rgba(125, 125, 125, 0.15)",
                         }}
                         container
                       >
@@ -728,7 +728,7 @@ class LongShort extends Component {
                               style={{
                                 flex: 1,
                                 display: "flex",
-                                marginTop: 5,
+                                alignContent: "center",
                               }}
                             >
                               {this.drawCombo(activeLS, "active")}
@@ -758,8 +758,7 @@ class LongShort extends Component {
                               style={{
                                 flex: 1,
                                 display: "flex",
-                                marginTop: 5,
-                                marginRight: 5,
+                                alignContent: "center",
                               }}
                             >
                               {this.drawCombo(longCombo, "combo", "long")}
@@ -789,7 +788,7 @@ class LongShort extends Component {
                               style={{
                                 flex: 1,
                                 display: "flex",
-                                marginTop: 5,
+                                alignContent: "center",
                               }}
                             >
                               {this.drawCombo(shortCombo, "combo", "short")}
