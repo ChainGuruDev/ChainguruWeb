@@ -600,7 +600,6 @@ class LongShortMini extends Component {
                               <Typography
                                 style={{ marginLeft: 5 }}
                                 variant="h4"
-                                inline
                                 color="primary"
                               >
                                 %
@@ -668,7 +667,6 @@ class LongShortMini extends Component {
                               <Typography
                                 style={{ marginLeft: 5 }}
                                 variant="h4"
-                                inline
                                 color="secondary"
                               >
                                 %

@@ -5,7 +5,7 @@ import { colors } from "../../theme";
 import { formatMoney } from "../helpers";
 import WalletNicknameModal from "../components/walletNicknameModal.js";
 import WalletRemoveModal from "../components/walletRemoveModal.js";
-import PortfolioChart from "../components/PortfolioChart.js";
+
 import RefreshRoundedIcon from "@material-ui/icons/RefreshRounded";
 import BackspaceRoundedIcon from "@material-ui/icons/BackspaceRounded";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
@@ -32,7 +32,6 @@ import {
   ListItemSecondaryAction,
   IconButton,
   TextField,
-  CircularProgress,
 } from "@material-ui/core";
 
 import {
@@ -42,10 +41,6 @@ import {
   DB_USERDATA_RETURNED,
   DB_GET_PORTFOLIO,
   DB_GET_PORTFOLIO_RETURNED,
-  DB_GET_PORTFOLIO_STATS,
-  DB_GET_PORTFOLIO_STATS_RETURNED,
-  DB_GET_PORTFOLIO_CHART,
-  DB_GET_PORTFOLIO_CHART_RETURNED,
   DB_UPDATE_PORTFOLIO,
   DB_UPDATE_PORTFOLIO_RETURNED,
   DB_SET_USER_WALLET_NICKNAME_RETURNED,
@@ -133,8 +128,7 @@ class PortfolioBig extends Component {
       account: account,
       loading: false,
       dbDataLoaded: false,
-      dbStatsData: false,
-      sortBy: "balance",
+      sortBy: "quote",
       sortOrder: "desc",
       hideBlacklisted: true,
       hideLowBalanceCoins: true,
@@ -145,7 +139,6 @@ class PortfolioBig extends Component {
       addWallet: false,
       errMsgWallet: "",
       errorWallet: true,
-      portfolioChartData: null,
     };
 
     // IF USER IS CONNECTED GET THE PORTFOLIO DATA
@@ -165,14 +158,6 @@ class PortfolioBig extends Component {
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
     emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
     emitter.on(DB_GET_PORTFOLIO_RETURNED, this.dbGetPortfolioReturned);
-    emitter.on(
-      DB_GET_PORTFOLIO_CHART_RETURNED,
-      this.db_getPortfolioChartReturned
-    );
-    emitter.on(
-      DB_GET_PORTFOLIO_STATS_RETURNED,
-      this.dbGetPortfolioStatsReturned
-    );
     emitter.on(DB_UPDATE_PORTFOLIO_RETURNED, this.dbGetPortfolioReturned);
     emitter.on(DB_SET_USER_WALLET_NICKNAME_RETURNED, this.setNicknameReturned);
     emitter.on(
@@ -197,14 +182,6 @@ class PortfolioBig extends Component {
       this.dbGetPortfolioReturned
     );
     emitter.removeListener(
-      DB_GET_PORTFOLIO_STATS_RETURNED,
-      this.dbGetPortfolioStatsReturned
-    );
-    emitter.removeListener(
-      DB_GET_PORTFOLIO_CHART_RETURNED,
-      this.db_getPortfolioChartReturned
-    );
-    emitter.removeListener(
       DB_UPDATE_PORTFOLIO_RETURNED,
       this.dbGetPortfolioReturned
     );
@@ -219,6 +196,7 @@ class PortfolioBig extends Component {
     emitter.removeListener(CHECK_ACCOUNT_RETURNED, this.checkAccountReturned);
     emitter.removeListener(DB_ADD_WALLET_RETURNED, this.dbWalletReturned);
     emitter.removeListener(DB_DEL_WALLET_RETURNED, this.dbWalletReturned);
+
     this._isMounted = false;
   }
 
@@ -269,122 +247,64 @@ class PortfolioBig extends Component {
   };
 
   setNicknameReturned = (data) => {
+    console.log(data);
     this.setState({
       walletNicknames: data,
     });
   };
 
-  dynamicSort = (property) => {
-    var sortOrder = 1;
-    if (property[0] === "-") {
-      sortOrder = -1;
-      property = property.substr(1);
-    }
-    if (property === "value") {
-      return function (a, b) {
-        const a_prices = a.price ? a.price[property] : 0;
-        const b_prices = b.price ? b.price[property] : 0;
+  dbGetPortfolioReturned = (data) => {
+    console.log(data);
+    if (data) {
+      const walletProfitValue = data[0].profit_value;
+      let assets = data[0].assets;
+      let walletBalance = 0;
+      let lpTokens = [];
+      for (var i = 0; i < assets.length; i++) {
+        walletBalance += assets[i].quote;
+        if (assets[i].balance > 0 && assets[i].contract_ticker === "UNI-V2") {
+          lpTokens.push(assets[i]);
+        }
 
-        var result = a_prices < b_prices ? -1 : a_prices > b_prices ? 1 : 0;
+        // console.log(sortedRows[i].quote);
+      }
+      console.log(lpTokens);
 
-        return result * sortOrder;
-      };
-    } else if (property === "total_returned") {
-      return function (a, b) {
-        const a_stats = a.stats ? a.stats[property] : 0;
-        const b_stats = b.stats ? b.stats[property] : 0;
+      function dynamicSort(property) {
+        var sortOrder = 1;
+        if (property[0] === "-") {
+          sortOrder = -1;
+          property = property.substr(1);
+        }
+        return function (a, b) {
+          var result =
+            a[property] < b[property] ? -1 : a[property] > b[property] ? 1 : 0;
 
-        var result = a_stats < b_stats ? -1 : a_stats > b_stats ? 1 : 0;
+          return result * sortOrder;
+        };
+      }
 
-        return result * sortOrder;
-      };
-    } else if (property === "avg_buy_price") {
-      return function (a, b) {
-        const a_stats =
-          a.stats && a.price
-            ? ((a.price.value - a.stats.avg_buy_price) /
-                a.stats.avg_buy_price) *
-              100
-            : 0;
-        const b_stats =
-          b.stats && b.price
-            ? ((b.price.value - b.stats.avg_buy_price) /
-                b.stats.avg_buy_price) *
-              100
-            : 0;
+      // Sort tokens with most profit and losses and store as state
+      let winnersLosers;
+      winnersLosers = data[0].assets.sort(dynamicSort("-profit_value"));
 
-        var result = a_stats < b_stats ? -1 : a_stats > b_stats ? 1 : 0;
-
-        return result * sortOrder;
-      };
-    } else {
-      return function (a, b) {
-        var result =
-          a[property] < b[property] ? -1 : a[property] > b[property] ? 1 : 0;
-
-        return result * sortOrder;
-      };
-    }
-  };
-
-  dbGetPortfolioReturned = (portfolioData) => {
-    this._isMounted &&
-      dispatcher.dispatch({
-        type: DB_GET_PORTFOLIO_CHART,
-        wallet: portfolioData[0].wallet_address,
-        timeframe: "w",
+      this.setState({
+        winners: winnersLosers.slice(0, 5),
+        losers: winnersLosers
+          .slice(winnersLosers.length - 5, winnersLosers.length)
+          .reverse(),
       });
 
-    let keys = [];
-    let assetPrice = [];
-    portfolioData.forEach((item, i) => {
-      keys.push(item.asset_code);
-      assetPrice.push(item.price ? item.price.value : null);
-    });
-
-    this._isMounted &&
-      dispatcher.dispatch({
-        type: DB_GET_PORTFOLIO_STATS,
-        wallet: portfolioData[0].wallet_address,
-        keys,
-        assetPrice,
+      this.setState({
+        error: false,
+        loading: false,
+        dbDataLoaded: true,
+        portfolioData: data,
+        portfolioProfit: walletProfitValue,
+        portfolioBalance: walletBalance,
+        lpTokens: lpTokens,
       });
-    this.setState({
-      error: false,
-      loading: false,
-      dbDataLoaded: true,
-      dbStatsData: false,
-      portfolioData: portfolioData,
-    });
-  };
-
-  db_getPortfolioChartReturned = (portfolioChart) => {
-    console.log("drawing chart");
-    this.setState({
-      portfolioChartData: portfolioChart,
-    });
-  };
-
-  dbGetPortfolioStatsReturned = (portfolioStats) => {
-    const { portfolioData } = this.state;
-    portfolioData.forEach((item, i) => {
-      item.profit_percent = portfolioStats[i].profit_percent;
-      item.stats = portfolioStats[i].stats;
-    });
-
-    let winnersLosers;
-    winnersLosers = portfolioData.sort(this.dynamicSort("total_returned"));
-    winnersLosers.reverse();
-    this.setState({
-      error: false,
-      loading: false,
-      dbStatsData: true,
-      portfolioData: portfolioData,
-      winners: winnersLosers.slice(0, 5),
-      losers: winnersLosers
-        .slice(winnersLosers.length - 5, winnersLosers.length)
-        .reverse(),
-    });
+    }
   };
 
   error = () => {
@@ -398,146 +318,118 @@ class PortfolioBig extends Component {
   //END EMITTER EVENT FUNCTIONS
   sortedList = () => {
     const { classes } = this.props;
-    const {
-      sortBy,
-      portfolioData,
-      hideLowBalanceCoins,
-      dbStatsData,
-    } = this.state;
+    const { sortBy, portfolioData, hideLowBalanceCoins } = this.state;
+
+    function dynamicSort(property) {
+      var sortOrder = 1;
+      if (property[0] === "-") {
+        sortOrder = -1;
+        property = property.substr(1);
+      }
+      return function (a, b) {
+        var result =
+          a[property] < b[property] ? -1 : a[property] > b[property] ? 1 : 0;
+
+        return result * sortOrder;
+      };
+    }
 
     let filteredData = [];
-    // console.log(portfolioData);
+
     if (hideLowBalanceCoins) {
-      portfolioData.forEach((item, i) => {
-        if (item.quantityDecimals > 0.000001) {
-          filteredData.push(portfolioData[i]);
+      portfolioData[0].assets.forEach((item, i) => {
+        if (item.balance > 0.000001) {
+          filteredData.push(portfolioData[0].assets[i]);
         }
       });
     } else {
-      filteredData = portfolioData;
+      filteredData = portfolioData[0].assets;
     }
 
     let sortedRows;
     if (this.state.sortOrder === "asc") {
-      sortedRows = filteredData.sort(this.dynamicSort(sortBy));
+      sortedRows = filteredData.sort(dynamicSort(sortBy));
     } else {
-      sortedRows = filteredData.sort(this.dynamicSort(`-${sortBy}`));
+      sortedRows = filteredData.sort(dynamicSort(`-${sortBy}`));
     }
 
     if (sortedRows.length > 0) {
       return sortedRows.map((row) => (
         <TableRow
           hover={true}
-          key={row.asset_code}
+          key={row.contract_address}
           style={{ cursor: "pointer" }}
-          onClick={() => this.nav("/short/detective/" + row.asset_code)}
+          onClick={() => this.nav("/short/detective/" + row.contract_address)}
         >
           <TableCell>
-            <img className={classes.tokenLogo} alt="" src={row.icon_url} />
+            <img className={classes.tokenLogo} alt="" src={row.logo_url} />
           </TableCell>
           <TableCell padding="none" align="left">
-            <Typography variant={"h4"}>{row.name}</Typography>
+            <Typography variant={"h4"}>{row.contract_name}</Typography>
           </TableCell>
           <TableCell align="right">
             <div>
-              <Typography variant={"body1"}>
-                {formatMoney(row.quantityDecimals)}
-              </Typography>
+              <Typography variant={"body1"}>{row.balance}</Typography>
             </div>
             <div>
               <Typography style={{ opacity: 0.6 }} variant={"subtitle2"}>
-                {row.symbol}
+                {row.contract_ticker}
               </Typography>
             </div>
           </TableCell>
           <TableCell align="right">
             <Typography variant={"body1"}>
-              $ {row.balance && formatMoney(row.balance)}
+              {formatMoney(row.quote_rate)}
             </Typography>
           </TableCell>
           <TableCell align="right">
-            {row.price && (
+            {row.avg_buy !== 0 && (
               <>
-                <div>
-                  <Typography variant={"body1"}>
-                    {formatMoney(row.price.value)}
-                  </Typography>
-                </div>
-                <div>
-                  <Typography
-                    color={
-                      row.price.relative_change_24h > 0
-                        ? "primary"
-                        : "secondary"
-                    }
-                    variant={"subtitle2"}
-                  >
-                    {row.price.relative_change_24h.toFixed(2)} %
-                  </Typography>
-                </div>
+                <Typography variant={"body1"}>
+                  ${formatMoney(row.avg_buy)}
+                </Typography>
+                <Typography
+                  variant={"body1"}
+                  color={
+                    ((row.quote_rate - row.avg_buy) / row.avg_buy) * 100 > 0
+                      ? "primary"
+                      : "secondary"
+                  }
+                >
+                  {formatMoney(
+                    ((row.quote_rate - row.avg_buy) / row.avg_buy) * 100
+                  )}
+                  %
+                </Typography>
               </>
             )}
           </TableCell>
           <TableCell align="right">
-            {dbStatsData &&
-              (row.profit_percent && (
-                <>
-                  <Typography
-                    variant={"body1"}
-                    color={row.profit_percent > 0 ? "primary" : "secondary"}
-                  >
-                    {formatMoney(row.profit_percent)} %
-                  </Typography>
-                  <Typography variant={"body1"}>
-                    ($ {formatMoney(row.stats.avg_buy_price)})
-                  </Typography>
-                </>
-              ),
-              row.profit_percent && (
-                <>
-                  <Typography
-                    variant={"body1"}
-                    color={row.profit_percent > 0 ? "primary" : "secondary"}
-                  >
-                    {formatMoney(row.profit_percent)} %
-                  </Typography>
-                  <Typography variant={"body1"}>
-                    ($ {formatMoney(row.stats.avg_buy_price)})
-                  </Typography>
-                </>
-              ))}
-            {!dbStatsData && (
-              <>
-                <CircularProgress />
-              </>
-            )}
+            <Typography variant={"body1"}>{formatMoney(row.quote)}</Typography>
           </TableCell>
-
           <TableCell align="right">
-            {row.stats && row.stats.total_returned && (
+            {row.profit_percent && (
               <>
                 <Typography
                   className={
-                    row.stats.total_returned > 0
+                    row.profit_percent > 0
                       ? classes.profit_green
                       : classes.profit_red
                   }
                   variant={"body1"}
                 >
-                  $ {row.stats.total_returned.toFixed(1)}
+                  {row.profit_percent.toFixed(1)} %
                 </Typography>
-                {row.stats.total_returned_net && (
-                  <Typography
-                    className={
-                      row.stats.total_returned_net > 0
-                        ? classes.profit_green
-                        : classes.profit_red
-                    }
-                    variant={"body1"}
-                  >
-                    $ {row.stats.total_returned_net.toFixed(1)}
-                  </Typography>
-                )}
+                <Typography
+                  className={
+                    row.profit_percent > 0
+                      ? classes.profit_green
+                      : classes.profit_red
+                  }
+                  variant={"body1"}
+                >
+                  ( $ {formatMoney(row.profit_value)} )
+                </Typography>
               </>
             )}
           </TableCell>
@@ -572,7 +464,7 @@ class PortfolioBig extends Component {
   updateWallet = (wallet) => {
     this._isMounted &&
       dispatcher.dispatch({
-        type: DB_GET_PORTFOLIO,
+        type: DB_UPDATE_PORTFOLIO,
         wallet: wallet,
       });
     this.setState({ dbDataLoaded: false });
@@ -701,6 +593,7 @@ class PortfolioBig extends Component {
 
   addWallet = (wallet) => {
     if (wallet) {
+      console.log(wallet);
       dispatcher.dispatch({
         type: DB_ADD_WALLET,
         wallet: wallet,
@@ -733,15 +626,11 @@ class PortfolioBig extends Component {
       let filtered = [];
       if (type === "win") {
         for (var i = 0; i < data.length; i++) {
-          if (data[i].stats) {
-            if (data[i].stats.total_returned > 0) filtered.push(data[i]);
-          }
+          if (data[i].profit_value > 0) filtered.push(data[i]);
         }
       } else {
         for (var j = 0; j < data.length; j++) {
-          if (data[j].stats) {
-            if (data[j].stats.total_returned < 0) filtered.push(data[j]);
-          }
+          if (data[j].profit_value < 0) filtered.push(data[j]);
         }
       }
 
@@ -757,29 +646,33 @@ class PortfolioBig extends Component {
             <>
               <Grid
                 item
-                key={row.asset_code}
+                key={
+                  type === "win"
+                    ? "win" + row.contract_address
+                    : "lose" + row.contract_address
+                }
                 container
                 direction="row"
                 justify="space-between"
                 align="center"
                 className={classes.winLoseGrid}
-                onClick={() => this.winLoseClick(row.asset_code)}
+                onClick={() => this.winLoseClick(row.contract_address)}
               >
                 <Grid item>
                   <img
                     className={classes.tokenLogo}
                     alt=""
-                    src={row.icon_url}
+                    src={row.logo_url}
                   />
                 </Grid>
                 <Grid style={{ textAlign: "left" }} item>
                   <Typography color={type === "win" ? "primary" : "secondary"}>
-                    {row.name}
+                    {row.contract_name}
                   </Typography>
                 </Grid>
                 <Grid item>
                   <Typography color={type === "win" ? "primary" : "secondary"}>
-                    {formatMoney(row.stats.total_returned)}
+                    {formatMoney(row.profit_value)}
                   </Typography>
                 </Grid>
               </Grid>
@@ -800,7 +693,6 @@ class PortfolioBig extends Component {
     const {
       dbDataLoaded,
       portfolioData,
-      portfolioChartData,
       sortBy,
       sortOrder,
       userWallets,
@@ -823,10 +715,10 @@ class PortfolioBig extends Component {
           >
             {error && (
               <Grid item xs={12} style={{ textAlign: "center" }}>
-                <Typography variant={"h4"}>
+                <Typography inline variant={"h4"}>
                   Portfolio dashboard in development
                 </Typography>
-                <Typography variant={"h4"}>
+                <Typography inline variant={"h4"}>
                   Please try again later. Sorry!
                 </Typography>
               </Grid>
@@ -932,50 +824,45 @@ class PortfolioBig extends Component {
                 </Grid>
                 <Grid item xs={6}>
                   <div className={classes.graphGrid}>
-                    {portfolioChartData && (
-                      <PortfolioChart data={portfolioChartData} />
-                    )}
-                    {
-                      // <Typography variant={"h4"}>
-                      //   Balance: {this.state.portfolioBalance}
-                      // </Typography>
-                      // <Typography variant={"h4"}>
-                      //   Profit/Loss: {this.state.portfolioProfit}
-                      // </Typography>
-                      // <Grid
-                      //   style={{ marginTop: 10, minWidth: "100%" }}
-                      //   container
-                      //   direction="column"
-                      //   justify="flex-start"
-                      //   alignItems="stretch"
-                      // >
-                      //   <Grid
-                      //   item
-                      //   container
-                      //   direction="row"
-                      //   justify="space-around"
-                      //   alignItems="center"
-                      // >
-                      //   <Grid item>Winners</Grid>
-                      //   <Grid item>Losers</Grid>
-                      // </Grid>
-                      // <Divider />
-                      // <Grid
-                      //   direction="row"
-                      //   item
-                      //   container
-                      //   spacing={3}
-                      //   style={{ marginTop: 1 }}
-                      // >
-                      //   <Grid xs={6} item>
-                      //     {this.drawWinnersLosers(this.state.winners, "win")}
-                      //   </Grid>
-                      //   <Grid item xs={6}>
-                      //     {this.drawWinnersLosers(this.state.losers, "lose")}
-                      //   </Grid>
-                      // </Grid>
-                      // </Grid>
-                    }
+                    <Typography variant={"h4"}>
+                      Balance: {this.state.portfolioBalance}
+                    </Typography>
+                    <Typography variant={"h4"}>
+                      Profit/Loss: {this.state.portfolioProfit}
+                    </Typography>
+                    <Grid
+                      style={{ marginTop: 10, minWidth: "100%" }}
+                      container
+                      direction="column"
+                      justify="flex-start"
+                      alignItems="stretch"
+                    >
+                      <Grid
+                        item
+                        container
+                        direction="row"
+                        justify="space-around"
+                        alignItems="center"
+                      >
+                        <Grid item>Winners</Grid>
+                        <Grid item>Losers</Grid>
+                      </Grid>
+                      <Divider />
+                      <Grid
+                        direction="row"
+                        item
+                        container
+                        spacing={3}
+                        style={{ marginTop: 1 }}
+                      >
+                        <Grid xs={6} item>
+                          {this.drawWinnersLosers(this.state.winners, "win")}
+                        </Grid>
+                        <Grid item xs={6}>
+                          {this.drawWinnersLosers(this.state.losers, "lose")}
+                        </Grid>
+                      </Grid>
+                    </Grid>
                   </div>
                 </Grid>
                 <Grid item xs={12}>
@@ -994,47 +881,56 @@ class PortfolioBig extends Component {
                           ></TableCell>
                           <TableCell align="left" padding="none">
                             <TableSortLabel
-                              active={sortBy === "name"}
+                              active={sortBy === "contract_name"}
                               direction={sortOrder}
-                              onClick={() => this.sortBy("name")}
+                              onClick={() => this.sortBy("contract_name")}
                             >
                               Name
                             </TableSortLabel>
                           </TableCell>
                           <TableCell align="right">
                             <TableSortLabel
-                              active={sortBy === "quantityDecimals"}
+                              active={sortBy === "balance"}
                               direction={sortOrder}
-                              onClick={() => this.sortBy("quantityDecimals")}
+                              onClick={() => this.sortBy("balance")}
                             >
                               Balance
                             </TableSortLabel>
                           </TableCell>
                           <TableCell
                             align="right"
-                            onClick={() => this.sortBy("balance")}
+                            onClick={() => this.sortBy("quote_rate")}
                           >
                             <TableSortLabel
-                              active={sortBy === "balance"}
+                              active={sortBy === "quote_rate"}
                               direction={sortOrder}
-                              onClick={() => this.sortBy("balance")}
+                              onClick={() => this.sortBy("quote_rate")}
                             >
-                              Value
+                              Price
                             </TableSortLabel>
                           </TableCell>
                           <TableCell
                             align="right"
-                            onClick={() => this.sortBy("value")}
+                            onClick={() => this.sortBy("avg_buy")}
                           >
                             <TableSortLabel
-                              active={sortBy === "value"}
+                              active={sortBy === "avg_buy"}
                               direction={sortOrder}
-                              onClick={() => this.sortBy("value")}
+                              onClick={() => this.sortBy("avg_buy")}
                             >
-                              <Grid>
-                                <Grid item>Price</Grid>
-                                <Grid item>(% 24hs)</Grid>
-                              </Grid>
+                              Avg. Buy Price
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell
+                            align="right"
+                            onClick={() => this.sortBy("quote")}
+                          >
+                            <TableSortLabel
+                              active={sortBy === "quote"}
+                              direction={sortOrder}
+                              onClick={() => this.sortBy("quote")}
+                            >
+                              Value
                             </TableSortLabel>
                           </TableCell>
                           <TableCell
@@ -1046,25 +942,7 @@ class PortfolioBig extends Component {
                               direction={sortOrder}
                               onClick={() => this.sortBy("profit_percent")}
                             >
-                              <Grid>
-                                <Grid item>Profit/Loss %</Grid>
-                                <Grid item>(Avg. Buy Price)</Grid>
-                              </Grid>
-                            </TableSortLabel>
-                          </TableCell>
-                          <TableCell
-                            align="right"
-                            onClick={() => this.sortBy("total_returned")}
-                          >
-                            <TableSortLabel
-                              active={sortBy === "total_returned"}
-                              direction={sortOrder}
-                              onClick={() => this.sortBy("total_returned")}
-                            >
-                              <Grid>
-                                <Grid item>Profit</Grid>
-                                <Grid item>Net Profit (- gas fees)</Grid>
-                              </Grid>
+                              Profit %
                             </TableSortLabel>
                           </TableCell>
                         </TableRow>
