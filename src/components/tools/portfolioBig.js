@@ -35,6 +35,8 @@ import {
   CircularProgress,
 } from "@material-ui/core";
 
+import Skeleton from "@material-ui/lab/Skeleton";
+
 import {
   ERROR,
   CONNECTION_CONNECTED,
@@ -44,6 +46,8 @@ import {
   DB_GET_PORTFOLIO_RETURNED,
   DB_GET_PORTFOLIO_STATS,
   DB_GET_PORTFOLIO_STATS_RETURNED,
+  DB_GET_PORTFOLIO_ASSET_STATS,
+  DB_GET_PORTFOLIO_ASSET_STATS_RETURNED,
   DB_GET_PORTFOLIO_CHART,
   DB_GET_PORTFOLIO_CHART_RETURNED,
   DB_UPDATE_PORTFOLIO,
@@ -68,9 +72,6 @@ const styles = (theme) => ({
     display: "flex",
     width: "100%",
     minHeight: "100%",
-  },
-  container: {
-    maxHeight: 500,
   },
   favCard: {
     padding: 10,
@@ -111,15 +112,25 @@ const styles = (theme) => ({
     borderRadius: "10px",
     borderStyle: "solid",
     borderWidth: "thin",
-    padding: "10px",
-    background: `#9991`,
+    background: store.getStore("theme") === "dark" ? "#0005" : "#9991",
     minHeight: "100%",
+    height: "100%",
   },
   walletInput: {
     width: "100%",
     minWidth: "-moz-available" /* WebKit-based browsers will ignore this. */,
     minWidth:
       "-webkit-fill-available" /* Mozilla-based browsers will ignore this. */,
+  },
+  timeframeBTN: {
+    cursor: "pointer",
+    "&:hover": {
+      background: "rgba(255,255,255, 0.05)",
+      transition: "0.5s",
+    },
+  },
+  timeframeBTNSelected: {
+    backgroundColor: colors.cgGreen,
   },
 });
 
@@ -146,6 +157,8 @@ class PortfolioBig extends Component {
       errMsgWallet: "",
       errorWallet: true,
       portfolioChartData: null,
+      chartDataLoaded: false,
+      timeFrame: "w",
     };
 
     // IF USER IS CONNECTED GET THE PORTFOLIO DATA
@@ -168,6 +181,10 @@ class PortfolioBig extends Component {
     emitter.on(
       DB_GET_PORTFOLIO_CHART_RETURNED,
       this.db_getPortfolioChartReturned
+    );
+    emitter.on(
+      DB_GET_PORTFOLIO_ASSET_STATS_RETURNED,
+      this.dbGetPortfolioAssetStatsReturned
     );
     emitter.on(
       DB_GET_PORTFOLIO_STATS_RETURNED,
@@ -197,8 +214,8 @@ class PortfolioBig extends Component {
       this.dbGetPortfolioReturned
     );
     emitter.removeListener(
-      DB_GET_PORTFOLIO_STATS_RETURNED,
-      this.dbGetPortfolioStatsReturned
+      DB_GET_PORTFOLIO_ASSET_STATS_RETURNED,
+      this.dbGetPortfolioAssetStatsReturned
     );
     emitter.removeListener(
       DB_GET_PORTFOLIO_CHART_RETURNED,
@@ -215,6 +232,10 @@ class PortfolioBig extends Component {
     emitter.removeListener(
       DB_REMOVE_USER_WALLET_NICKNAME_RETURNED,
       this.setNicknameReturned
+    );
+    emitter.removeListener(
+      DB_GET_PORTFOLIO_STATS_RETURNED,
+      this.dbGetPortfolioStatsReturned
     );
     emitter.removeListener(CHECK_ACCOUNT_RETURNED, this.checkAccountReturned);
     emitter.removeListener(DB_ADD_WALLET_RETURNED, this.dbWalletReturned);
@@ -334,7 +355,11 @@ class PortfolioBig extends Component {
         wallet: portfolioData[0].wallet_address,
         timeframe: "w",
       });
-
+    this._isMounted &&
+      dispatcher.dispatch({
+        type: DB_GET_PORTFOLIO_STATS,
+        wallet: portfolioData[0].wallet_address,
+      });
     let keys = [];
     let assetPrice = [];
     portfolioData.forEach((item, i) => {
@@ -344,7 +369,7 @@ class PortfolioBig extends Component {
 
     this._isMounted &&
       dispatcher.dispatch({
-        type: DB_GET_PORTFOLIO_STATS,
+        type: DB_GET_PORTFOLIO_ASSET_STATS,
         wallet: portfolioData[0].wallet_address,
         keys,
         assetPrice,
@@ -359,13 +384,20 @@ class PortfolioBig extends Component {
   };
 
   db_getPortfolioChartReturned = (portfolioChart) => {
-    console.log("drawing chart");
     this.setState({
       portfolioChartData: portfolioChart,
+      chartDataLoaded: true,
     });
   };
 
   dbGetPortfolioStatsReturned = (portfolioStats) => {
+    console.log(portfolioStats);
+    this.setState({
+      portfolioStats,
+    });
+  };
+
+  dbGetPortfolioAssetStatsReturned = (portfolioStats) => {
     const { portfolioData } = this.state;
     portfolioData.forEach((item, i) => {
       item.profit_percent = portfolioStats[i].profit_percent;
@@ -566,7 +598,11 @@ class PortfolioBig extends Component {
         type: DB_GET_PORTFOLIO,
         wallet: wallet,
       });
-    this.setState({ selectedWallet: wallet, dbDataLoaded: false });
+    this.setState({
+      selectedWallet: wallet,
+      dbDataLoaded: false,
+      chartDataLoaded: false,
+    });
   };
 
   updateWallet = (wallet) => {
@@ -795,6 +831,10 @@ class PortfolioBig extends Component {
     this.nav(`/short/detective/${tokenName}`);
   };
 
+  timeframeBTNClicked = (newTimeframe) => {
+    this.setState({ timeFrame: newTimeframe });
+  };
+
   render() {
     const { classes } = this.props;
     const {
@@ -809,6 +849,8 @@ class PortfolioBig extends Component {
       error,
       addWallet,
       newWallet,
+      chartDataLoaded,
+      timeFrame,
     } = this.state;
 
     return (
@@ -819,10 +861,16 @@ class PortfolioBig extends Component {
             direction="row"
             justify="flex-start"
             alignItems="stretch"
-            spacing={3}
           >
             {error && (
-              <Grid item xs={12} style={{ textAlign: "center" }}>
+              <Grid
+                item
+                style={{
+                  textAlign: "center",
+                  minWidth: "100%",
+                  paddingBottom: "10px",
+                }}
+              >
                 <Typography variant={"h4"}>
                   Portfolio dashboard in development
                 </Typography>
@@ -832,7 +880,15 @@ class PortfolioBig extends Component {
               </Grid>
             )}
             {!error && !dbDataLoaded && (
-              <Grid item xs={12} style={{ textAlign: "center" }}>
+              <Grid
+                item
+                xs={12}
+                style={{
+                  textAlign: "center",
+                  minWidth: "100%",
+                  paddingBottom: "10px",
+                }}
+              >
                 <Typography variant={"h4"}>Please give us a moment</Typography>
                 <Typography variant={"h4"}>
                   while we prepare your portfolio data...
@@ -847,141 +903,292 @@ class PortfolioBig extends Component {
               </Grid>
             )}
             {dbDataLoaded && (
-              <>
-                <Grid item xs={6}>
-                  <div className={classes.walletGrid}>
-                    <Grid
-                      item
-                      container
-                      direction="row"
-                      justify="space-between"
-                      alignItems="center"
-                      xs={12}
-                    >
-                      <Typography variant={"h4"}>Wallets</Typography>
-                      {!addWallet && (
-                        <Button
-                          startIcon={<AddCircleRoundedIcon />}
-                          variant="outlined"
-                          size="small"
-                          color="primary"
-                          onClick={this.toggleAddWallet}
-                        >
-                          New
-                        </Button>
-                      )}
+              <Grid
+                container
+                direction="column"
+                justify="flex-start"
+                alignItems="stretch"
+              >
+                <Grid
+                  id="topUI"
+                  container
+                  direction="row"
+                  justify="space-between"
+                  alignItems="flex-start"
+                  style={{ maxHeight: "400px" }}
+                  spacing={1}
+                >
+                  <Grid
+                    item
+                    xs={6}
+                    style={{ display: "grid", minHeight: "100%" }}
+                  >
+                    <div className={classes.walletGrid}>
+                      <Grid
+                        item
+                        container
+                        direction="row"
+                        justify="space-between"
+                        alignItems="center"
+                        xs={12}
+                      >
+                        <Typography variant={"h4"}>Wallets</Typography>
+                        {!addWallet && (
+                          <Button
+                            startIcon={<AddCircleRoundedIcon />}
+                            variant="outlined"
+                            size="small"
+                            color="primary"
+                            onClick={this.toggleAddWallet}
+                          >
+                            New
+                          </Button>
+                        )}
+                        {addWallet && (
+                          <Button
+                            startIcon={<ArrowBackIosRoundedIcon />}
+                            variant="contained"
+                            size="small"
+                            color="secondary"
+                            onClick={this.toggleAddWallet}
+                          >
+                            Back
+                          </Button>
+                        )}
+                      </Grid>
                       {addWallet && (
-                        <Button
-                          startIcon={<ArrowBackIosRoundedIcon />}
-                          variant="contained"
-                          size="small"
-                          color="secondary"
-                          onClick={this.toggleAddWallet}
-                        >
-                          Back
-                        </Button>
-                      )}
-                    </Grid>
-                    {addWallet && (
-                      <>
-                        <Divider style={{ marginTop: 10 }} />
-                        <Grid
-                          item
-                          container
-                          direction="row"
-                          justify="space-between"
-                          alignItems="center"
-                          xs={12}
-                        >
-                          <Grid item xs={9}>
-                            <TextField
-                              className={classes.walletInput}
-                              id="walletAdd"
-                              label="Wallet Address"
-                              onChange={this.handleChange}
-                              helperText={this.state.errMsgWallet}
-                              error={this.state.errorWallet}
-                            />
+                        <>
+                          <Divider style={{ marginTop: 10 }} />
+                          <Grid
+                            item
+                            container
+                            direction="row"
+                            justify="space-between"
+                            alignItems="center"
+                            xs={12}
+                          >
+                            <Grid item xs={9}>
+                              <TextField
+                                className={classes.walletInput}
+                                id="walletAdd"
+                                label="Wallet Address"
+                                onChange={this.handleChange}
+                                helperText={this.state.errMsgWallet}
+                                error={this.state.errorWallet}
+                              />
+                            </Grid>
+                            <Grid item style={{ textAlign: "end" }} xs={3}>
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                color="primary"
+                                className={classes.button}
+                                startIcon={<AddCircleRoundedIcon />}
+                                onClick={() => {
+                                  this.addWallet(newWallet);
+                                }}
+                                disabled={this.state.errorWallet}
+                              >
+                                Add
+                              </Button>
+                            </Grid>
                           </Grid>
-                          <Grid item style={{ textAlign: "end" }} xs={3}>
-                            <Button
-                              variant="outlined"
-                              size="small"
-                              color="primary"
-                              className={classes.button}
-                              startIcon={<AddCircleRoundedIcon />}
-                              onClick={() => {
-                                this.addWallet(newWallet);
+                        </>
+                      )}
+                      <List
+                        className={classes.walletList}
+                        component="nav"
+                        aria-label="user wallet list"
+                      >
+                        {this.userWalletList(userWallets)}
+                      </List>
+                    </div>
+                  </Grid>
+                  <Grid
+                    item
+                    xs={6}
+                    style={{ height: "100%", maxHeight: "100%" }}
+                  >
+                    <div className={classes.graphGrid}>
+                      {this.state.portfolioStats && (
+                        <Grid container item justify="space-around">
+                          <Grid item xs={12} style={{ textAlign: "center" }}>
+                            <Typography variant={"h3"}>
+                              Balance: ${" "}
+                              {formatMoney(
+                                this.state.portfolioStats.assets_value
+                              )}{" "}
+                            </Typography>
+                          </Grid>
+                          <Grid
+                            item
+                            container
+                            justify="space-around"
+                            style={{ backgroundColor: "rgba(125,125,125,0.2)" }}
+                          >
+                            <Grid item>24Hs Change</Grid>
+                            <Grid
+                              item
+                              style={{
+                                color:
+                                  this.state.portfolioStats
+                                    .absolute_change_24h > 0
+                                    ? colors.cgGreen
+                                    : colors.cgRed,
                               }}
-                              disabled={this.state.errorWallet}
                             >
-                              Add
-                            </Button>
+                              ${" "}
+                              {formatMoney(
+                                this.state.portfolioStats.absolute_change_24h
+                              )}
+                            </Grid>
+                            <Grid
+                              item
+                              style={{
+                                color:
+                                  this.state.portfolioStats
+                                    .relative_change_24h > 0
+                                    ? colors.cgGreen
+                                    : colors.cgRed,
+                              }}
+                            >
+                              {formatMoney(
+                                this.state.portfolioStats.relative_change_24h
+                              )}
+                              %
+                            </Grid>
                           </Grid>
                         </Grid>
-                      </>
-                    )}
-                    <List
-                      className={classes.walletList}
-                      component="nav"
-                      aria-label="user wallet list"
-                    >
-                      {this.userWalletList(userWallets)}
-                    </List>
-                  </div>
+                      )}
+                      <Grid item>
+                        {chartDataLoaded ? (
+                          <PortfolioChart
+                            height="250px"
+                            data={portfolioChartData}
+                          />
+                        ) : (
+                          <Skeleton
+                            variant="rect"
+                            width={"100%"}
+                            height={"250px"}
+                            style={{ borderRadius: 10 }}
+                          />
+                        )}
+                        {
+                          // <Typography variant={"h4"}>
+                          //   Balance: {this.state.portfolioBalance}
+                          // </Typography>
+                          // <Typography variant={"h4"}>
+                          //   Profit/Loss: {this.state.portfolioProfit}
+                          // </Typography>
+                          // <Grid
+                          //   style={{ marginTop: 10, minWidth: "100%" }}
+                          //   container
+                          //   direction="column"
+                          //   justify="flex-start"
+                          //   alignItems="stretch"
+                          // >
+                          //   <Grid
+                          //   item
+                          //   container
+                          //   direction="row"
+                          //   justify="space-around"
+                          //   alignItems="center"
+                          // >
+                          //   <Grid item>Winners</Grid>
+                          //   <Grid item>Losers</Grid>
+                          // </Grid>
+                          // <Divider />
+                          // <Grid
+                          //   direction="row"
+                          //   item
+                          //   container
+                          //   spacing={3}
+                          //   style={{ marginTop: 1 }}
+                          // >
+                          //   <Grid xs={6} item>
+                          //     {this.drawWinnersLosers(this.state.winners, "win")}
+                          //   </Grid>
+                          //   <Grid item xs={6}>
+                          //     {this.drawWinnersLosers(this.state.losers, "lose")}
+                          //   </Grid>
+                          // </Grid>
+                          // </Grid>
+                        }
+                      </Grid>
+                      <Grid
+                        item
+                        container
+                        justify="space-around"
+                        style={{ backgroundColor: "rgba(125,125,125,0.2)" }}
+                      >
+                        <Grid
+                          item
+                          className={
+                            timeFrame === "d"
+                              ? classes.timeframeBTNSelected
+                              : classes.timeframeBTN
+                          }
+                          onClick={() => this.timeframeBTNClicked("d")}
+                          xs={3}
+                        >
+                          Day
+                        </Grid>
+                        <Grid
+                          item
+                          className={
+                            timeFrame === "w"
+                              ? classes.timeframeBTNSelected
+                              : classes.timeframeBTN
+                          }
+                          onClick={() => this.timeframeBTNClicked("w")}
+                          xs={3}
+                        >
+                          Week
+                        </Grid>
+                        <Grid
+                          item
+                          className={
+                            timeFrame === "m"
+                              ? classes.timeframeBTNSelected
+                              : classes.timeframeBTN
+                          }
+                          onClick={() => this.timeframeBTNClicked("m")}
+                          xs={3}
+                        >
+                          Month
+                        </Grid>
+                        <Grid
+                          item
+                          className={
+                            timeFrame === "y"
+                              ? classes.timeframeBTNSelected
+                              : classes.timeframeBTN
+                          }
+                          onClick={() => this.timeframeBTNClicked("y")}
+                          xs={3}
+                        >
+                          Year
+                        </Grid>
+                      </Grid>
+                    </div>
+                  </Grid>
                 </Grid>
-                <Grid item xs={6}>
-                  <div className={classes.graphGrid}>
-                    {portfolioChartData && (
-                      <PortfolioChart data={portfolioChartData} />
-                    )}
-                    {
-                      // <Typography variant={"h4"}>
-                      //   Balance: {this.state.portfolioBalance}
-                      // </Typography>
-                      // <Typography variant={"h4"}>
-                      //   Profit/Loss: {this.state.portfolioProfit}
-                      // </Typography>
-                      // <Grid
-                      //   style={{ marginTop: 10, minWidth: "100%" }}
-                      //   container
-                      //   direction="column"
-                      //   justify="flex-start"
-                      //   alignItems="stretch"
-                      // >
-                      //   <Grid
-                      //   item
-                      //   container
-                      //   direction="row"
-                      //   justify="space-around"
-                      //   alignItems="center"
-                      // >
-                      //   <Grid item>Winners</Grid>
-                      //   <Grid item>Losers</Grid>
-                      // </Grid>
-                      // <Divider />
-                      // <Grid
-                      //   direction="row"
-                      //   item
-                      //   container
-                      //   spacing={3}
-                      //   style={{ marginTop: 1 }}
-                      // >
-                      //   <Grid xs={6} item>
-                      //     {this.drawWinnersLosers(this.state.winners, "win")}
-                      //   </Grid>
-                      //   <Grid item xs={6}>
-                      //     {this.drawWinnersLosers(this.state.losers, "lose")}
-                      //   </Grid>
-                      // </Grid>
-                      // </Grid>
-                    }
-                  </div>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant={"h4"}>Assets</Typography>
-                  <Divider />
-                  <TableContainer className={classes.container} size="small">
+                <Grid
+                  container
+                  direction="column"
+                  justify="flex-start"
+                  alignItems="stretch"
+                  style={{ marginTop: 10 }}
+                >
+                  <TableContainer
+                    style={{
+                      maxHeight: "600px",
+                      scrollbarWidth: "thin",
+                      scrollbarColor: `${colors.cgGreen} #30303080`,
+                    }}
+                    size="small"
+                  >
                     <Table
                       stickyHeader
                       className={classes.table}
@@ -1073,7 +1280,7 @@ class PortfolioBig extends Component {
                     </Table>
                   </TableContainer>
                 </Grid>
-              </>
+              </Grid>
             )}
           </Grid>
         </Card>

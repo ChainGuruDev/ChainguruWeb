@@ -26,6 +26,7 @@ const LongShortMini = React.lazy(() => import("./longShortMini.js"));
 const PortfolioBig = React.lazy(() => import("./portfolioBig.js"));
 
 const styles = (theme) => ({
+  miniUI: {},
   root: {
     flex: 1,
     display: "flex",
@@ -103,12 +104,16 @@ class Dashboard extends Component {
       <div className={classes.root}>
         {!account.address && <div>CONNECT WALLET</div>}
         {account.address && (
-          <Grid container spacing={3}>
-            <Grid item xs={9}>
+          <Grid container spacing={2}>
+            <Grid id="bigTools" item xs={9}>
               {this.renderBig(tools)}
             </Grid>
-            <Grid item xs={3}>
-              <ProfileMini />
+            <Grid
+              className={classes.miniUI}
+              item
+              xs={3}
+              style={{ height: "max-content" }}
+            >
               {this.renderMini(tools)}
             </Grid>
           </Grid>
@@ -136,7 +141,7 @@ class Dashboard extends Component {
       }
     });
     return (
-      <div>
+      <div id="miniUI">
         <Suspense
           fallback={
             <div style={{ textAlign: "center" }}>
@@ -146,6 +151,7 @@ class Dashboard extends Component {
             </div>
           }
         >
+          <ProfileMini />
           {activeTools.longShort_MINI && <LongShortMini />}
           {activeTools.leaderboard_MINI && <LeaderboardMini />}
         </Suspense>
@@ -171,9 +177,9 @@ class Dashboard extends Component {
         }
       }
     });
-    console.log(activeTools);
+
     return (
-      <div>
+      <div style={{ minHeight: "100%", display: "flex" }}>
         <Suspense
           fallback={
             <div style={{ textAlign: "center" }}>

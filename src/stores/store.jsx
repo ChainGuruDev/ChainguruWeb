@@ -109,6 +109,8 @@ import {
   DB_GET_PORTFOLIO_RETURNED,
   DB_GET_PORTFOLIO_STATS,
   DB_GET_PORTFOLIO_STATS_RETURNED,
+  DB_GET_PORTFOLIO_ASSET_STATS,
+  DB_GET_PORTFOLIO_ASSET_STATS_RETURNED,
   DB_GET_PORTFOLIO_CHART,
   DB_GET_PORTFOLIO_CHART_RETURNED,
   DB_GET_ASSETSTATS,
@@ -392,6 +394,9 @@ class Store {
             break;
           case DB_GET_PORTFOLIO_STATS:
             this.db_getPortfolioStats(payload);
+            break;
+          case DB_GET_PORTFOLIO_ASSET_STATS:
+            this.db_getPortfolioAssetStats(payload);
             break;
           case DB_GET_PORTFOLIO_CHART:
             this.db_getPortfolioChart(payload);
@@ -2147,6 +2152,23 @@ class Store {
 
   db_getPortfolioStats = async (payload) => {
     let vsCoin = store.getStore("vsCoin");
+    try {
+      let portfolioStats = await axios.get(
+        `https://chainguru.fun/api/portfolio/address/portfolio?address=${payload.wallet}&currency=${vsCoin}&fields=all`
+      );
+
+      emitter.emit(
+        DB_GET_PORTFOLIO_STATS_RETURNED,
+        portfolioStats.data.portfolio
+      );
+    } catch (err) {
+      emitter.emit(ERROR, await err.message);
+      console.log(err.message);
+    }
+  };
+
+  db_getPortfolioAssetStats = async (payload) => {
+    let vsCoin = store.getStore("vsCoin");
     const account = store.getStore("account");
 
     function createData(wallet_address, asset_code, stats, profit_percent) {
@@ -2195,7 +2217,7 @@ class Store {
         );
       });
 
-      emitter.emit(DB_GET_PORTFOLIO_STATS_RETURNED, finalData);
+      emitter.emit(DB_GET_PORTFOLIO_ASSET_STATS_RETURNED, finalData);
     } catch (err) {
       emitter.emit(ERROR, await err.message);
       console.log(err.message);
@@ -2205,7 +2227,6 @@ class Store {
   db_getPortfolioChart = async (payload) => {
     let vsCoin = store.getStore("vsCoin");
     try {
-      console.log("gettingChart");
       let portfolioChart = await axios.get(
         `https://chainguru.fun/api/portfolio/address/charts?address=${payload.wallet}&range=${payload.timeframe}&currency=${vsCoin}`
       );

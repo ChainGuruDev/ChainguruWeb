@@ -20,10 +20,7 @@ const Chart = React.lazy(() => import("react-apexcharts"));
 
 const styles = (theme) => ({
   root: {
-    marginTop: 10,
     display: "flexGrow",
-    minHeight: "300px",
-    marginBottom: 20,
   },
 });
 
@@ -34,7 +31,6 @@ class PortfolioChart extends Component {
     let color = [colors.cgGreen];
 
     const tema = store.getStore("theme");
-    console.log(props.data);
 
     this.state = {
       options: {
@@ -56,18 +52,26 @@ class PortfolioChart extends Component {
           },
         },
         chart: {
+          zoom: {
+            enabled: false,
+          },
           animations: {
             enabled: false,
           },
           id: "",
           background: "rgba(0, 0, 0, 0.0)",
+          toolbar: {
+            show: false,
+          },
         },
         xaxis: {
           type: "datetime",
-          tickAmount: 1,
         },
         dataLabels: {
           enabled: false,
+          style: {
+            colors: [colors.cgGreen],
+          },
         },
         yaxis: {
           crosshairs: {
@@ -84,7 +88,7 @@ class PortfolioChart extends Component {
           },
 
           type: "numeric",
-          decimalsInFloat: 4,
+          decimalsInFloat: 0,
           forceNiceScale: true,
         },
       },
@@ -132,22 +136,20 @@ class PortfolioChart extends Component {
   };
 
   portfolioChartReturned = (data) => {
-    console.log("CHART DATAAAAA");
-    console.log(data);
-    // this.setState({
-    //   series: [
-    //     {
-    //       name: "",
-    //       data: data,
-    //     },
-    //   ],
-    // });
+    this.setState({
+      series: [
+        {
+          name: "",
+          data: data,
+        },
+      ],
+    });
   };
 
   render() {
     const { classes } = this.props;
     return (
-      <div className={classes.root}>
+      <div className={classes.root} style={{ minHeight: this.props.height }}>
         {
           <Chart
             options={this.state.options}

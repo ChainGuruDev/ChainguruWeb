@@ -203,6 +203,7 @@ class PriceChart extends Component {
         series: [{ name: "", data: data[0].prices }],
       });
     }
+    console.log(data[0].prices);
   };
 
   render() {
