@@ -60,10 +60,15 @@ import {
   DB_GET_TOKEN_LS_RETURNED,
   DB_GET_USER_TOKEN_LS,
   DB_GET_USER_TOKEN_LS_RETURNED,
+  DB_GET_ASSETSTATS,
+  DB_GET_ASSETSTATS_RETURNED,
   DB_CREATE_LS,
   DB_CREATE_LS_RETURNED,
   DB_CHECK_LS_RESULT,
   DB_CHECK_LS_RESULT_RETURNED,
+  DB_GET_PORTFOLIO_ASSET_STATS,
+  DB_GET_PORTFOLIO_ASSET_STATS_RETURNED,
+  GETTING_NEW_CHART_DATA,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -167,6 +172,8 @@ class CryptoDetective extends Component {
     let vsCoin = store.getStore("vsCoin");
 
     const account = store.getStore("account");
+    this.newSearch = this.newSearch.bind(this);
+
     this.state = {
       account: account,
       loading: false,
@@ -181,6 +188,7 @@ class CryptoDetective extends Component {
       lsEnabled: false,
       lsLoaded: false,
       modalOpen: false,
+      avgBuyPrice: null,
       loadingPriceChart: true,
     };
   }
@@ -195,7 +203,8 @@ class CryptoDetective extends Component {
     emitter.on(DB_CREATE_LS_RETURNED, this.db_createLSReturned);
     emitter.on(DB_CHECK_LS_RESULT_RETURNED, this.db_checkLSResultReturned);
     emitter.on(COIN_PRICECHART_RETURNED, this.priceChartReturned);
-
+    emitter.on(DB_GET_ASSETSTATS_RETURNED, this.db_getAssetStatsReturned);
+    emitter.on(GETTING_NEW_CHART_DATA, this.newSearch);
     if (this.props.coinID) {
       dispatcher.dispatch({
         type: GET_COIN_DATA,
@@ -225,14 +234,51 @@ class CryptoDetective extends Component {
       DB_CHECK_LS_RESULT_RETURNED,
       this.db_checkLSResultReturned
     );
+    emitter.removeListener(
+      DB_GET_ASSETSTATS_RETURNED,
+      this.db_getAssetStatsReturned
+    );
     emitter.removeListener(COIN_PRICECHART_RETURNED, this.priceChartReturned);
+    emitter.removeListener(GETTING_NEW_CHART_DATA, this.newSearch);
+  }
+
+  newSearch() {
+    this.setState({ loadingPriceChart: true });
   }
 
   coinlistReturned = (payload) => {
     this.setState({ coinList: payload });
   };
 
-  coinDataReturned = (data) => {
+  coinDataReturned = async (data) => {
+    if (data[0].contract_address) {
+      if (data[0].id) {
+        dispatcher.dispatch({
+          type: GET_COIN_PRICECHART,
+          content: [
+            data[0].id,
+            this.props.id,
+            this.state.timeFrame,
+            this.state.vs,
+          ],
+        });
+      }
+      let account = await store.getStore("account");
+      dispatcher.dispatch({
+        type: DB_GET_ASSETSTATS,
+        payload: {
+          wallet: await account.address,
+          assetCode: data[0].contract_address,
+        },
+      });
+      // dispatcher.dispatch({
+      //   type: DB_GET_PORTFOLIO_ASSET_STATS,
+      //
+      //   wallet: account.address,
+      //   keys: [data[0].contract_address],
+      // });
+    }
+
     dispatcher.dispatch({
       type: DB_GET_TOKEN_LS,
       tokenID: data[0].id,
@@ -383,7 +429,13 @@ class CryptoDetective extends Component {
     });
   };
 
-  priceChartReturned = () => {
+  db_getAssetStatsReturned = (data) => {
+    if (data[0].avg_buy_price_net) {
+      this.setState({ avgBuyPrice: data[0].avg_buy_price_net });
+    }
+  };
+
+  priceChartReturned = (data) => {
     this.setState({ loadingPriceChart: false });
   };
 
@@ -1141,7 +1193,7 @@ class CryptoDetective extends Component {
             justify="flex-start"
             alignItems="stretch"
           >
-            <CoinSearchBar />
+            <CoinSearchBar newSearch={this.newSearch} />
             <Grid
               container
               direction="row"

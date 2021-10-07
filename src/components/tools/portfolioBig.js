@@ -115,6 +115,8 @@ const styles = (theme) => ({
     background: store.getStore("theme") === "dark" ? "#0005" : "#9991",
     minHeight: "100%",
     height: "100%",
+    overflow: "clip",
+    display: "grid",
   },
   walletInput: {
     width: "100%",
@@ -130,7 +132,7 @@ const styles = (theme) => ({
     },
   },
   timeframeBTNSelected: {
-    backgroundColor: colors.cgGreen,
+    backgroundColor: colors.cgGreen + "50",
   },
 });
 
@@ -261,15 +263,24 @@ class PortfolioBig extends Component {
       this._isMounted &&
         dispatcher.dispatch({
           type: DB_GET_PORTFOLIO,
-          wallet: wallets[0],
+          wallet: wallets,
         });
     }
-    this.setState({
-      loading: true,
-      selectedWallet: wallets[0],
-      userWallets: data.wallets,
-      walletNicknames: data.walletNicknames,
-    });
+    if (wallets.length > 0) {
+      this.setState({
+        loading: true,
+        selectedWallet: "all",
+        userWallets: wallets,
+        walletNicknames: data.walletNicknames,
+      });
+    } else {
+      this.setState({
+        loading: true,
+        selectedWallet: wallets[0],
+        userWallets: wallets,
+        walletNicknames: data.walletNicknames,
+      });
+    }
   };
 
   removeWALLET = (wallet) => {
@@ -349,31 +360,61 @@ class PortfolioBig extends Component {
   };
 
   dbGetPortfolioReturned = (portfolioData) => {
-    this._isMounted &&
-      dispatcher.dispatch({
-        type: DB_GET_PORTFOLIO_CHART,
-        wallet: portfolioData[0].wallet_address,
-        timeframe: "w",
+    console.log(portfolioData);
+    console.log(this.state.selectedWallet);
+    if (this.state.selectedWallet === "all") {
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: DB_GET_PORTFOLIO_CHART,
+          wallet: this.state.userWallets,
+          timeframe: "w",
+        });
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: DB_GET_PORTFOLIO_STATS,
+          wallet: this.state.userWallets,
+        });
+      let keys = [];
+      let assetPrice = [];
+      portfolioData.forEach((item, i) => {
+        keys.push(item.asset_code);
+        assetPrice.push(item.price ? item.price.value : null);
       });
-    this._isMounted &&
-      dispatcher.dispatch({
-        type: DB_GET_PORTFOLIO_STATS,
-        wallet: portfolioData[0].wallet_address,
-      });
-    let keys = [];
-    let assetPrice = [];
-    portfolioData.forEach((item, i) => {
-      keys.push(item.asset_code);
-      assetPrice.push(item.price ? item.price.value : null);
-    });
 
-    this._isMounted &&
-      dispatcher.dispatch({
-        type: DB_GET_PORTFOLIO_ASSET_STATS,
-        wallet: portfolioData[0].wallet_address,
-        keys,
-        assetPrice,
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: DB_GET_PORTFOLIO_ASSET_STATS,
+          wallet: this.state.userWallets,
+          portfolioData,
+        });
+    } else {
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: DB_GET_PORTFOLIO_CHART,
+          wallet: portfolioData[0].wallet_address,
+          timeframe: "w",
+        });
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: DB_GET_PORTFOLIO_STATS,
+          wallet: portfolioData[0].wallet_address,
+        });
+      let keys = [];
+      let assetPrice = [];
+      portfolioData.forEach((item, i) => {
+        keys.push(item.asset_code);
+        assetPrice.push(item.price ? item.price.value : null);
       });
+
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: DB_GET_PORTFOLIO_ASSET_STATS,
+          wallet: portfolioData[0].wallet_address,
+          keys,
+          assetPrice,
+        });
+    }
+
     this.setState({
       error: false,
       loading: false,
@@ -384,17 +425,35 @@ class PortfolioBig extends Component {
   };
 
   db_getPortfolioChartReturned = (portfolioChart) => {
+    let priceInMilisec = [];
+    portfolioChart.forEach((item, i) => {
+      priceInMilisec.push([item[0] * 100, item[1]]);
+    });
+
     this.setState({
-      portfolioChartData: portfolioChart,
+      portfolioChartData: priceInMilisec,
       chartDataLoaded: true,
     });
   };
 
   dbGetPortfolioStatsReturned = (portfolioStats) => {
-    console.log(portfolioStats);
-    this.setState({
-      portfolioStats,
-    });
+    if (Array.isArray(portfolioStats)) {
+      console.log(portfolioStats);
+      let stats = portfolioStats[0];
+      for (var i = 1; i < portfolioStats.length; i++) {
+        for (var attrname in portfolioStats[i]) {
+          stats[attrname] += portfolioStats[i][attrname];
+        }
+      }
+      console.log(stats);
+      this.setState({
+        portfolioStats: stats,
+      });
+    } else {
+      this.setState({
+        portfolioStats,
+      });
+    }
   };
 
   dbGetPortfolioAssetStatsReturned = (portfolioStats) => {
@@ -441,8 +500,16 @@ class PortfolioBig extends Component {
     // console.log(portfolioData);
     if (hideLowBalanceCoins) {
       portfolioData.forEach((item, i) => {
-        if (item.quantityDecimals > 0.000001) {
+        if (item.balance > 0.01) {
           filteredData.push(portfolioData[i]);
+        } else {
+          console.log(
+            `filtered ${item.name} from balance. Reason "hide low balance On"`
+          );
+        }
+        if (item.type === "NFT") {
+          filteredData.push(portfolioData[i]);
+          console.log(`NFT Found >> ${item.name}`);
         }
       });
     } else {
@@ -455,13 +522,13 @@ class PortfolioBig extends Component {
     } else {
       sortedRows = filteredData.sort(this.dynamicSort(`-${sortBy}`));
     }
-
+    console.log(sortedRows);
     if (sortedRows.length > 0) {
       return sortedRows.map((row) => (
         <TableRow
           hover={true}
-          key={row.asset_code}
-          style={{ cursor: "pointer" }}
+          key={`${row.asset_code}_${row.wallet_address}`}
+          style={{ cursor: "pointer", background: "#00000015" }}
           onClick={() => this.nav("/short/detective/" + row.asset_code)}
         >
           <TableCell>
@@ -593,16 +660,31 @@ class PortfolioBig extends Component {
   }
 
   walletClicked = (wallet) => {
-    this._isMounted &&
-      dispatcher.dispatch({
-        type: DB_GET_PORTFOLIO,
-        wallet: wallet,
+    if (Array.isArray(wallet)) {
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: DB_GET_PORTFOLIO,
+          wallet: this.state.userWallets,
+        });
+      this.setState({
+        selectedWallet: "all",
+        dbDataLoaded: false,
+        chartDataLoaded: false,
+        portfolioStats: null,
       });
-    this.setState({
-      selectedWallet: wallet,
-      dbDataLoaded: false,
-      chartDataLoaded: false,
-    });
+    } else {
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: DB_GET_PORTFOLIO,
+          wallet: wallet,
+        });
+      this.setState({
+        selectedWallet: wallet,
+        dbDataLoaded: false,
+        chartDataLoaded: false,
+        portfolioStats: null,
+      });
+    }
   };
 
   updateWallet = (wallet) => {
@@ -643,8 +725,8 @@ class PortfolioBig extends Component {
           <ListItem
             key={wallet._id}
             button
-            selected={this.state.selectedWallet === wallet.wallet}
-            onClick={() => this.walletClicked(wallet.wallet)}
+            selected={this.state.selectedWallet === wallet}
+            onClick={() => this.walletClicked(wallet)}
             className={classes.list}
           >
             <ListItemText
@@ -657,24 +739,18 @@ class PortfolioBig extends Component {
                     color="textPrimary"
                   >
                     {(data = walletNicknames.find(
-                      (ele) => ele.wallet === wallet.wallet
+                      (ele) => ele.wallet === wallet
                     )) &&
                       data.nickname +
                         " (" +
-                        wallet.wallet.substring(0, 6) +
+                        wallet.substring(0, 6) +
                         "..." +
-                        wallet.wallet.substring(
-                          wallet.wallet.length - 4,
-                          wallet.wallet.length
-                        ) +
+                        wallet.substring(wallet.length - 4, wallet.length) +
                         ")"}
-                    {!walletNicknames.some((e) => e.wallet === wallet.wallet) &&
-                      wallet.wallet.substring(0, 6) +
+                    {!walletNicknames.some((e) => e.wallet === wallet) &&
+                      wallet.substring(0, 6) +
                         "..." +
-                        wallet.wallet.substring(
-                          wallet.wallet.length - 4,
-                          wallet.wallet.length
-                        )}
+                        wallet.substring(wallet.length - 4, wallet.length)}
                   </Typography>
                 </React.Fragment>
               }
@@ -682,20 +758,20 @@ class PortfolioBig extends Component {
             <ListItemSecondaryAction>
               <IconButton
                 aria-label="rename"
-                onClick={() => this.renameWallet(wallet.wallet)}
+                onClick={() => this.renameWallet(wallet)}
               >
                 <MoreHorizIcon />
               </IconButton>
               <IconButton
                 aria-label="update"
-                onClick={() => this.updateWallet(wallet.wallet)}
+                onClick={() => this.updateWallet(wallet)}
               >
                 <RefreshRoundedIcon />
               </IconButton>
-              {this.state.account.address !== wallet.wallet && (
+              {this.state.account.address !== wallet && (
                 <IconButton
                   aria-label="remove"
-                  onClick={() => this.removeWALLET(wallet.wallet)}
+                  onClick={() => this.removeWALLET(wallet)}
                 >
                   <BackspaceRoundedIcon />
                 </IconButton>
@@ -706,7 +782,7 @@ class PortfolioBig extends Component {
       ));
     }
     wallets.forEach((item, i) => {
-      console.log(item.wallet);
+      console.log(item);
     });
   };
 
@@ -758,7 +834,7 @@ class PortfolioBig extends Component {
   };
 
   dbWalletReturned = (payload) => {
-    this.setState({ userWallets: payload.wallets });
+    this.setState({ userWallets: payload.wallets, addWallet: false });
   };
 
   //Send token data as data and type "win" / "lose"
@@ -832,7 +908,23 @@ class PortfolioBig extends Component {
   };
 
   timeframeBTNClicked = (newTimeframe) => {
-    this.setState({ timeFrame: newTimeframe });
+    if (this.state.selectedWallet === "all") {
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: DB_GET_PORTFOLIO_CHART,
+          wallet: this.state.userWallets,
+          timeframe: newTimeframe,
+        });
+    } else {
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: DB_GET_PORTFOLIO_CHART,
+          wallet: this.state.selectedWallet,
+          timeframe: newTimeframe,
+        });
+    }
+
+    this.setState({ timeFrame: newTimeframe, chartDataLoaded: false });
   };
 
   render() {
@@ -1000,6 +1092,41 @@ class PortfolioBig extends Component {
                         component="nav"
                         aria-label="user wallet list"
                       >
+                        <div key={"allWallets"}>
+                          <Divider />
+                          <ListItem
+                            key={"allWallets"}
+                            button
+                            selected={this.state.selectedWallet === "all"}
+                            onClick={() =>
+                              this.walletClicked(this.state.userWallets)
+                            }
+                            className={classes.list}
+                          >
+                            <ListItemText
+                              primary={
+                                <React.Fragment>
+                                  <Typography
+                                    display="inline"
+                                    noWrap={true}
+                                    className={classes.inline}
+                                    color="textPrimary"
+                                  >
+                                    All
+                                  </Typography>
+                                </React.Fragment>
+                              }
+                            />
+                            <ListItemSecondaryAction>
+                              <IconButton
+                                aria-label="update"
+                                onClick={() => this.updateWallet("all")}
+                              >
+                                <RefreshRoundedIcon />
+                              </IconButton>
+                            </ListItemSecondaryAction>
+                          </ListItem>
+                        </div>
                         {this.userWalletList(userWallets)}
                       </List>
                     </div>
@@ -1120,7 +1247,10 @@ class PortfolioBig extends Component {
                         item
                         container
                         justify="space-around"
-                        style={{ backgroundColor: "rgba(125,125,125,0.2)" }}
+                        style={{
+                          backgroundColor: "rgba(125,125,125,0.2)",
+                          textAlign: "center",
+                        }}
                       >
                         <Grid
                           item

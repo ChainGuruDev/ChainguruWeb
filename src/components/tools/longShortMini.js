@@ -123,16 +123,13 @@ class LongShortMini extends Component {
         type: DB_GET_USERDATA,
         address: account.address,
       });
-      if (props.tokenID) {
-        console.log(props.tokenID);
-      }
     }
   }
 
   componentDidUpdate(prevProps) {
     if (prevProps.tokenID !== this.props.tokenID) {
       this.setState({ tokenID: this.props.tokenID });
-      console.log(this.props.tokenID);
+      // console.log(this.props.tokenID);
     }
   }
 
@@ -199,7 +196,6 @@ class LongShortMini extends Component {
         vote = data[0].vote;
       }
     }
-    console.log(data);
 
     this.setState({
       loadingNewVote: false,

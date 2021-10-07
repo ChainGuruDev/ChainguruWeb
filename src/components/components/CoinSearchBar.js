@@ -10,6 +10,7 @@ import {
   GET_COIN_LIST,
   COINLIST_RETURNED,
   GET_COIN_DATA,
+  GETTING_NEW_CHART_DATA,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -48,6 +49,7 @@ class CoinSearchBar extends Component {
 
   coinSelect = (newValue, compareBarID) => {
     if (newValue) {
+      emitter.emit(GETTING_NEW_CHART_DATA, "");
       let _id = newValue.id;
       if (compareBarID) {
         dispatcher.dispatch({

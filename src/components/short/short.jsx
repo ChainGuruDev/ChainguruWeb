@@ -21,6 +21,8 @@ import TrendingUpIcon from "@material-ui/icons/TrendingUp";
 import SearchIcon from "@material-ui/icons/Search";
 import SwapHorizIcon from "@material-ui/icons/SwapHoriz";
 
+import { isMobile } from "react-device-detect";
+
 //LOAD TOOLS now with reactLazy
 // import CryptoDetective from "../tools/cryptoDetective";
 // import CryptoCompare from "../tools/cryptoCompare";
@@ -110,8 +112,8 @@ function TabPanel(props) {
     <div
       role="tabpanel"
       hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
+      id={`tools-tabpanel-${index}`}
+      aria-labelledby={`tools-tab-${index}`}
       {...other}
     >
       {value === index && (
@@ -131,8 +133,8 @@ TabPanel.propTypes = {
 
 function a11yProps(index) {
   return {
-    id: `simple-tab-${index}`,
-    "aria-controls": `simple-tabpanel-${index}`,
+    id: `tool-tab-${index}`,
+    "aria-controls": `tool-tabpanel-${index}`,
   };
 }
 
@@ -310,6 +312,7 @@ class Short extends Component {
             value={valueTab}
             onChange={handleChangeTabs}
             aria-label="tool tabs"
+            variant={isMobile ? "scrollable" : ""}
             scrollButtons="auto"
             indicatorColor="secondary"
             textColor="secondary"

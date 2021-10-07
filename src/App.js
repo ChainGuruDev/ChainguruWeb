@@ -5,7 +5,6 @@ import { BrowserRouter, Switch, Route } from "react-router-dom";
 import "./i18n";
 import createBreakpoints from "@material-ui/core/styles/createBreakpoints";
 import Web3 from "web3";
-
 import AcuminTTF from "./assets/fonts/AcuminVariableConcept.otf";
 
 import Header from "./components/header";

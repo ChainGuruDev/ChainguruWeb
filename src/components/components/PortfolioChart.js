@@ -116,6 +116,21 @@ class PortfolioChart extends Component {
     );
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.data) {
+      if (prevProps.data !== this.props.data) {
+        this.setState({
+          series: [
+            {
+              name: "",
+              data: this.props.data,
+            },
+          ],
+        });
+      }
+    }
+  }
+
   darkModeSwitchReturned = (theme) => {
     let colorMode = theme ? "dark" : "light";
     this.setState({
@@ -136,14 +151,7 @@ class PortfolioChart extends Component {
   };
 
   portfolioChartReturned = (data) => {
-    this.setState({
-      series: [
-        {
-          name: "",
-          data: data,
-        },
-      ],
-    });
+    this.render();
   };
 
   render() {

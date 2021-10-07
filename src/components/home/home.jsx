@@ -1,4 +1,10 @@
 import React, { Component } from "react";
+import {
+  isBrowser,
+  isMobile,
+  withOrientationChange,
+} from "react-device-detect";
+
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { Card, Typography } from "@material-ui/core";
@@ -65,6 +71,10 @@ const styles = (theme) => ({
       opacity: 0,
       color: colors.white,
     },
+    "& .titleMobile": {
+      opacity: 0.35,
+      color: colors.white,
+    },
     "& .icon": {
       transition: "opacity 0.5s ease-in-out",
       opacity: 0.35,
@@ -90,6 +100,10 @@ const styles = (theme) => ({
     "& .title": {
       transition: "opacity 0.5s ease-in-out",
       opacity: 0.0,
+      color: colors.white,
+    },
+    "& .titleMobile": {
+      opacity: 0.35,
       color: colors.white,
     },
     "& .icon": {
@@ -118,6 +132,10 @@ const styles = (theme) => ({
       transition: "opacity 0.5s ease-in-out",
 
       opacity: 0.0,
+      color: colors.white,
+    },
+    "& .titleMobile": {
+      opacity: 0.35,
       color: colors.white,
     },
     "& .icon": {
@@ -150,6 +168,10 @@ const styles = (theme) => ({
     },
     "& .icon": {
       transition: "opacity 0.5s ease-in-out",
+      opacity: 0.35,
+      color: colors.white,
+    },
+    "& .titleMobile": {
       opacity: 0.35,
       color: colors.white,
     },
@@ -192,78 +214,208 @@ const styles = (theme) => ({
       fontSize: "100px",
     },
   },
+  iconMobile: {
+    width: "50%",
+  },
   link: {
     textDecoration: "none",
+  },
+  mobileDiv: {
+    justifyContent: "inherit",
+    display: "flex",
+    flexDirection: "column",
+    minWidth: "50%",
+  },
+  mobileDivLandscape: {
+    justifyContent: "inherit",
+    display: "flex",
+    flexDirection: "row",
+    minWidth: "50%",
   },
 });
 
 class Home extends Component {
   constructor(props) {
-    super();
+    super(props);
   }
 
   render() {
-    const { classes, t } = this.props;
+    const { classes, t, isPortrait } = this.props;
+    if (isMobile) {
+      return (
+        <div className={classes.root}>
+          <div style={{ display: "flex", flex: 1, width: "100%" }}>
+            <div
+              className={
+                isPortrait ? classes.mobileDiv : classes.mobileDivLandscape
+              }
+            >
+              <Card
+                className={`${classes.card} ${classes.short}`}
+                onClick={() => {
+                  this.nav("/short/compare/bitcoin/ethereum");
+                }}
+              >
+                <FastIcon
+                  fill={colors.white}
+                  className={`${classes.iconMobile} icon`}
+                />
+                <Typography
+                  variant={"h3"}
+                  className={`${classes.title} titleMobile`}
+                >
+                  {t("Home.short")}
+                </Typography>
+                <Typography
+                  variant={"h3"}
+                  className={`${classes.title} titleMobile`}
+                >
+                  Strategy
+                </Typography>
+              </Card>
+              <Card
+                className={`${classes.card} ${classes.mid}`}
+                onClick={() => {
+                  this.nav("/medium/compare/bitcoin/ethereum");
+                }}
+              >
+                <MediumIcon
+                  fill={colors.white}
+                  className={`${classes.iconMobile} icon`}
+                />
+                <Typography
+                  variant={"h3"}
+                  className={`${classes.title} titleMobile`}
+                >
+                  {t("Home.medium")}
+                </Typography>
+                <Typography
+                  variant={"h3"}
+                  className={`${classes.title} titleMobile`}
+                >
+                  Strategy
+                </Typography>
+              </Card>
+            </div>
+            <div
+              className={
+                isPortrait ? classes.mobileDiv : classes.mobileDivLandscape
+              }
+            >
+              <Card
+                className={`${classes.card} ${classes.long}`}
+                onClick={() => {
+                  this.nav("/long");
+                }}
+              >
+                <LongIcon
+                  stroke={colors.white}
+                  className={`${classes.iconMobile} icon`}
+                />
+                <Typography
+                  variant={"h3"}
+                  className={`${classes.title} titleMobile`}
+                >
+                  {t("Home.long")}
+                </Typography>
+                <Typography
+                  variant={"h3"}
+                  className={`${classes.title} titleMobile`}
+                >
+                  Strategy
+                </Typography>
+              </Card>
+              <Card
+                className={`${classes.card} ${classes.market}`}
+                onClick={() => {
+                  this.nav("/portfolio");
+                }}
+              >
+                <WalletIcon
+                  fill={colors.white}
+                  className={`${classes.iconMobile} icon`}
+                />
+                <Typography
+                  variant={"h3"}
+                  className={`${classes.title} titleMobile`}
+                >
+                  {t("Home.portfolio")}
+                </Typography>
+              </Card>
+            </div>
+          </div>
+        </div>
+      );
+    } else {
+      return (
+        <div className={classes.root}>
+          <Card
+            className={`${classes.card} ${classes.short}`}
+            onClick={() => {
+              this.nav("/short/compare/bitcoin/ethereum");
+            }}
+          >
+            <FastIcon fill={colors.white} className={`${classes.icon} icon`} />
+            <Typography variant={"h3"} className={`${classes.title} title`}>
+              {t("Home.short")}
+            </Typography>
+            <Typography variant={"h3"} className={`${classes.title} title`}>
+              Strategy
+            </Typography>
+          </Card>
 
-    return (
-      <div className={classes.root}>
-        <Card
-          className={`${classes.card} ${classes.short}`}
-          onClick={() => {
-            this.nav("/short/compare/bitcoin/ethereum");
-          }}
-        >
-          <FastIcon fill={colors.white} className={`${classes.icon} icon`} />
-          <Typography variant={"h3"} className={`${classes.title} title`}>
-            {t("Home.short")}
-          </Typography>
-          <Typography variant={"h3"} className={`${classes.title} title`}>
-            Strategy
-          </Typography>
-        </Card>
+          <Card
+            className={`${classes.card} ${classes.mid}`}
+            onClick={() => {
+              this.nav("/medium/compare/bitcoin/ethereum");
+            }}
+          >
+            <MediumIcon
+              fill={colors.white}
+              className={`${classes.icon} icon`}
+            />
+            <Typography variant={"h3"} className={`${classes.title} title`}>
+              {t("Home.medium")}
+            </Typography>
+            <Typography variant={"h3"} className={`${classes.title} title`}>
+              Strategy
+            </Typography>
+          </Card>
+          <Card
+            className={`${classes.card} ${classes.long}`}
+            onClick={() => {
+              this.nav("/long");
+            }}
+          >
+            <LongIcon
+              stroke={colors.white}
+              className={`${classes.icon} icon`}
+            />
+            <Typography variant={"h3"} className={`${classes.title} title`}>
+              {t("Home.long")}
+            </Typography>
+            <Typography variant={"h3"} className={`${classes.title} title`}>
+              Strategy
+            </Typography>
+          </Card>
 
-        <Card
-          className={`${classes.card} ${classes.mid}`}
-          onClick={() => {
-            this.nav("/medium/compare/bitcoin/ethereum");
-          }}
-        >
-          <MediumIcon fill={colors.white} className={`${classes.icon} icon`} />
-          <Typography variant={"h3"} className={`${classes.title} title`}>
-            {t("Home.medium")}
-          </Typography>
-          <Typography variant={"h3"} className={`${classes.title} title`}>
-            Strategy
-          </Typography>
-        </Card>
-        <Card
-          className={`${classes.card} ${classes.long}`}
-          onClick={() => {
-            this.nav("/long");
-          }}
-        >
-          <LongIcon stroke={colors.white} className={`${classes.icon} icon`} />
-          <Typography variant={"h3"} className={`${classes.title} title`}>
-            {t("Home.long")}
-          </Typography>
-          <Typography variant={"h3"} className={`${classes.title} title`}>
-            Strategy
-          </Typography>
-        </Card>
-
-        <Card
-          className={`${classes.card} ${classes.market}`}
-          onClick={() => {
-            this.nav("/portfolio");
-          }}
-        >
-          <WalletIcon fill={colors.white} className={`${classes.icon} icon`} />
-          <Typography variant={"h3"} className={`${classes.title} title`}>
-            {t("Home.portfolio")}
-          </Typography>
-        </Card>
-      </div>
-    );
+          <Card
+            className={`${classes.card} ${classes.market}`}
+            onClick={() => {
+              this.nav("/portfolio");
+            }}
+          >
+            <WalletIcon
+              fill={colors.white}
+              className={`${classes.icon} icon`}
+            />
+            <Typography variant={"h3"} className={`${classes.title} title`}>
+              {t("Home.portfolio")}
+            </Typography>
+          </Card>
+        </div>
+      );
+    }
   }
 
   // <Card
@@ -283,4 +435,6 @@ class Home extends Component {
   };
 }
 
-export default withTranslation()(withRouter(withStyles(styles)(Home)));
+export default withTranslation()(
+  withRouter(withStyles(styles)(withOrientationChange(Home)))
+);

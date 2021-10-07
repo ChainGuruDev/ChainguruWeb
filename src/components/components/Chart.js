@@ -4,13 +4,15 @@ import { withStyles } from "@material-ui/core/styles";
 
 import { colors } from "../../theme";
 import { CircularProgress, Card } from "@material-ui/core";
-
+import { formatMoney } from "../helpers";
 import {
   COIN_DATA_RETURNED,
   COIN_PRICECHART_RETURNED,
   GET_COIN_PRICECHART,
   DARKMODE_SWITCH_RETURN,
   SWITCH_VS_COIN_RETURNED,
+  DB_GET_ASSETSTATS_RETURNED,
+  GETTING_NEW_CHART_DATA,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -42,6 +44,7 @@ class PriceChart extends Component {
 
     const tema = store.getStore("theme");
     //console.log(tema);
+
     this.state = {
       options: {
         theme: {
@@ -51,7 +54,6 @@ class PriceChart extends Component {
           width: 2,
           curve: "straight",
         },
-
         colors: color,
         fill: {
           type: "gradient",
@@ -65,7 +67,7 @@ class PriceChart extends Component {
           animations: {
             enabled: false,
           },
-          id: "",
+          id: "bigChart",
           background: "rgba(0, 0, 0, 0.0)",
         },
         xaxis: {
@@ -108,6 +110,9 @@ class PriceChart extends Component {
     emitter.on(COIN_PRICECHART_RETURNED, this.coinPriceChartReturned);
     emitter.on(DARKMODE_SWITCH_RETURN, this.darkModeSwitchReturned);
     emitter.on(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
+    emitter.on(DB_GET_ASSETSTATS_RETURNED, this.db_getAssetStatsReturned);
+    emitter.on(GETTING_NEW_CHART_DATA, this.newSearch);
+
     dispatcher.dispatch({
       type: GET_COIN_PRICECHART,
       content: [
@@ -127,7 +132,25 @@ class PriceChart extends Component {
     );
     emitter.removeListener(DARKMODE_SWITCH_RETURN, this.darkModeSwitchReturned);
     emitter.removeListener(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
+    emitter.removeListener(
+      DB_GET_ASSETSTATS_RETURNED,
+      this.db_getAssetStatsReturned
+    );
+    emitter.removeListener(GETTING_NEW_CHART_DATA, this.newSearch);
   }
+
+  newSearch = () => {
+    if (this.state.options) {
+      this.setState({
+        options: {
+          ...this.state.options,
+          annotations: {
+            yaxis: [{}],
+          },
+        },
+      });
+    }
+  };
 
   darkModeSwitchReturned = (theme) => {
     let colorMode = theme ? "dark" : "light";
@@ -139,6 +162,83 @@ class PriceChart extends Component {
         },
       },
     });
+  };
+
+  db_getAssetStatsReturned = (data) => {
+    // console.log(data);
+    if (data[0] && data[0].stats) {
+      // console.log(`average buy price ${data[0].stats.avg_buy_price_net}`);
+      this.setState({
+        options: {
+          ...this.state.options,
+          annotations: {
+            yaxis: [
+              {
+                y: data[0].stats.avg_buy_price_net,
+                borderColor: "#569973",
+                label: {
+                  borderColor: "#569973",
+                  style: {
+                    background: "#569973",
+                  },
+                  text: `average buy price ${formatMoney(
+                    data[0].stats.avg_buy_price_net
+                  )}`,
+                },
+              },
+              {
+                y: data[0].stats.avg_buy_price_net * 2,
+                borderColor: "#fbba6a",
+                label: {
+                  borderColor: "#fbba6a",
+                  style: {
+                    background: "#fbba6a",
+                  },
+                  text: `estimated 100% profit  ${formatMoney(
+                    data[0].stats.avg_buy_price_net * 2
+                  )}`,
+                },
+              },
+              {
+                y: data[0].stats.avg_buy_price_net * 5,
+                borderColor: "#f68e55",
+                label: {
+                  borderColor: "#f68e55",
+                  style: {
+                    background: "#f68e55",
+                  },
+                  text: `estimated 5X profit  ${formatMoney(
+                    data[0].stats.avg_buy_price_net * 5
+                  )}`,
+                },
+              },
+              {
+                y: data[0].stats.avg_buy_price_net * 10,
+                borderColor: "#ed8278",
+                label: {
+                  borderColor: "#ed8278",
+                  style: {
+                    background: "#ed8278",
+                  },
+                  text: `estimated 10X profit  ${formatMoney(
+                    data[0].stats.avg_buy_price_net * 10
+                  )}`,
+                },
+              },
+            ],
+          },
+        },
+      });
+    } else {
+      this.setState({
+        options: {
+          ...this.state.options,
+          annotations: {
+            yaxis: [{}],
+          },
+        },
+      });
+    }
   };
 
   vsCoinReturned = (vsCoin) => {
@@ -159,7 +259,9 @@ class PriceChart extends Component {
         }
       }
     } else {
-      if (this.props.id) {
+      // console.log(this.props.coinID);
+
+      if (this.props.coinID) {
         dispatcher.dispatch({
           type: GET_COIN_PRICECHART,
           content: [
@@ -193,6 +295,8 @@ class PriceChart extends Component {
         // let roundedPrices = data[0].prices.map(function (each_element) {
         //   return [each_element[0], Number(each_element[1]).toFixed(3)];
         // });
+        let priceDateMiliseconds = [];
+        console.log(data[0]);
 
         this.setState({
           series: [{ name: this.props.id, data: data[0].prices }],
@@ -203,7 +307,6 @@ class PriceChart extends Component {
         series: [{ name: "", data: data[0].prices }],
       });
     }
-    console.log(data[0].prices);
   };
 
   render() {

@@ -1331,7 +1331,6 @@ class Store {
 
   getCoinData = async (coin) => {
     if (coin.content.startsWith("0x") && coin.content.length > 3) {
-      console.log("bla");
       //TODO GET COINDATA FROM CONTRACT ADDRESS
       if (coin.content === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
         try {
@@ -1352,13 +1351,24 @@ class Store {
         console.log(err);
       }
     } else {
-      try {
-        let data = await CoinGeckoClient.coins.fetch(coin.content, {
-          sparkline: true,
-        });
-        emitter.emit(COIN_DATA_RETURNED, [await data.data, coin.BarID]);
-      } catch (err) {
-        console.log(err);
+      if (coin.content === "eth") {
+        try {
+          let data = await CoinGeckoClient.coins.fetch("ethereum", {
+            sparkline: true,
+          });
+          emitter.emit(COIN_DATA_RETURNED, [await data.data, coin.BarID]);
+        } catch (err) {
+          console.log(err);
+        }
+      } else {
+        try {
+          let data = await CoinGeckoClient.coins.fetch(coin.content, {
+            sparkline: true,
+          });
+          emitter.emit(COIN_DATA_RETURNED, [await data.data, coin.BarID]);
+        } catch (err) {
+          console.log(err);
+        }
       }
     }
   };
@@ -2041,19 +2051,21 @@ class Store {
     }
   };
 
-  db_getAssetStats = async (wallet, assetCode) => {
+  db_getAssetStats = async (data) => {
     let vsCoin = store.getStore("vsCoin");
     try {
-      console.log("gettingStats");
+      // console.log("gettingStats");
+      // console.log(data);
       let portfolioAssetStats = await axios.post(
         `https://chainguru.fun/api/portfolio/assets/stats`,
         {
-          address: wallet,
+          address: data.payload.wallet,
           currency: vsCoin,
-          asset_code: assetCode,
+          asset_code: [data.payload.assetCode],
         }
       );
-      console.log(portfolioAssetStats.data);
+      // console.log("returned stats");
+      // console.log(portfolioAssetStats.data);
       emitter.emit(DB_GET_ASSETSTATS_RETURNED, await portfolioAssetStats.data);
     } catch (err) {
       console.log(err.message);
@@ -2097,70 +2109,144 @@ class Store {
       };
     }
 
-    try {
-      let portfolioAssets = await axios.post(
-        `https://chainguru.fun/api/portfolio/address/assets`,
-        {
-          address: payload.wallet,
-          currency: vsCoin,
-          asset_code: ["all"],
+    if (Array.isArray(payload.wallet)) {
+      try {
+        let finalData = [];
+        for (var i = 0; i < payload.wallet.length; i++) {
+          let keys = [];
+          let portfolioAssets = [];
+          portfolioAssets = await axios.post(
+            `https://chainguru.fun/api/portfolio/address/assets`,
+            {
+              address: payload.wallet[i],
+              currency: vsCoin,
+              asset_code: ["all"],
+            }
+          );
+          portfolioAssets.data.forEach((item, i) => {
+            keys.push(item.asset_code);
+          });
+          keys.forEach((key, index) => {
+            finalData.push(
+              createData(
+                portfolioAssets.data[index].wallet_address,
+                portfolioAssets.data[index].asset_code,
+                portfolioAssets.data[index].name,
+                portfolioAssets.data[index].symbol,
+                portfolioAssets.data[index].decimals,
+                portfolioAssets.data[index].type,
+                portfolioAssets.data[index].icon_url,
+                portfolioAssets.data[index].price,
+                portfolioAssets.data[index].is_displayable,
+                portfolioAssets.data[index].is_verified,
+                portfolioAssets.data[index].quantity
+              )
+            );
+          });
         }
-      );
-      let keys = [];
-      portfolioAssets.data.forEach((item, i) => {
-        keys.push(item.asset_code);
-      });
+        finalData.forEach((item, i) => {
+          if (item.price) {
+            let quantityDecimals = item.quantity / Math.pow(10, item.decimals);
+            let balance = quantityDecimals * item.price.value;
+            item.balance = balance;
+            item.quantityDecimals = quantityDecimals;
+          } else {
+            let quantityDecimals = item.quantity / Math.pow(10, item.decimals);
+            item.balance = 0;
+            item.quantityDecimals = quantityDecimals;
+          }
+          if (item.quantityDecimals === 1) {
+            item.type = "NFT";
+          }
+        });
+        emitter.emit(DB_GET_PORTFOLIO_RETURNED, finalData);
+      } catch (err) {
+        emitter.emit(ERROR, await err.message);
 
-      let finalData = [];
-      keys.forEach((key, index) => {
-        finalData.push(
-          createData(
-            portfolioAssets.data[index].wallet_address,
-            portfolioAssets.data[index].asset_code,
-            portfolioAssets.data[index].name,
-            portfolioAssets.data[index].symbol,
-            portfolioAssets.data[index].decimals,
-            portfolioAssets.data[index].type,
-            portfolioAssets.data[index].icon_url,
-            portfolioAssets.data[index].price,
-            portfolioAssets.data[index].is_displayable,
-            portfolioAssets.data[index].is_verified,
-            portfolioAssets.data[index].quantity
-          )
+        console.log(err.message);
+      }
+    } else {
+      try {
+        let portfolioAssets = await axios.post(
+          `https://chainguru.fun/api/portfolio/address/assets`,
+          {
+            address: payload.wallet,
+            currency: vsCoin,
+            asset_code: ["all"],
+          }
         );
-      });
+        let keys = [];
+        portfolioAssets.data.forEach((item, i) => {
+          keys.push(item.asset_code);
+        });
 
-      finalData.forEach((item, i) => {
-        if (item.price) {
-          let quantityDecimals = item.quantity / Math.pow(10, item.decimals);
-          let balance = quantityDecimals * item.price.value;
-          item.balance = balance;
-          item.quantityDecimals = quantityDecimals;
-        } else {
-          let quantityDecimals = item.quantity / Math.pow(10, item.decimals);
-          item.balance = 0;
-          item.quantityDecimals = quantityDecimals;
-        }
-      });
-      emitter.emit(DB_GET_PORTFOLIO_RETURNED, finalData);
-    } catch (err) {
-      emitter.emit(ERROR, await err.message);
+        let finalData = [];
+        keys.forEach((key, index) => {
+          finalData.push(
+            createData(
+              portfolioAssets.data[index].wallet_address,
+              portfolioAssets.data[index].asset_code,
+              portfolioAssets.data[index].name,
+              portfolioAssets.data[index].symbol,
+              portfolioAssets.data[index].decimals,
+              portfolioAssets.data[index].type,
+              portfolioAssets.data[index].icon_url,
+              portfolioAssets.data[index].price,
+              portfolioAssets.data[index].is_displayable,
+              portfolioAssets.data[index].is_verified,
+              portfolioAssets.data[index].quantity
+            )
+          );
+        });
 
-      console.log(err.message);
+        finalData.forEach((item, i) => {
+          if (item.price) {
+            let quantityDecimals = item.quantity / Math.pow(10, item.decimals);
+            let balance = quantityDecimals * item.price.value;
+            item.balance = balance;
+            item.quantityDecimals = quantityDecimals;
+          } else {
+            let quantityDecimals = item.quantity / Math.pow(10, item.decimals);
+            item.balance = 0;
+            item.quantityDecimals = quantityDecimals;
+          }
+          if (item.quantityDecimals === 1) {
+            item.type = "NFT";
+          }
+        });
+        emitter.emit(DB_GET_PORTFOLIO_RETURNED, finalData);
+      } catch (err) {
+        emitter.emit(ERROR, await err.message);
+
+        console.log(err.message);
+      }
     }
   };
 
   db_getPortfolioStats = async (payload) => {
+    console.log(payload);
     let vsCoin = store.getStore("vsCoin");
     try {
-      let portfolioStats = await axios.get(
-        `https://chainguru.fun/api/portfolio/address/portfolio?address=${payload.wallet}&currency=${vsCoin}&fields=all`
-      );
+      if (Array.isArray(payload.wallet)) {
+        let fullStats = [];
+        for (var i = 0; i < payload.wallet.length; i++) {
+          const portfolioStats = await axios.get(
+            `https://chainguru.fun/api/portfolio/address/portfolio?address=${payload.wallet[i]}&currency=${vsCoin}&fields=all`
+          );
+          fullStats.push(portfolioStats.data.portfolio);
+        }
+        // console.log(fullStats);
+        emitter.emit(DB_GET_PORTFOLIO_STATS_RETURNED, fullStats);
+      } else {
+        let portfolioStats = await axios.get(
+          `https://chainguru.fun/api/portfolio/address/portfolio?address=${payload.wallet}&currency=${vsCoin}&fields=all`
+        );
 
-      emitter.emit(
-        DB_GET_PORTFOLIO_STATS_RETURNED,
-        portfolioStats.data.portfolio
-      );
+        emitter.emit(
+          DB_GET_PORTFOLIO_STATS_RETURNED,
+          portfolioStats.data.portfolio
+        );
+      }
     } catch (err) {
       emitter.emit(ERROR, await err.message);
       console.log(err.message);
@@ -2179,45 +2265,97 @@ class Store {
         profit_percent,
       };
     }
-
     try {
-      let portfolioAssetStats = await axios.post(
-        `https://chainguru.fun/api/portfolio/assets/stats`,
-        {
-          address: payload.wallet,
-          currency: vsCoin,
-          asset_code: payload.keys,
-        }
-      );
+      if (Array.isArray(payload.wallet)) {
+        let finalData = [];
+        for (var i = 0; i < payload.wallet.length; i++) {
+          const assets = payload.portfolioData.filter(
+            (data) =>
+              JSON.stringify(data.wallet_address).toLowerCase() ===
+              JSON.stringify(payload.wallet[i]).toLowerCase()
+          );
+          let keys = [];
+          let prices = [];
+          keys.length = 0;
+          prices.length = 0;
+          assets.forEach((asset, i) =>
+            prices.push(asset.price ? asset.price.value : null)
+          );
+          assets.forEach((asset, i) => keys.push(asset.asset_code));
+          let portfolioAssetStats = await axios.post(
+            `https://chainguru.fun/api/portfolio/assets/stats`,
+            {
+              address: payload.wallet[i],
+              currency: vsCoin,
+              asset_code: keys,
+            }
+          );
+          keys.forEach((key, index) => {
+            let profit_percent;
+            if (
+              portfolioAssetStats.data[index].stats &&
+              portfolioAssetStats.data[index].stats.avg_buy_price &&
+              prices[index]
+            ) {
+              profit_percent =
+                ((prices[index] -
+                  portfolioAssetStats.data[index].stats.avg_buy_price) /
+                  portfolioAssetStats.data[index].stats.avg_buy_price) *
+                100;
+            } else {
+              profit_percent = null;
+            }
 
-      let finalData = [];
-      payload.keys.forEach((key, index) => {
-        let profit_percent;
-        if (
-          portfolioAssetStats.data[index].stats &&
-          portfolioAssetStats.data[index].stats.avg_buy_price &&
-          payload.assetPrice[index]
-        ) {
-          profit_percent =
-            ((payload.assetPrice[index] -
-              portfolioAssetStats.data[index].stats.avg_buy_price) /
-              portfolioAssetStats.data[index].stats.avg_buy_price) *
-            100;
-        } else {
-          profit_percent = null;
+            finalData.push(
+              createData(
+                payload.wallet[i],
+                keys[index],
+                portfolioAssetStats.data[index].stats,
+                profit_percent
+              )
+            );
+          });
         }
-
-        finalData.push(
-          createData(
-            payload.wallet,
-            payload.keys[index],
-            portfolioAssetStats.data[index].stats,
-            profit_percent
-          )
+        emitter.emit(DB_GET_PORTFOLIO_ASSET_STATS_RETURNED, finalData);
+      } else {
+        let portfolioAssetStats = await axios.post(
+          `https://chainguru.fun/api/portfolio/assets/stats`,
+          {
+            address: payload.wallet,
+            currency: vsCoin,
+            asset_code: payload.keys,
+          }
         );
-      });
 
-      emitter.emit(DB_GET_PORTFOLIO_ASSET_STATS_RETURNED, finalData);
+        let finalData = [];
+        payload.keys.forEach((key, index) => {
+          let profit_percent;
+          if (
+            portfolioAssetStats.data[index].stats &&
+            portfolioAssetStats.data[index].stats.avg_buy_price &&
+            payload.assetPrice[index]
+          ) {
+            profit_percent =
+              ((payload.assetPrice[index] -
+                portfolioAssetStats.data[index].stats.avg_buy_price) /
+                portfolioAssetStats.data[index].stats.avg_buy_price) *
+              100;
+          } else {
+            profit_percent = null;
+          }
+
+          finalData.push(
+            createData(
+              payload.wallet,
+              payload.keys[index],
+              portfolioAssetStats.data[index].stats,
+              profit_percent
+            )
+          );
+        });
+
+        emitter.emit(DB_GET_PORTFOLIO_ASSET_STATS_RETURNED, finalData);
+      }
     } catch (err) {
       emitter.emit(ERROR, await err.message);
       console.log(err.message);
@@ -2225,15 +2363,41 @@ class Store {
   };
 
   db_getPortfolioChart = async (payload) => {
+    console.log(payload);
     let vsCoin = store.getStore("vsCoin");
+    //TODO WAIT FOR MULTIPLE ADDRESS ENDPOINT
     try {
-      let portfolioChart = await axios.get(
-        `https://chainguru.fun/api/portfolio/address/charts?address=${payload.wallet}&range=${payload.timeframe}&currency=${vsCoin}`
-      );
-      emitter.emit(
-        DB_GET_PORTFOLIO_CHART_RETURNED,
-        await portfolioChart.data.charts.others
-      );
+      if (Array.isArray(payload.wallet)) {
+        console.log(payload.wallet);
+        let charts = await axios.get(
+          `https://chainguru.fun/api/portfolio/address/charts?address=${payload.wallet[0]}&range=${payload.timeframe}&currency=${vsCoin}`
+        );
+        for (var i = 1; i < payload.wallet.length; i++) {
+          let portfolioChart = await axios.get(
+            `https://chainguru.fun/api/portfolio/address/charts?address=${payload.wallet[i]}&range=${payload.timeframe}&currency=${vsCoin}`
+          );
+          console.log(charts.data.charts.others);
+          for (var j = 0; j < charts.data.charts.others.length; j++) {
+            charts.data.charts.others[j][1] +=
+              portfolioChart.data.charts.others[j][1];
+          }
+        }
+
+        emitter.emit(
+          DB_GET_PORTFOLIO_CHART_RETURNED,
+          await charts.data.charts.others
+        );
+      } else {
+        let vsCoin = store.getStore("vsCoin");
+        console.log(payload.wallet);
+        let portfolioChart = await axios.get(
+          `https://chainguru.fun/api/portfolio/address/charts?address=${payload.wallet}&range=${payload.timeframe}&currency=${vsCoin}`
+        );
+        emitter.emit(
+          DB_GET_PORTFOLIO_CHART_RETURNED,
+          await portfolioChart.data.charts.others
+        );
+      }
     } catch (err) {
       console.log(err.message);
     }

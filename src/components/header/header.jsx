@@ -11,6 +11,12 @@ import { colors } from "../../theme";
 import ENS from "ethjs-ens";
 import { withTranslation } from "react-i18next";
 
+import {
+  isBrowser,
+  isMobile,
+  withOrientationChange,
+} from "react-device-detect";
+
 import { ReactComponent as CGLogo } from "../../assets/logos/logo_chainguru.svg";
 import { ReactComponent as Usd } from "../../assets/dolar.svg";
 import { ReactComponent as Eur } from "../../assets/euro.svg";
@@ -41,7 +47,7 @@ const dispatcher = Store.dispatcher;
 const store = Store.store;
 
 const styles = (theme) => ({
-  root: {
+  rootHeader: {
     borderRadius: "0px",
     verticalAlign: "top",
     width: "100%",
@@ -412,7 +418,6 @@ class Header extends Component {
   render() {
     const { classes, t } = this.props;
     const { account, addressEnsName, modalOpen, darkModeBool } = this.state;
-
     var address = null;
     if (account.address) {
       address =
@@ -432,185 +437,320 @@ class Header extends Component {
         content: state,
       });
     };
-
-    return (
-      <Paper className={classes.root}>
-        <Grid
-          container
-          direction="row"
-          justify="space-between"
-          alignItems="center"
-        >
-          <div
-            className={classes.headerV2}
-            style={{ borderBottom: `3px solid ${this.state.cgLogoColor}` }}
+    if (isMobile) {
+      return (
+        <Paper className={classes.rootHeader}>
+          <Grid
+            container
+            direction="row"
+            justify="space-between"
+            alignItems="center"
           >
-            <div className={classes.icon}>
-              <CGLogo
-                className={classes.imageIcon}
-                fill={this.state.cgLogoColor}
-                onClick={() => {
-                  this.nav("");
-                }}
-              />
-            </div>
-            <div className={classes.links}>
-              {this.renderLink("short")}
-              {this.renderLink("medium")}
-              {this.renderLink("long")}
-              {this.renderLink("portfolio")}
-              {this.renderLink("market")}
-            </div>
             <div
-              className={classes.vsCoinDIV}
-              style={{ border: `2px solid ${this.state.cgLogoColor}` }}
+              className={classes.headerV2}
+              style={{ borderBottom: `3px solid ${this.state.cgLogoColor}` }}
             >
-              {this.state.vsCoin === "usd" && (
-                <Usd
-                  className={classes.vsCoinIcon}
+              <div className={classes.icon}>
+                <CGLogo
+                  className={classes.imageIcon}
                   fill={this.state.cgLogoColor}
                   onClick={() => {
-                    this.vsCoinSwitch("eur");
+                    this.nav("");
                   }}
                 />
-              )}
-              {this.state.vsCoin === "eur" && (
-                <Eur
-                  className={classes.vsCoinIcon}
-                  fill={this.state.cgLogoColor}
-                  onClick={() => {
-                    this.vsCoinSwitch("btc");
-                  }}
-                />
-              )}
-              {this.state.vsCoin === "btc" && (
-                <Btc
-                  className={classes.vsCoinIcon}
-                  fill={this.state.cgLogoColor}
-                  onClick={() => {
-                    this.vsCoinSwitch("eth");
-                  }}
-                />
-              )}
-              {this.state.vsCoin === "eth" && (
-                <Eth
-                  className={classes.vsCoinIcon}
-                  fill={this.state.cgLogoColor}
-                  onClick={() => {
-                    this.vsCoinSwitch("usd");
-                  }}
-                />
-              )}
-            </div>
-            <div
-              className={classes.gasPrice}
-              style={{ border: `2px solid ${this.state.gasColor}` }}
-            >
-              <EvStationIcon
-                style={{ color: this.state.gasColor }}
-                onClick={() => {
-                  dispatcher.dispatch({
-                    type: CHECK_GASPRICE,
-                  });
-                }}
-              />
-              <Typography variant={"h5"}>{this.state.gasPrice}</Typography>
-            </div>
-            <div className={classes.darkModeSwitch}>
-              <FormGroup
-                style={{
-                  display: "flex",
-                  justifyContent: "right",
-                  alignItems: "center",
-                }}
+              </div>
+              <div className={classes.links}>
+                {this.renderLink("short")}
+                {this.renderLink("medium")}
+                {this.renderLink("long")}
+                {this.renderLink("portfolio")}
+                {this.renderLink("market")}
+              </div>
+              <div
+                className={classes.vsCoinDIV}
+                style={{ border: `2px solid ${this.state.cgLogoColor}` }}
               >
-                <FormControlLabel
+                {this.state.vsCoin === "usd" && (
+                  <Usd
+                    className={classes.vsCoinIcon}
+                    fill={this.state.cgLogoColor}
+                    onClick={() => {
+                      this.vsCoinSwitch("eur");
+                    }}
+                  />
+                )}
+                {this.state.vsCoin === "eur" && (
+                  <Eur
+                    className={classes.vsCoinIcon}
+                    fill={this.state.cgLogoColor}
+                    onClick={() => {
+                      this.vsCoinSwitch("btc");
+                    }}
+                  />
+                )}
+                {this.state.vsCoin === "btc" && (
+                  <Btc
+                    className={classes.vsCoinIcon}
+                    fill={this.state.cgLogoColor}
+                    onClick={() => {
+                      this.vsCoinSwitch("eth");
+                    }}
+                  />
+                )}
+                {this.state.vsCoin === "eth" && (
+                  <Eth
+                    className={classes.vsCoinIcon}
+                    fill={this.state.cgLogoColor}
+                    onClick={() => {
+                      this.vsCoinSwitch("usd");
+                    }}
+                  />
+                )}
+              </div>
+              <div
+                className={classes.gasPrice}
+                style={{ border: `2px solid ${this.state.gasColor}` }}
+              >
+                <EvStationIcon
+                  style={{ color: this.state.gasColor }}
+                  onClick={() => {
+                    dispatcher.dispatch({
+                      type: CHECK_GASPRICE,
+                    });
+                  }}
+                />
+                <Typography variant={"h5"}>{this.state.gasPrice}</Typography>
+              </div>
+              <div className={classes.darkModeSwitch}>
+                <FormGroup
                   style={{
                     display: "flex",
                     justifyContent: "right",
                     alignItems: "center",
                   }}
-                  control={
-                    <Checkbox
-                      style={{
-                        display: "flex",
-                        justifyContent: "right",
-                        alignItems: "center",
-                      }}
-                      icon={<Brightness2OutlinedIcon fontSize="small" />}
-                      checkedIcon={<Brightness2RoundedIcon fontSize="small" />}
-                      name="darkModeSwitch"
-                      onChange={handleChangeDarkMode}
-                      checked={darkModeBool}
-                    />
-                  }
+                >
+                  <FormControlLabel
+                    style={{
+                      display: "flex",
+                      justifyContent: "right",
+                      alignItems: "center",
+                    }}
+                    control={
+                      <Checkbox
+                        style={{
+                          display: "flex",
+                          justifyContent: "right",
+                          alignItems: "center",
+                        }}
+                        icon={<Brightness2OutlinedIcon fontSize="small" />}
+                        checkedIcon={
+                          <Brightness2RoundedIcon fontSize="small" />
+                        }
+                        name="darkModeSwitch"
+                        onChange={handleChangeDarkMode}
+                        checked={darkModeBool}
+                      />
+                    }
+                  />
+                </FormGroup>
+              </div>
+              <div className={classes.account}>
+                {address && (
+                  <Typography
+                    variant={"h5"}
+                    className={classes.walletAddress}
+                    noWrap
+                    onClick={this.addressClicked}
+                  >
+                    {addressAlias}
+                    <div className={classes.connectedDot}></div>
+                  </Typography>
+                )}
+                {!address && (
+                  <Typography
+                    variant={"h5"}
+                    className={classes.walletAddress}
+                    noWrap
+                    onClick={this.addressClicked}
+                  >
+                    {t("Market.Connect")}
+                  </Typography>
+                )}
+                <IconButton
+                  onClick={() => {
+                    this.nav("user/profile");
+                  }}
+                  style={{ marginLeft: 10 }}
+                  aria-label="settings"
+                >
+                  <SettingsIcon />
+                </IconButton>
+              </div>
+            </div>
+          </Grid>
+          {modalOpen && this.renderModal()}
+        </Paper>
+      );
+    } else {
+      return (
+        <Paper className={classes.root}>
+          <Grid
+            container
+            direction="row"
+            justify="space-between"
+            alignItems="center"
+          >
+            <div
+              className={classes.headerV2}
+              style={{ borderBottom: `3px solid ${this.state.cgLogoColor}` }}
+            >
+              <div className={classes.icon}>
+                <CGLogo
+                  className={classes.imageIcon}
+                  fill={this.state.cgLogoColor}
+                  onClick={() => {
+                    this.nav("");
+                  }}
                 />
-              </FormGroup>
-            </div>
-            <div className={classes.account}>
-              {address && (
-                <Typography
-                  variant={"h5"}
-                  className={classes.walletAddress}
-                  noWrap
-                  onClick={this.addressClicked}
-                >
-                  {addressAlias}
-                  <div className={classes.connectedDot}></div>
-                </Typography>
-              )}
-              {!address && (
-                <Typography
-                  variant={"h5"}
-                  className={classes.walletAddress}
-                  noWrap
-                  onClick={this.addressClicked}
-                >
-                  {t("Market.Connect")}
-                </Typography>
-              )}
-              <IconButton
-                onClick={() => {
-                  this.nav("user/profile");
-                }}
-                style={{ marginLeft: 10 }}
-                aria-label="settings"
+              </div>
+              <div className={classes.links}>
+                {this.renderLink("short")}
+                {this.renderLink("medium")}
+                {this.renderLink("long")}
+                {this.renderLink("portfolio")}
+                {this.renderLink("market")}
+              </div>
+              <div
+                className={classes.vsCoinDIV}
+                style={{ border: `2px solid ${this.state.cgLogoColor}` }}
               >
-                <SettingsIcon />
-              </IconButton>
+                {this.state.vsCoin === "usd" && (
+                  <Usd
+                    className={classes.vsCoinIcon}
+                    fill={this.state.cgLogoColor}
+                    onClick={() => {
+                      this.vsCoinSwitch("eur");
+                    }}
+                  />
+                )}
+                {this.state.vsCoin === "eur" && (
+                  <Eur
+                    className={classes.vsCoinIcon}
+                    fill={this.state.cgLogoColor}
+                    onClick={() => {
+                      this.vsCoinSwitch("btc");
+                    }}
+                  />
+                )}
+                {this.state.vsCoin === "btc" && (
+                  <Btc
+                    className={classes.vsCoinIcon}
+                    fill={this.state.cgLogoColor}
+                    onClick={() => {
+                      this.vsCoinSwitch("eth");
+                    }}
+                  />
+                )}
+                {this.state.vsCoin === "eth" && (
+                  <Eth
+                    className={classes.vsCoinIcon}
+                    fill={this.state.cgLogoColor}
+                    onClick={() => {
+                      this.vsCoinSwitch("usd");
+                    }}
+                  />
+                )}
+              </div>
+              <div
+                className={classes.gasPrice}
+                style={{ border: `2px solid ${this.state.gasColor}` }}
+              >
+                <EvStationIcon
+                  style={{ color: this.state.gasColor }}
+                  onClick={() => {
+                    dispatcher.dispatch({
+                      type: CHECK_GASPRICE,
+                    });
+                  }}
+                />
+                <Typography variant={"h5"}>{this.state.gasPrice}</Typography>
+              </div>
+              <div className={classes.darkModeSwitch}>
+                <FormGroup
+                  style={{
+                    display: "flex",
+                    justifyContent: "right",
+                    alignItems: "center",
+                  }}
+                >
+                  <FormControlLabel
+                    style={{
+                      display: "flex",
+                      justifyContent: "right",
+                      alignItems: "center",
+                    }}
+                    control={
+                      <Checkbox
+                        style={{
+                          display: "flex",
+                          justifyContent: "right",
+                          alignItems: "center",
+                        }}
+                        icon={<Brightness2OutlinedIcon fontSize="small" />}
+                        checkedIcon={
+                          <Brightness2RoundedIcon fontSize="small" />
+                        }
+                        name="darkModeSwitch"
+                        onChange={handleChangeDarkMode}
+                        checked={darkModeBool}
+                      />
+                    }
+                  />
+                </FormGroup>
+              </div>
+              <div className={classes.account}>
+                {address && (
+                  <Typography
+                    variant={"h5"}
+                    className={classes.walletAddress}
+                    noWrap
+                    onClick={this.addressClicked}
+                  >
+                    {addressAlias}
+                    <div className={classes.connectedDot}></div>
+                  </Typography>
+                )}
+                {!address && (
+                  <Typography
+                    variant={"h5"}
+                    className={classes.walletAddress}
+                    noWrap
+                    onClick={this.addressClicked}
+                  >
+                    {t("Market.Connect")}
+                  </Typography>
+                )}
+                <IconButton
+                  onClick={() => {
+                    this.nav("user/profile");
+                  }}
+                  style={{ marginLeft: 10 }}
+                  aria-label="settings"
+                >
+                  <SettingsIcon />
+                </IconButton>
+              </div>
             </div>
-          </div>
-        </Grid>
-        {modalOpen && this.renderModal()}
-      </Paper>
-    );
+          </Grid>
+          {modalOpen && this.renderModal()}
+        </Paper>
+      );
+    }
   }
 
   renderLink = (screen) => {
     const { classes, t } = this.props;
     const currentSection = this.props.match.path.split("/")[1];
-
-    // if (window.location.pathname === "/" + "short") {
-    //   if (this.state.cgLogoColor !== colors.cgOrange) {
-    //     this.setState({ cgLogoColor: colors.cgOrange });
-    //   }
-    // } else if (window.location.pathname === "/" + "medium") {
-    //   if (this.state.cgLogoColor !== colors.cgGreen) {
-    //     this.setState({ cgLogoColor: colors.cgGreen });
-    //   }
-    // } else if (window.location.pathname === "/" + "long") {
-    //   if (this.state.cgLogoColor !== colors.cgBlue) {
-    //     this.setState({ cgLogoColor: colors.cgBlue });
-    //   }
-    // } else if (window.location.pathname === "/" + "portfolio") {
-    //   if (this.state.cgLogoColor !== colors.cgGreen) {
-    //     this.setState({ cgLogoColor: colors.cgGreen });
-    //   }
-    // } else {
-    //   if (this.state.cgLogoColor !== colors.cgRed) {
-    //     this.setState({ cgLogoColor: colors.cgRed });
-    //   }
-    // }
 
     return (
       <div
@@ -706,4 +846,6 @@ class Header extends Component {
   };
 }
 
-export default withTranslation()(withRouter(withStyles(styles)(Header)));
+export default withTranslation()(
+  withRouter(withStyles(styles)(withOrientationChange(Header)))
+);
