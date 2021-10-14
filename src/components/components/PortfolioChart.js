@@ -157,7 +157,10 @@ class PortfolioChart extends Component {
   render() {
     const { classes } = this.props;
     return (
-      <div className={classes.root} style={{ minHeight: this.props.height }}>
+      <div
+        className={classes.root}
+        style={{ minHeight: this.props.height, minWidth: "100%" }}
+      >
         {
           <Chart
             options={this.state.options}
