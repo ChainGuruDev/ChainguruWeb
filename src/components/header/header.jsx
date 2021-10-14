@@ -382,10 +382,14 @@ class Header extends Component {
       const network = provider.networkVersion;
       if (network === "1") {
         const ens = new ENS({ provider, network });
-        if (ens) {
-          const addressEnsName = await ens.reverse(address).catch(() => {});
-          if (addressEnsName) {
-            this.setState({ addressEnsName });
+        if (ens && address) {
+          try {
+            const addressEnsName = await ens.reverse(address).catch(() => {});
+            if (addressEnsName) {
+              this.setState({ addressEnsName });
+            }
+          } catch (err) {
+            console.log(err.message);
           }
         }
       }

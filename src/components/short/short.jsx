@@ -312,7 +312,7 @@ class Short extends Component {
             value={valueTab}
             onChange={handleChangeTabs}
             aria-label="tool tabs"
-            variant={isMobile ? "scrollable" : ""}
+            variant={isMobile ? "scrollable" : "standard"}
             scrollButtons="auto"
             indicatorColor="secondary"
             textColor="secondary"
@@ -369,7 +369,7 @@ class Short extends Component {
                 </div>
               }
             >
-              <Favorites />
+              <Favorites timeFrame={"short"} />
             </Suspense>
           </TabPanel>
           <TabPanel value={valueTab} index={2}>

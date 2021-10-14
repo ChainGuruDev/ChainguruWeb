@@ -1283,12 +1283,10 @@ class Store {
 
   getCoinList = async () => {
     if (this.store.coinList.length > 0) {
-      // console.log("Cached coinlist");
       //ADD USER FAVORITES TO TOP OF THE LIST
       let list = this.store.coinList;
       if (this.store.userFavorites && this.store.userFavorites.length > 0) {
         const userFav = this.store.userFavorites;
-
         userFav.forEach((item, i) => {
           list.sort(function (x, y) {
             return x.id === item ? -1 : y.id === item ? 1 : 0;
@@ -1301,7 +1299,7 @@ class Store {
       list.sort(function (x, y) {
         return x.id === "bitcoin" ? -1 : y.id === "bitcoin" ? 1 : 0;
       });
-      emitter.emit(COINLIST_RETURNED, this.store.coinList);
+      emitter.emit(COINLIST_RETURNED, list);
     } else {
       let data = await CoinGeckoClient.coins.list();
 
@@ -2054,10 +2052,16 @@ class Store {
   db_getAssetStats = async (data) => {
     let vsCoin = store.getStore("vsCoin");
     try {
-      // console.log("gettingStats");
-      // console.log(data);
+      // let portfolioAssetStats = await axios.post(
+      //   `https://chainguru.fun/api/portfolio/assets/stats`,
+      //   {
+      //     address: data.payload.wallet,
+      //     currency: vsCoin,
+      //     asset_code: [data.payload.assetCode],
+      //   }
+      // );
       let portfolioAssetStats = await axios.post(
-        `https://chainguru.fun/api/portfolio/assets/stats`,
+        `https://chainguru-db.herokuapp.com/zerion/assets/stats`,
         {
           address: data.payload.wallet,
           currency: vsCoin,
@@ -2109,144 +2113,51 @@ class Store {
       };
     }
 
-    if (Array.isArray(payload.wallet)) {
-      try {
-        let finalData = [];
-        for (var i = 0; i < payload.wallet.length; i++) {
-          let keys = [];
-          let portfolioAssets = [];
-          portfolioAssets = await axios.post(
-            `https://chainguru.fun/api/portfolio/address/assets`,
-            {
-              address: payload.wallet[i],
-              currency: vsCoin,
-              asset_code: ["all"],
-            }
-          );
-          portfolioAssets.data.forEach((item, i) => {
-            keys.push(item.asset_code);
-          });
-          keys.forEach((key, index) => {
-            finalData.push(
-              createData(
-                portfolioAssets.data[index].wallet_address,
-                portfolioAssets.data[index].asset_code,
-                portfolioAssets.data[index].name,
-                portfolioAssets.data[index].symbol,
-                portfolioAssets.data[index].decimals,
-                portfolioAssets.data[index].type,
-                portfolioAssets.data[index].icon_url,
-                portfolioAssets.data[index].price,
-                portfolioAssets.data[index].is_displayable,
-                portfolioAssets.data[index].is_verified,
-                portfolioAssets.data[index].quantity
-              )
-            );
-          });
+    try {
+      const portfolioAssets = await axios.post(
+        `https://chainguru-db.herokuapp.com/zerion/address/assets`,
+        {
+          addresses: payload.wallet,
+          currency: vsCoin,
         }
-        finalData.forEach((item, i) => {
-          if (item.price) {
-            let quantityDecimals = item.quantity / Math.pow(10, item.decimals);
-            let balance = quantityDecimals * item.price.value;
-            item.balance = balance;
-            item.quantityDecimals = quantityDecimals;
-          } else {
-            let quantityDecimals = item.quantity / Math.pow(10, item.decimals);
-            item.balance = 0;
-            item.quantityDecimals = quantityDecimals;
-          }
-          if (item.quantityDecimals === 1) {
-            item.type = "NFT";
-          }
-        });
-        emitter.emit(DB_GET_PORTFOLIO_RETURNED, finalData);
-      } catch (err) {
-        emitter.emit(ERROR, await err.message);
-
-        console.log(err.message);
-      }
-    } else {
-      try {
-        let portfolioAssets = await axios.post(
-          `https://chainguru.fun/api/portfolio/address/assets`,
-          {
-            address: payload.wallet,
-            currency: vsCoin,
-            asset_code: ["all"],
-          }
-        );
-        let keys = [];
-        portfolioAssets.data.forEach((item, i) => {
-          keys.push(item.asset_code);
-        });
-
-        let finalData = [];
-        keys.forEach((key, index) => {
-          finalData.push(
-            createData(
-              portfolioAssets.data[index].wallet_address,
-              portfolioAssets.data[index].asset_code,
-              portfolioAssets.data[index].name,
-              portfolioAssets.data[index].symbol,
-              portfolioAssets.data[index].decimals,
-              portfolioAssets.data[index].type,
-              portfolioAssets.data[index].icon_url,
-              portfolioAssets.data[index].price,
-              portfolioAssets.data[index].is_displayable,
-              portfolioAssets.data[index].is_verified,
-              portfolioAssets.data[index].quantity
-            )
-          );
-        });
-
-        finalData.forEach((item, i) => {
-          if (item.price) {
-            let quantityDecimals = item.quantity / Math.pow(10, item.decimals);
-            let balance = quantityDecimals * item.price.value;
-            item.balance = balance;
-            item.quantityDecimals = quantityDecimals;
-          } else {
-            let quantityDecimals = item.quantity / Math.pow(10, item.decimals);
-            item.balance = 0;
-            item.quantityDecimals = quantityDecimals;
-          }
-          if (item.quantityDecimals === 1) {
-            item.type = "NFT";
-          }
-        });
-        emitter.emit(DB_GET_PORTFOLIO_RETURNED, finalData);
-      } catch (err) {
-        emitter.emit(ERROR, await err.message);
-
-        console.log(err.message);
-      }
+      );
+      portfolioAssets.data.forEach((item, i) => {
+        if (item.price) {
+          let quantityDecimals = item.quantity / Math.pow(10, item.decimals);
+          let balance = quantityDecimals * item.price.value;
+          item.balance = balance;
+          item.quantityDecimals = quantityDecimals;
+        } else {
+          let quantityDecimals = item.quantity / Math.pow(10, item.decimals);
+          item.balance = 0;
+          item.quantityDecimals = quantityDecimals;
+        }
+        if (item.quantityDecimals === 1) {
+          item.type = "NFT";
+        }
+      });
+      emitter.emit(DB_GET_PORTFOLIO_RETURNED, portfolioAssets.data);
+    } catch (err) {
+      emitter.emit(ERROR, await err.message);
+      console.log(err.message);
     }
   };
 
   db_getPortfolioStats = async (payload) => {
-    console.log(payload);
     let vsCoin = store.getStore("vsCoin");
     try {
-      if (Array.isArray(payload.wallet)) {
-        let fullStats = [];
-        for (var i = 0; i < payload.wallet.length; i++) {
-          const portfolioStats = await axios.get(
-            `https://chainguru.fun/api/portfolio/address/portfolio?address=${payload.wallet[i]}&currency=${vsCoin}&fields=all`
-          );
-          fullStats.push(portfolioStats.data.portfolio);
+      const portfolioStats = await axios.post(
+        `https://chainguru-db.herokuapp.com/zerion/address/portfolio`,
+        {
+          addresses: payload.wallet,
+          currency: vsCoin,
         }
-        // console.log(fullStats);
-        emitter.emit(DB_GET_PORTFOLIO_STATS_RETURNED, fullStats);
-      } else {
-        let portfolioStats = await axios.get(
-          `https://chainguru.fun/api/portfolio/address/portfolio?address=${payload.wallet}&currency=${vsCoin}&fields=all`
-        );
+      );
 
-        emitter.emit(
-          DB_GET_PORTFOLIO_STATS_RETURNED,
-          portfolioStats.data.portfolio
-        );
-      }
+      emitter.emit(
+        DB_GET_PORTFOLIO_STATS_RETURNED,
+        portfolioStats.data.portfolio
+      );
     } catch (err) {
       emitter.emit(ERROR, await err.message);
       console.log(err.message);
@@ -2266,77 +2177,38 @@ class Store {
       };
     }
     try {
-      if (Array.isArray(payload.wallet)) {
-        let finalData = [];
-        for (var i = 0; i < payload.wallet.length; i++) {
-          const assets = payload.portfolioData.filter(
-            (data) =>
-              JSON.stringify(data.wallet_address).toLowerCase() ===
-              JSON.stringify(payload.wallet[i]).toLowerCase()
-          );
-          let keys = [];
-          let prices = [];
-          keys.length = 0;
-          prices.length = 0;
-          assets.forEach((asset, i) =>
-            prices.push(asset.price ? asset.price.value : null)
-          );
-          assets.forEach((asset, i) => keys.push(asset.asset_code));
-          let portfolioAssetStats = await axios.post(
-            `https://chainguru.fun/api/portfolio/assets/stats`,
-            {
-              address: payload.wallet[i],
-              currency: vsCoin,
-              asset_code: keys,
-            }
-          );
-          keys.forEach((key, index) => {
-            let profit_percent;
-            if (
-              portfolioAssetStats.data[index].stats &&
-              portfolioAssetStats.data[index].stats.avg_buy_price &&
-              prices[index]
-            ) {
-              profit_percent =
-                ((prices[index] -
-                  portfolioAssetStats.data[index].stats.avg_buy_price) /
-                  portfolioAssetStats.data[index].stats.avg_buy_price) *
-                100;
-            } else {
-              profit_percent = null;
-            }
-
-            finalData.push(
-              createData(
-                payload.wallet[i],
-                keys[index],
-                portfolioAssetStats.data[index].stats,
-                profit_percent
-              )
-            );
-          });
-        }
-        emitter.emit(DB_GET_PORTFOLIO_ASSET_STATS_RETURNED, finalData);
-      } else {
+      let finalData = [];
+      for (var i = 0; i < payload.wallet.length; i++) {
+        const assets = payload.portfolioData.filter(
+          (data) =>
+            JSON.stringify(data.wallet_address).toLowerCase() ===
+            JSON.stringify(payload.wallet[i]).toLowerCase()
+        );
+        let keys = [];
+        let prices = [];
+        keys.length = 0;
+        prices.length = 0;
+        assets.forEach((asset, i) =>
+          prices.push(asset.price ? asset.price.value : null)
+        );
+        assets.forEach((asset, i) => keys.push(asset.asset_code));
         let portfolioAssetStats = await axios.post(
-          `https://chainguru.fun/api/portfolio/assets/stats`,
+          `https://chainguru-db.herokuapp.com/zerion/assets/stats`,
           {
-            address: payload.wallet,
+            address: payload.wallet[i],
             currency: vsCoin,
-            asset_code: payload.keys,
+            asset_code: keys,
           }
         );
-
-        let finalData = [];
-        payload.keys.forEach((key, index) => {
+        keys.forEach((key, index) => {
           let profit_percent;
           if (
             portfolioAssetStats.data[index].stats &&
             portfolioAssetStats.data[index].stats.avg_buy_price &&
-            payload.assetPrice[index]
+            prices[index]
           ) {
             profit_percent =
-              ((payload.assetPrice[index] -
+              ((prices[index] -
                 portfolioAssetStats.data[index].stats.avg_buy_price) /
                 portfolioAssetStats.data[index].stats.avg_buy_price) *
               100;
@@ -2346,56 +2218,37 @@ class Store {
 
           finalData.push(
             createData(
-              payload.wallet,
-              payload.keys[index],
+              payload.wallet[i],
+              keys[index],
               portfolioAssetStats.data[index].stats,
               profit_percent
             )
           );
         });
-
-        emitter.emit(DB_GET_PORTFOLIO_ASSET_STATS_RETURNED, finalData);
       }
+      emitter.emit(DB_GET_PORTFOLIO_ASSET_STATS_RETURNED, finalData);
     } catch (err) {
-      emitter.emit(ERROR, await err.message);
       console.log(err.message);
+      emitter.emit(ERROR, await err.message);
     }
   };
 
   db_getPortfolioChart = async (payload) => {
-    console.log(payload);
     let vsCoin = store.getStore("vsCoin");
     //TODO WAIT FOR MULTIPLE ADDRESS ENDPOINT
     try {
       if (Array.isArray(payload.wallet)) {
-        console.log(payload.wallet);
-        let charts = await axios.get(
-          `https://chainguru.fun/api/portfolio/address/charts?address=${payload.wallet[0]}&range=${payload.timeframe}&currency=${vsCoin}`
-        );
-        for (var i = 1; i < payload.wallet.length; i++) {
-          let portfolioChart = await axios.get(
-            `https://chainguru.fun/api/portfolio/address/charts?address=${payload.wallet[i]}&range=${payload.timeframe}&currency=${vsCoin}`
-          );
-          console.log(charts.data.charts.others);
-          for (var j = 0; j < charts.data.charts.others.length; j++) {
-            charts.data.charts.others[j][1] +=
-              portfolioChart.data.charts.others[j][1];
+        let charts = await axios.post(
+          `https://chainguru-db.herokuapp.com/zerion/address/chart`,
+          {
+            addresses: payload.wallet,
+            currency: vsCoin,
+            timeframe: payload.timeframe,
           }
-        }
-
+        );
         emitter.emit(
           DB_GET_PORTFOLIO_CHART_RETURNED,
           await charts.data.charts.others
-        );
-      } else {
-        let vsCoin = store.getStore("vsCoin");
-        console.log(payload.wallet);
-        let portfolioChart = await axios.get(
-          `https://chainguru.fun/api/portfolio/address/charts?address=${payload.wallet}&range=${payload.timeframe}&currency=${vsCoin}`
-        );
-        emitter.emit(
-          DB_GET_PORTFOLIO_CHART_RETURNED,
-          await portfolioChart.data.charts.others
         );
       }
     } catch (err) {

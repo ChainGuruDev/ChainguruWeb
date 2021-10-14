@@ -18,7 +18,9 @@ import {
   CircularProgress,
 } from "@material-ui/core";
 
-import Autocomplete from "@material-ui/lab/Autocomplete";
+import Autocomplete, {
+  createFilterOptions,
+} from "@material-ui/lab/Autocomplete";
 
 import BlueChipCard from "../components/BlueChipCard.js";
 
@@ -52,6 +54,11 @@ import Store from "../../stores";
 const store = Store.store;
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
+
+const filterOptions = createFilterOptions({
+  matchFrom: "any",
+  limit: 250,
+});
 
 const styles = (theme) => ({
   root: {
@@ -425,6 +432,7 @@ class BlueChips extends Component {
                           this.coinSelectUser(newValue, this.props.id);
                         }}
                         loading={this.state.loadingBar}
+                        filterOptions={filterOptions}
                         renderInput={(params) => (
                           <TextField
                             {...params}

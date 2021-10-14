@@ -588,97 +588,102 @@ class LongShort extends Component {
                       alignItems="flex-start"
                       xs={4}
                     >
-                      <Grid item container justify="center" xs={12}>
-                        {countLong && (countLong[0] || countShort[0]) && (
-                          <Grid
-                            item
-                            style={{ minWidth: "120px", maxWidth: "120px" }}
-                          >
-                            <LSResultDonutChart
-                              data={
-                                this.state.countTotals
-                                  ? this.state.countTotals
-                                  : {}
-                              }
-                            />
-                          </Grid>
-                        )}
-                        {countLong && (countLong[0] || countShort[0]) && (
-                          <Grid style={{ marginLeft: "10px" }} item>
-                            <Grid container direction="column">
-                              {countTotals && (
-                                <Grid item>
-                                  <Grid item container direction="row">
+                      {countTotals && countTotals.ok + countTotals.bad > 0 && (
+                        <Grid item container justify="center" xs={12}>
+                          {countLong && (countLong[0] || countShort[0]) && (
+                            <Grid
+                              item
+                              style={{ minWidth: "120px", maxWidth: "120px" }}
+                            >
+                              <LSResultDonutChart
+                                data={
+                                  this.state.countTotals
+                                    ? this.state.countTotals
+                                    : {}
+                                }
+                              />
+                            </Grid>
+                          )}
+                          {countLong && (countLong[0] || countShort[0]) && (
+                            <Grid style={{ marginLeft: "10px" }} item>
+                              <Grid container direction="column">
+                                {countTotals && (
+                                  <Grid item>
+                                    <Grid item container direction="row">
+                                      <Typography variant="h2" color="primary">
+                                        {countTotals.ok}
+                                      </Typography>
+                                      <Typography variant="h2">/</Typography>
+                                      <Typography
+                                        variant="h2"
+                                        color="secondary"
+                                      >
+                                        {countTotals.ok + countTotals.bad}
+                                      </Typography>
+                                    </Grid>
                                     <Typography variant="h2" color="primary">
-                                      {countTotals.ok}
-                                    </Typography>
-                                    <Typography variant="h2">/</Typography>
-                                    <Typography variant="h2" color="secondary">
-                                      {countTotals.ok + countTotals.bad}
+                                      {(
+                                        (countTotals.ok /
+                                          (countTotals.ok + countTotals.bad)) *
+                                        100
+                                      ).toFixed(2)}{" "}
+                                      %
                                     </Typography>
                                   </Grid>
-                                  <Typography variant="h2" color="primary">
-                                    {(
-                                      (countTotals.ok /
-                                        (countTotals.ok + countTotals.bad)) *
-                                      100
-                                    ).toFixed(2)}{" "}
-                                    %
-                                  </Typography>
-                                </Grid>
-                              )}
-                              {countLong && (
-                                <Grid item container direction="row">
-                                  <TrendingUpIcon
-                                    color="primary"
-                                    style={{ marginRight: 10 }}
-                                  />
-                                  <Typography variant="h3" color="primary">
-                                    {countLong[0]}
-                                  </Typography>{" "}
-                                  <Typography variant="h3">/</Typography>{" "}
-                                  <Typography variant="h3" color="secondary">
-                                    {countLong[1] + " "}
-                                  </Typography>{" "}
-                                  <Typography variant="h3" color="primary">
-                                    {" ("}
-                                    {(
-                                      (countLong[0] /
-                                        (countLong[0] + countLong[1])) *
-                                      100
-                                    ).toFixed(2)}{" "}
-                                    %)
-                                  </Typography>
-                                </Grid>
-                              )}
-                              {countShort && (
-                                <Grid item container direction="row">
-                                  <TrendingDownIcon
-                                    color="secondary"
-                                    style={{ marginRight: 10 }}
-                                  />
-                                  <Typography variant="h3" color="primary">
-                                    {countShort[0]}
-                                  </Typography>{" "}
-                                  <Typography variant="h3">/</Typography>{" "}
-                                  <Typography variant="h3" color="secondary">
-                                    {countShort[1] + " "}
-                                  </Typography>
-                                  <Typography variant="h3" color="primary">
-                                    {" ("}
-                                    {(
-                                      (countShort[0] /
-                                        (countShort[0] + countShort[1])) *
-                                      100
-                                    ).toFixed(2)}{" "}
-                                    %)
-                                  </Typography>
-                                </Grid>
-                              )}
+                                )}
+                                {countLong && (
+                                  <Grid item container direction="row">
+                                    <TrendingUpIcon
+                                      color="primary"
+                                      style={{ marginRight: 10 }}
+                                    />
+                                    <Typography variant="h3" color="primary">
+                                      {countLong[0]}
+                                    </Typography>{" "}
+                                    <Typography variant="h3">/</Typography>{" "}
+                                    <Typography variant="h3" color="secondary">
+                                      {countLong[1] + " "}
+                                    </Typography>{" "}
+                                    <Typography variant="h3" color="primary">
+                                      {" ("}
+                                      {(
+                                        (countLong[0] /
+                                          (countLong[0] + countLong[1])) *
+                                        100
+                                      ).toFixed(2)}{" "}
+                                      %)
+                                    </Typography>
+                                  </Grid>
+                                )}
+                                {countShort && (
+                                  <Grid item container direction="row">
+                                    <TrendingDownIcon
+                                      color="secondary"
+                                      style={{ marginRight: 10 }}
+                                    />
+                                    <Typography variant="h3" color="primary">
+                                      {countShort[0]}
+                                    </Typography>{" "}
+                                    <Typography variant="h3">/</Typography>{" "}
+                                    <Typography variant="h3" color="secondary">
+                                      {countShort[1] + " "}
+                                    </Typography>
+                                    <Typography variant="h3" color="primary">
+                                      {" ("}
+                                      {(
+                                        (countShort[0] /
+                                          (countShort[0] + countShort[1])) *
+                                        100
+                                      ).toFixed(2)}{" "}
+                                      %)
+                                    </Typography>
+                                  </Grid>
+                                )}
+                              </Grid>
                             </Grid>
-                          </Grid>
-                        )}
-                      </Grid>
+                          )}
+                        </Grid>
+                      )}
                     </Grid>
                   </Grid>
                   {countLong && (

@@ -443,328 +443,387 @@ class LongShortMini extends Component {
                   </div>
                   <Divider />
                 </Grid>
-                <Grid
-                  item
-                  container
-                  direction="row"
-                  justify="space-between"
-                  alignItems="stretch"
-                  className={classes.comboBarBorder}
-                >
-                  {countLong && (countLong[0] || countShort[0]) && (
-                    <div style={{ margin: "0px auto" }}>
-                      <Grid
-                        item
-                        style={{
-                          margin: "0px 10px",
-                          minWidth: "120px",
-                          maxWidth: "120px",
-                          filter: "drop-shadow(1px 1px 1px rgba(0,0,0,0.5))",
-                          alignSelf: "center",
-                        }}
-                      >
-                        <LSResultDonutChart
-                          data={
-                            this.state.countTotals ? this.state.countTotals : {}
-                          }
-                        />
-                      </Grid>
-                    </div>
-                  )}
-                  {countLong && (countLong[0] || countShort[0]) && (
+                {countTotals && countTotals.good + countTotals.bad > 0 && (
+                  <>
                     <Grid
-                      style={{
-                        justifyContent: "space-between",
-                      }}
                       item
                       container
-                      direction="column"
+                      direction="row"
+                      justify="space-between"
                       alignItems="stretch"
                       className={classes.comboBarBorder}
-                      lg
                     >
-                      {countTotals && (
-                        <>
-                          <Tooltip
-                            interactive
-                            arrow
-                            title={
-                              <React.Fragment>
-                                <Grid
-                                  style={{ padding: 5, textAlign: "center" }}
-                                >
-                                  <Typography variant={"h4"}>Total</Typography>
-                                  <Divider
-                                    variant="middle"
-                                    style={{ margin: "5px 0px" }}
-                                  />
-                                  <Typography variant={"h4"} color="primary">
-                                    <CheckCircleIcon
-                                      color="primary"
-                                      style={{ marginRight: 5 }}
-                                    />
-                                    {countTotals.good}
-                                  </Typography>
-                                  <Typography variant={"h4"} color="secondary">
-                                    <CancelIcon
-                                      color="secondary"
-                                      style={{ marginRight: 5 }}
-                                    />
-                                    {countTotals.bad + countTotals.good}
-                                  </Typography>
-                                </Grid>
-                              </React.Fragment>
-                            }
+                      {countLong && (countLong[0] || countShort[0]) && (
+                        <div style={{ margin: "0px auto" }}>
+                          <Grid
+                            item
+                            style={{
+                              margin: "0px 10px",
+                              minWidth: "120px",
+                              maxWidth: "120px",
+                              filter:
+                                "drop-shadow(1px 1px 1px rgba(0,0,0,0.5))",
+                              alignSelf: "center",
+                            }}
                           >
-                            <Grid
-                              item
-                              container
-                              direction="row"
-                              alignItems="center"
-                              justify="center"
-                              wrap="nowrap"
-                              style={{ padding: "0px 5px" }}
-                            >
-                              <Typography variant="h2" color="primary">
-                                {(
-                                  (countTotals.good /
-                                    (countTotals.good + countTotals.bad)) *
-                                  100
-                                ).toFixed(1)}{" "}
-                                %
-                              </Typography>
-                            </Grid>
-                          </Tooltip>
-                          <Divider />
-                        </>
+                            <LSResultDonutChart
+                              data={
+                                this.state.countTotals
+                                  ? this.state.countTotals
+                                  : {}
+                              }
+                            />
+                          </Grid>
+                        </div>
                       )}
-                      {countLong && (
-                        <>
-                          <Tooltip
-                            interactive
-                            arrow
-                            title={
-                              <React.Fragment>
-                                <Grid
-                                  style={{ padding: 5, textAlign: "center" }}
-                                >
-                                  <Typography variant={"h4"}>
-                                    Total Long
-                                  </Typography>
-                                  <Divider
-                                    variant="middle"
-                                    style={{ margin: "5px 0px" }}
-                                  />
-                                  <Typography variant={"h4"} color="primary">
-                                    <CheckCircleIcon
-                                      color="primary"
-                                      style={{ marginRight: 5 }}
-                                    />
-                                    {countLong[0]}
-                                  </Typography>
-                                  <Typography variant={"h4"} color="secondary">
-                                    <CancelIcon
-                                      color="secondary"
-                                      style={{ marginRight: 5 }}
-                                    />
-                                    {countLong[1]}
-                                  </Typography>
-                                </Grid>
-                              </React.Fragment>
-                            }
-                          >
-                            <Grid
-                              item
-                              container
-                              justify="center"
-                              direction="row"
-                              alignItems="center"
-                              wrap="nowrap"
-                              style={{ padding: "0px 5px" }}
-                            >
-                              <TrendingUpIcon
-                                color="primary"
-                                style={{ marginRight: 10 }}
-                              />
-                              <Typography variant="h3" color="primary">
-                                {(
-                                  (countLong[0] /
-                                    (countLong[0] + countLong[1])) *
-                                  100
-                                ).toFixed(1)}{" "}
-                              </Typography>
-                              <Typography
-                                style={{ marginLeft: 5 }}
-                                variant="h4"
-                                color="primary"
+                      {countLong && (countLong[0] || countShort[0]) && (
+                        <Grid
+                          style={{
+                            justifyContent: "space-between",
+                          }}
+                          item
+                          container
+                          direction="column"
+                          alignItems="stretch"
+                          className={classes.comboBarBorder}
+                          lg
+                        >
+                          {countTotals && (
+                            <>
+                              <Tooltip
+                                interactive
+                                arrow
+                                title={
+                                  <React.Fragment>
+                                    <Grid
+                                      style={{
+                                        padding: 5,
+                                        textAlign: "center",
+                                      }}
+                                    >
+                                      <Typography variant={"h4"}>
+                                        Total
+                                      </Typography>
+                                      <Divider
+                                        variant="middle"
+                                        style={{ margin: "5px 0px" }}
+                                      />
+                                      <Typography
+                                        variant={"h4"}
+                                        color="primary"
+                                      >
+                                        <CheckCircleIcon
+                                          color="primary"
+                                          style={{ marginRight: 5 }}
+                                        />
+                                        {countTotals.good}
+                                      </Typography>
+                                      <Typography
+                                        variant={"h4"}
+                                        color="secondary"
+                                      >
+                                        <CancelIcon
+                                          color="secondary"
+                                          style={{ marginRight: 5 }}
+                                        />
+                                        {countTotals.bad + countTotals.good}
+                                      </Typography>
+                                    </Grid>
+                                  </React.Fragment>
+                                }
                               >
-                                %
-                              </Typography>
-                            </Grid>
-                          </Tooltip>
-                        </>
-                      )}
-                      <Divider display="block" />
-                      {countShort && (
-                        <>
-                          <Tooltip
-                            interactive
-                            arrow
-                            title={
-                              <React.Fragment>
                                 <Grid
-                                  style={{ padding: 5, textAlign: "center" }}
+                                  item
+                                  container
+                                  direction="row"
+                                  alignItems="center"
+                                  justify="center"
+                                  wrap="nowrap"
+                                  style={{ padding: "0px 5px" }}
                                 >
-                                  <Typography variant={"h4"}>
-                                    Total Short
-                                  </Typography>
-                                  <Divider
-                                    variant="middle"
-                                    style={{ margin: "5px 0px" }}
-                                  />
-                                  <Typography variant={"h4"} color="primary">
-                                    <CheckCircleIcon
-                                      color="primary"
-                                      style={{ marginRight: 5 }}
-                                    />
-                                    {countShort[0]}
-                                  </Typography>
-                                  <Typography variant={"h4"} color="secondary">
-                                    <CancelIcon
-                                      color="secondary"
-                                      style={{ marginRight: 5 }}
-                                    />
-                                    {countShort[1]}
+                                  <Typography variant="h2" color="primary">
+                                    {(
+                                      (countTotals.good /
+                                        (countTotals.good + countTotals.bad)) *
+                                      100
+                                    ).toFixed(1)}{" "}
+                                    %
                                   </Typography>
                                 </Grid>
-                              </React.Fragment>
-                            }
-                          >
-                            <Grid
-                              item
-                              container
-                              direction="row"
-                              alignItems="center"
-                              justify="center"
-                              wrap="nowrap"
-                              style={{ padding: "0px 5px" }}
-                            >
-                              <TrendingDownIcon
-                                color="secondary"
-                                style={{ marginRight: 10 }}
-                              />
-                              <Typography variant="h3" color="secondary">
-                                {(
-                                  (countShort[0] /
-                                    (countShort[0] + countShort[1])) *
-                                  100
-                                ).toFixed(1)}
-                              </Typography>
-                              <Typography
-                                style={{ marginLeft: 5 }}
-                                variant="h4"
-                                color="secondary"
+                              </Tooltip>
+                              <Divider />
+                            </>
+                          )}
+                          {countLong && (
+                            <>
+                              <Tooltip
+                                interactive
+                                arrow
+                                title={
+                                  <React.Fragment>
+                                    <Grid
+                                      style={{
+                                        padding: 5,
+                                        textAlign: "center",
+                                      }}
+                                    >
+                                      <Typography variant={"h4"}>
+                                        Total Long
+                                      </Typography>
+                                      <Divider
+                                        variant="middle"
+                                        style={{ margin: "5px 0px" }}
+                                      />
+                                      <Typography
+                                        variant={"h4"}
+                                        color="primary"
+                                      >
+                                        <CheckCircleIcon
+                                          color="primary"
+                                          style={{ marginRight: 5 }}
+                                        />
+                                        {countLong[0]}
+                                      </Typography>
+                                      <Typography
+                                        variant={"h4"}
+                                        color="secondary"
+                                      >
+                                        <CancelIcon
+                                          color="secondary"
+                                          style={{ marginRight: 5 }}
+                                        />
+                                        {countLong[1]}
+                                      </Typography>
+                                    </Grid>
+                                  </React.Fragment>
+                                }
                               >
-                                %
-                              </Typography>
-                            </Grid>
-                          </Tooltip>
-                        </>
+                                <Grid
+                                  item
+                                  container
+                                  justify="center"
+                                  direction="row"
+                                  alignItems="center"
+                                  wrap="nowrap"
+                                  style={{ padding: "0px 5px" }}
+                                >
+                                  <TrendingUpIcon
+                                    color="primary"
+                                    style={{ marginRight: 10 }}
+                                  />
+                                  <Typography variant="h3" color="primary">
+                                    {(
+                                      (countLong[0] /
+                                        (countLong[0] + countLong[1])) *
+                                      100
+                                    ).toFixed(1)}{" "}
+                                  </Typography>
+                                  <Typography
+                                    style={{ marginLeft: 5 }}
+                                    variant="h4"
+                                    color="primary"
+                                  >
+                                    %
+                                  </Typography>
+                                </Grid>
+                              </Tooltip>
+                            </>
+                          )}
+                          <Divider display="block" />
+                          {countShort && (
+                            <>
+                              <Tooltip
+                                interactive
+                                arrow
+                                title={
+                                  <React.Fragment>
+                                    <Grid
+                                      style={{
+                                        padding: 5,
+                                        textAlign: "center",
+                                      }}
+                                    >
+                                      <Typography variant={"h4"}>
+                                        Total Short
+                                      </Typography>
+                                      <Divider
+                                        variant="middle"
+                                        style={{ margin: "5px 0px" }}
+                                      />
+                                      <Typography
+                                        variant={"h4"}
+                                        color="primary"
+                                      >
+                                        <CheckCircleIcon
+                                          color="primary"
+                                          style={{ marginRight: 5 }}
+                                        />
+                                        {countShort[0]}
+                                      </Typography>
+                                      <Typography
+                                        variant={"h4"}
+                                        color="secondary"
+                                      >
+                                        <CancelIcon
+                                          color="secondary"
+                                          style={{ marginRight: 5 }}
+                                        />
+                                        {countShort[1]}
+                                      </Typography>
+                                    </Grid>
+                                  </React.Fragment>
+                                }
+                              >
+                                <Grid
+                                  item
+                                  container
+                                  direction="row"
+                                  alignItems="center"
+                                  justify="center"
+                                  wrap="nowrap"
+                                  style={{ padding: "0px 5px" }}
+                                >
+                                  <TrendingDownIcon
+                                    color="secondary"
+                                    style={{ marginRight: 10 }}
+                                  />
+                                  <Typography variant="h3" color="secondary">
+                                    {(
+                                      (countShort[0] /
+                                        (countShort[0] + countShort[1])) *
+                                      100
+                                    ).toFixed(1)}
+                                  </Typography>
+                                  <Typography
+                                    style={{ marginLeft: 5 }}
+                                    variant="h4"
+                                    color="secondary"
+                                  >
+                                    %
+                                  </Typography>
+                                </Grid>
+                              </Tooltip>
+                            </>
+                          )}
+                        </Grid>
                       )}
                     </Grid>
-                  )}
-                </Grid>
-                <Grid
-                  className={classes.comboBarBorder}
-                  style={{
-                    marginTop: 10,
-                    padding: 3,
-                  }}
-                  container
-                >
-                  <Grid item container className={classes.comboBarBorder}>
-                    <Grid className={classes.comboBar} item xs={4}>
-                      <Typography
-                        style={{ marginTop: 5 }}
-                        variant={"h4"}
-                        gutterBottom
-                        color="primary"
-                      >
-                        Active
-                      </Typography>
-                    </Grid>
                     <Grid
+                      className={classes.comboBarBorder}
+                      style={{
+                        marginTop: 10,
+                        padding: 3,
+                      }}
                       container
-                      justify={"space-around"}
+                    >
+                      <Grid item container className={classes.comboBarBorder}>
+                        <Grid className={classes.comboBar} item xs={4}>
+                          <Typography
+                            style={{ marginTop: 5 }}
+                            variant={"h4"}
+                            gutterBottom
+                            color="primary"
+                          >
+                            Active
+                          </Typography>
+                        </Grid>
+                        <Grid
+                          container
+                          justify={"space-around"}
+                          item
+                          style={{
+                            flex: 1,
+                            display: "flex",
+                            alignContent: "center",
+                          }}
+                        >
+                          {this.drawCombo(activeLS, "active")}
+                        </Grid>
+                      </Grid>
+                      <Grid
+                        item
+                        container
+                        className={classes.comboBarBorder}
+                        style={{ marginTop: 5 }}
+                      >
+                        <Grid className={classes.comboBar} item xs={4}>
+                          <Typography
+                            style={{ marginTop: 5 }}
+                            variant={"h4"}
+                            gutterBottom
+                            color="primary"
+                          >
+                            Long Combo
+                          </Typography>
+                        </Grid>
+                        <Grid
+                          container
+                          justify={"space-around"}
+                          item
+                          style={{
+                            flex: 1,
+                            display: "flex",
+                            alignContent: "center",
+                          }}
+                        >
+                          {this.drawCombo(longCombo, "combo", "long")}
+                        </Grid>
+                      </Grid>
+                      <Grid
+                        item
+                        container
+                        className={classes.comboBarBorder}
+                        style={{ marginTop: 5 }}
+                      >
+                        <Grid className={classes.comboBar} item xs={4}>
+                          <Typography
+                            style={{ marginTop: 5 }}
+                            variant={"h4"}
+                            gutterBottom
+                            color="primary"
+                          >
+                            Short Combo
+                          </Typography>
+                        </Grid>
+                        <Grid
+                          container
+                          justify={"space-around"}
+                          item
+                          style={{
+                            flex: 1,
+                            display: "flex",
+                            alignContent: "center",
+                          }}
+                        >
+                          {this.drawCombo(shortCombo, "combo", "short")}
+                        </Grid>
+                      </Grid>
+                    </Grid>
+                  </>
+                )}
+                {countTotals && countTotals.good + countTotals.bad === 0 && (
+                  <div style={{ margin: "0px auto" }}>
+                    <Grid
                       item
                       style={{
-                        flex: 1,
-                        display: "flex",
-                        alignContent: "center",
+                        margin: "0px 10px",
+                        alignSelf: "center",
                       }}
                     >
-                      {this.drawCombo(activeLS, "active")}
-                    </Grid>
-                  </Grid>
-                  <Grid
-                    item
-                    container
-                    className={classes.comboBarBorder}
-                    style={{ marginTop: 5 }}
-                  >
-                    <Grid className={classes.comboBar} item xs={4}>
-                      <Typography
-                        style={{ marginTop: 5 }}
-                        variant={"h4"}
-                        gutterBottom
+                      <Button
+                        variant="outlined"
                         color="primary"
+                        style={{ display: "initial" }}
+                        onClick={() => this.nav("/short/shortLong")}
                       >
-                        Long Combo
-                      </Typography>
+                        <Typography>You haven't played yet.</Typography>
+                        <Typography>
+                          Click here and make your first prediction
+                        </Typography>
+                      </Button>
                     </Grid>
-                    <Grid
-                      container
-                      justify={"space-around"}
-                      item
-                      style={{
-                        flex: 1,
-                        display: "flex",
-                        alignContent: "center",
-                      }}
-                    >
-                      {this.drawCombo(longCombo, "combo", "long")}
-                    </Grid>
-                  </Grid>
-                  <Grid
-                    item
-                    container
-                    className={classes.comboBarBorder}
-                    style={{ marginTop: 5 }}
-                  >
-                    <Grid className={classes.comboBar} item xs={4}>
-                      <Typography
-                        style={{ marginTop: 5 }}
-                        variant={"h4"}
-                        gutterBottom
-                        color="primary"
-                      >
-                        Short Combo
-                      </Typography>
-                    </Grid>
-                    <Grid
-                      container
-                      justify={"space-around"}
-                      item
-                      style={{
-                        flex: 1,
-                        display: "flex",
-                        alignContent: "center",
-                      }}
-                    >
-                      {this.drawCombo(shortCombo, "combo", "short")}
-                    </Grid>
-                  </Grid>
-                </Grid>
+                  </div>
+                )}
                 {activeLS <= 7 &&
                   !this.state.tokenLS_Active &&
                   this.state.tokenID && (

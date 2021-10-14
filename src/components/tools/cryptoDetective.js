@@ -214,6 +214,7 @@ class CryptoDetective extends Component {
     if (!this.state.vs) {
       this.getVsCoin();
     }
+    this.interval = setInterval(() => this.updateTokenData(), 60000);
   }
 
   componentWillUnmount() {
@@ -240,10 +241,32 @@ class CryptoDetective extends Component {
     );
     emitter.removeListener(COIN_PRICECHART_RETURNED, this.priceChartReturned);
     emitter.removeListener(GETTING_NEW_CHART_DATA, this.newSearch);
+    clearInterval(this.interval);
   }
 
-  newSearch() {
-    this.setState({ loadingPriceChart: true });
+  componentDidUpdate(prevProps) {
+    if (prevProps.match.params.coinID !== this.props.match.params.coinID) {
+      if (this.props.match.params.coinID) {
+        dispatcher.dispatch({
+          type: GET_COIN_DATA,
+          content: this.props.match.params.coinID,
+        });
+      }
+    }
+  }
+
+  updateTokenData() {
+    if (this.state.coinData.id) {
+      dispatcher.dispatch({
+        type: GET_COIN_DATA,
+        content: this.state.coinData.id,
+      });
+    }
+  }
+
+  newSearch(newID) {
+    this.setState({ loadingPriceChart: true, avgBuyPrice: null });
+    this.nav(newID);
   }
 
   coinlistReturned = (payload) => {
@@ -251,19 +274,19 @@ class CryptoDetective extends Component {
   };
 
   coinDataReturned = async (data) => {
+    let account = await store.getStore("account");
+    if (data[0].id) {
+      dispatcher.dispatch({
+        type: GET_COIN_PRICECHART,
+        content: [
+          data[0].id,
+          this.props.id,
+          this.state.timeFrame,
+          this.state.vs,
+        ],
+      });
+    }
     if (data[0].contract_address) {
-      if (data[0].id) {
-        dispatcher.dispatch({
-          type: GET_COIN_PRICECHART,
-          content: [
-            data[0].id,
-            this.props.id,
-            this.state.timeFrame,
-            this.state.vs,
-          ],
-        });
-      }
-      let account = await store.getStore("account");
       dispatcher.dispatch({
         type: DB_GET_ASSETSTATS,
         payload: {
@@ -277,6 +300,14 @@ class CryptoDetective extends Component {
       //   wallet: account.address,
       //   keys: [data[0].contract_address],
       // });
+    } else if (data[0].symbol === "eth") {
+      dispatcher.dispatch({
+        type: DB_GET_ASSETSTATS,
+        payload: {
+          wallet: await account.address,
+          assetCode: data[0].symbol,
+        },
+      });
     }
 
     dispatcher.dispatch({
@@ -286,6 +317,7 @@ class CryptoDetective extends Component {
     this.setState({
       coinData: data[0],
       dataLoaded: true,
+      avgBuyPrice: null,
     });
   };
 
@@ -430,8 +462,19 @@ class CryptoDetective extends Component {
   };
 
   db_getAssetStatsReturned = (data) => {
-    if (data[0].avg_buy_price_net) {
-      this.setState({ avgBuyPrice: data[0].avg_buy_price_net });
+    if (data[0] && data[0].stats) {
+      if (data[0].stats.avg_buy_price_net || data[0].stats.avg_buy_price) {
+        this.setState({
+          avgBuyPrice:
+            data[0].stats.avg_buy_price_net !== null
+              ? data[0].stats.avg_buy_price_net
+              : data[0].stats.avg_buy_price,
+        });
+      } else {
+        this.setState({
+          avgBuyPrice: null,
+        });
+      }
     }
   };
 
@@ -1699,6 +1742,14 @@ class CryptoDetective extends Component {
       </div>
     );
   }
+
+  nav = (screen) => {
+    if (this.props.match.params.coinID) {
+      this.props.history.push(screen);
+    } else {
+      this.props.history.push(`detective/${screen}`);
+    }
+  };
 }
 
 export default withRouter(withStyles(styles)(CryptoDetective));

@@ -409,7 +409,7 @@ class FavoriteList extends Component {
   };
 
   detective = (id) => {
-    this.nav("/short/detective/" + id);
+    this.nav(`/${this.props.timeFrame}/detective/` + id);
   };
 
   TablePaginationActions = (props) => {

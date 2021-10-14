@@ -13,7 +13,9 @@ import {
   LinearProgress,
 } from "@material-ui/core";
 
-import Autocomplete from "@material-ui/lab/Autocomplete";
+import Autocomplete, {
+  createFilterOptions,
+} from "@material-ui/lab/Autocomplete";
 
 import AddCircleRoundedIcon from "@material-ui/icons/AddCircleRounded";
 
@@ -33,6 +35,11 @@ import Store from "../../stores";
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
 const store = Store.store;
+
+const filterOptions = createFilterOptions({
+  matchFrom: "any",
+  limit: 250,
+});
 
 const styles = (theme) => ({
   root: {
@@ -212,6 +219,7 @@ class Favorites extends Component {
                       this.coinSelect(newValue, this.props.id);
                     }}
                     loading={this.state.loadingBar}
+                    filterOptions={filterOptions}
                     renderInput={(params) => (
                       <TextField
                         {...params}
@@ -252,7 +260,7 @@ class Favorites extends Component {
                   variant="determinate"
                   value={this.state.progressBar}
                 />
-                <FavoriteList />
+                <FavoriteList timeFrame={this.props.timeFrame} />
               </Grid>
             </Grid>
           </Card>

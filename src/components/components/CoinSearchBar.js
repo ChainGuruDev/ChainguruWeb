@@ -3,7 +3,9 @@ import { withStyles } from "@material-ui/core/styles";
 import { withRouter } from "react-router-dom";
 
 import TextField from "@material-ui/core/TextField";
-import Autocomplete from "@material-ui/lab/Autocomplete";
+import Autocomplete, {
+  createFilterOptions,
+} from "@material-ui/lab/Autocomplete";
 import CircularProgress from "@material-ui/core/CircularProgress";
 
 import {
@@ -18,6 +20,11 @@ const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
 
 const styles = (theme) => {};
+
+const filterOptions = createFilterOptions({
+  matchFrom: "any",
+  limit: 250,
+});
 
 class CoinSearchBar extends Component {
   constructor(props) {
@@ -49,7 +56,7 @@ class CoinSearchBar extends Component {
 
   coinSelect = (newValue, compareBarID) => {
     if (newValue) {
-      emitter.emit(GETTING_NEW_CHART_DATA, "");
+      emitter.emit(GETTING_NEW_CHART_DATA, newValue.id);
       let _id = newValue.id;
       if (compareBarID) {
         dispatcher.dispatch({
@@ -66,7 +73,8 @@ class CoinSearchBar extends Component {
     }
   };
 
-  openSearch = () => {
+  openSearch = (e) => {
+    e.preventDefault();
     this.setState({ loading: true });
     dispatcher.dispatch({
       type: GET_COIN_LIST,
@@ -80,14 +88,15 @@ class CoinSearchBar extends Component {
         id="coin-search-bar"
         options={this.state.items}
         open={this.state.openSearch}
-        onOpen={() => {
-          this.openSearch();
+        onOpen={(e) => {
+          this.openSearch(e);
         }}
         getOptionSelected={(option, value) => option.name === value.name}
         getOptionLabel={(option) => `${option.name} (${option.symbol})`}
         onChange={(event, newValue) => {
           this.coinSelect(newValue, this.props.id);
         }}
+        filterOptions={filterOptions}
         loading={this.state.loading}
         renderInput={(params) => (
           <TextField
@@ -113,4 +122,4 @@ class CoinSearchBar extends Component {
   }
 }
 
-export default withRouter(withStyles(styles)(CoinSearchBar));
+export default withStyles(styles)(CoinSearchBar);

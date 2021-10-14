@@ -20,6 +20,8 @@ import CompareArrowsIcon from "@material-ui/icons/CompareArrows";
 import LensIcon from "@material-ui/icons/Lens";
 import SwapHorizIcon from "@material-ui/icons/SwapHoriz";
 
+import { isMobile } from "react-device-detect";
+
 //Load Tools NOW USING REACT.LAzy
 // import CryptoDetective from "../tools/cryptoDetective";
 // import CryptoCompare from "../tools/cryptoCompare";
@@ -139,6 +141,8 @@ class Medium extends Component {
 
     const account = store.getStore("account");
 
+    let toolID = this.tool2toolID(this.props.match.params.tool);
+
     function getMode() {
       let savedmode;
       try {
@@ -158,29 +162,82 @@ class Medium extends Component {
       coinList: [],
       coinDataA: [],
       coinDataB: [],
-      valueTab:
-        this.props.match.params.tool === "detective" ||
-        this.props.tool === "detective"
-          ? 1
-          : 0,
+      valueTab: toolID,
       selectA: false,
       selectB: false,
       coinID: this.props.match.params.coinID,
     };
   }
 
+  tool2toolID = (tool) => {
+    let toolID = 0;
+    switch (tool) {
+      case "compare":
+        toolID = 0;
+        break;
+      case "favorites":
+        toolID = 1;
+        break;
+      case "detective":
+        toolID = 2;
+        break;
+      case "coins":
+        toolID = 3;
+        break;
+      case "swap":
+        toolID = 4;
+        break;
+      default:
+        break;
+    }
+    return toolID;
+  };
+
+  toolID2tool = (toolID) => {
+    let tool;
+    switch (toolID) {
+      case 0:
+        tool = "compare";
+        break;
+      case 1:
+        tool = "favorites";
+        break;
+      case 2:
+        tool = "detective";
+        break;
+      case 3:
+        tool = "coins";
+        break;
+      case 4:
+        tool = "swap";
+        break;
+      default:
+        tool = "";
+        break;
+    }
+    return tool;
+  };
+
   componentDidUpdate(prevProps) {
     if (prevProps.match.params.coinID !== this.props.match.params.coinID) {
       if (this.props.match.params.tool === "detective") {
         this.setState({
-          valueTab: 1,
+          valueTab: 2,
           coinID: this.props.match.params.coinID,
         });
+      } else {
+        if (prevProps.match.params.tool !== this.props.match.params.tool) {
+          let newValueTab = this.tool2toolID(this.props.match.params.tool);
+          this.setState({
+            valueTab: newValueTab,
+          });
+        }
       }
-      if (this.props.tool === "detective") {
+    } else {
+      if (prevProps.match.params.tool !== this.props.match.params.tool) {
+        let newValueTab = this.tool2toolID(this.props.match.params.tool);
         this.setState({
-          valueTab: 1,
-          coinID: this.props.match.params.coinID,
+          valueTab: newValueTab,
         });
       }
     }
@@ -227,14 +284,17 @@ class Medium extends Component {
 
     const handleChangeTabs = (event, newValueTab) => {
       this.setState({ valueTab: newValueTab });
+      let newScreen = this.toolID2tool(newValueTab);
+      this.nav("/medium/" + newScreen);
     };
 
     return (
-      <Grid className={classes.rootTabs}>
+      <div className={classes.rootTabs} id="rootMedium">
         <AppBar position="static" color="default">
           <Tabs
             value={valueTab}
             onChange={handleChangeTabs}
+            variant={isMobile ? "scrollable" : "standard"}
             aria-label="tool tabs"
             scrollButtons="auto"
             indicatorColor="primary"
@@ -287,7 +347,7 @@ class Medium extends Component {
                 </div>
               }
             >
-              <Favorites />
+              <Favorites timeFrame={"medium"} />
             </Suspense>
           </TabPanel>
           <TabPanel value={valueTab} index={2}>
@@ -305,9 +365,6 @@ class Medium extends Component {
             </Suspense>
           </TabPanel>
           <TabPanel value={valueTab} index={3}>
-            {
-              //<CoinList timeFrame="medium" />
-            }
             <Suspense
               fallback={
                 <div style={{ textAlign: "center" }}>
@@ -334,7 +391,7 @@ class Medium extends Component {
             </Suspense>
           </TabPanel>
         </div>
-      </Grid>
+      </div>
     );
   }
 

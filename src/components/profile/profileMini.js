@@ -203,14 +203,13 @@ class ProfileMini extends Component {
             </Grid>
           )}
           {!this.state.userData.nickname && (
-            <Grid style={{ marginLeft: 10 }} item>
+            <Grid style={{ marginLeft: 10, alignSelf: "center" }} item>
               <Button
                 variant={"outlined"}
                 color={"primary"}
                 onClick={() => {
                   this.nav("../user/profile");
                 }}
-                style={{ marginLeft: 10 }}
               >
                 Set Profile
               </Button>

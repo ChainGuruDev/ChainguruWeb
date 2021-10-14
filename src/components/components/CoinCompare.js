@@ -132,7 +132,6 @@ class CoinCompare extends Component {
   vsCoinReturned = (vsCoin) => {
     var x = document.getElementById("cryptoCompSmall");
     if (window.getComputedStyle(x).display !== "none") {
-      console.log("triggered");
       if (this.state.coinData.id) {
         dispatcher.dispatch({
           type: GET_COIN_PRICECHART,
@@ -160,7 +159,15 @@ class CoinCompare extends Component {
   };
 
   coinDataReturned = (data) => {
+    let vsCoin = store.getStore("vsCoin");
+
     if (data[1] === this.props.id) {
+      if (data[0].id) {
+        dispatcher.dispatch({
+          type: GET_COIN_PRICECHART,
+          content: [data[0].id, this.props.id, this.state.timeFrame, vsCoin],
+        });
+      }
       this.setState({ coinData: data[0], loading: false });
     }
   };
