@@ -132,6 +132,7 @@ class App extends Component {
         url(${AcuminTTF}) format('opentype')
       `,
     };
+
     const breakpoints = createBreakpoints({
       keys: ["xs", "sm", "md", "lg", "xl"],
       values: {

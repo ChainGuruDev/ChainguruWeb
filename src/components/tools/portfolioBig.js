@@ -582,18 +582,20 @@ class PortfolioBig extends Component {
                     {formatMoney(row.price.value)}
                   </Typography>
                 </div>
-                <div>
-                  <Typography
-                    color={
-                      row.price.relative_change_24h > 0
-                        ? "primary"
-                        : "secondary"
-                    }
-                    variant={"subtitle2"}
-                  >
-                    {row.price.relative_change_24h.toFixed(2)} %
-                  </Typography>
-                </div>
+                {row.price.relative_change_24h && (
+                  <div>
+                    <Typography
+                      color={
+                        row.price.relative_change_24h > 0
+                          ? "primary"
+                          : "secondary"
+                      }
+                      variant={"subtitle2"}
+                    >
+                      {row.price.relative_change_24h.toFixed(2)} %
+                    </Typography>
+                  </div>
+                )}
               </>
             )}
           </TableCell>

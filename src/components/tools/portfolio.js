@@ -191,7 +191,7 @@ class Portfolio extends Component {
     this.setState({
       userWallets: payload.wallets,
     });
-    this.getBalance("ALL");
+    // this.getBalance("ALL");
   };
 
   dbWalletReturned = (payload) => {

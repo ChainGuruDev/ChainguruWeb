@@ -1182,13 +1182,19 @@ class Store {
 
   _getGasPrice = async () => {
     try {
+      // const url = "https://chainguru-db.herokuapp.com/gas/checkGas";
       const url = "https://chainguru-db.herokuapp.com/gas/checkGas";
-      const priceString = await rp(url);
-      const priceJSON = JSON.parse(priceString);
-      if (priceJSON) {
-        store.setStore({ universalGasPrice: priceJSON.result.ProposeGasPrice });
-        return priceJSON.result.ProposeGasPrice;
+
+      const priceString = await axios.get(url);
+      console.log(priceString.data.result);
+
+      if (priceString.data.result) {
+        store.setStore({
+          universalGasPrice: priceString.data.result.ProposeGasPrice,
+        });
+        return priceString.data.result.ProposeGasPrice;
       }
+      console.log(priceString.data.result.ProposeGasPrice);
       return store.getStore("universalGasPrice");
     } catch (e) {
       console.log(e);
@@ -1486,8 +1492,11 @@ class Store {
 
   db_getUserData = async (payload) => {
     try {
-      let _userExists = await axios.get(
-        `https://chainguru-db.herokuapp.com/users/${payload.address}`
+      let _userExists = await axios.post(
+        `https://chainguru-db.herokuapp.com/users/data`,
+        {
+          user: payload.address,
+        }
         // `http://localhost:3001/users/${payload.address}`
       );
       store.setStore({ userFavorites: _userExists.data.favorites.tokenIDs });
