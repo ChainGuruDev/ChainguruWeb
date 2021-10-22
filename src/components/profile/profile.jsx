@@ -24,6 +24,7 @@ import {
   DB_NEW_NICKNAME,
   DB_NEW_NICKNAME_RETURNED,
   DB_NEW_AVATAR_RETURNED,
+  LOGIN_RETURNED,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -44,9 +45,9 @@ const styles = (theme) => ({
     margin: 30,
     display: "flex",
     flex: 1,
-    direction: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     maxWidth: "50%",
+    height: "100%",
     background: "rgba(255,255,255,0.05)",
   },
   largeProfile: {
@@ -85,6 +86,7 @@ class Profile extends Component {
     emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
     emitter.on(DB_NEW_NICKNAME_RETURNED, this.dbNewNicknameReturned);
     emitter.on(DB_NEW_AVATAR_RETURNED, this.dbNewAvatarReturned);
+    emitter.on(LOGIN_RETURNED, this.loginReturned);
   }
 
   componentWillUnmount() {
@@ -99,6 +101,7 @@ class Profile extends Component {
       this.dbNewNicknameReturned
     );
     emitter.removeListener(DB_NEW_AVATAR_RETURNED, this.dbNewAvatarReturned);
+    emitter.removeListener(LOGIN_RETURNED, this.loginReturned);
   }
 
   connectionConnected = () => {
@@ -106,6 +109,7 @@ class Profile extends Component {
   };
 
   connectionDisconnected = () => {
+    console.log("disconnected");
     this.setState({ account: store.getStore("account") });
   };
 
@@ -255,6 +259,16 @@ class Profile extends Component {
 
   goBack = () => {
     this.props.history.goBack();
+  };
+
+  loginReturned = (status) => {
+    const { account } = this.state;
+    if (status && account.address) {
+      dispatcher.dispatch({
+        type: DB_GET_USERDATA,
+        address: account.address,
+      });
+    }
   };
 
   renderProfile = () => {

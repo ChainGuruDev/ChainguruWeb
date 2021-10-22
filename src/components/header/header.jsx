@@ -26,6 +26,8 @@ import { ReactComponent as Eth } from "../../assets/ethereum.svg";
 import {
   CONNECTION_CONNECTED,
   CONNECTION_DISCONNECTED,
+  LOGIN,
+  LOGIN_RETURNED,
   DB_GET_USERDATA,
   DARKMODE_SWITCH_RETURN,
   CHECK_GASPRICE,
@@ -356,10 +358,16 @@ class Header extends Component {
   connectionConnected = () => {
     let _acc = store.getStore("account");
     this.setState({ account: _acc });
+    //WALLET IS NOW CONNECTED
+    //CHECK IF USER IS ALREADY CREATED
     dispatcher.dispatch({
-      type: DB_GET_USERDATA,
+      type: LOGIN,
       address: _acc.address,
     });
+    // dispatcher.dispatch({
+    //   type: DB_GET_USERDATA,
+    //   address: _acc.address,
+    // });
 
     try {
       this.setAddressEnsName();

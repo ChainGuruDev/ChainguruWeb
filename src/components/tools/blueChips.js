@@ -32,6 +32,7 @@ import KeyboardArrowUpRoundedIcon from "@material-ui/icons/KeyboardArrowUpRounde
 import {
   CONNECTION_CONNECTED,
   CONNECTION_DISCONNECTED,
+  LOGIN_RETURNED,
   ERROR,
   DB_GET_BLUECHIPS,
   DB_GET_BLUECHIPS_RETURNED,
@@ -120,7 +121,8 @@ class BlueChips extends Component {
     emitter.on(DB_ADD_BLUECHIPS_RETURNED, this.db_addDelBluechipReturned);
     emitter.on(DB_DEL_BLUECHIPS_RETURNED, this.db_addDelBluechipReturned);
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
-    if (store.getStore("account").address) {
+    emitter.on(LOGIN_RETURNED, this.loginReturned);
+    if (store.getStore("account").address && store.getStore("userAuth")) {
       dispatcher.dispatch({
         type: DB_GET_BLUECHIPS_USER,
       });
@@ -162,6 +164,7 @@ class BlueChips extends Component {
       DB_DEL_BLUECHIPS_RETURNED,
       this.db_addDelBluechipReturned
     );
+    emitter.removeListener(LOGIN_RETURNED, this.loginReturned);
 
     emitter.removeListener(COINLIST_RETURNED, this.coinlistReturned);
   }
@@ -172,7 +175,7 @@ class BlueChips extends Component {
   };
 
   connected = (data) => {
-    if (store.getStore("account").address) {
+    if (store.getStore("account").address && store.getStore("userAuth")) {
       dispatcher.dispatch({
         type: DB_GET_BLUECHIPS_USER,
       });
@@ -181,6 +184,18 @@ class BlueChips extends Component {
       });
     }
   };
+
+  loginReturned(state) {
+    console.log(state);
+    if (store.getStore("account").address && state) {
+      dispatcher.dispatch({
+        type: DB_GET_BLUECHIPS_USER,
+      });
+      dispatcher.dispatch({
+        type: DB_BLUECHIPS_CHECK,
+      });
+    }
+  }
 
   db_addDelBluechipGuruReturned = (data) => {
     if (data.nModified >= 1) {

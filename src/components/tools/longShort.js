@@ -37,6 +37,7 @@ import RadioButtonCheckedIcon from "@material-ui/icons/RadioButtonChecked";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 
 import {
+  LOGIN_RETURNED,
   CONNECTION_CONNECTED,
   CONNECTION_DISCONNECTED,
   COIN_DATA_RETURNED,
@@ -97,6 +98,7 @@ class LongShort extends Component {
   constructor() {
     super();
     const account = store.getStore("account");
+    const userAuth = store.getStore("userAuth");
 
     this.state = {
       account: account,
@@ -109,7 +111,7 @@ class LongShort extends Component {
       shortCombo: 0,
     };
 
-    if (account && account.address) {
+    if (userAuth && account && account.address) {
       dispatcher.dispatch({
         type: DB_GET_USER_LS,
         address: account.address,

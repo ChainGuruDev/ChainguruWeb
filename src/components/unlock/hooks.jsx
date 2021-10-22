@@ -42,6 +42,7 @@ export function useInactiveListener(suppress = false) {
 
       const handleAccountsChanged = (accounts) => {
         if (accounts.length > 0) {
+          console.log(accounts);
           activate(injected);
         }
       };

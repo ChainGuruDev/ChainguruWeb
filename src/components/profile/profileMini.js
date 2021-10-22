@@ -13,6 +13,7 @@ import {
 } from "@material-ui/core";
 
 import {
+  LOGIN_RETURNED,
   CONNECTION_CONNECTED,
   CONNECTION_DISCONNECTED,
   DB_GET_USERDATA,
@@ -51,13 +52,15 @@ class ProfileMini extends Component {
     super();
 
     const account = store.getStore("account");
+    const userAuth = store.getStore("userAuth");
+
     this.state = {
       account: account,
       loading: true,
       userAvatar: null,
     };
 
-    if (account && account.address) {
+    if (userAuth && account && account.address) {
       dispatcher.dispatch({
         type: DB_GET_USERDATA,
         address: account.address,
@@ -69,6 +72,7 @@ class ProfileMini extends Component {
     emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
     emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
+    emitter.on(LOGIN_RETURNED, this.loginReturned);
   }
 
   componentWillUnmount() {
@@ -78,6 +82,7 @@ class ProfileMini extends Component {
       CONNECTION_DISCONNECTED,
       this.connectionDisconnected
     );
+    emitter.removeListener(LOGIN_RETURNED, this.loginReturned);
   }
 
   connectionConnected = () => {
@@ -88,7 +93,20 @@ class ProfileMini extends Component {
     this.setState({ account: store.getStore("account") });
   };
 
+  loginReturned = () => {
+    const account = store.getStore("account");
+    const userAuth = store.getStore("userAuth");
+    if (userAuth && account && account.address) {
+      console.log("getting user data");
+      dispatcher.dispatch({
+        type: DB_GET_USERDATA,
+        address: account.address,
+      });
+    }
+  };
+
   dbUserDataReturned = (data) => {
+    console.log(data);
     if (data.avatar) {
       let avatar = this.getAvatarType({ avatar: data.avatar });
 

@@ -87,6 +87,36 @@ class App extends Component {
     this.setState({ vsCoin: this.getVsCoin() });
   };
 
+  componentDidUpdate = () => {
+    let web3 = new Web3(Web3.givenProvider);
+
+    if (window.ethereum) {
+      window.ethereum.on("accountsChanged", function (accounts) {
+        // Time to reload your interface with accounts[0]!
+        store.setStore({
+          account: {
+            address: web3.utils.toChecksumAddress(accounts[0]),
+          },
+          chainId: window.ethereum.chainId,
+          web3context: { library: { provider: window.ethereum } },
+          userAuth: false,
+        });
+        // console.log(window.ethereum);
+        console.log("emitted on app render account change");
+        emitter.emit(CONNECTION_CONNECTED);
+      });
+
+      window.ethereum.on("networkChanged", function (networkId) {
+        // Time to reload your interface with the new networkId
+        store.setStore({ chainId: networkId });
+        // console.log(networkId);
+        console.log("emitted on app render network changed");
+
+        emitter.emit(CONNECTION_CONNECTED);
+      });
+    }
+  };
+
   componentWillUnmount() {
     emitter.removeListener(DARKMODE_SWITCH_RETURN, this.darkModeSwitch);
   }
@@ -433,28 +463,7 @@ class App extends Component {
 
     const { headerValue, darkMode, theme } = this.state;
 
-    if (window.ethereum) {
-      window.ethereum.on("accountsChanged", function (accounts) {
-        // Time to reload your interface with accounts[0]!
-        store.setStore({
-          account: {
-            address: web3.utils.toChecksumAddress(accounts[0]),
-          },
-          chainId: window.ethereum.chainId,
-          web3context: { library: { provider: window.ethereum } },
-        });
-        // console.log(window.ethereum);
-        emitter.emit(CONNECTION_CONNECTED);
-      });
-
-      window.ethereum.on("networkChanged", function (networkId) {
-        // Time to reload your interface with the new networkId
-        store.setStore({ chainId: networkId });
-        // console.log(networkId);
-
-        emitter.emit(CONNECTION_CONNECTED);
-      });
-    }
+    //ACA IBA LO COMPONENT UPDATE
 
     return (
       <MuiThemeProvider theme={theme}>

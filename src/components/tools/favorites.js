@@ -29,6 +29,7 @@ import {
   DB_ADD_FAVORITE,
   DB_ADD_FAVORITE_RETURNED,
   COINGECKO_POPULATE_FAVLIST,
+  LOGIN_RETURNED,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -78,6 +79,8 @@ class Favorites extends Component {
     super();
 
     const account = store.getStore("account");
+    const userAuth = store.getStore("userAuth");
+
     this.state = {
       items: [],
       open: false,
@@ -90,7 +93,7 @@ class Favorites extends Component {
       progressBar: 0,
       isAddingFav: false,
     };
-    if (account && account.address) {
+    if (userAuth && account && account.address) {
       dispatcher.dispatch({
         type: DB_GET_USERDATA,
         address: account.address,
@@ -120,7 +123,7 @@ class Favorites extends Component {
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
     emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
     emitter.on(DB_ADD_FAVORITE_RETURNED, this.dbAddFavoriteReturned);
-
+    emitter.on(LOGIN_RETURNED, this.loginReturned);
     //emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
     this.interval = setInterval(() => this.updateFavorites(), 1000);
   }
@@ -133,8 +136,11 @@ class Favorites extends Component {
       this.connectionDisconnected
     );
     emitter.removeListener(COINLIST_RETURNED, this.coinlistReturned);
-    emitter.on(DB_ADD_FAVORITE_RETURNED, this.dbAddFavoriteReturned);
-
+    emitter.removeListener(
+      DB_ADD_FAVORITE_RETURNED,
+      this.dbAddFavoriteReturned
+    );
+    emitter.removeListener(LOGIN_RETURNED, this.loginReturned);
     //emitter.removeListener(DB_USERDATA_RETURNED, this.dbUserDataReturned);
     clearInterval(this.interval);
   }
@@ -145,6 +151,18 @@ class Favorites extends Component {
 
   connectionDisconnected = () => {
     this.setState({ account: store.getStore("account") });
+  };
+
+  loginReturned = () => {
+    const account = store.getStore("account");
+    const userAuth = store.getStore("userAuth");
+
+    if (userAuth && account && account.address) {
+      dispatcher.dispatch({
+        type: DB_GET_USERDATA,
+        address: account.address,
+      });
+    }
   };
 
   dbUserDataReturned = (data) => {
