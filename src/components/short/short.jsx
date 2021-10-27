@@ -263,11 +263,6 @@ class Short extends Component {
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
     emitter.on(COIN_DATA_RETURNED, this.coinDataReturned);
     emitter.on(DARKMODE_SWITCH_RETURN, this.darkModeSwitch);
-
-    dispatcher.dispatch({
-      type: PING_COINGECKO,
-      content: {},
-    });
   }
 
   componentWillUnmount() {

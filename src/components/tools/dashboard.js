@@ -9,8 +9,13 @@ import { withTranslation } from "react-i18next";
 
 import { Grid, CircularProgress, Card } from "@material-ui/core";
 import ProfileMini from "../profile/profileMini.js";
+import Snackbar from "../snackbar";
 
-import { CONNECTION_CONNECTED, CONNECTION_DISCONNECTED } from "../../constants";
+import {
+  CONNECTION_CONNECTED,
+  CONNECTION_DISCONNECTED,
+  ERROR,
+} from "../../constants";
 
 import Store from "../../stores";
 const emitter = Store.emitter;
@@ -70,11 +75,13 @@ class Dashboard extends Component {
   componentDidMount() {
     emitter.on(CONNECTION_CONNECTED, this.connected);
     emitter.on(CONNECTION_DISCONNECTED, this.disconnected);
+    emitter.on(ERROR, this.errorReturned);
   }
 
   componentWillUnmount() {
     emitter.removeListener(CONNECTION_CONNECTED, this.connected);
     emitter.removeListener(CONNECTION_DISCONNECTED, this.disconnected);
+    emitter.removeListener(ERROR, this.errorReturned);
   }
 
   connected = () => {
@@ -82,11 +89,6 @@ class Dashboard extends Component {
     this.setState({
       account: account,
     });
-
-    // dispatcher.dispatch({
-    //   type: DB_GET_USER_LS,
-    //   address: account.address,
-    // });
   };
 
   disconnected = () => {
@@ -98,7 +100,7 @@ class Dashboard extends Component {
 
   render() {
     const { classes } = this.props;
-    const { account, tools } = this.state;
+    const { account, tools, snackbarMessage } = this.state;
 
     return (
       <div className={classes.root}>
@@ -118,6 +120,7 @@ class Dashboard extends Component {
             </Grid>
           </Grid>
         )}
+        {snackbarMessage && this.renderSnackbar()}
       </div>
     );
   }
@@ -193,6 +196,27 @@ class Dashboard extends Component {
         </Suspense>
       </div>
     );
+  };
+
+  renderSnackbar = () => {
+    var { snackbarType, snackbarMessage } = this.state;
+    return (
+      <Snackbar type={snackbarType} message={snackbarMessage} open={true} />
+    );
+  };
+
+  errorReturned = (error) => {
+    const snackbarObj = { snackbarMessage: null, snackbarType: null };
+    this.setState(snackbarObj);
+    this.setState({ loading: false });
+    const that = this;
+    setTimeout(() => {
+      const snackbarObj = {
+        snackbarMessage: error.toString(),
+        snackbarType: "Error",
+      };
+      that.setState(snackbarObj);
+    });
   };
 
   nav = (screen) => {

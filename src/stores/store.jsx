@@ -1,6 +1,7 @@
 import config from "../config";
 import Web3 from "web3";
 import Bottleneck from "bottleneck";
+import debounce from "lodash/throttle";
 import {
   ERROR,
   CONNECT_LEDGER,
@@ -316,7 +317,7 @@ class Store {
             this.getCoinPriceChart(payload);
             break;
           case DB_GET_USERDATA:
-            this.db_getUserData(payload);
+            this.debouncedGetUserData(payload);
             break;
           case DB_ADD_WALLET:
             this.db_addWallet(payload);
@@ -1566,7 +1567,7 @@ ${nonce}`,
       },
       { withCredentials: true }
     );
-    console.log(authToken);
+    // console.log(authToken);
     if (authToken.data.token && authToken.data.tokenExp) {
       this.setNewAccessToken(authToken.data.token, authToken.data.tokenExp);
     }
@@ -1603,6 +1604,7 @@ ${nonce}`,
             _userExists.data.user,
             _userExists.data.nonce
           );
+          return emitter.emit(ERROR, "Login expired. New signature required");
         }
       }
 
@@ -1631,9 +1633,16 @@ ${nonce}`,
     }
   };
 
+  debouncedGetUserData = debounce(
+    async (payload) => {
+      return this.db_getUserData(payload);
+    },
+    150,
+    { leading: true, trailing: false }
+  );
+
   db_getUserData = async (payload) => {
     try {
-      console.log("checking if user exists");
       let _userExists = await axios.post(
         `http://localhost:3001/users/data`,
         {
@@ -1652,13 +1661,12 @@ ${nonce}`,
     } catch (err) {
       console.log(err.message);
       try {
-        console.log("here");
-        console.log("new user detected");
+        // console.log("new user detected");
         let _newUser = await axios.put(
           `https://chainguru-db.herokuapp.com/users/${payload.address}`
           // `http://localhost:3001/users/${payload.address}`
         );
-        console.log("new user created");
+        // console.log("new user created");
         if (await _newUser) {
           dispatcher.dispatch({
             type: DB_GET_USERDATA,
@@ -2084,6 +2092,7 @@ ${nonce}`,
       let data = await axios.get(
         `https://chainguru-db.herokuapp.com/longShort/token?tokenID=${payload.tokenID}&userID=${account.address}`
       );
+      console.log(data.data);
       emitter.emit(DB_GET_USER_TOKEN_LS_RETURNED, await data.data);
     } catch (err) {
       if (err) {
@@ -2185,9 +2194,13 @@ ${nonce}`,
     const account = store.getStore("account");
     try {
       if (payload.onlyActive) {
+        // let data = await axios.get(
+        //   `https://chainguru-db.herokuapp.com/longShort/user?userID=${account.address}&onlyActive=true`
+        // );
         let data = await axios.get(
           `https://chainguru-db.herokuapp.com/longShort/user?userID=${account.address}&onlyActive=true`
         );
+
         emitter.emit(DB_GET_USER_LS_RETURNED, await data.data);
       } else {
         let data = await axios.get(

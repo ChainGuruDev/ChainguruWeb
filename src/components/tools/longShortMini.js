@@ -34,6 +34,7 @@ import CancelIcon from "@material-ui/icons/Cancel";
 import {
   CONNECTION_CONNECTED,
   CONNECTION_DISCONNECTED,
+  LOGIN_RETURNED,
   DB_GET_USERDATA,
   DB_USERDATA_RETURNED,
   DB_GET_USER_LS,
@@ -101,6 +102,7 @@ class LongShortMini extends Component {
   constructor(props) {
     super();
     const account = store.getStore("account");
+    const userAuth = store.getStore("userAuth");
 
     this.state = {
       account: account,
@@ -114,7 +116,7 @@ class LongShortMini extends Component {
       loadingNewVote: false,
     };
 
-    if (account && account.address) {
+    if (userAuth && account && account.address) {
       dispatcher.dispatch({
         type: DB_GET_USER_LS,
         address: account.address,
@@ -141,6 +143,7 @@ class LongShortMini extends Component {
     emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
     emitter.on(DB_GET_USER_TOKEN_LS_RETURNED, this.userTokenLSReturned);
     emitter.on(DB_CREATE_LS_RETURNED, this.db_createLSReturned);
+    emitter.on(LOGIN_RETURNED, this.loginReturned);
   }
 
   componentWillUnmount() {
@@ -157,21 +160,13 @@ class LongShortMini extends Component {
       this.userTokenLSReturned
     );
     emitter.removeListener(DB_CREATE_LS_RETURNED, this.db_createLSReturned);
+    emitter.removeListener(LOGIN_RETURNED, this.loginReturned);
   }
 
   connected = () => {
     const account = store.getStore("account");
     this.setState({
       account: account,
-    });
-
-    dispatcher.dispatch({
-      type: DB_GET_USER_LS,
-      address: account.address,
-    });
-    dispatcher.dispatch({
-      type: DB_GET_USERDATA,
-      address: account.address,
     });
   };
 
@@ -180,6 +175,21 @@ class LongShortMini extends Component {
     this.setState({
       account: account,
     });
+  };
+
+  loginReturned = () => {
+    const account = store.getStore("account");
+    const userAuth = store.getStore("userAuth");
+    if (userAuth && account && account.address) {
+      dispatcher.dispatch({
+        type: DB_GET_USER_LS,
+        address: account.address,
+      });
+      dispatcher.dispatch({
+        type: DB_GET_USERDATA,
+        address: account.address,
+      });
+    }
   };
 
   userTokenLSReturned = (data) => {
@@ -392,6 +402,17 @@ class LongShortMini extends Component {
       );
     });
 
+    console.log(countTotals);
+    console.log(countLong);
+    console.log(countShort);
+    if (countShort) {
+      console.log(
+        (isNaN((countShort[0] / (countShort[0] + countShort[1])) * 100)
+          ? 0
+          : (countShort[0] / (countShort[0] + countShort[1])) * 100
+        ).toFixed(1)
+      );
+    }
     return (
       <>
         <Card
@@ -453,7 +474,7 @@ class LongShortMini extends Component {
                       alignItems="stretch"
                       className={classes.comboBarBorder}
                     >
-                      {countLong && (countLong[0] || countShort[0]) && (
+                      {countLong && countTotals.good + countTotals.bad > 0 && (
                         <div style={{ margin: "0px auto" }}>
                           <Grid
                             item
@@ -476,7 +497,7 @@ class LongShortMini extends Component {
                           </Grid>
                         </div>
                       )}
-                      {countLong && (countLong[0] || countShort[0]) && (
+                      {countLong && countTotals.good + countTotals.bad > 0 && (
                         <Grid
                           style={{
                             justifyContent: "space-between",
@@ -612,11 +633,17 @@ class LongShortMini extends Component {
                                     style={{ marginRight: 10 }}
                                   />
                                   <Typography variant="h3" color="primary">
-                                    {(
+                                    {isNaN(
                                       (countLong[0] /
                                         (countLong[0] + countLong[1])) *
-                                      100
-                                    ).toFixed(1)}{" "}
+                                        100
+                                    )
+                                      ? 0
+                                      : (
+                                          (countLong[0] /
+                                            (countLong[0] + countLong[1])) *
+                                          100
+                                        ).toFixed(1)}
                                   </Typography>
                                   <Typography
                                     style={{ marginLeft: 5 }}
@@ -688,11 +715,17 @@ class LongShortMini extends Component {
                                     style={{ marginRight: 10 }}
                                   />
                                   <Typography variant="h3" color="secondary">
-                                    {(
+                                    {isNaN(
                                       (countShort[0] /
                                         (countShort[0] + countShort[1])) *
-                                      100
-                                    ).toFixed(1)}
+                                        100
+                                    )
+                                      ? 0
+                                      : (
+                                          (countShort[0] /
+                                            (countShort[0] + countShort[1])) *
+                                          100
+                                        ).toFixed(1)}
                                   </Typography>
                                   <Typography
                                     style={{ marginLeft: 5 }}

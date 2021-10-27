@@ -97,7 +97,6 @@ class ProfileMini extends Component {
     const account = store.getStore("account");
     const userAuth = store.getStore("userAuth");
     if (userAuth && account && account.address) {
-      console.log("getting user data");
       dispatcher.dispatch({
         type: DB_GET_USERDATA,
         address: account.address,
@@ -106,7 +105,6 @@ class ProfileMini extends Component {
   };
 
   dbUserDataReturned = (data) => {
-    console.log(data);
     if (data.avatar) {
       let avatar = this.getAvatarType({ avatar: data.avatar });
 
