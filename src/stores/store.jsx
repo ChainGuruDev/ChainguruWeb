@@ -1577,6 +1577,7 @@ ${nonce}`,
 
   login = async (payload) => {
     try {
+      //
       // let _userExists = await axios.get(
       //   `https://chainguru-db.herokuapp.com/users/data`,
       //   {
