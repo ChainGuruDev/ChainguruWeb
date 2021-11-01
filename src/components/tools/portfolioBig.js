@@ -518,7 +518,7 @@ class PortfolioBig extends Component {
         <TableRow
           hover={true}
           key={`${row.asset_code}_${row.wallet_address}`}
-          style={{ cursor: "pointer", background: "#00000015" }}
+          style={{ cursor: "pointer" }}
           onClick={() => this.nav("/short/detective/" + row.asset_code)}
         >
           <TableCell>
@@ -1249,6 +1249,22 @@ class PortfolioBig extends Component {
                           </Grid>
                         )}
                       <Grid item container justify="flex-end" align="flex-end">
+                        {!this.state.portfolioStats && (
+                          <Skeleton
+                            variant="rect"
+                            width={"100%"}
+                            height={"60px"}
+                            style={{ borderRadius: 5 }}
+                          />
+                        )}
+                        {!this.state.chartVariation && (
+                          <Skeleton
+                            variant="rect"
+                            width={"100%"}
+                            height={"25px"}
+                            style={{ borderRadius: 5 }}
+                          />
+                        )}
                         {chartDataLoaded ? (
                           <PortfolioChart
                             height="250px"

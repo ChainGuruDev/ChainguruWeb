@@ -183,6 +183,8 @@ const Emitter = require("events").EventEmitter;
 const dispatcher = new Dispatcher();
 const emitter = new Emitter();
 
+let assetStatsRequest = null;
+
 class Store {
   constructor() {
     this.store = {
@@ -1215,7 +1217,7 @@ class Store {
   _getGasPrice = async () => {
     try {
       // const url = "https://chainguru-db.herokuapp.com/gas/checkGas";
-      const url = "https://chainguru-db.herokuapp.com/gas/checkGas";
+      const url = "https://chainguru-db-dev.herokuapp.com/gas/checkGas";
 
       const priceString = await axios.get(url);
       // console.log(priceString.data.result);
@@ -1560,7 +1562,7 @@ ${nonce}`,
 
   handleAuthenticate = async (user, signature) => {
     const authToken = await axios.post(
-      `http://localhost:3001/auth`,
+      `https://chainguru-db-dev.herokuapp.com/auth`,
       {
         publicAddress: user,
         signature,
@@ -1583,11 +1585,11 @@ ${nonce}`,
       // );
       //DEV ROUTE
       let _userExists = await axios.get(
-        `http://localhost:3001/users/${payload.address}`
+        `https://chainguru-db-dev.herokuapp.com/users/${payload.address}`
       );
       try {
         let login = await axios.post(
-          `http://localhost:3001/auth/login`,
+          `https://chainguru-db-dev.herokuapp.com/auth/login`,
           {
             user: _userExists.data.user,
           },
@@ -1644,7 +1646,7 @@ ${nonce}`,
   db_getUserData = async (payload) => {
     try {
       let _userExists = await axios.post(
-        `http://localhost:3001/users/data`,
+        `https://chainguru-db-dev.herokuapp.com/users/data`,
         {
           user: payload.address,
         },
@@ -1661,9 +1663,9 @@ ${nonce}`,
     } catch (err) {
       console.log(err.message);
       try {
-        // console.log("new user detected");
+        console.log("new user detected");
         let _newUser = await axios.put(
-          `https://chainguru-db.herokuapp.com/users/${payload.address}`
+          `https://chainguru-db-dev.herokuapp.com/users/${payload.address}`
           // `http://localhost:3001/users/${payload.address}`
         );
         // console.log("new user created");
@@ -1684,7 +1686,7 @@ ${nonce}`,
     let _dbCategories;
     try {
       _dbCategories = await axios.put(
-        `https://chainguru-db.herokuapp.com/tokens/getTokensbyIDs`,
+        `https://chainguru-db-dev.herokuapp.com/tokens/getTokensbyIDs`,
         // `http://localhost:3001/tokens/getTokensbyIDs`,
         { tokenIDs: payload.tokenIDs }
       );
@@ -1699,7 +1701,7 @@ ${nonce}`,
     const account = store.getStore("account");
 
     let _dbAddFav = await axios.put(
-      `http://localhost:3001/favorites/${account.address}`,
+      `https://chainguru-db-dev.herokuapp.com/favorites/${account.address}`,
       { tokenID: payload.content },
       {
         headers: {
@@ -1716,7 +1718,7 @@ ${nonce}`,
     const account = store.getStore("account");
 
     let _dbDelFav = await axios.delete(
-      `http://localhost:3001/favorites/${account.address}`,
+      `https://chainguru-db-dev.herokuapp.com/favorites/${account.address}`,
       {
         headers: {
           Authorization: `Bearer ${store.getStore("authToken")}`,
@@ -1732,7 +1734,7 @@ ${nonce}`,
     const account = store.getStore("account");
 
     let _dbAddBl = await axios.put(
-      `http://localhost:3001/blacklist/${account.address}`,
+      `https://chainguru-db-dev.herokuapp.com/blacklist/${account.address}`,
       { tokenID: payload.content },
       {
         headers: {
@@ -1747,7 +1749,7 @@ ${nonce}`,
     const account = store.getStore("account");
 
     let _dbDelBl = await axios.delete(
-      `http://localhost:3001/blacklist/${account.address}`,
+      `https://chainguru-db-dev.herokuapp.com/blacklist/${account.address}`,
       {
         headers: {
           Authorization: `Bearer ${store.getStore("authToken")}`,
@@ -1761,7 +1763,7 @@ ${nonce}`,
   db_addWallet = async (payload) => {
     const account = store.getStore("account");
     let _dbAddWallet = await axios.put(
-      `http://localhost:3001/wallets/${account.address}`,
+      `https://chainguru-db-dev.herokuapp.com/wallets/${account.address}`,
       { address: payload.wallet },
       {
         headers: {
@@ -1776,7 +1778,7 @@ ${nonce}`,
     const account = store.getStore("account");
 
     let _dbDelWallet = await axios.delete(
-      `http://localhost:3001/wallets/${account.address}`,
+      `https://chainguru-db-dev.herokuapp.com/wallets/${account.address}`,
       {
         headers: {
           Authorization: `Bearer ${store.getStore("authToken")}`,
@@ -1791,12 +1793,12 @@ ${nonce}`,
     let _dbUpdateWalletBal;
     try {
       await axios
-        .put(`https://chainguru-db.herokuapp.com/wallets/updateOne`, {
+        .put(`https://chainguru-db-dev.herokuapp.com/wallets/updateOne`, {
           wallet: payload.wallet,
         })
         .then(
           (_dbUpdateWalletBal = await axios.put(
-            `https://chainguru-db.herokuapp.com/wallets/balance`,
+            `https://chainguru-db-dev.herokuapp.com/wallets/balance`,
             {
               wallet: payload.wallet,
             }
@@ -1814,7 +1816,7 @@ ${nonce}`,
     const account = store.getStore("account");
     try {
       let _dbUpdateWallet = await axios.put(
-        `https://chainguru-db.herokuapp.com/movements/updateOne`,
+        `https://chainguru-db-dev.herokuapp.com/movements/updateOne`,
         // `http://localhost:3001/movements/updateOne`,
         {
           userID: account.address,
@@ -1854,12 +1856,12 @@ ${nonce}`,
 
     try {
       await axios
-        .put(`https://chainguru-db.herokuapp.com/wallets/updateOne`, {
+        .put(`https://chainguru-db-dev.herokuapp.com/wallets/updateOne`, {
           wallet: payload.wallet,
         })
         .then(
           (_dbUpdateWalletTX = await axios.put(
-            `https://chainguru-db.herokuapp.com/movements/auto`,
+            `https://chainguru-db-dev.herokuapp.com/movements/auto`,
             {
               user: account.address,
               wallet: payload.wallet,
@@ -1885,7 +1887,7 @@ ${nonce}`,
     console.log(payload.newMovements);
     try {
       let _dbUpdateWallet = await axios.put(
-        `https://chainguru-db.herokuapp.com/movements/updateWallet`,
+        `https://chainguru-db-dev.herokuapp.com/movements/updateWallet`,
         {
           userID: account.address,
           wallet: payload.selectedWallet,
@@ -1906,7 +1908,9 @@ ${nonce}`,
 
   db_getBluechips = async () => {
     // TODO UPDATE TO ONLINE DB https://chainguru-db.herokuapp.com/
-    let data = await axios.get(`http://localhost:3001/bluechips/guru`);
+    let data = await axios.get(
+      `https://chainguru-db-dev.herokuapp.com/bluechips/guru`
+    );
 
     const tokenIDs = data.data[0].tokenIDs;
     try {
@@ -1925,7 +1929,7 @@ ${nonce}`,
     const from = store.getStore("account").address;
     // TODO UPDATE TO ONLINE DB https://chainguru-db.herokuapp.com/
     let data = await axios.post(
-      `http://localhost:3001/bluechips/user/`,
+      `https://chainguru-db-dev.herokuapp.com/bluechips/user/`,
       {
         user: from,
       },
@@ -1959,7 +1963,7 @@ ${nonce}`,
       const from = getHash(user);
       try {
         let data = await axios.post(
-          "http://localhost:3001/blueChips/guru/check",
+          "https://chainguru-db-dev.herokuapp.com/blueChips/guru/check",
           {
             user: user,
             from: from,
@@ -1983,7 +1987,7 @@ ${nonce}`,
     const from = store.getStore("account").address;
     try {
       let data = await axios.post(
-        "http://localhost:3001/bluechips/user/add",
+        "https://chainguru-db-dev.herokuapp.com/bluechips/user/add",
         {
           user: from,
           tokenID: payload.tokenID,
@@ -2006,7 +2010,7 @@ ${nonce}`,
     const from = store.getStore("account").address;
     try {
       let data = await axios.delete(
-        "http://localhost:3001/bluechips/user/del",
+        "https://chainguru-db-dev.herokuapp.com/bluechips/user/del",
         {
           headers: {
             Authorization: `Bearer ${store.getStore("authToken")}`,
@@ -2031,7 +2035,7 @@ ${nonce}`,
 
     try {
       let data = await axios.post(
-        "http://localhost:3001/blueChips/guru",
+        "https://chainguru-db-dev.herokuapp.com/blueChips/guru",
         {
           user: user,
           from: from,
@@ -2055,16 +2059,19 @@ ${nonce}`,
     const user = store.getStore("account").address;
     const from = getHash(user);
     try {
-      let data = await axios.delete("http://localhost:3001/blueChips/guru", {
-        headers: {
-          Authorization: `Bearer ${store.getStore("authToken")}`,
-        },
-        data: {
-          user: user,
-          from: from,
-          tokenID: payload.tokenID,
-        },
-      });
+      let data = await axios.delete(
+        "https://chainguru-db-dev.herokuapp.com/blueChips/guru",
+        {
+          headers: {
+            Authorization: `Bearer ${store.getStore("authToken")}`,
+          },
+          data: {
+            user: user,
+            from: from,
+            tokenID: payload.tokenID,
+          },
+        }
+      );
       emitter.emit(DB_DEL_BLUECHIPS_GURU_RETURNED, await data.data);
     } catch (err) {
       if (err) {
@@ -2076,7 +2083,7 @@ ${nonce}`,
   db_getTokenLS = async (payload) => {
     try {
       let data = await axios.get(
-        `https://chainguru-db.herokuapp.com/longShort/token?tokenID=${payload.tokenID}`
+        `https://chainguru-db-dev.herokuapp.com/longShort/token?tokenID=${payload.tokenID}`
       );
       emitter.emit(DB_GET_TOKEN_LS_RETURNED, await data.data);
     } catch (err) {
@@ -2090,7 +2097,7 @@ ${nonce}`,
     const account = await store.getStore("account");
     try {
       let data = await axios.get(
-        `https://chainguru-db.herokuapp.com/longShort/token?tokenID=${payload.tokenID}&userID=${account.address}`
+        `https://chainguru-db-dev.herokuapp.com/longShort/token?tokenID=${payload.tokenID}&userID=${account.address}`
       );
       console.log(data.data);
       emitter.emit(DB_GET_USER_TOKEN_LS_RETURNED, await data.data);
@@ -2105,7 +2112,7 @@ ${nonce}`,
     const account = store.getStore("account");
     try {
       let data = await axios.put(
-        "http://localhost:3001/longShort/new",
+        "https://chainguru-db-dev.herokuapp.com/longShort/new",
         {
           tokenID: payload.tokenID,
           user: account.address,
@@ -2129,7 +2136,7 @@ ${nonce}`,
     const account = store.getStore("account");
     try {
       let data = await axios.put(
-        "http://localhost:3001/longShort/checkResult",
+        "https://chainguru-db-dev.herokuapp.com/longShort/checkResult",
         {
           user: account.address,
           tokenID: payload.tokenID,
@@ -2152,7 +2159,7 @@ ${nonce}`,
     const account = store.getStore("account");
     try {
       let data = await axios.put(
-        `http://localhost:3001/users/${account.address}/setNickname`,
+        `https://chainguru-db-dev.herokuapp.com/users/${account.address}/setNickname`,
         {
           newNickname: payload.nickname,
         },
@@ -2174,7 +2181,7 @@ ${nonce}`,
     const account = store.getStore("account");
     try {
       let data = await axios.put(
-        `http://localhost:3001/users/${account.address}/setAvatar`,
+        `https://chainguru-db-dev.herokuapp.com/users/${account.address}/setAvatar`,
         {
           newAvatar: payload.avatar,
         },
@@ -2198,13 +2205,13 @@ ${nonce}`,
         //   `https://chainguru-db.herokuapp.com/longShort/user?userID=${account.address}&onlyActive=true`
         // );
         let data = await axios.get(
-          `https://chainguru-db.herokuapp.com/longShort/user?userID=${account.address}&onlyActive=true`
+          `https://chainguru-db-dev.herokuapp.com/longShort/user?userID=${account.address}&onlyActive=true`
         );
 
         emitter.emit(DB_GET_USER_LS_RETURNED, await data.data);
       } else {
         let data = await axios.get(
-          `https://chainguru-db.herokuapp.com/longShort/user?userID=${account.address}`
+          `https://chainguru-db-dev.herokuapp.com/longShort/user?userID=${account.address}`
         );
         emitter.emit(DB_GET_USER_LS_RETURNED, await data.data);
       }
@@ -2218,7 +2225,7 @@ ${nonce}`,
   db_getLeaderboard = async () => {
     try {
       let data = await axios.get(
-        `https://chainguru-db.herokuapp.com/users/leaderboard`
+        `https://chainguru-db-dev.herokuapp.com/users/leaderboard`
       );
       emitter.emit(DB_GET_LEADERBOARD_RETURNED, await data.data);
     } catch (err) {
@@ -2311,7 +2318,7 @@ ${nonce}`,
       //   }
       // );
       let portfolioAssetStats = await axios.post(
-        `https://chainguru-db.herokuapp.com/zerion/assets/stats`,
+        `https://chainguru-db-dev.herokuapp.com/zerion/assets/stats`,
         {
           address: data.payload.wallet,
           currency: vsCoin,
@@ -2326,11 +2333,10 @@ ${nonce}`,
     }
   };
 
-  //ROUTES FOR DB TOM WALLET PORTFOLIO stats
+  //ROUTES FOR ZERION WALLET PORTFOLIO stats
   db_getPortfolio = async (payload) => {
     let vsCoin = store.getStore("vsCoin");
     const account = store.getStore("account");
-
     function createData(
       wallet_address,
       asset_code,
@@ -2365,7 +2371,7 @@ ${nonce}`,
 
     try {
       const portfolioAssets = await axios.post(
-        `https://chainguru-db.herokuapp.com/zerion/address/assets`,
+        `https://chainguru-db-dev.herokuapp.com/zerion/address/assets`,
         {
           addresses: payload.wallet,
           currency: vsCoin,
@@ -2397,7 +2403,7 @@ ${nonce}`,
     let vsCoin = store.getStore("vsCoin");
     try {
       const portfolioStats = await axios.post(
-        `https://chainguru-db.herokuapp.com/zerion/address/portfolio`,
+        `https://chainguru-db-dev.herokuapp.com/zerion/address/portfolio`,
         {
           addresses: payload.wallet,
           currency: vsCoin,
@@ -2417,6 +2423,12 @@ ${nonce}`,
   db_getPortfolioAssetStats = async (payload) => {
     let vsCoin = store.getStore("vsCoin");
     const account = store.getStore("account");
+    if (assetStatsRequest) {
+      console.log("cancelled tx");
+      assetStatsRequest.cancel();
+    }
+    const CancelToken = axios.CancelToken;
+    assetStatsRequest = CancelToken.source();
 
     function createData(wallet_address, asset_code, stats, profit_percent) {
       return {
@@ -2442,14 +2454,23 @@ ${nonce}`,
           prices.push(asset.price ? asset.price.value : null)
         );
         assets.forEach((asset, i) => keys.push(asset.asset_code));
-        let portfolioAssetStats = await axios.post(
-          `https://chainguru-db.herokuapp.com/zerion/assets/stats`,
-          {
-            address: payload.wallet[i],
-            currency: vsCoin,
-            asset_code: keys,
-          }
-        );
+        let portfolioAssetStats = await axios
+          .post(
+            `https://chainguru-db-dev.herokuapp.com/zerion/assets/stats`,
+            {
+              address: payload.wallet[i],
+              currency: vsCoin,
+              asset_code: keys,
+            },
+            {
+              cancelToken: assetStatsRequest.token,
+            }
+          )
+          .catch(function (thrown) {
+            if (axios.isCancel(thrown)) {
+              console.log("Request canceled");
+            }
+          });
         keys.forEach((key, index) => {
           let profit_percent;
           if (
@@ -2478,7 +2499,6 @@ ${nonce}`,
       }
       emitter.emit(DB_GET_PORTFOLIO_ASSET_STATS_RETURNED, finalData);
     } catch (err) {
-      console.log(err.message);
       emitter.emit(ERROR, await err.message);
     }
   };
@@ -2489,7 +2509,7 @@ ${nonce}`,
     try {
       if (Array.isArray(payload.wallet)) {
         let charts = await axios.post(
-          `https://chainguru-db.herokuapp.com/zerion/address/chart`,
+          `https://chainguru-db-dev.herokuapp.com/zerion/address/chart`,
           {
             addresses: payload.wallet,
             currency: vsCoin,
@@ -2527,7 +2547,7 @@ ${nonce}`,
 
     try {
       let data = await axios.put(
-        `https://chainguru-db.herokuapp.com/users/${account.address}/walletnick`,
+        `https://chainguru-db-dev.herokuapp.com/users/${account.address}/walletnick`,
         {
           wallet: payload.wallet,
           nick: payload.nick,
@@ -2545,7 +2565,7 @@ ${nonce}`,
     console.log(payload);
     try {
       let data = await axios.put(
-        `https://chainguru-db.herokuapp.com/users/${account.address}/walletnickRemove`,
+        `https://chainguru-db-dev.herokuapp.com/users/${account.address}/walletnickRemove`,
         {
           wallet: payload.wallet,
         }

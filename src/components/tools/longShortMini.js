@@ -402,17 +402,6 @@ class LongShortMini extends Component {
       );
     });
 
-    console.log(countTotals);
-    console.log(countLong);
-    console.log(countShort);
-    if (countShort) {
-      console.log(
-        (isNaN((countShort[0] / (countShort[0] + countShort[1])) * 100)
-          ? 0
-          : (countShort[0] / (countShort[0] + countShort[1])) * 100
-        ).toFixed(1)
-      );
-    }
     return (
       <>
         <Card
