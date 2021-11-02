@@ -2425,8 +2425,7 @@ ${nonce}`,
     let vsCoin = store.getStore("vsCoin");
     const account = store.getStore("account");
     if (assetStatsRequest) {
-      console.log("cancelled tx");
-      assetStatsRequest.cancel();
+      assetStatsRequest.cancel("req. cancelled");
     }
     const CancelToken = axios.CancelToken;
     assetStatsRequest = CancelToken.source();
@@ -2472,34 +2471,37 @@ ${nonce}`,
               console.log("Request canceled");
             }
           });
-        keys.forEach((key, index) => {
-          let profit_percent;
-          if (
-            portfolioAssetStats.data[index].stats &&
-            portfolioAssetStats.data[index].stats.avg_buy_price &&
-            prices[index]
-          ) {
-            profit_percent =
-              ((prices[index] -
-                portfolioAssetStats.data[index].stats.avg_buy_price) /
-                portfolioAssetStats.data[index].stats.avg_buy_price) *
-              100;
-          } else {
-            profit_percent = null;
-          }
+        if (portfolioAssetStats) {
+          keys.forEach((key, index) => {
+            let profit_percent;
+            if (
+              portfolioAssetStats.data[index].stats &&
+              portfolioAssetStats.data[index].stats.avg_buy_price &&
+              prices[index]
+            ) {
+              profit_percent =
+                ((prices[index] -
+                  portfolioAssetStats.data[index].stats.avg_buy_price) /
+                  portfolioAssetStats.data[index].stats.avg_buy_price) *
+                100;
+            } else {
+              profit_percent = null;
+            }
 
-          finalData.push(
-            createData(
-              payload.wallet[i],
-              keys[index],
-              portfolioAssetStats.data[index].stats,
-              profit_percent
-            )
-          );
-        });
+            finalData.push(
+              createData(
+                payload.wallet[i],
+                keys[index],
+                portfolioAssetStats.data[index].stats,
+                profit_percent
+              )
+            );
+          });
+          emitter.emit(DB_GET_PORTFOLIO_ASSET_STATS_RETURNED, finalData);
+        }
       }
-      emitter.emit(DB_GET_PORTFOLIO_ASSET_STATS_RETURNED, finalData);
     } catch (err) {
+      console.log(err);
       emitter.emit(ERROR, await err.message);
     }
   };
