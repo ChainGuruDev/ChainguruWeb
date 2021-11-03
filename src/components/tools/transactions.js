@@ -1,7 +1,11 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import { formatMoney } from "../helpers";
+import {
+  formatMoney,
+  formatBigNumbers,
+  differenceInPercentage,
+} from "../helpers";
 
 import {
   Card,
@@ -27,10 +31,11 @@ import {
 } from "@material-ui/core";
 
 import {
+  ERROR,
   DB_GET_USERDATA,
   DB_USERDATA_RETURNED,
-  DB_GET_PORTFOLIO,
-  DB_GET_PORTFOLIO_RETURNED,
+  DB_GET_ADDRESS_TX,
+  DB_GET_ADDRESS_TX_RETURNED,
   DB_UPDATE_PORTFOLIO_RETURNED,
   DB_SET_USER_WALLET_NICKNAME_RETURNED,
   DB_REMOVE_USER_WALLET_NICKNAME_RETURNED,
@@ -42,6 +47,7 @@ import {
   DB_UPDATE_PORTFOLIO,
   CHECK_ACCOUNT,
   DB_ADD_WALLET,
+  LOGIN_RETURNED,
 } from "../../constants";
 
 import WalletNicknameModal from "../components/walletNicknameModal.js";
@@ -101,6 +107,8 @@ class Transactions extends Component {
 
     this._isMounted = false;
     const account = store.getStore("account");
+    const userAuth = store.getStore("userAuth");
+
     this.state = {
       account: account,
       loading: false,
@@ -110,10 +118,12 @@ class Transactions extends Component {
       error: false,
       errMsgWallet: "",
       errorWallet: true,
-      sortBy: "block_signed_at",
+      sortBy: "mined_at",
       sortOrder: "desc",
+      transactions: null,
     };
-    if (account && account.address) {
+
+    if (userAuth && account && account.address) {
       dispatcher.dispatch({
         type: DB_GET_USERDATA,
         address: account.address,
@@ -126,8 +136,8 @@ class Transactions extends Component {
     emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
     emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
-    emitter.on(DB_GET_PORTFOLIO_RETURNED, this.dbGetPortfolioReturned);
-    emitter.on(DB_UPDATE_PORTFOLIO_RETURNED, this.dbGetPortfolioReturned);
+    emitter.on(DB_GET_ADDRESS_TX_RETURNED, this.dbGetAddressTxReturned);
+    emitter.on(DB_UPDATE_PORTFOLIO_RETURNED, this.dbGetAddressTxReturned);
     emitter.on(DB_SET_USER_WALLET_NICKNAME_RETURNED, this.setNicknameReturned);
     emitter.on(
       DB_REMOVE_USER_WALLET_NICKNAME_RETURNED,
@@ -136,6 +146,7 @@ class Transactions extends Component {
     emitter.on(CHECK_ACCOUNT_RETURNED, this.checkAccountReturned);
     emitter.on(DB_ADD_WALLET_RETURNED, this.dbWalletReturned);
     emitter.on(DB_DEL_WALLET_RETURNED, this.dbWalletReturned);
+    emitter.on(LOGIN_RETURNED, this.loginReturned);
   }
 
   componentWillUnmount() {
@@ -146,12 +157,12 @@ class Transactions extends Component {
     );
     emitter.removeListener(DB_USERDATA_RETURNED, this.dbUserDataReturned);
     emitter.removeListener(
-      DB_GET_PORTFOLIO_RETURNED,
-      this.dbGetPortfolioReturned
+      DB_GET_ADDRESS_TX_RETURNED,
+      this.dbGetAddressTxReturned
     );
     emitter.removeListener(
       DB_UPDATE_PORTFOLIO_RETURNED,
-      this.dbGetPortfolioReturned
+      this.dbGetAddressTxReturned
     );
     emitter.removeListener(
       DB_SET_USER_WALLET_NICKNAME_RETURNED,
@@ -164,9 +175,19 @@ class Transactions extends Component {
     emitter.removeListener(CHECK_ACCOUNT_RETURNED, this.checkAccountReturned);
     emitter.removeListener(DB_ADD_WALLET_RETURNED, this.dbWalletReturned);
     emitter.removeListener(DB_DEL_WALLET_RETURNED, this.dbWalletReturned);
-
+    emitter.removeListener(LOGIN_RETURNED, this.loginReturned);
     this._isMounted = false;
   }
+
+  loginReturned = (status) => {
+    const { account } = this.state;
+    if (status && account.address) {
+      dispatcher.dispatch({
+        type: DB_GET_USERDATA,
+        address: account.address,
+      });
+    }
+  };
 
   connectionConnected = () => {
     this.setState({ account: store.getStore("account") });
@@ -184,8 +205,8 @@ class Transactions extends Component {
     if (!this.state.loading) {
       this._isMounted &&
         dispatcher.dispatch({
-          type: DB_GET_PORTFOLIO,
-          wallet: wallets[0],
+          type: DB_GET_ADDRESS_TX,
+          wallet: wallets,
         });
     }
     this.setState({
@@ -220,56 +241,14 @@ class Transactions extends Component {
     });
   };
 
-  dbGetPortfolioReturned = (data) => {
-    console.log(data);
+  dbGetAddressTxReturned = (data) => {
+    console.log(data.transactions);
     if (data) {
-      const walletProfitValue = data[0].profit_value;
-      let assets = data[0].assets;
-      let walletBalance = 0;
-      let lpTokens = [];
-      for (var i = 0; i < assets.length; i++) {
-        walletBalance += assets[i].quote;
-        if (assets[i].balance > 0 && assets[i].contract_ticker === "UNI-V2") {
-          lpTokens.push(assets[i]);
-        }
-
-        // console.log(sortedRows[i].quote);
-      }
-      console.log(lpTokens);
-
-      function dynamicSort(property) {
-        var sortOrder = 1;
-        if (property[0] === "-") {
-          sortOrder = -1;
-          property = property.substr(1);
-        }
-        return function (a, b) {
-          var result =
-            a[property] < b[property] ? -1 : a[property] > b[property] ? 1 : 0;
-
-          return result * sortOrder;
-        };
-      }
-
-      // Sort tokens with most profit and losses and store as state
-      let winnersLosers;
-      winnersLosers = data[0].assets.sort(dynamicSort("-profit_value"));
-
-      this.setState({
-        winners: winnersLosers.slice(0, 5),
-        losers: winnersLosers
-          .slice(winnersLosers.length - 5, winnersLosers.length)
-          .reverse(),
-      });
-
       this.setState({
         error: false,
         loading: false,
         dbDataLoaded: true,
-        portfolioData: data,
-        portfolioProfit: walletProfitValue,
-        portfolioBalance: walletBalance,
-        lpTokens: lpTokens,
+        transactions: data.transactions,
       });
     }
   };
@@ -371,8 +350,8 @@ class Transactions extends Component {
   walletClicked = (wallet) => {
     this._isMounted &&
       dispatcher.dispatch({
-        type: DB_GET_PORTFOLIO,
-        wallet: wallet,
+        type: DB_GET_ADDRESS_TX,
+        wallet: [wallet],
       });
     this.setState({ selectedWallet: wallet, dbDataLoaded: false });
   };
@@ -398,8 +377,8 @@ class Transactions extends Component {
     });
     this._isMounted &&
       dispatcher.dispatch({
-        type: DB_GET_PORTFOLIO,
-        wallet: wallet,
+        type: DB_GET_ADDRESS_TX,
+        wallet: [wallet],
       });
   };
 
@@ -478,96 +457,158 @@ class Transactions extends Component {
     // Create new empty array where to store all the TX
     // Append to this array Asset specific data (Name, contract, ticker, and logo url)
     // Push Tx to this new array, then sort by block_signed_at (date of TX)
-    data.assets.forEach((item, i) => {
-      item.txs.forEach((tx, j) => {
-        var d = new Date(tx.block_signed_at);
-        let dformat =
-          [d.getMonth() + 1, d.getDate(), d.getFullYear()].join("/") +
-          " " +
-          [d.getHours(), d.getMinutes(), d.getSeconds()].join(":");
-
-        tx.contract_name = item.contract_name;
-        tx.contract_address = item.contract_address;
-        tx.contract_ticker = item.contract_ticker;
-        tx.logo_url = item.logo_url;
-        tx.dateFormated = dformat.toString();
-        allTX.push(tx);
-      });
-    });
 
     if (this.state.sortOrder === "asc") {
-      sortedTXs = allTX.sort(dynamicSort(sortBy));
+      sortedTXs = data.sort(dynamicSort(sortBy));
     } else {
-      sortedTXs = allTX.sort(dynamicSort(`-${sortBy}`));
+      sortedTXs = data.sort(dynamicSort(`-${sortBy}`));
     }
-
-    console.log(sortedTXs);
 
     if (sortedTXs.length > 0) {
       return sortedTXs.map((tx) => (
         <TableRow
           hover={true}
-          key={tx.block_signed_at + Math.random(0, 10000)}
+          key={tx.id}
           style={{ cursor: "pointer" }}
-          onClick={() => this.nav("/short/detective/" + tx.contract_address)}
+          onClick={() =>
+            this.nav("/short/detective/" + tx.changes[0].asset.asset_code)
+          }
         >
-          <TableCell>
-            {tx.transfer_type === "IN" && (
-              <IconButton color="primary">
-                <KeyboardArrowRightRoundedIcon />
-              </IconButton>
+          {(tx.type === "send" || tx.type === "receive") &&
+            tx.changes[0].asset.price && (
+              <>
+                <TableCell>
+                  {tx.direction === "in" && (
+                    <IconButton color="primary">
+                      <KeyboardArrowRightRoundedIcon />
+                    </IconButton>
+                  )}
+                  {tx.direction === "out" && (
+                    <IconButton color="secondary">
+                      <KeyboardArrowLeftRoundedIcon />
+                    </IconButton>
+                  )}
+                </TableCell>
+                <TableCell>
+                  <Typography>
+                    {new Date(tx.mined_at * 1000).toLocaleDateString("en-US")}
+                  </Typography>
+                </TableCell>
+                <TableCell padding="none" align="left">
+                  <Grid container direction={"row"} justify={"center"}>
+                    <img
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                      }}
+                      className={classes.tokenLogo}
+                      alt=""
+                      src={tx.changes[0].asset.icon_url}
+                    />
+                    <Typography style={{ marginLeft: 10 }} variant={"h4"}>
+                      {tx.changes[0].asset.name}
+                    </Typography>
+                  </Grid>
+                </TableCell>
+                <TableCell align={"right"}>
+                  <Typography>
+                    {formatMoney(
+                      formatBigNumbers(
+                        tx.changes[0].value,
+                        tx.changes[0].asset.decimals
+                      )
+                    )}
+                  </Typography>
+                </TableCell>
+                <TableCell align={"right"}>
+                  <Typography
+                    color={
+                      tx.changes[0].price > tx.changes[0].asset.price.value
+                        ? "primary"
+                        : "secondary"
+                    }
+                  >
+                    $ {formatMoney(tx.changes[0].price)}
+                  </Typography>
+                  <Typography
+                    color={
+                      tx.changes[0].price > tx.changes[0].asset.price.value
+                        ? "primary"
+                        : "secondary"
+                    }
+                  >
+                    ($ {formatMoney(tx.changes[0].asset.price.value)})
+                  </Typography>
+                </TableCell>
+                <TableCell align={"right"}>
+                  <Typography
+                    color={
+                      tx.changes[0].price > tx.changes[0].asset.price.value
+                        ? "primary"
+                        : "secondary"
+                    }
+                  >
+                    ${" "}
+                    {formatMoney(
+                      formatBigNumbers(
+                        tx.changes[0].value,
+                        tx.changes[0].asset.decimals
+                      ) * tx.changes[0].price
+                    )}
+                  </Typography>
+                  <Typography
+                    color={
+                      tx.changes[0].price > tx.changes[0].asset.price.value
+                        ? "primary"
+                        : "secondary"
+                    }
+                  >
+                    (${" "}
+                    {formatMoney(
+                      formatBigNumbers(
+                        tx.changes[0].value,
+                        tx.changes[0].asset.decimals
+                      ) * tx.changes[0].asset.price.value
+                    )}
+                    )
+                  </Typography>
+                </TableCell>
+                <TableCell align={"right"}>
+                  <Typography
+                    color={
+                      tx.changes[0].price > tx.changes[0].asset.price.value
+                        ? "primary"
+                        : "secondary"
+                    }
+                  >
+                    {differenceInPercentage(
+                      tx.changes[0].asset.price.value,
+                      tx.changes[0].price
+                    )}{" "}
+                    %
+                  </Typography>
+                  <Typography
+                    color={
+                      tx.changes[0].price > tx.changes[0].asset.price.value
+                        ? "primary"
+                        : "secondary"
+                    }
+                  >
+                    {(
+                      tx.changes[0].price *
+                        formatBigNumbers(
+                          tx.changes[0].value,
+                          tx.changes[0].asset.decimals
+                        ) -
+                      tx.changes[0].asset.price.value *
+                        formatBigNumbers(
+                          tx.changes[0].value,
+                          tx.changes[0].asset.decimals
+                        )
+                    ).toFixed(2)}
+                  </Typography>
+                </TableCell>
+              </>
             )}
-            {tx.transfer_type === "OUT" && (
-              <IconButton color="secondary">
-                <KeyboardArrowLeftRoundedIcon />
-              </IconButton>
-            )}
-          </TableCell>
-          <TableCell>
-            <Typography>{tx.dateFormated}</Typography>
-          </TableCell>
-          <TableCell padding="none" align="left">
-            <Grid container direction={"row"}>
-              <img
-                onError={(e) => {
-                  e.target.style.display = "none";
-                }}
-                className={classes.tokenLogo}
-                alt=""
-                src={tx.logo_url}
-              />
-              <Typography style={{ marginLeft: 10 }} variant={"h4"}>
-                {tx.contract_name}
-              </Typography>
-            </Grid>
-          </TableCell>
-          <TableCell align={"right"}>
-            <Typography>{formatMoney(tx.amount)}</Typography>
-          </TableCell>
-          <TableCell align={"right"}>
-            <Typography color={tx.profit_percent > 0 ? "primary" : "secondary"}>
-              $ {formatMoney(tx.rate_at_tx)}
-            </Typography>
-            <Typography color={tx.profit_percent > 0 ? "primary" : "secondary"}>
-              ($ {formatMoney(tx.rate_now)})
-            </Typography>
-          </TableCell>
-          <TableCell align={"right"}>
-            <Typography color={tx.profit_percent > 0 ? "primary" : "secondary"}>
-              $ {formatMoney(tx.worth_at_tx)}
-            </Typography>
-            <Typography color={tx.profit_percent > 0 ? "primary" : "secondary"}>
-              ($ {formatMoney(tx.worth_now)})
-            </Typography>
-          </TableCell>
-          <TableCell align={"right"}>
-            <Typography color={tx.profit_percent > 0 ? "primary" : "secondary"}>
-              {formatMoney(tx.profit_percent)} %
-            </Typography>
-            <Typography color={tx.profit_percent > 0 ? "primary" : "secondary"}>
-              ($ {formatMoney(tx.profit_value)})
-            </Typography>
-          </TableCell>
         </TableRow>
       ));
     }
@@ -584,7 +625,7 @@ class Transactions extends Component {
       walletNicknameModal,
       deleteWalletModal,
       error,
-      portfolioData,
+      transactions,
       sortBy,
       sortOrder,
     } = this.state;
@@ -654,9 +695,9 @@ class Transactions extends Component {
                         </TableCell>
                         <TableCell align="center" padding="none">
                           <TableSortLabel
-                            active={sortBy === "block_signed_at"}
+                            active={sortBy === "mined_at"}
                             direction={sortOrder}
-                            onClick={() => this.sortBy("block_signed_at")}
+                            onClick={() => this.sortBy("mined_at")}
                           >
                             Date
                           </TableSortLabel>
@@ -717,9 +758,7 @@ class Transactions extends Component {
                         </TableCell>
                       </TableRow>
                     </TableHead>
-                    <TableBody>
-                      {this.drawTransactions(portfolioData[0])}
-                    </TableBody>
+                    <TableBody>{this.drawTransactions(transactions)}</TableBody>
                   </Table>
                 </TableContainer>
               </Paper>

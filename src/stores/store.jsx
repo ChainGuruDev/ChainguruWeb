@@ -142,6 +142,8 @@ import {
   DB_DEL_BLUECHIPS_RETURNED,
   DB_BLUECHIPS_CHECK,
   DB_BLUECHIPS_CHECK_RETURNED,
+  DB_GET_ADDRESS_TX,
+  DB_GET_ADDRESS_TX_RETURNED,
 } from "../constants";
 
 import {
@@ -449,6 +451,9 @@ class Store {
             break;
           case DB_DEL_BLUECHIPS:
             this.db_DelBluechip(payload);
+            break;
+          case DB_GET_ADDRESS_TX:
+            this.db_getAddressTx(payload);
             break;
           default: {
             break;
@@ -2400,6 +2405,33 @@ ${nonce}`,
     }
   };
 
+  db_getAddressTx = async (payload) => {
+    let vsCoin = store.getStore("vsCoin");
+    let wallets = [];
+    payload.wallet.forEach((item, i) => {
+      wallets.push(item.toLowerCase());
+    });
+    let query = "";
+    if (payload.query) {
+      query = payload.query;
+    }
+    try {
+      const addressTx = await axios.post(
+        `https://chainguru-db-dev.herokuapp.com/zerion/address/tx`,
+        {
+          addresses: wallets,
+          currency: vsCoin,
+          query: query,
+        }
+      );
+      console.log(addressTx);
+      emitter.emit(DB_GET_ADDRESS_TX_RETURNED, addressTx.data);
+    } catch (err) {
+      emitter.emit(ERROR, await err.message);
+      console.log(err.message);
+    }
+  };
+
   db_getPortfolioStats = async (payload) => {
     let vsCoin = store.getStore("vsCoin");
     try {
@@ -2454,7 +2486,7 @@ ${nonce}`,
           prices.push(asset.price ? asset.price.value : null)
         );
         assets.forEach((asset, i) => keys.push(asset.asset_code));
-        let portfolioAssetStats = await axios
+        const portfolioAssetStats = await axios
           .post(
             `https://chainguru-db-dev.herokuapp.com/zerion/assets/stats`,
             {
@@ -2497,11 +2529,11 @@ ${nonce}`,
               )
             );
           });
-          emitter.emit(DB_GET_PORTFOLIO_ASSET_STATS_RETURNED, finalData);
         }
       }
+      emitter.emit(DB_GET_PORTFOLIO_ASSET_STATS_RETURNED, finalData);
     } catch (err) {
-      console.log(err);
+      console.log(err.message);
       emitter.emit(ERROR, await err.message);
     }
   };
@@ -2517,6 +2549,27 @@ ${nonce}`,
             addresses: payload.wallet,
             currency: vsCoin,
             timeframe: payload.timeframe,
+          }
+        );
+        emitter.emit(
+          DB_GET_PORTFOLIO_CHART_RETURNED,
+          await charts.data.charts.others
+        );
+      }
+    } catch (err) {
+      console.log(err.message);
+    }
+  };
+
+  db_getAddressTransactions = async (payload) => {
+    let vsCoin = store.getStore("vsCoin");
+    try {
+      if (Array.isArray(payload.wallet)) {
+        let charts = await axios.post(
+          `http://localhost:3001/zerion/address/tx`,
+          {
+            addresses: payload.wallet,
+            currency: vsCoin,
           }
         );
         emitter.emit(

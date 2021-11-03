@@ -118,6 +118,11 @@ function timeConversion(millisec) {
   }
 }
 
+function formatBigNumbers(value, decimals) {
+  let formatted = value / Math.pow(10, decimals);
+  return formatted;
+}
+
 function getHash(toHash) {
   try {
     const web3 = new Web3();
@@ -128,4 +133,16 @@ function getHash(toHash) {
   }
 }
 
-export { formatMoney, formatMoneyMCAP, timeConversion, getHash };
+function differenceInPercentage(value1, value2) {
+  const percent = ((value2 - value1) / value1) * 100;
+  return percent.toFixed(2);
+}
+
+export {
+  formatMoney,
+  formatMoneyMCAP,
+  timeConversion,
+  getHash,
+  formatBigNumbers,
+  differenceInPercentage,
+};
