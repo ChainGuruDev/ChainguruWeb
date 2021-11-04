@@ -1580,8 +1580,15 @@ ${nonce}`,
     }
   };
 
-  login = async (payload) => {
-    console.log({ message: "Login attemp", payload });
+  login = debounce(
+    async (payload) => {
+      return this.debouncedLogin(payload);
+    },
+    150,
+    { leading: true, trailing: false }
+  );
+
+  debouncedLogin = async (payload) => {
     try {
       //
       // let _userExists = await axios.get(

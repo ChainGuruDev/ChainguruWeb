@@ -30,6 +30,8 @@ import {
   DB_ADD_FAVORITE_RETURNED,
   COINGECKO_POPULATE_FAVLIST,
   LOGIN_RETURNED,
+  LOGIN,
+  ERROR,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -102,9 +104,10 @@ class Favorites extends Component {
   }
 
   updateFavorites() {
-    // console.log("bar update");
+    const userAuth = store.getStore("userAuth");
     const account = store.getStore("account");
-    if (account && account.address) {
+
+    if (userAuth && account && account.address) {
       const newProgressBar = this.state.progressBar + 1;
       this.setState({ progressBar: newProgressBar });
       if (newProgressBar > 99) {
@@ -201,11 +204,25 @@ class Favorites extends Component {
   // };
 
   addFavorite = (tokenID) => {
-    dispatcher.dispatch({
-      type: DB_ADD_FAVORITE,
-      content: tokenID,
-    });
-    this.setState({ validSelection: false, selectedID: "", isAddingFav: true });
+    const account = store.getStore("account");
+    const userAuth = store.getStore("userAuth");
+    if (!userAuth && account && account.address) {
+      dispatcher.dispatch({
+        type: LOGIN,
+        address: account.address,
+      });
+    }
+    if (userAuth) {
+      dispatcher.dispatch({
+        type: DB_ADD_FAVORITE,
+        content: tokenID,
+      });
+      this.setState({
+        validSelection: false,
+        selectedID: "",
+        isAddingFav: true,
+      });
+    }
   };
 
   render() {

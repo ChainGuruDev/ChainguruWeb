@@ -12,8 +12,10 @@ import {
   CircularProgress,
   Card,
 } from "@material-ui/core";
+
 import { withTranslation } from "react-i18next";
 
+import Snackbar from "../snackbar";
 import SearchIcon from "@material-ui/icons/Search";
 import FlashOnIcon from "@material-ui/icons/FlashOn";
 import CompareArrowsIcon from "@material-ui/icons/CompareArrows";
@@ -33,6 +35,7 @@ import {
   COINLIST_RETURNED,
   DARKMODE_SWITCH_RETURN,
   COIN_DATA_RETURNED,
+  ERROR,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -156,6 +159,8 @@ class Medium extends Component {
     const theme = getMode();
 
     this.state = {
+      snackbarType: null,
+      snackbarMessage: null,
       darkMode: theme,
       account: account,
       loading: false,
@@ -247,6 +252,7 @@ class Medium extends Component {
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
     emitter.on(COIN_DATA_RETURNED, this.coinDataReturned);
     emitter.on(DARKMODE_SWITCH_RETURN, this.darkModeSwitch);
+    emitter.on(ERROR, this.errorReturned);
 
     dispatcher.dispatch({
       type: PING_COINGECKO,
@@ -258,6 +264,7 @@ class Medium extends Component {
     emitter.removeListener(COINLIST_RETURNED, this.coinlistReturned);
     emitter.removeListener(COIN_DATA_RETURNED, this.coinDataReturned);
     emitter.removeListener(DARKMODE_SWITCH_RETURN, this.darkModeSwitch);
+    emitter.removeListener(ERROR, this.errorReturned);
   }
 
   darkModeSwitch = (mode) => {
@@ -278,9 +285,30 @@ class Medium extends Component {
     }
   };
 
+  errorReturned = (error) => {
+    const snackbarObj = { snackbarMessage: null, snackbarType: null };
+    this.setState(snackbarObj);
+    this.setState({ loading: false });
+    const that = this;
+    setTimeout(() => {
+      const snackbarObj = {
+        snackbarMessage: error.toString(),
+        snackbarType: "Error",
+      };
+      that.setState(snackbarObj);
+    });
+  };
+
+  renderSnackbar = () => {
+    var { snackbarType, snackbarMessage } = this.state;
+    return (
+      <Snackbar type={snackbarType} message={snackbarMessage} open={true} />
+    );
+  };
+
   render() {
     const { classes } = this.props;
-    const { valueTab, coinID, darkMode } = this.state;
+    const { valueTab, coinID, darkMode, snackbarMessage } = this.state;
 
     const handleChangeTabs = (event, newValueTab) => {
       this.setState({ valueTab: newValueTab });
@@ -391,6 +419,7 @@ class Medium extends Component {
             </Suspense>
           </TabPanel>
         </div>
+        {snackbarMessage && this.renderSnackbar()}
       </div>
     );
   }

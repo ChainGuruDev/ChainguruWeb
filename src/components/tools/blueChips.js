@@ -32,6 +32,7 @@ import KeyboardArrowUpRoundedIcon from "@material-ui/icons/KeyboardArrowUpRounde
 import {
   CONNECTION_CONNECTED,
   CONNECTION_DISCONNECTED,
+  LOGIN,
   LOGIN_RETURNED,
   ERROR,
   DB_GET_BLUECHIPS,
@@ -100,12 +101,13 @@ class BlueChips extends Component {
       showGuruChips: true,
       showUserChips: true,
       items: [],
+      snackbarMessage: null,
+      snackbarType: null,
     };
   }
 
   componentDidMount() {
     emitter.setMaxListeners(this.state.chipData.length);
-    emitter.on(ERROR, this.errorReturned);
     emitter.on(CONNECTION_CONNECTED, this.connected);
     emitter.on(DB_GET_BLUECHIPS_RETURNED, this.geckoBluechipData);
     emitter.on(DB_GET_BLUECHIPS_USER_RETURNED, this.geckoBluechipDataUser);
@@ -136,7 +138,6 @@ class BlueChips extends Component {
   }
 
   componentWillUnmount() {
-    emitter.removeListener(ERROR, this.errorReturned);
     emitter.removeListener(CONNECTION_CONNECTED, this.connected);
     emitter.removeListener(DB_GET_BLUECHIPS_RETURNED, this.geckoBluechipData);
     emitter.removeListener(
@@ -232,20 +233,6 @@ class BlueChips extends Component {
 
   bluechipsCheckReturned = (isAdmin) => {
     this.setState({ isAdmin });
-  };
-
-  errorReturned = (error) => {
-    const snackbarObj = { snackbarMessage: null, snackbarType: null };
-    this.setState(snackbarObj);
-    this.setState({ loading: false });
-    const that = this;
-    setTimeout(() => {
-      const snackbarObj = {
-        snackbarMessage: error.toString(),
-        snackbarType: "Error",
-      };
-      that.setState(snackbarObj);
-    });
   };
 
   geckoBluechipData = (payload) => {
@@ -364,15 +351,25 @@ class BlueChips extends Component {
   };
 
   addBlueChipUser = (tokenID) => {
-    dispatcher.dispatch({
-      type: DB_ADD_BLUECHIPS,
-      tokenID: tokenID,
-    });
-    this.setState({
-      validSelection: false,
-      selectedID: "",
-      isAddingBlueChip: true,
-    });
+    const account = store.getStore("account");
+    const userAuth = store.getStore("userAuth");
+    if (account.address && !userAuth) {
+      dispatcher.dispatch({
+        type: LOGIN,
+        address: account.address,
+      });
+    }
+    if (userAuth) {
+      dispatcher.dispatch({
+        type: DB_ADD_BLUECHIPS,
+        tokenID: tokenID,
+      });
+      this.setState({
+        validSelection: false,
+        selectedID: "",
+        isAddingBlueChip: true,
+      });
+    }
   };
 
   showHideGuruChips = () => {
