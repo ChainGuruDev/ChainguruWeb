@@ -20,7 +20,6 @@ import Show from "./components/market/edition/show";
 import Artist from "./components/market/artist/artist";
 import User from "./components/market/user/user";
 
-//IN dev
 import Profile from "./components/profile";
 
 import { colors } from "./theme";
@@ -46,22 +45,6 @@ class App extends Component {
   componentDidMount = async () => {
     let web3 = new Web3(Web3.givenProvider);
     this.darkModeSwitch(this.getMode());
-
-    // dispatcherDefi.dispatch({
-    //   type: GET_PROTOCOL_NAMES,
-    // });
-    // dispatcherDefi.dispatch({
-    //   type: GET_PROTOCOLS_BALANCES,
-    // });
-    // // dispatcherDefi.dispatch({
-    // //   type: GET_PROTOCOL_BALANCE,
-    // // });
-    // dispatcherDefi.dispatch({
-    //   type: GET_CONTRACT_ABI,
-    // });
-    // dispatcherDefi.dispatch({
-    //   type: GET_TOKEN_COMPONENTS,
-    // });
 
     injected.isAuthorized().then(async (isAuthorized) => {
       if (isAuthorized) {
