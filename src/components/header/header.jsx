@@ -235,8 +235,15 @@ class Header extends Component {
     const account = store.getStore("account");
     const theme = store.getStore("theme");
     const vsCoin = store.getStore("vsCoin");
+    const userAuth = store.getStore("userAuth");
 
-    if (account) {
+    if (account && account.address) {
+      if (!userAuth) {
+        dispatcher.dispatch({
+          type: LOGIN,
+          address: account.address,
+        });
+      }
       try {
         this.setAddressEnsName();
       } catch (err) {

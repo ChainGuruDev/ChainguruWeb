@@ -1581,6 +1581,7 @@ ${nonce}`,
   };
 
   login = async (payload) => {
+    console.log({ message: "Login attemp", payload });
     try {
       //
       // let _userExists = await axios.get(
@@ -1589,6 +1590,10 @@ ${nonce}`,
       //     user: payload.address,
       //   }
       // );
+      if (!payload.address) {
+        const noAddress = "no valid address";
+        throw noAddress;
+      }
       //DEV ROUTE
       let _userExists = await axios.get(
         `https://chainguru-db-dev.herokuapp.com/users/${payload.address}`
