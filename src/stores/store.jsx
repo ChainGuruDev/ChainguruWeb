@@ -1567,7 +1567,7 @@ ${nonce}`,
 
   handleAuthenticate = async (user, signature) => {
     const authToken = await axios.post(
-      `https://chainguru-db.herokuapp.com/auth`,
+      `https://chainguru-db-dev.herokuapp.com/auth`,
       {
         publicAddress: user,
         signature,
@@ -1603,11 +1603,11 @@ ${nonce}`,
       }
       //DEV ROUTE
       let _userExists = await axios.get(
-        `https://chainguru-db.herokuapp.com/users/${payload.address}`
+        `https://chainguru-db-dev.herokuapp.com/users/${payload.address}`
       );
       try {
         let login = await axios.post(
-          `https://chainguru-db.herokuapp.com/auth/login`,
+          `https://chainguru-db-dev.herokuapp.com/auth/login`,
           {
             user: _userExists.data.user,
           },
@@ -1636,7 +1636,7 @@ ${nonce}`,
       try {
         console.log("new user detected");
         let _newUser = await axios.put(
-          `https://chainguru-db.herokuapp.com/users/${payload.address}`
+          `https://chainguru-db-dev.herokuapp.com/users/${payload.address}`
           // `http://localhost:3001/users/${payload.address}`
         );
         console.log("new user created");
@@ -2577,7 +2577,7 @@ ${nonce}`,
     try {
       if (Array.isArray(payload.wallet)) {
         let charts = await axios.post(
-          `https://chainguru-db.herokuapp.com/zerion/address/tx`,
+          `https://chainguru-db-dev.herokuapp.com/zerion/address/tx`,
           {
             addresses: payload.wallet,
             currency: vsCoin,
