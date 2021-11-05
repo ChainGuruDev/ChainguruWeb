@@ -602,6 +602,7 @@ class FavoriteList extends Component {
                   inputProps: { "aria-label": "rows per page" },
                   native: true,
                 }}
+                style={{ overflow: "inherit" }}
                 onChangePage={handleChangePage}
                 onChangeRowsPerPage={handleChangeRowsPerPage}
                 ActionsComponent={this.TablePaginationActions}
