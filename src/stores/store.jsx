@@ -1567,7 +1567,7 @@ ${nonce}`,
 
   handleAuthenticate = async (user, signature) => {
     const authToken = await axios.post(
-      `https://chainguru-db-dev.herokuapp.com/auth`,
+      `http://localhost:3001/auth`,
       {
         publicAddress: user,
         signature,
@@ -1603,11 +1603,11 @@ ${nonce}`,
       }
       //DEV ROUTE
       let _userExists = await axios.get(
-        `https://chainguru-db-dev.herokuapp.com/users/${payload.address}`
+        `http://localhost:3001/users/${payload.address}`
       );
       try {
         let login = await axios.post(
-          `https://chainguru-db-dev.herokuapp.com/auth/login`,
+          `http://localhost:3001/auth/login`,
           {
             user: _userExists.data.user,
           },
@@ -1634,19 +1634,18 @@ ${nonce}`,
       // }
     } catch (err) {
       try {
-        console.log(err.message);
-        // console.log("new user detected");
-        // let _newUser = await axios.put(
-        //   `https://chainguru-db.herokuapp.com/users/${payload.address}`
-        //   // `http://localhost:3001/users/${payload.address}`
-        // );
-        // console.log("new user created");
-        // if (await _newUser) {
-        //   dispatcher.dispatch({
-        //     type: DB_GET_USERDATA,
-        //     address: payload.address,
-        //   });
-        // }
+        console.log("new user detected");
+        let _newUser = await axios.put(
+          `https://chainguru-db.herokuapp.com/users/${payload.address}`
+          // `http://localhost:3001/users/${payload.address}`
+        );
+        console.log("new user created");
+        if (await _newUser) {
+          dispatcher.dispatch({
+            type: DB_GET_USERDATA,
+            address: payload.address,
+          });
+        }
       } catch (err) {
         console.log(err.message);
       }
