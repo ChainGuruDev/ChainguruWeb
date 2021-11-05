@@ -1567,7 +1567,7 @@ ${nonce}`,
 
   handleAuthenticate = async (user, signature) => {
     const authToken = await axios.post(
-      `http://localhost:3001/auth`,
+      `https://chainguru-db.herokuapp.com/auth`,
       {
         publicAddress: user,
         signature,
@@ -1603,11 +1603,11 @@ ${nonce}`,
       }
       //DEV ROUTE
       let _userExists = await axios.get(
-        `http://localhost:3001/users/${payload.address}`
+        `https://chainguru-db.herokuapp.com/users/${payload.address}`
       );
       try {
         let login = await axios.post(
-          `http://localhost:3001/auth/login`,
+          `https://chainguru-db.herokuapp.com/auth/login`,
           {
             user: _userExists.data.user,
           },
@@ -2577,7 +2577,7 @@ ${nonce}`,
     try {
       if (Array.isArray(payload.wallet)) {
         let charts = await axios.post(
-          `http://localhost:3001/zerion/address/tx`,
+          `https://chainguru-db.herokuapp.com/zerion/address/tx`,
           {
             addresses: payload.wallet,
             currency: vsCoin,
