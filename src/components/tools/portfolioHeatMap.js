@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { colors } from "../../theme";
-
+import { formatMoney, formatMoneyMCAP } from "../helpers";
 //Import Material UI components
 import {
   Card,
@@ -44,6 +44,10 @@ import {
   COINLIST_RETURNED,
   COINGECKO_POPULATE_FAVLIST,
   COINGECKO_POPULATE_FAVLIST_RETURNED,
+  LOGIN,
+  LOGIN_RETURNED,
+  DB_GET_PORTFOLIO,
+  DB_GET_PORTFOLIO_RETURNED,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -99,6 +103,7 @@ class PortfolioHeatMap extends Component {
     super();
 
     const account = store.getStore("account");
+    const userAuth = store.getStore("userAuth");
     this.state = {
       account: account,
       loading: false,
@@ -114,7 +119,16 @@ class PortfolioHeatMap extends Component {
       timeFrame: "24hs",
       rowData: [],
     };
-    if (account && account.address) {
+    if (!userAuth && account && account.address) {
+      dispatcher.dispatch({
+        type: LOGIN,
+        address: account.address,
+      });
+    }
+    if (userAuth && account && account.address) {
+      dispatcher.dispatch({
+        type: GET_COIN_LIST,
+      });
       dispatcher.dispatch({
         type: DB_GET_USERDATA,
         address: account.address,
@@ -133,11 +147,8 @@ class PortfolioHeatMap extends Component {
     emitter.on(DB_DEL_WALLET_RETURNED, this.dbWalletReturned);
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
     emitter.on(COINGECKO_POPULATE_FAVLIST_RETURNED, this.geckoPriceReturned);
-
-    this._isMounted &&
-      dispatcher.dispatch({
-        type: GET_COIN_LIST,
-      });
+    emitter.on(LOGIN_RETURNED, this.loginReturned);
+    emitter.on(DB_GET_PORTFOLIO_RETURNED, this.dbGetPortfolioReturned);
   }
 
   componentWillUnmount() {
@@ -158,7 +169,12 @@ class PortfolioHeatMap extends Component {
       DB_UPDATE_WALLET_RETURNED,
       this.dbUpdateWalletReturned
     );
+    emitter.removeListener(LOGIN_RETURNED, this.loginReturned);
     emitter.removeListener(COINLIST_RETURNED, this.coinlistReturned);
+    emitter.removeListener(
+      DB_GET_PORTFOLIO_RETURNED,
+      this.dbGetPortfolioReturned
+    );
     this._isMounted = false;
   }
 
@@ -169,6 +185,21 @@ class PortfolioHeatMap extends Component {
   connectionDisconnected = () => {
     this.setState({ account: store.getStore("account") });
   };
+
+  loginReturned(state) {
+    const account = store.getStore("account");
+    const userAuth = store.getStore("userAuth");
+
+    if (userAuth && account && account.address) {
+      dispatcher.dispatch({
+        type: GET_COIN_LIST,
+      });
+      dispatcher.dispatch({
+        type: DB_GET_USERDATA,
+        address: account.address,
+      });
+    }
+  }
 
   coinlistReturned = (data) => {
     this._isMounted && this.setState({ coinList: data });
@@ -228,50 +259,96 @@ class PortfolioHeatMap extends Component {
 
   getBalance = (wallet) => {
     if (wallet === "ALL") {
-      let newWallets = [...this.state.userWallets];
-      let userWallet = { ...newWallets[0] };
-      let displayBalance = [...userWallet.erc20Balance];
-
-      for (var i = 1; i < newWallets.length; i++) {
-        let objIndex;
-        let wallet = { ...newWallets[i] };
-        let erc20Balance = [...wallet.erc20Balance];
-        erc20Balance.forEach((item, x) => {
-          if (item.tokenSymbol === "UNI-V2") {
-            // agregar comparar el contract address
-            // para ver si son del mismo pool de uni y sumar los balances
-            displayBalance.push(item);
-            return;
-          }
-          objIndex = displayBalance.findIndex(
-            (obj) => obj.contractAddress === item.contractAddress
-          );
-          if (objIndex < 0) {
-            displayBalance.push(item);
-          } else {
-            let previousBalance = { ...displayBalance[objIndex] };
-            let oldBalance = previousBalance.balance;
-
-            let newBalance = oldBalance + item.balance;
-
-            previousBalance.balance = newBalance;
-            displayBalance.splice(objIndex, 1, previousBalance);
-          }
-        });
-      }
-      this.getCoinIDs(displayBalance);
-      this.setState({ selectedWallet: wallet });
-    } else {
+      let wallets = [];
+      console.log(this.state.userWallets);
       this.state.userWallets.forEach((item, i) => {
-        if (item.wallet === wallet) {
-          this.getCoinIDs(item.erc20Balance);
-          this.setState({
-            selectedWallet: item.wallet,
-          });
-        }
+        wallets.push(item.wallet);
+      });
+
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: DB_GET_PORTFOLIO,
+          wallet: wallets,
+        });
+      this.setState({
+        selectedWallet: "ALL",
+      });
+    } else {
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: DB_GET_PORTFOLIO,
+          wallet: [wallet],
+        });
+      this.setState({
+        selectedWallet: wallet,
       });
     }
   };
+
+  dbGetPortfolioReturned = (data) => {
+    let assets = [];
+    for (var i = 0; i < data.length; i++) {
+      const objIndex = assets.findIndex(
+        (obj) => obj.asset_code === data[i].asset_code
+      );
+      if (objIndex === -1) {
+        if (data[i].balance > 0) {
+          assets.push(data[i]);
+        }
+      } else {
+        const newBalance = data[i].balance + assets[objIndex].balance;
+        assets[objIndex].balance = newBalance;
+      }
+    }
+    this.getCoinIDs(assets);
+  };
+
+  // getBalance = (wallet) => {
+  //   if (wallet === "ALL") {
+  //     let newWallets = [...this.state.userWallets];
+  //     let userWallet = { ...newWallets[0] };
+  //     let displayBalance = [...userWallet.erc20Balance];
+  //
+  //     for (var i = 1; i < newWallets.length; i++) {
+  //       let objIndex;
+  //       let wallet = { ...newWallets[i] };
+  //       let erc20Balance = [...wallet.erc20Balance];
+  //       erc20Balance.forEach((item, x) => {
+  //         if (item.tokenSymbol === "UNI-V2") {
+  //           // agregar comparar el contract address
+  //           // para ver si son del mismo pool de uni y sumar los balances
+  //           displayBalance.push(item);
+  //           return;
+  //         }
+  //         objIndex = displayBalance.findIndex(
+  //           (obj) => obj.contractAddress === item.contractAddress
+  //         );
+  //         if (objIndex < 0) {
+  //           displayBalance.push(item);
+  //         } else {
+  //           let previousBalance = { ...displayBalance[objIndex] };
+  //           let oldBalance = previousBalance.balance;
+  //
+  //           let newBalance = oldBalance + item.balance;
+  //
+  //           previousBalance.balance = newBalance;
+  //           displayBalance.splice(objIndex, 1, previousBalance);
+  //         }
+  //       });
+  //     }
+  //     this.getCoinIDs(displayBalance);
+  //     this.setState({ selectedWallet: wallet });
+  //   } else {
+  //     this.state.userWallets.forEach((item, i) => {
+  //       if (item.wallet === wallet) {
+  //         this.getCoinIDs(item.erc20Balance);
+  //         this.setState({
+  //           selectedWallet: item.wallet,
+  //         });
+  //       }
+  //     });
+  //   }
+  // };
 
   getCoinIDs = async (data) => {
     const { userBlacklist } = this.state;
@@ -283,13 +360,10 @@ class PortfolioHeatMap extends Component {
 
       if (this.state.hideBlacklisted) {
         for (var i = 0; i < prevBalanceList.length; i++) {
-          if (
-            userBlacklist.tokenIDs.includes(prevBalanceList[i].contractAddress)
-          ) {
+          if (userBlacklist.tokenIDs.includes(prevBalanceList[i].asset_code)) {
             let index = i;
             let blacklistedIndex = prevBalanceList.findIndex(
-              (obj) =>
-                obj.contractAddress === prevBalanceList[index].contractAddress
+              (obj) => obj.contractAddress === prevBalanceList[index].asset_code
             );
             prevBalanceList.splice(blacklistedIndex, 1);
             i--;
@@ -297,25 +371,11 @@ class PortfolioHeatMap extends Component {
         }
       }
 
-      if (this.state.hideLowBalanceCoins) {
-        for (var j = 0; j < prevBalanceList.length; j++) {
-          if (!prevBalanceList[j].balance > 0) {
-            let index = j;
-            let blacklistedIndex = prevBalanceList.findIndex(
-              (obj) =>
-                obj.contractAddress === prevBalanceList[index].contractAddress
-            );
-            prevBalanceList.splice(blacklistedIndex, 1);
-            j--;
-          }
-        }
-      }
-
       for (var k = 0; k < prevBalanceList.length; k++) {
         let item = { ...prevBalanceList[k] };
-        if (item.tokenSymbol === "EWTB") {
+        if (item.symbol === "EWTB") {
           item.id = "energy-web-token";
-        } else if (item.tokenSymbol === "XOR") {
+        } else if (item.symbol === "XOR") {
           item.id = "sora";
         } else {
           //CHECK IF `item.name` is a match in coingecko coin list IDs
@@ -328,12 +388,12 @@ class PortfolioHeatMap extends Component {
             //IF name is not a match look for match in item.symbol
             //check for more than 1 token with same symbol
             let symbolRepeats = this.state.coinList.filter(
-              (obj) => obj.symbol === item.tokenSymbol.toLowerCase()
+              (obj) => obj.symbol === item.symbol.toLowerCase()
             ).length;
 
             if (symbolRepeats === 1) {
               objIndex = this.state.coinList.findIndex(
-                (obj) => obj.symbol === item.tokenSymbol.toLowerCase()
+                (obj) => obj.symbol === item.symbol.toLowerCase()
               );
               if (objIndex > -1) {
                 item.id = coinList[objIndex].id;
@@ -349,7 +409,7 @@ class PortfolioHeatMap extends Component {
                 // console.log("repeated item in geckoList");
                 // console.log(item);
                 //LOOK TOKEN DATA USING CONTRACT ADDRESS
-                let zrx = item.contractAddress;
+                let zrx = item.asset_code;
                 let data = await CoinGeckoClient.coins.fetchCoinContractInfo(
                   zrx
                 );
@@ -362,7 +422,6 @@ class PortfolioHeatMap extends Component {
         }
         newBalanceList.push(item);
       }
-
       this._isMounted && this.setState({ balanceList: newBalanceList });
       this.getPortfolioValue(newBalanceList);
     }
@@ -386,18 +445,15 @@ class PortfolioHeatMap extends Component {
   geckoPriceReturned = async (data) => {
     let prevBalanceList = [...this.state.balanceList];
     let newBalanceList = [];
-
+    //Merge Gecko price data with current token list.
+    //If Gecko has no token price data, dont include asset in final array
     for (var i = 0; i < prevBalanceList.length; i++) {
       let item = { ...prevBalanceList[i] };
       let objIndex = data.findIndex((obj) => obj.id === item.id);
       if (objIndex > -1) {
         item.geckoData = data[objIndex];
+        newBalanceList.push(item);
       }
-      //console.log(objIndex);
-      newBalanceList.push(item);
-
-      // console.log(data[i]);
-      // console.log(newBalanceList[i]);
     }
     this.dataSorting(newBalanceList);
   };
@@ -496,104 +552,33 @@ class PortfolioHeatMap extends Component {
   dataSorting = (data) => {
     let sort = [];
     data.forEach((item, i) => {
-      if (item.geckoData) {
-        let balance = item.balance / Math.pow(10, item.tokenDecimal);
-        let value = balance * item.geckoData.current_price;
+      let balance = item.quantityDecimals;
+      let value = item.balance;
 
-        if (value >= 1) {
-          let sortData = this.createData(
-            item.contractAddress,
-            item.geckoData.image,
-            item.geckoData.name,
-            item.geckoData.id,
-            item.geckoData.symbol,
-            balance,
-            item.geckoData.current_price,
-            value,
-            item.geckoData.price_change_percentage_1h_in_currency,
-            item.geckoData.price_change_percentage_24h_in_currency,
-            item.geckoData.price_change_percentage_7d_in_currency,
-            item.geckoData.price_change_percentage_30d_in_currency,
-            item.geckoData.price_change_percentage_1y_in_currency,
-            item.geckoData.atl_change_percentage
-          );
-          sort.push(sortData);
-        }
-      } else {
-        // console.log("staking o token raro");
-        // console.log(item);
+      if (value >= 1) {
+        let sortData = this.createData(
+          item.asset_code,
+          item.geckoData.image,
+          item.geckoData.name,
+          item.geckoData.id,
+          item.geckoData.symbol,
+          balance,
+          item.geckoData.current_price,
+          value,
+          item.geckoData.price_change_percentage_1h_in_currency,
+          item.geckoData.price_change_percentage_24h_in_currency,
+          item.geckoData.price_change_percentage_7d_in_currency,
+          item.geckoData.price_change_percentage_30d_in_currency,
+          item.geckoData.price_change_percentage_1y_in_currency,
+          item.geckoData.atl_change_percentage
+        );
+        sort.push(sortData);
       }
     });
     this.setState({
       rowData: sort,
     });
     this.sortedList(sort);
-  };
-
-  formatMoney = (amount, decimalCount = 5, decimal = ".", thousands = ",") => {
-    try {
-      decimalCount = Math.abs(decimalCount);
-      decimalCount = isNaN(decimalCount) ? 5 : decimalCount;
-      const negativeSign = amount < 0 ? "-" : "";
-
-      let num = parseInt((amount = Math.abs(Number(amount) || 0)));
-      if (num > 0) {
-        decimalCount = 2;
-      } else {
-        decimalCount = 5;
-      }
-      let i = parseInt(
-        (amount = Math.abs(Number(amount) || 0).toFixed(decimalCount))
-      ).toString();
-      let j = i.length > 3 ? i.length % 3 : 0;
-
-      return (
-        negativeSign +
-        (j ? i.substr(0, j) + thousands : "") +
-        i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousands) +
-        (decimalCount
-          ? decimal +
-            Math.abs(amount - i)
-              .toFixed(decimalCount)
-              .slice(2)
-          : "")
-      );
-    } catch (e) {
-      console.log(e);
-    }
-  };
-
-  formatMoneyMCAP = (
-    amount,
-    decimalCount = 2,
-    decimal = ".",
-    thousands = ","
-  ) => {
-    try {
-      decimalCount = Math.abs(decimalCount);
-      decimalCount = isNaN(decimalCount) ? 2 : decimalCount;
-
-      const negativeSign = amount < 0 ? "-" : "";
-
-      let i = parseInt(
-        (amount = Math.abs(Number(amount) || 0).toFixed(decimalCount))
-      ).toString();
-      let j = i.length > 3 ? i.length % 3 : 0;
-
-      return (
-        negativeSign +
-        (j ? i.substr(0, j) + thousands : "") +
-        i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousands) +
-        (decimalCount
-          ? decimal +
-            Math.abs(amount - i)
-              .toFixed(decimalCount)
-              .slice(2)
-          : "")
-      );
-    } catch (e) {
-      console.log(e);
-    }
   };
 
   sortedList = (rowData) => {
@@ -626,8 +611,8 @@ class PortfolioHeatMap extends Component {
           item.name,
           item.id,
           item.symbol,
-          this.formatMoney(item.balance, 2),
-          this.formatMoney(item.current_price, 2),
+          formatMoney(item.balance, 2),
+          formatMoney(item.current_price, 2),
           parseFloat(item.value).toFixed(2),
           parseFloat(item.price_change_percentage_1h_in_currency).toFixed(2),
           parseFloat(item.price_change_percentage_24h_in_currency).toFixed(2),
@@ -647,8 +632,8 @@ class PortfolioHeatMap extends Component {
           item.name,
           item.id,
           item.symbol,
-          this.formatMoney(item.balance, 2),
-          this.formatMoney(item.current_price, 2),
+          formatMoney(item.balance, 2),
+          formatMoney(item.current_price, 2),
           parseFloat(item.value).toFixed(2),
           parseFloat(item.price_change_percentage_1h_in_currency).toFixed(2),
           parseFloat(item.price_change_percentage_24h_in_currency).toFixed(2),
