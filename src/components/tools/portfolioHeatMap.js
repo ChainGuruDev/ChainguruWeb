@@ -17,9 +17,11 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   IconButton,
+  CircularProgress,
 } from "@material-ui/core";
 
 import HeatMapChart from "../components/heatmapChart.js";
+import Skeleton from "@material-ui/lab/Skeleton";
 
 //Import ICONS
 import RefreshRoundedIcon from "@material-ui/icons/RefreshRounded";
@@ -104,9 +106,11 @@ class PortfolioHeatMap extends Component {
 
     const account = store.getStore("account");
     const userAuth = store.getStore("userAuth");
+    const coinList = store.getStore("coinList");
     this.state = {
       account: account,
-      loading: false,
+      coinList: coinList,
+      loading: true,
       selectedWallet: "updating",
       userWallets: [],
       errMsgWallet: "",
@@ -119,6 +123,9 @@ class PortfolioHeatMap extends Component {
       timeFrame: "24hs",
       rowData: [],
     };
+    dispatcher.dispatch({
+      type: GET_COIN_LIST,
+    });
     if (!userAuth && account && account.address) {
       dispatcher.dispatch({
         type: LOGIN,
@@ -126,9 +133,6 @@ class PortfolioHeatMap extends Component {
       });
     }
     if (userAuth && account && account.address) {
-      dispatcher.dispatch({
-        type: GET_COIN_LIST,
-      });
       dispatcher.dispatch({
         type: DB_GET_USERDATA,
         address: account.address,
@@ -260,7 +264,6 @@ class PortfolioHeatMap extends Component {
   getBalance = (wallet) => {
     if (wallet === "ALL") {
       let wallets = [];
-      console.log(this.state.userWallets);
       this.state.userWallets.forEach((item, i) => {
         wallets.push(item.wallet);
       });
@@ -272,6 +275,7 @@ class PortfolioHeatMap extends Component {
         });
       this.setState({
         selectedWallet: "ALL",
+        loading: true,
       });
     } else {
       this._isMounted &&
@@ -281,6 +285,7 @@ class PortfolioHeatMap extends Component {
         });
       this.setState({
         selectedWallet: wallet,
+        loading: true,
       });
     }
   };
@@ -302,53 +307,6 @@ class PortfolioHeatMap extends Component {
     }
     this.getCoinIDs(assets);
   };
-
-  // getBalance = (wallet) => {
-  //   if (wallet === "ALL") {
-  //     let newWallets = [...this.state.userWallets];
-  //     let userWallet = { ...newWallets[0] };
-  //     let displayBalance = [...userWallet.erc20Balance];
-  //
-  //     for (var i = 1; i < newWallets.length; i++) {
-  //       let objIndex;
-  //       let wallet = { ...newWallets[i] };
-  //       let erc20Balance = [...wallet.erc20Balance];
-  //       erc20Balance.forEach((item, x) => {
-  //         if (item.tokenSymbol === "UNI-V2") {
-  //           // agregar comparar el contract address
-  //           // para ver si son del mismo pool de uni y sumar los balances
-  //           displayBalance.push(item);
-  //           return;
-  //         }
-  //         objIndex = displayBalance.findIndex(
-  //           (obj) => obj.contractAddress === item.contractAddress
-  //         );
-  //         if (objIndex < 0) {
-  //           displayBalance.push(item);
-  //         } else {
-  //           let previousBalance = { ...displayBalance[objIndex] };
-  //           let oldBalance = previousBalance.balance;
-  //
-  //           let newBalance = oldBalance + item.balance;
-  //
-  //           previousBalance.balance = newBalance;
-  //           displayBalance.splice(objIndex, 1, previousBalance);
-  //         }
-  //       });
-  //     }
-  //     this.getCoinIDs(displayBalance);
-  //     this.setState({ selectedWallet: wallet });
-  //   } else {
-  //     this.state.userWallets.forEach((item, i) => {
-  //       if (item.wallet === wallet) {
-  //         this.getCoinIDs(item.erc20Balance);
-  //         this.setState({
-  //           selectedWallet: item.wallet,
-  //         });
-  //       }
-  //     });
-  //   }
-  // };
 
   getCoinIDs = async (data) => {
     const { userBlacklist } = this.state;
@@ -424,6 +382,11 @@ class PortfolioHeatMap extends Component {
       }
       this._isMounted && this.setState({ balanceList: newBalanceList });
       this.getPortfolioValue(newBalanceList);
+    } else {
+      console.log("no coinlist");
+      dispatcher.dispatch({
+        type: GET_COIN_LIST,
+      });
     }
   };
 
@@ -577,6 +540,7 @@ class PortfolioHeatMap extends Component {
     });
     this.setState({
       rowData: sort,
+      loading: false,
     });
     this.sortedList(sort);
   };
@@ -777,7 +741,13 @@ class PortfolioHeatMap extends Component {
 
   render() {
     const { classes } = this.props;
-    const { account, userWallets, addWallet, heatMapData } = this.state;
+    const {
+      account,
+      userWallets,
+      addWallet,
+      heatMapData,
+      loading,
+    } = this.state;
 
     return (
       <div className={classes.root}>
@@ -841,39 +811,90 @@ class PortfolioHeatMap extends Component {
                   justify="flex-start"
                   alignItems="stretch"
                 >
-                  <Grid
-                    item
-                    container
-                    direction="row"
-                    justify="space-evenly"
-                    alignItems="flex-start"
-                  >
-                    <ButtonGroup
-                      color="primary"
-                      aria-label="outlined primary button group"
-                    >
-                      <Button onClick={() => this.handleTimeFrameChange("1h")}>
-                        1h
-                      </Button>
-                      <Button
-                        onClick={() => this.handleTimeFrameChange("24hs")}
+                  {loading && (
+                    <Skeleton
+                      variant="rect"
+                      width={"100%"}
+                      height={"100%"}
+                      style={{ borderRadius: 10 }}
+                      animation="wave"
+                    />
+                  )}
+                  {!loading && (
+                    <>
+                      <Grid
+                        item
+                        container
+                        direction="row"
+                        justify="space-evenly"
+                        alignItems="flex-start"
                       >
-                        24hs
-                      </Button>
-                      <Button onClick={() => this.handleTimeFrameChange("7d")}>
-                        7d
-                      </Button>
-                      <Button onClick={() => this.handleTimeFrameChange("30d")}>
-                        30d
-                      </Button>
-                      <Button onClick={() => this.handleTimeFrameChange("1y")}>
-                        1y
-                      </Button>
-                    </ButtonGroup>
-                  </Grid>
-                  <Grid item>
-                    {heatMapData && <HeatMapChart data={heatMapData} />}
-                  </Grid>
+                        <ButtonGroup
+                          color="primary"
+                          aria-label="outlined primary button group"
+                        >
+                          <Button
+                            style={{
+                              background:
+                                this.state.timeFrame === "1h"
+                                  ? colors.cgGreen + 25
+                                  : "",
+                            }}
+                            onClick={() => this.handleTimeFrameChange("1h")}
+                          >
+                            1h
+                          </Button>
+                          <Button
+                            style={{
+                              background:
+                                this.state.timeFrame === "24hs"
+                                  ? colors.cgGreen + 25
+                                  : "",
+                            }}
+                            onClick={() => this.handleTimeFrameChange("24hs")}
+                          >
+                            24hs
+                          </Button>
+                          <Button
+                            style={{
+                              background:
+                                this.state.timeFrame === "7d"
+                                  ? colors.cgGreen + 25
+                                  : "",
+                            }}
+                            onClick={() => this.handleTimeFrameChange("7d")}
+                          >
+                            7d
+                          </Button>
+                          <Button
+                            style={{
+                              background:
+                                this.state.timeFrame === "30d"
+                                  ? colors.cgGreen + 25
+                                  : "",
+                            }}
+                            onClick={() => this.handleTimeFrameChange("30d")}
+                          >
+                            30d
+                          </Button>
+                          <Button
+                            style={{
+                              background:
+                                this.state.timeFrame === "1y"
+                                  ? colors.cgGreen + 25
+                                  : "",
+                            }}
+                            onClick={() => this.handleTimeFrameChange("1y")}
+                          >
+                            1y
+                          </Button>
+                        </ButtonGroup>
+                      </Grid>
+                      <Grid item>
+                        {heatMapData && <HeatMapChart data={heatMapData} />}
+                      </Grid>
+                    </>
+                  )}
                 </Grid>
               </Card>
             </Grid>

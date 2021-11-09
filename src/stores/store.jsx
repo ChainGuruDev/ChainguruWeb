@@ -1448,7 +1448,6 @@ class Store {
     // console.log(payload);
     // console.log(payload.lsType);
     if (!payload.lsType) {
-      // console.log("standard query");
       try {
         let data = await CoinGeckoClient.coins.markets({
           ids: payload.tokenIDs,
