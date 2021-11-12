@@ -15,6 +15,7 @@ const styles = (theme) => ({
     display: "flexGrow",
     minHeight: "100%",
     height: "66vh",
+    paddingBottom: 10,
   },
 });
 
@@ -53,9 +54,6 @@ class HeatMapChart extends Component {
         },
         tooltip: {
           enabled: true,
-          x: {
-            show: true,
-          },
           y: [
             {
               formatter: function (x, seriesName) {
@@ -80,19 +78,15 @@ class HeatMapChart extends Component {
                   return [];
                 }
               },
-              title: {
-                formatter: (seriesName) => seriesName,
-              },
             },
           ],
         },
         dataLabels: {
           enabled: true,
-          offsetY: -15,
           rotate: 0,
+          offsetY: -15,
           style: {
             fontSize: "50px",
-            fontWeight: "bold",
           },
           dropShadow: {
             enabled: true,
@@ -167,9 +161,7 @@ class HeatMapChart extends Component {
           },
           tooltip: {
             enabled: true,
-            x: {
-              show: true,
-            },
+
             y: [
               {
                 formatter: function (x, seriesName) {
@@ -214,7 +206,6 @@ class HeatMapChart extends Component {
           },
           dataLabels: {
             enabled: true,
-            offsetY: -15,
             rotate: 0,
             style: {
               fontSize: "50px",

@@ -10,7 +10,12 @@ import LSvoteResultModal from "../components/lsVoteResultModal.js";
 
 import LongShortMini from "./longShortMini.js";
 
-import { formatMoney, formatMoneyMCAP } from "../helpers";
+import {
+  formatMoney,
+  formatMoneyMCAP,
+  formatBigNumbers,
+  percentage,
+} from "../helpers";
 import { colors } from "../../theme";
 
 //IMPORT MaterialUI elements
@@ -66,8 +71,12 @@ import {
   DB_CREATE_LS_RETURNED,
   DB_CHECK_LS_RESULT,
   DB_CHECK_LS_RESULT_RETURNED,
+  DB_GET_USERDATA,
+  DB_USERDATA_RETURNED,
   DB_GET_PORTFOLIO_ASSET_STATS,
   DB_GET_PORTFOLIO_ASSET_STATS_RETURNED,
+  DB_GET_PORTFOLIO,
+  DB_GET_PORTFOLIO_RETURNED,
   GETTING_NEW_CHART_DATA,
 } from "../../constants";
 
@@ -170,8 +179,10 @@ class CryptoDetective extends Component {
   constructor(props) {
     super(props);
     let vsCoin = store.getStore("vsCoin");
-
     const account = store.getStore("account");
+    const userAuth = store.getStore("userAuth");
+    const userWallets = store.getStore("userWallets");
+
     this.newSearch = this.newSearch.bind(this);
 
     this.state = {
@@ -188,12 +199,17 @@ class CryptoDetective extends Component {
       lsEnabled: false,
       lsLoaded: false,
       modalOpen: false,
-      avgBuyPrice: null,
       loadingPriceChart: true,
+      userWallets: userWallets,
+      portfolioBalances: null,
+      portfolioStats: null,
+      portfolioDataLoaded: false,
     };
   }
 
   componentDidMount() {
+    const { userAuth, account } = this.state;
+    emitter.on(DB_USERDATA_RETURNED, this.userDataReturned);
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
     emitter.on(COIN_DATA_RETURNED, this.coinDataReturned);
     emitter.on(GRAPH_TIMEFRAME_CHANGED, this.graphTimeFrameChanged);
@@ -205,6 +221,13 @@ class CryptoDetective extends Component {
     emitter.on(COIN_PRICECHART_RETURNED, this.priceChartReturned);
     emitter.on(DB_GET_ASSETSTATS_RETURNED, this.db_getAssetStatsReturned);
     emitter.on(GETTING_NEW_CHART_DATA, this.newSearch);
+    if (userAuth && account && account.address) {
+      dispatcher.dispatch({
+        type: DB_GET_USERDATA,
+        address: account.address,
+      });
+    }
+
     if (this.props.coinID) {
       dispatcher.dispatch({
         type: GET_COIN_DATA,
@@ -218,6 +241,7 @@ class CryptoDetective extends Component {
   }
 
   componentWillUnmount() {
+    emitter.removeListener(DB_USERDATA_RETURNED, this.userDataReturned);
     emitter.removeListener(COINLIST_RETURNED, this.coinlistReturned);
     emitter.removeListener(COIN_DATA_RETURNED, this.coinDataReturned);
     emitter.removeListener(GRAPH_TIMEFRAME_CHANGED, this.graphTimeFrameChanged);
@@ -265,9 +289,44 @@ class CryptoDetective extends Component {
   }
 
   newSearch(newID) {
-    this.setState({ loadingPriceChart: true, avgBuyPrice: null });
+    this.setState({
+      loadingPriceChart: true,
+      portfolioStats: null,
+      portfolioDataLoaded: false,
+    });
     this.nav(newID);
   }
+
+  userDataReturned = (data) => {
+    const { coinData } = this.state;
+    let wallets = [];
+    data.wallets.forEach((item, i) => {
+      wallets.push(item.wallet);
+    });
+
+    if (coinData.id) {
+      if (coinData.contract_address) {
+        dispatcher.dispatch({
+          type: DB_GET_ASSETSTATS,
+          payload: {
+            wallet: wallets,
+            assetCode: coinData.contract_address,
+          },
+        });
+      } else if (coinData.symbol === "eth") {
+        dispatcher.dispatch({
+          type: DB_GET_ASSETSTATS,
+          payload: {
+            wallet: wallets,
+            assetCode: coinData.symbol,
+          },
+        });
+      }
+    }
+    this.setState({
+      userWallets: wallets,
+    });
+  };
 
   coinlistReturned = (payload) => {
     this.setState({ coinList: payload });
@@ -275,6 +334,12 @@ class CryptoDetective extends Component {
 
   coinDataReturned = async (data) => {
     let account = await store.getStore("account");
+    let userWallets = null;
+    if (this.state.userWallets) {
+      userWallets = this.state.userWallets;
+    } else if (account.address) {
+      userWallets = [account.address];
+    }
     if (data[0].id) {
       dispatcher.dispatch({
         type: GET_COIN_PRICECHART,
@@ -286,28 +351,24 @@ class CryptoDetective extends Component {
         ],
       });
     }
-    if (data[0].contract_address) {
-      dispatcher.dispatch({
-        type: DB_GET_ASSETSTATS,
-        payload: {
-          wallet: await account.address,
-          assetCode: data[0].contract_address,
-        },
-      });
-      // dispatcher.dispatch({
-      //   type: DB_GET_PORTFOLIO_ASSET_STATS,
-      //
-      //   wallet: account.address,
-      //   keys: [data[0].contract_address],
-      // });
-    } else if (data[0].symbol === "eth") {
-      dispatcher.dispatch({
-        type: DB_GET_ASSETSTATS,
-        payload: {
-          wallet: await account.address,
-          assetCode: data[0].symbol,
-        },
-      });
+    if (userWallets) {
+      if (data[0].contract_address) {
+        dispatcher.dispatch({
+          type: DB_GET_ASSETSTATS,
+          payload: {
+            wallet: userWallets,
+            assetCode: data[0].contract_address,
+          },
+        });
+      } else if (data[0].symbol === "eth") {
+        dispatcher.dispatch({
+          type: DB_GET_ASSETSTATS,
+          payload: {
+            wallet: userWallets,
+            assetCode: data[0].symbol,
+          },
+        });
+      }
     }
 
     dispatcher.dispatch({
@@ -317,7 +378,6 @@ class CryptoDetective extends Component {
     this.setState({
       coinData: data[0],
       dataLoaded: true,
-      avgBuyPrice: null,
     });
   };
 
@@ -461,20 +521,66 @@ class CryptoDetective extends Component {
     });
   };
 
-  db_getAssetStatsReturned = (data) => {
-    if (data[0] && data[0].stats) {
-      if (data[0].stats.avg_buy_price_net || data[0].stats.avg_buy_price) {
-        this.setState({
-          avgBuyPrice:
-            data[0].stats.avg_buy_price_net !== null
-              ? data[0].stats.avg_buy_price_net
-              : data[0].stats.avg_buy_price,
-        });
-      } else {
-        this.setState({
-          avgBuyPrice: null,
-        });
+  db_getAssetStatsReturned = (stats, balance) => {
+    let portfolioBalances = [];
+    let portfolioStats = {
+      avgBuyPrice: null,
+      avgSellPrice: null,
+      totalReturned: null,
+      totalFeeSpent: null,
+    };
+    let createPortfolio = (wallet, balance, portfolioShare) => {
+      return {
+        wallet,
+        balance,
+        portfolioShare,
+      };
+    };
+    if (stats[0] && stats[0].stats) {
+      if (stats[0].stats.avg_buy_price_net || stats[0].stats.avg_buy_price) {
+        portfolioStats.avgBuyPrice =
+          stats[0].stats.avg_buy_price_net !== null
+            ? stats[0].stats.avg_buy_price_net
+            : stats[0].stats.avg_buy_price;
       }
+      if (stats[0].stats.avg_sell_price_net || stats[0].stats.avg_sell_price) {
+        portfolioStats.avgSellPrice =
+          stats[0].stats.avg_sell_price_net !== null
+            ? stats[0].stats.avg_sell_price_net
+            : stats[0].stats.avg_sell_price;
+      }
+      if (stats[0].stats.total_returned) {
+        portfolioStats.totalReturned = stats[0].stats.total_returned;
+      }
+      if (stats[0].stats.total_fee_spent) {
+        portfolioStats.totalFeeSpent = stats[0].stats.total_fee_spent;
+      }
+    }
+    if (balance) {
+      balance.forEach((item, i) => {
+        let balance = formatBigNumbers(item.quantity, item.decimals);
+        let data = createPortfolio(item.wallet_address, balance);
+        portfolioBalances.push(data);
+      });
+    }
+    let totalBalance = 0;
+    portfolioBalances.forEach((portfolio, i) => {
+      totalBalance += portfolio.balance;
+    });
+    portfolioBalances.forEach((portfolio, i) => {
+      let share = percentage(portfolio.balance, totalBalance);
+      portfolio.portfolioShare = share;
+    });
+    portfolioBalances.totalBalance = totalBalance;
+    console.log(portfolioStats);
+    console.log(portfolioBalances);
+
+    if (portfolioStats || portfolioBalances) {
+      this.setState({
+        portfolioDataLoaded: true,
+        portfolioStats,
+        portfolioBalances,
+      });
     }
   };
 
@@ -1341,7 +1447,14 @@ class CryptoDetective extends Component {
 
   dataDisplayMain = () => {
     const { classes } = this.props;
-    const { coinData, vs, loadingPriceChart } = this.state;
+    const {
+      coinData,
+      vs,
+      loadingPriceChart,
+      portfolioStats,
+      portfolioBalances,
+      portfolioDataLoaded,
+    } = this.state;
 
     const handleClick = (timeFrame) => {
       dispatcher.dispatch({
@@ -1358,6 +1471,134 @@ class CryptoDetective extends Component {
           style={{ maxHeight: "max-content" }}
           elevation={3}
         >
+          {portfolioDataLoaded && (
+            <Grid item xs={12} style={{ marginBottom: 10 }}>
+              <Accordion>
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  aria-controls="panel1a-content"
+                  id="panel1a-header"
+                >
+                  <Grid
+                    container
+                    direction="row"
+                    justifyContent="flex-start"
+                    alignItems="stretch"
+                  >
+                    <Grid
+                      item
+                      style={{
+                        margin: "-10px -10px 0px",
+                        padding: "5px 10px",
+                        background: "#0002",
+                      }}
+                      xs={12}
+                    >
+                      <Typography variant="subtitle1">Portfolio</Typography>
+                    </Grid>
+                    <Grid
+                      style={{
+                        marginTop: 3,
+                      }}
+                      direction="row"
+                      container
+                      justify="space-around"
+                      alignItems="flex-end"
+                      item
+                      xs={12}
+                    >
+                      <Grid item>
+                        <Grid direction="column" align="center" container>
+                          <Grid item>
+                            <Typography variant="subtitle2">Balance</Typography>
+                          </Grid>
+                          <Grid item>
+                            <Typography variant="h3">
+                              {formatMoney(portfolioBalances.totalBalance) +
+                                " " +
+                                coinData.symbol}
+                            </Typography>
+                          </Grid>
+                        </Grid>
+                      </Grid>
+                      <Grid item>
+                        <Grid direction="column" align="center" container>
+                          <Grid item>
+                            <Typography variant="subtitle2">Value</Typography>
+                          </Grid>
+                          <Grid item>
+                            <Typography variant="h3">
+                              {formatMoney(
+                                portfolioBalances.totalBalance *
+                                  coinData.market_data.current_price[vs]
+                              )}
+                            </Typography>
+                          </Grid>
+                        </Grid>
+                      </Grid>
+                      <Grid item>
+                        <Grid direction="column" align="center" container>
+                          <Grid item>
+                            <Typography variant="subtitle2">
+                              Avg. buy price
+                            </Typography>
+                          </Grid>
+                          <Grid item>
+                            <Typography variant="h3">
+                              {formatMoney(portfolioStats.avgBuyPrice)}
+                            </Typography>
+                          </Grid>
+                        </Grid>
+                      </Grid>
+                      <Grid item>
+                        <Grid direction="column" align="center" container>
+                          <Grid item>
+                            <Typography variant="subtitle2">
+                              Avg. sell price
+                            </Typography>
+                          </Grid>
+                          <Grid item>
+                            <Typography variant="h3">
+                              {formatMoney(portfolioStats.avgSellPrice)}
+                            </Typography>
+                          </Grid>
+                        </Grid>
+                      </Grid>
+                      <Grid item>
+                        <Grid direction="column" align="center" container>
+                          <Grid item>
+                            <Typography variant="subtitle2">
+                              Total Return
+                            </Typography>
+                          </Grid>
+                          <Grid item>
+                            <Typography variant="h3">
+                              {formatMoney(portfolioStats.totalReturned)}
+                            </Typography>
+                          </Grid>
+                        </Grid>
+                      </Grid>
+                      <Grid item>
+                        <Grid direction="column" align="center" container>
+                          <Grid item>
+                            <Typography variant="subtitle2">
+                              total spent on Fee
+                            </Typography>
+                          </Grid>
+                          <Grid item>
+                            <Typography variant="h3">
+                              {formatMoney(portfolioStats.totalFeeSpent)}
+                            </Typography>
+                          </Grid>
+                        </Grid>
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                </AccordionSummary>
+                <AccordionDetails></AccordionDetails>
+              </Accordion>
+            </Grid>
+          )}
           <Grid item xs={12}>
             <Card
               className={classes.MarketcapChips}

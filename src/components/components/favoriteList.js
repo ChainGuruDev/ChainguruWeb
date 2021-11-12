@@ -118,7 +118,6 @@ class FavoriteList extends Component {
     dispatcher.dispatch({
       type: COINGECKO_POPULATE_FAVLIST,
       tokenIDs: this.state.tokenIDs,
-      versus: vsCoin,
     });
   };
 

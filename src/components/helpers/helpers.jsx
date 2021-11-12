@@ -138,6 +138,10 @@ function differenceInPercentage(value1, value2) {
   return percent.toFixed(2);
 }
 
+function percentage(partialValue, totalValue) {
+  return (100 * partialValue) / totalValue;
+}
+
 export {
   formatMoney,
   formatMoneyMCAP,
@@ -145,4 +149,5 @@ export {
   getHash,
   formatBigNumbers,
   differenceInPercentage,
+  percentage,
 };

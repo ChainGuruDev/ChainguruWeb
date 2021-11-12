@@ -116,7 +116,7 @@ class PortfolioHeatMap extends Component {
       errMsgWallet: "",
       errorWallet: false,
       userBalance: [],
-      hideBlacklisted: true,
+      hideBlacklisted: false,
       hideLowBalanceCoins: true,
       sortBy: "value",
       sortOrder: "dsc",
@@ -454,12 +454,6 @@ class PortfolioHeatMap extends Component {
               }
             />
             <ListItemSecondaryAction>
-              <IconButton
-                aria-label="remove"
-                onClick={() => this.updateWallet(wallet.wallet)}
-              >
-                <RefreshRoundedIcon />
-              </IconButton>
               {this.state.account.address !== wallet.wallet && (
                 <IconButton
                   aria-label="remove"

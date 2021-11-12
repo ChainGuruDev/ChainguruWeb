@@ -1661,7 +1661,7 @@ ${nonce}`,
 
   db_getUserData = async (payload) => {
     try {
-      let _userExists = await axios.post(
+      let _user = await axios.post(
         `https://chainguru-db-dev.herokuapp.com/users/data`,
         {
           user: payload.address,
@@ -1672,9 +1672,17 @@ ${nonce}`,
           },
         }
       );
-      store.setStore({ userFavorites: _userExists.data.favorites.tokenIDs });
-      if (await _userExists) {
-        emitter.emit(DB_USERDATA_RETURNED, _userExists.data);
+      let wallets = [];
+      _user.data.wallets.forEach((item, i) => {
+        wallets.push(item.wallet);
+      });
+
+      store.setStore({
+        userFavorites: _user.data.favorites.tokenIDs,
+        userWallets: wallets,
+      });
+      if (await _user) {
+        emitter.emit(DB_USERDATA_RETURNED, _user.data);
       }
     } catch (err) {
       console.log(err.message);
@@ -2115,7 +2123,6 @@ ${nonce}`,
       let data = await axios.get(
         `https://chainguru-db-dev.herokuapp.com/longShort/token?tokenID=${payload.tokenID}&userID=${account.address}`
       );
-      console.log(data.data);
       emitter.emit(DB_GET_USER_TOKEN_LS_RETURNED, await data.data);
     } catch (err) {
       if (err) {
@@ -2324,26 +2331,37 @@ ${nonce}`,
 
   db_getAssetStats = async (data) => {
     let vsCoin = store.getStore("vsCoin");
+    let wallets = data.payload.wallet;
+    let assetData;
     try {
-      // let portfolioAssetStats = await axios.post(
-      //   `https://chainguru.fun/api/portfolio/assets/stats`,
-      //   {
-      //     address: data.payload.wallet,
-      //     currency: vsCoin,
-      //     asset_code: [data.payload.assetCode],
-      //   }
-      // );
+      //IF multiple wallets check which ones have the asset
+      if (data.payload.wallet.length > 1) {
+        wallets = [];
+        assetData = await axios.post(
+          `https://chainguru-db-dev.herokuapp.com/zerion/address/assets`,
+          {
+            addresses: data.payload.wallet,
+            currency: vsCoin,
+            asset_codes: [data.payload.assetCode],
+          }
+        );
+        for (var i = 0; i < (await assetData.data.length); i++) {
+          wallets.push(assetData.data[i].wallet_address);
+        }
+      }
       let portfolioAssetStats = await axios.post(
         `https://chainguru-db-dev.herokuapp.com/zerion/assets/stats`,
         {
-          address: data.payload.wallet,
+          address: wallets,
           currency: vsCoin,
           asset_code: [data.payload.assetCode],
         }
       );
-      // console.log("returned stats");
-      // console.log(portfolioAssetStats.data);
-      emitter.emit(DB_GET_ASSETSTATS_RETURNED, await portfolioAssetStats.data);
+      emitter.emit(
+        DB_GET_ASSETSTATS_RETURNED,
+        await portfolioAssetStats.data,
+        await assetData.data
+      );
     } catch (err) {
       console.log(err.message);
     }
