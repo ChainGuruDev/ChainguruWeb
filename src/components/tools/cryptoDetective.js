@@ -173,6 +173,17 @@ const styles = (theme) => ({
   priceChipTitle: {
     textAlign: "center",
   },
+  expandIcon: {
+    webkitTransition: "all 0.5s cubic-bezier(.22,.61,.36,1)",
+    mozTransition: "all 0.5s cubic-bezier(.22,.61,.36,1)",
+    oTransition: "all 0.5s cubic-bezier(.22,.61,.36,1)",
+    transition: "all 0.5s cubic-bezier(.22,.61,.36,1)",
+  },
+  expandContract: {
+    maxHeight: 0,
+    opacity: 0,
+    transition: "all 1s cubic-bezier(.22,.61,.36,1)",
+  },
 });
 
 class CryptoDetective extends Component {
@@ -204,6 +215,7 @@ class CryptoDetective extends Component {
       portfolioBalances: null,
       portfolioStats: null,
       portfolioDataLoaded: false,
+      portfolioDataExpanded: false,
     };
   }
 
@@ -293,6 +305,7 @@ class CryptoDetective extends Component {
       loadingPriceChart: true,
       portfolioStats: null,
       portfolioDataLoaded: false,
+      portfolioDataExpanded: false,
     });
     this.nav(newID);
   }
@@ -586,6 +599,29 @@ class CryptoDetective extends Component {
 
   priceChartReturned = (data) => {
     this.setState({ loadingPriceChart: false });
+  };
+
+  expandPortfolioData = (currentState) => {
+    let newState = !currentState;
+    var rotated = currentState;
+
+    var expandContract = document.getElementById("expandContract");
+    var div = document.getElementById("expandIcon"),
+      angle = newState ? 0 : 180;
+    expandContract.style.transform = newState
+      ? "translateY(0)"
+      : "translateY(-100%)";
+    expandContract.style.opacity = newState ? 1 : 0;
+
+    div.style.webkitTransform = "rotate(" + angle + "deg)";
+    div.style.mozTransform = "rotate(" + angle + "deg)";
+    div.style.msTransform = "rotate(" + angle + "deg)";
+    div.style.oTransform = "rotate(" + angle + "deg)";
+    div.style.transform = "rotate(" + angle + "deg)";
+
+    this.setState({
+      portfolioDataExpanded: newState,
+    });
   };
 
   drawMarket = (coinData, vs) => {
@@ -1454,6 +1490,7 @@ class CryptoDetective extends Component {
       portfolioStats,
       portfolioBalances,
       portfolioDataLoaded,
+      portfolioDataExpanded,
     } = this.state;
 
     const handleClick = (timeFrame) => {
@@ -1473,130 +1510,155 @@ class CryptoDetective extends Component {
         >
           {portfolioDataLoaded && (
             <Grid item xs={12} style={{ marginBottom: 10 }}>
-              <Accordion>
-                <AccordionSummary
-                  expandIcon={<ExpandMoreIcon />}
-                  aria-controls="panel1a-content"
-                  id="panel1a-header"
+              <Card
+                className={classes.MarketcapChips}
+                elevation={1}
+                variant="outlined"
+              >
+                <Grid
+                  item
+                  style={{
+                    margin: "-10px -10px 0px",
+                    padding: "5px 10px",
+                    background: "#0002",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    cursor: "pointer",
+                  }}
+                  onClick={() =>
+                    this.expandPortfolioData(portfolioDataExpanded)
+                  }
                 >
-                  <Grid
-                    container
-                    direction="row"
-                    justifyContent="flex-start"
-                    alignItems="stretch"
+                  <Typography variant="subtitle1">Portfolio</Typography>
+                  <IconButton
+                    color="primary"
+                    aria-label="Show Portfolio Data"
+                    size="small"
                   >
-                    <Grid
-                      item
-                      style={{
-                        margin: "-10px -10px 0px",
-                        padding: "5px 10px",
-                        background: "#0002",
-                      }}
-                      xs={12}
-                    >
-                      <Typography variant="subtitle1">Portfolio</Typography>
-                    </Grid>
-                    <Grid
-                      style={{
-                        marginTop: 3,
-                      }}
-                      direction="row"
-                      container
-                      justify="space-around"
-                      alignItems="flex-end"
-                      item
-                      xs={12}
-                    >
+                    {
+                      <ExpandMoreIcon
+                        id="expandIcon"
+                        className={classes.expandIcon}
+                      />
+                    }
+                  </IconButton>
+                </Grid>
+                <Grid
+                  style={{
+                    marginTop: 3,
+                  }}
+                  direction="row"
+                  container
+                  justify="space-around"
+                  alignItems="flex-end"
+                  item
+                  xs={12}
+                >
+                  <Grid item>
+                    <Grid direction="column" align="center" container>
                       <Grid item>
-                        <Grid direction="column" align="center" container>
-                          <Grid item>
-                            <Typography variant="subtitle2">Balance</Typography>
-                          </Grid>
-                          <Grid item>
-                            <Typography variant="h3">
-                              {formatMoney(portfolioBalances.totalBalance) +
-                                " " +
-                                coinData.symbol}
-                            </Typography>
-                          </Grid>
-                        </Grid>
+                        <Typography variant="subtitle2">Balance</Typography>
                       </Grid>
                       <Grid item>
-                        <Grid direction="column" align="center" container>
-                          <Grid item>
-                            <Typography variant="subtitle2">Value</Typography>
-                          </Grid>
-                          <Grid item>
-                            <Typography variant="h3">
-                              {formatMoney(
-                                portfolioBalances.totalBalance *
-                                  coinData.market_data.current_price[vs]
-                              )}
-                            </Typography>
-                          </Grid>
-                        </Grid>
-                      </Grid>
-                      <Grid item>
-                        <Grid direction="column" align="center" container>
-                          <Grid item>
-                            <Typography variant="subtitle2">
-                              Avg. buy price
-                            </Typography>
-                          </Grid>
-                          <Grid item>
-                            <Typography variant="h3">
-                              {formatMoney(portfolioStats.avgBuyPrice)}
-                            </Typography>
-                          </Grid>
-                        </Grid>
-                      </Grid>
-                      <Grid item>
-                        <Grid direction="column" align="center" container>
-                          <Grid item>
-                            <Typography variant="subtitle2">
-                              Avg. sell price
-                            </Typography>
-                          </Grid>
-                          <Grid item>
-                            <Typography variant="h3">
-                              {formatMoney(portfolioStats.avgSellPrice)}
-                            </Typography>
-                          </Grid>
-                        </Grid>
-                      </Grid>
-                      <Grid item>
-                        <Grid direction="column" align="center" container>
-                          <Grid item>
-                            <Typography variant="subtitle2">
-                              Total Return
-                            </Typography>
-                          </Grid>
-                          <Grid item>
-                            <Typography variant="h3">
-                              {formatMoney(portfolioStats.totalReturned)}
-                            </Typography>
-                          </Grid>
-                        </Grid>
-                      </Grid>
-                      <Grid item>
-                        <Grid direction="column" align="center" container>
-                          <Grid item>
-                            <Typography variant="subtitle2">
-                              total spent on Fee
-                            </Typography>
-                          </Grid>
-                          <Grid item>
-                            <Typography variant="h3">
-                              {formatMoney(portfolioStats.totalFeeSpent)}
-                            </Typography>
-                          </Grid>
-                        </Grid>
+                        <Typography variant="h3">
+                          {formatMoney(portfolioBalances.totalBalance) +
+                            " " +
+                            coinData.symbol}
+                        </Typography>
                       </Grid>
                     </Grid>
                   </Grid>
-                </AccordionSummary>
-                <AccordionDetails></AccordionDetails>
-              </Accordion>
+                  <Grid item>
+                    <Grid direction="column" align="center" container>
+                      <Grid item>
+                        <Typography variant="subtitle2">Value</Typography>
+                      </Grid>
+                      <Grid item>
+                        <Typography variant="h3">
+                          {formatMoney(
+                            portfolioBalances.totalBalance *
+                              coinData.market_data.current_price[vs]
+                          )}
+                        </Typography>
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                  <Grid item>
+                    <Grid direction="column" align="center" container>
+                      <Grid item>
+                        <Typography variant="subtitle2">
+                          Avg. buy price
+                        </Typography>
+                      </Grid>
+                      <Grid item>
+                        <Typography variant="h3">
+                          {formatMoney(portfolioStats.avgBuyPrice)}
+                        </Typography>
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                  <Grid item>
+                    <Grid direction="column" align="center" container>
+                      <Grid item>
+                        <Typography variant="subtitle2">
+                          Avg. sell price
+                        </Typography>
+                      </Grid>
+                      <Grid item>
+                        <Typography variant="h3">
+                          {formatMoney(portfolioStats.avgSellPrice)}
+                        </Typography>
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                  <Grid item>
+                    <Grid direction="column" align="center" container>
+                      <Grid item>
+                        <Typography variant="subtitle2">
+                          Total Return
+                        </Typography>
+                      </Grid>
+                      <Grid item>
+                        <Typography variant="h3">
+                          {formatMoney(portfolioStats.totalReturned)}
+                        </Typography>
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                  <Grid item>
+                    <Grid direction="column" align="center" container>
+                      <Grid item>
+                        <Typography variant="subtitle2">
+                          total spent on Fee
+                        </Typography>
+                      </Grid>
+                      <Grid item>
+                        <Typography variant="h3">
+                          {formatMoney(portfolioStats.totalFeeSpent)}
+                        </Typography>
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                </Grid>
+                <div style={{ overflow: "hidden", padding: "1px" }}>
+                  <Grid
+                    className={classes.expandContract}
+                    id="expandContract"
+                    direction="column"
+                    container
+                    justify="flex-start"
+                    alignItems="stretch"
+                    item
+                    container
+                    xs={12}
+                  >
+                    <Typography>ACA VAN LOS WALEEET PAPA</Typography>
+                    <Typography>ACA VAN LOS WALEEET PAPA</Typography>
+                    <Typography>ACA VAN LOS WALEEET PAPA</Typography>
+                    <Typography>ACA VAN LOS WALEEET PAPA</Typography>
+                  </Grid>
+                </div>
+              </Card>
             </Grid>
           )}
           <Grid item xs={12}>
