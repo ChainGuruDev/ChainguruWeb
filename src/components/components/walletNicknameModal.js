@@ -96,7 +96,6 @@ class WalletNicknameModal extends Component {
   };
 
   setNewNickname = (newNick, wallet) => {
-    console.log(newNick);
     if (newNick) {
       dispatcher.dispatch({
         type: DB_SET_USER_WALLET_NICKNAME,
@@ -104,7 +103,6 @@ class WalletNicknameModal extends Component {
         nick: newNick,
       });
     } else {
-      console.log("removeWALLET nickname");
       dispatcher.dispatch({
         type: DB_REMOVE_USER_WALLET_NICKNAME,
         wallet: wallet,

@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import ReactHtmlParser from "react-html-parser";
+import PropTypes from "prop-types";
 
 //IMPORT COMPONENTS
 import CoinSearchBar from "../components/CoinSearchBar.js";
@@ -15,11 +16,14 @@ import {
   formatMoneyMCAP,
   formatBigNumbers,
   percentage,
+  dynamicSort,
+  getVsSymbol,
 } from "../helpers";
 import { colors } from "../../theme";
 
 //IMPORT MaterialUI elements
 import {
+  Box,
   Card,
   Grid,
   Button,
@@ -33,6 +37,11 @@ import {
   LinearProgress,
   CircularProgress,
   IconButton,
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+  TableHead,
 } from "@material-ui/core";
 
 //IMPORT ICONS
@@ -180,11 +189,47 @@ const styles = (theme) => ({
     transition: "all 0.5s cubic-bezier(.22,.61,.36,1)",
   },
   expandContract: {
-    maxHeight: 0,
     opacity: 0,
-    transition: "all 1s cubic-bezier(.22,.61,.36,1)",
+    maxHeight: "0px",
+    transition: "all .5s cubic-bezier(.65,.05,.36,1)",
+  },
+
+  itemContainer: {
+    transition: "all .5s cubic-bezier(.65,.05,.36,1)",
   },
 });
+
+function CircularProgressWithLabel(props) {
+  return (
+    <Box position="relative" display="inline-flex">
+      <CircularProgress variant="determinate" {...props} />
+      <Box
+        top={0}
+        left={0}
+        bottom={0}
+        right={0}
+        position="absolute"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+      >
+        <Typography
+          variant="caption"
+          component="div"
+          color="textSecondary"
+        >{`${Math.round(props.value)}%`}</Typography>
+      </Box>
+    </Box>
+  );
+}
+
+CircularProgressWithLabel.propTypes = {
+  /**
+   * The value of the progress indicator for the determinate variant.
+   * Value between 0 and 100.
+   */
+  value: PropTypes.number.isRequired,
+};
 
 class CryptoDetective extends Component {
   constructor(props) {
@@ -316,7 +361,6 @@ class CryptoDetective extends Component {
     data.wallets.forEach((item, i) => {
       wallets.push(item.wallet);
     });
-
     if (coinData.id) {
       if (coinData.contract_address) {
         dispatcher.dispatch({
@@ -338,6 +382,7 @@ class CryptoDetective extends Component {
     }
     this.setState({
       userWallets: wallets,
+      walletNicknames: data.walletNicknames,
     });
   };
 
@@ -535,6 +580,7 @@ class CryptoDetective extends Component {
   };
 
   db_getAssetStatsReturned = (stats, balance) => {
+    console.log(this.state.userData);
     let portfolioBalances = [];
     let portfolioStats = {
       avgBuyPrice: null,
@@ -585,8 +631,8 @@ class CryptoDetective extends Component {
       portfolio.portfolioShare = share;
     });
     portfolioBalances.totalBalance = totalBalance;
-    console.log(portfolioStats);
     console.log(portfolioBalances);
+    portfolioBalances.sort(dynamicSort("-balance"));
 
     if (portfolioStats || portfolioBalances) {
       this.setState({
@@ -606,12 +652,21 @@ class CryptoDetective extends Component {
     var rotated = currentState;
 
     var expandContract = document.getElementById("expandContract");
+    var expandContractItemContainer = document.getElementById(
+      "expandedItemsContainer"
+    );
+
     var div = document.getElementById("expandIcon"),
       angle = newState ? 0 : 180;
-    expandContract.style.transform = newState
-      ? "translateY(0)"
-      : "translateY(-100%)";
+    let expandedHeight;
+    if (expandContract.firstChild) {
+      expandedHeight = expandContract.firstChild.clientHeight + 10 + "px";
+    }
+    expandContract.firstChild.style.transform = newState
+      ? "translateY(0%)"
+      : `translateY(-${expandedHeight})`;
     expandContract.style.opacity = newState ? 1 : 0;
+    expandContract.style.maxHeight = newState ? expandedHeight : 0;
 
     div.style.webkitTransform = "rotate(" + angle + "deg)";
     div.style.mozTransform = "rotate(" + angle + "deg)";
@@ -655,7 +710,9 @@ class CryptoDetective extends Component {
                   style={{ marginLeft: 5 }}
                   color="primary"
                 >
-                  {formatMoney(coinData.market_data.market_cap[vs], "0")}
+                  {formatMoney(coinData.market_data.market_cap[vs], "0") +
+                    " " +
+                    getVsSymbol(vs)}
                 </Typography>
               </Grid>
             )}
@@ -719,7 +776,9 @@ class CryptoDetective extends Component {
                   {formatMoney(
                     coinData.market_data.fully_diluted_valuation[vs],
                     "0"
-                  )}
+                  ) +
+                    " " +
+                    getVsSymbol(vs)}
                 </Typography>
               </Grid>
             )}
@@ -1361,6 +1420,51 @@ class CryptoDetective extends Component {
     );
   };
 
+  drawWalletsWithAsset = (portfolioBalances) => {
+    const { classes } = this.props;
+    const { walletNicknames } = this.state;
+    const { coinData, vs, voteResults } = this.state;
+
+    let walletNick;
+    return portfolioBalances.map((row) => (
+      <TableRow hover={true} key={row.wallet} style={{ cursor: "pointer" }}>
+        <TableCell align="left">
+          <Typography variant={"h4"}>
+            {(walletNick = walletNicknames.find(
+              (ele) => ele.wallet.toLowerCase() === row.wallet
+            )) && walletNick.nickname}
+            {!walletNicknames.some(
+              (e) => e.wallet.toLowerCase() === row.wallet
+            ) &&
+              row.wallet.substring(0, 6) +
+                "..." +
+                row.wallet.substring(row.wallet.length - 4, row.wallet.length)}
+          </Typography>
+          {(walletNick = walletNicknames.find(
+            (ele) => ele.wallet.toLowerCase() === row.wallet
+          )) && (
+            <Typography variant="subtitle1">
+              {row.wallet.substring(0, 6) +
+                "..." +
+                row.wallet.substring(row.wallet.length - 4, row.wallet.length)}
+            </Typography>
+          )}
+        </TableCell>
+        <TableCell align="left">
+          <CircularProgressWithLabel value={row.portfolioShare} />
+        </TableCell>
+        <TableCell align="left">
+          <Typography variant={"h4"}>{formatMoney(row.balance)}</Typography>
+        </TableCell>
+        <TableCell align="left">
+          {`${formatMoney(
+            row.balance * coinData.market_data.current_price[vs]
+          )} ${getVsSymbol(vs)}`}
+        </TableCell>
+      </TableRow>
+    ));
+  };
+
   dataDisplaySide = () => {
     const { classes } = this.props;
     const { coinData, vs, voteResults } = this.state;
@@ -1437,14 +1541,14 @@ class CryptoDetective extends Component {
                     {coinData.market_data.current_price[vs]}
                   </Typography>
                 </Grid>
-                <Grid item>
+                <Grid item style={{ display: "flex", alignItems: "end" }}>
                   <Typography
                     color="textPrimary"
                     align="right"
                     variant="subtitle1"
                     style={{ marginLeft: 5 }}
                   >
-                    {vs}
+                    {getVsSymbol(vs)}
                   </Typography>
                 </Grid>
               </Grid>
@@ -1578,7 +1682,9 @@ class CryptoDetective extends Component {
                           {formatMoney(
                             portfolioBalances.totalBalance *
                               coinData.market_data.current_price[vs]
-                          )}
+                          ) +
+                            " " +
+                            getVsSymbol(vs)}
                         </Typography>
                       </Grid>
                     </Grid>
@@ -1629,7 +1735,7 @@ class CryptoDetective extends Component {
                     <Grid direction="column" align="center" container>
                       <Grid item>
                         <Typography variant="subtitle2">
-                          total spent on Fee
+                          total spent on Fees
                         </Typography>
                       </Grid>
                       <Grid item>
@@ -1646,16 +1752,35 @@ class CryptoDetective extends Component {
                     id="expandContract"
                     direction="column"
                     container
-                    justify="flex-start"
                     alignItems="stretch"
                     item
                     container
                     xs={12}
                   >
-                    <Typography>ACA VAN LOS WALEEET PAPA</Typography>
-                    <Typography>ACA VAN LOS WALEEET PAPA</Typography>
-                    <Typography>ACA VAN LOS WALEEET PAPA</Typography>
-                    <Typography>ACA VAN LOS WALEEET PAPA</Typography>
+                    <div
+                      id="expandedItemsContainer"
+                      className={classes.itemContainer}
+                    >
+                      <Divider />
+
+                      <Table aria-label="portfolioHoldings">
+                        <TableHead>
+                          <TableRow>
+                            <TableCell style={{ width: 0 }} align="left">
+                              Wallet
+                            </TableCell>
+                            <TableCell style={{ width: 0 }}>Share</TableCell>
+                            <TableCell style={{ width: 0 }} align="left">
+                              Balance
+                            </TableCell>
+                            <TableCell align="left">Value</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {this.drawWalletsWithAsset(portfolioBalances)}
+                        </TableBody>
+                      </Table>
+                    </div>
                   </Grid>
                 </div>
               </Card>

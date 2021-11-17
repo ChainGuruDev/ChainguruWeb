@@ -414,7 +414,7 @@ class Store {
             this.db_getPortfolioChart(payload);
             break;
           case DB_GET_ASSETSTATS:
-            this.db_getAssetStats(payload);
+            this.debouncedGetAssetStats(payload);
             break;
           case DB_UPDATE_PORTFOLIO:
             this.db_updatePortfolio(payload);
@@ -2329,6 +2329,14 @@ ${nonce}`,
     }
   };
 
+  debouncedGetAssetStats = debounce(
+    async (payload) => {
+      return this.db_getAssetStats(payload);
+    },
+    150,
+    { leading: true, trailing: false }
+  );
+
   db_getAssetStats = async (data) => {
     let vsCoin = store.getStore("vsCoin");
     let wallets = data.payload.wallet;
@@ -2635,6 +2643,11 @@ ${nonce}`,
         {
           wallet: payload.wallet,
           nick: payload.nick,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${store.getStore("authToken")}`,
+          },
         }
       );
       emitter.emit(DB_SET_USER_WALLET_NICKNAME_RETURNED, await data.data);
@@ -2646,15 +2659,18 @@ ${nonce}`,
 
   db_delUserWalletNickname = async (payload) => {
     const account = store.getStore("account");
-    console.log(payload);
     try {
       let data = await axios.put(
         `https://chainguru-db-dev.herokuapp.com/users/${account.address}/walletnickRemove`,
         {
           wallet: payload.wallet,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${store.getStore("authToken")}`,
+          },
         }
       );
-      console.log(await data.data);
       emitter.emit(DB_REMOVE_USER_WALLET_NICKNAME_RETURNED, await data.data);
     } catch (err) {
       console.log(err.message);
