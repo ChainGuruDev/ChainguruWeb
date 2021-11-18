@@ -73,6 +73,14 @@ class PriceChart extends Component {
         xaxis: {
           type: "datetime",
           tickAmount: 1,
+          labels: {
+            style: {
+              fontSize: "13px",
+              fontWeight: 400,
+              fontFamily:
+                "Acumin Variable Concept Default ExtraCondensed UltraBlack",
+            },
+          },
         },
         dataLabels: {
           enabled: false,
@@ -90,7 +98,14 @@ class PriceChart extends Component {
           tooltip: {
             enabled: true,
           },
-
+          labels: {
+            style: {
+              fontSize: "13px",
+              fontWeight: 400,
+              fontFamily:
+                "Acumin Variable Concept Default ExtraCondensed UltraBlack",
+            },
+          },
           type: "numeric",
           decimalsInFloat: 4,
           forceNiceScale: true,
@@ -175,16 +190,40 @@ class PriceChart extends Component {
             yaxis: [
               {
                 y:
+                  data[0].stats.avg_sell_price_net !== null
+                    ? data[0].stats.avg_sell_price_net
+                    : data[0].stats.avg_sell_price,
+                label: {
+                  borderColor: "#ed867c",
+                  style: {
+                    background: "#ed867c",
+                    fontSize: "14px",
+                    fontWeight: 400,
+                    fontFamily:
+                      "Acumin Variable Concept Default ExtraCondensed UltraBlack",
+                  },
+                  text: `avg. SELL price ${formatMoney(
+                    data[0].stats.avg_sell_price_net !== null
+                      ? data[0].stats.avg_sell_price_net
+                      : data[0].stats.avg_sell_price
+                  )}`,
+                },
+              },
+              {
+                y:
                   data[0].stats.avg_buy_price_net !== null
                     ? data[0].stats.avg_buy_price_net
                     : data[0].stats.avg_buy_price,
-                borderColor: "#569973",
                 label: {
                   borderColor: "#569973",
                   style: {
                     background: "#569973",
+                    fontSize: "14px",
+                    fontWeight: 400,
+                    fontFamily:
+                      "Acumin Variable Concept Default ExtraCondensed UltraBlack",
                   },
-                  text: `average buy price ${formatMoney(
+                  text: `avg. BUY price ${formatMoney(
                     data[0].stats.avg_buy_price_net !== null
                       ? data[0].stats.avg_buy_price_net
                       : data[0].stats.avg_buy_price
@@ -201,8 +240,12 @@ class PriceChart extends Component {
                   borderColor: "#fbba6a",
                   style: {
                     background: "#fbba6a",
+                    fontSize: "14px",
+                    fontWeight: 400,
+                    fontFamily:
+                      "Acumin Variable Concept Default ExtraCondensed UltraBlack",
                   },
-                  text: `estimated 100% profit  ${formatMoney(
+                  text: `~100% profit  ${formatMoney(
                     data[0].stats.avg_buy_price_net !== null
                       ? data[0].stats.avg_buy_price_net * 2
                       : data[0].stats.avg_buy_price * 2
@@ -219,8 +262,12 @@ class PriceChart extends Component {
                   borderColor: "#f68e55",
                   style: {
                     background: "#f68e55",
+                    fontSize: "14px",
+                    fontWeight: 400,
+                    fontFamily:
+                      "Acumin Variable Concept Default ExtraCondensed UltraBlack",
                   },
-                  text: `estimated 5X profit  ${formatMoney(
+                  text: `~5X profit  ${formatMoney(
                     data[0].stats.avg_buy_price_net !== null
                       ? data[0].stats.avg_buy_price_net * 5
                       : data[0].stats.avg_buy_price * 5
@@ -237,8 +284,12 @@ class PriceChart extends Component {
                   borderColor: "#ed8278",
                   style: {
                     background: "#ed8278",
+                    fontSize: "14px",
+                    fontWeight: 400,
+                    fontFamily:
+                      "Acumin Variable Concept Default ExtraCondensed UltraBlack",
                   },
-                  text: `estimated 10X profit  ${formatMoney(
+                  text: `~10X profit  ${formatMoney(
                     data[0].stats.avg_buy_price_net !== null
                       ? data[0].stats.avg_buy_price_net * 10
                       : data[0].stats.avg_buy_price * 10
@@ -265,7 +316,6 @@ class PriceChart extends Component {
     var x = document.getElementById("cryptoCompSmall");
     if (x) {
       if (window.getComputedStyle(x).display !== "none") {
-        console.log("triggered");
         if (this.props.id) {
           dispatcher.dispatch({
             type: GET_COIN_PRICECHART,
@@ -280,8 +330,6 @@ class PriceChart extends Component {
       }
     } else {
       // console.log(this.props.coinID);
-      console.log("calling pricechart");
-
       if (this.props.coinID) {
         dispatcher.dispatch({
           type: GET_COIN_PRICECHART,

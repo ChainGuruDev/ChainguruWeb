@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import ReactHtmlParser from "react-html-parser";
-import PropTypes from "prop-types";
 
 //IMPORT COMPONENTS
 import CoinSearchBar from "../components/CoinSearchBar.js";
@@ -35,7 +34,6 @@ import {
   AccordionDetails,
   Link,
   LinearProgress,
-  CircularProgress,
   IconButton,
   Table,
   TableBody,
@@ -62,6 +60,7 @@ import CompassCalibrationIcon from "@material-ui/icons/CompassCalibration";
 import GitHubIcon from "@material-ui/icons/GitHub";
 import ChatIcon from "@material-ui/icons/Chat";
 
+import { CircularProgress, Pie } from "../muiCustom";
 import {
   COINLIST_RETURNED,
   COIN_DATA_RETURNED,
@@ -199,38 +198,6 @@ const styles = (theme) => ({
   },
 });
 
-function CircularProgressWithLabel(props) {
-  return (
-    <Box position="relative" display="inline-flex">
-      <CircularProgress variant="determinate" {...props} />
-      <Box
-        top={0}
-        left={0}
-        bottom={0}
-        right={0}
-        position="absolute"
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-      >
-        <Typography
-          variant="caption"
-          component="div"
-          color="textSecondary"
-        >{`${Math.round(props.value)}%`}</Typography>
-      </Box>
-    </Box>
-  );
-}
-
-CircularProgressWithLabel.propTypes = {
-  /**
-   * The value of the progress indicator for the determinate variant.
-   * Value between 0 and 100.
-   */
-  value: PropTypes.number.isRequired,
-};
-
 class CryptoDetective extends Component {
   constructor(props) {
     super(props);
@@ -294,7 +261,7 @@ class CryptoDetective extends Component {
     if (!this.state.vs) {
       this.getVsCoin();
     }
-    this.interval = setInterval(() => this.updateTokenData(), 60000);
+    this.interval = setInterval(() => this.updateTokenData(), 60 * 1000 * 5); //update every 5mins
   }
 
   componentWillUnmount() {
@@ -357,8 +324,21 @@ class CryptoDetective extends Component {
 
   userDataReturned = (data) => {
     const { coinData } = this.state;
+    const { classes } = this.props;
     let wallets = [];
+    let colours = [
+      colors.cgGreen,
+      colors.cgOrange,
+      colors.cgYellow,
+      colors.cgBlue,
+      colors.cgRed,
+    ];
+    let walletColors = [];
     data.wallets.forEach((item, i) => {
+      if (i > colours.length - 1) {
+        i = 0;
+      }
+      walletColors.push(colours[i]);
       wallets.push(item.wallet);
     });
     if (coinData.id) {
@@ -382,6 +362,7 @@ class CryptoDetective extends Component {
     }
     this.setState({
       userWallets: wallets,
+      walletColors: walletColors,
       walletNicknames: data.walletNicknames,
     });
   };
@@ -454,17 +435,31 @@ class CryptoDetective extends Component {
   };
 
   vsCoinReturned = (vsCoin) => {
-    if (this.state.coinData.id) {
+    const { coinData, userWallets } = this.state;
+    if (coinData.id) {
       dispatcher.dispatch({
         type: GET_COIN_PRICECHART,
-        content: [
-          this.state.coinData.id,
-          this.props.id,
-          this.state.timeFrame,
-          vsCoin,
-        ],
+        content: [coinData.id, this.props.id, this.state.timeFrame, vsCoin],
       });
+      if (coinData.contract_address) {
+        dispatcher.dispatch({
+          type: DB_GET_ASSETSTATS,
+          payload: {
+            wallet: userWallets,
+            assetCode: coinData.contract_address,
+          },
+        });
+      } else if (coinData.symbol === "eth") {
+        dispatcher.dispatch({
+          type: DB_GET_ASSETSTATS,
+          payload: {
+            wallet: userWallets,
+            assetCode: coinData.symbol,
+          },
+        });
+      }
     }
+
     this.setState({ vs: vsCoin });
   };
 
@@ -580,7 +575,6 @@ class CryptoDetective extends Component {
   };
 
   db_getAssetStatsReturned = (stats, balance) => {
-    console.log(this.state.userData);
     let portfolioBalances = [];
     let portfolioStats = {
       avgBuyPrice: null,
@@ -631,7 +625,6 @@ class CryptoDetective extends Component {
       portfolio.portfolioShare = share;
     });
     portfolioBalances.totalBalance = totalBalance;
-    console.log(portfolioBalances);
     portfolioBalances.sort(dynamicSort("-balance"));
 
     if (portfolioStats || portfolioBalances) {
@@ -1422,11 +1415,11 @@ class CryptoDetective extends Component {
 
   drawWalletsWithAsset = (portfolioBalances) => {
     const { classes } = this.props;
-    const { walletNicknames } = this.state;
+    const { walletNicknames, walletColors } = this.state;
     const { coinData, vs, voteResults } = this.state;
 
     let walletNick;
-    return portfolioBalances.map((row) => (
+    return portfolioBalances.map((row, i) => (
       <TableRow hover={true} key={row.wallet} style={{ cursor: "pointer" }}>
         <TableCell align="left">
           <Typography variant={"h4"}>
@@ -1451,7 +1444,11 @@ class CryptoDetective extends Component {
           )}
         </TableCell>
         <TableCell align="left">
-          <CircularProgressWithLabel value={row.portfolioShare} />
+          <CircularProgress
+            percentage={row.portfolioShare}
+            colour={walletColors[i]}
+            size={50}
+          />
         </TableCell>
         <TableCell align="left">
           <Typography variant={"h4"}>{formatMoney(row.balance)}</Typography>
@@ -1595,6 +1592,7 @@ class CryptoDetective extends Component {
       portfolioBalances,
       portfolioDataLoaded,
       portfolioDataExpanded,
+      walletColors,
     } = this.state;
 
     const handleClick = (timeFrame) => {
@@ -1659,6 +1657,13 @@ class CryptoDetective extends Component {
                   xs={12}
                 >
                   <Grid item>
+                    <Pie
+                      data={portfolioBalances}
+                      size={50}
+                      colors={walletColors}
+                    />
+                  </Grid>
+                  <Grid item>
                     <Grid direction="column" align="center" container>
                       <Grid item>
                         <Typography variant="subtitle2">Balance</Typography>
@@ -1698,7 +1703,9 @@ class CryptoDetective extends Component {
                       </Grid>
                       <Grid item>
                         <Typography variant="h3">
-                          {formatMoney(portfolioStats.avgBuyPrice)}
+                          {`${formatMoney(
+                            portfolioStats.avgBuyPrice
+                          )} ${getVsSymbol(vs)}`}
                         </Typography>
                       </Grid>
                     </Grid>
@@ -1712,7 +1719,9 @@ class CryptoDetective extends Component {
                       </Grid>
                       <Grid item>
                         <Typography variant="h3">
-                          {formatMoney(portfolioStats.avgSellPrice)}
+                          {`${formatMoney(
+                            portfolioStats.avgSellPrice
+                          )} ${getVsSymbol(vs)}`}
                         </Typography>
                       </Grid>
                     </Grid>
@@ -1726,7 +1735,9 @@ class CryptoDetective extends Component {
                       </Grid>
                       <Grid item>
                         <Typography variant="h3">
-                          {formatMoney(portfolioStats.totalReturned)}
+                          {`${formatMoney(
+                            portfolioStats.totalReturned
+                          )} ${getVsSymbol(vs)}`}
                         </Typography>
                       </Grid>
                     </Grid>
@@ -1740,7 +1751,9 @@ class CryptoDetective extends Component {
                       </Grid>
                       <Grid item>
                         <Typography variant="h3">
-                          {formatMoney(portfolioStats.totalFeeSpent)}
+                          {`${formatMoney(
+                            portfolioStats.totalFeeSpent
+                          )} ${getVsSymbol(vs)}`}
                         </Typography>
                       </Grid>
                     </Grid>

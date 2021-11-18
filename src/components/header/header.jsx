@@ -10,6 +10,7 @@ import { withRouter } from "react-router-dom";
 import { colors } from "../../theme";
 import ENS from "ethjs-ens";
 import { withTranslation } from "react-i18next";
+import debounce from "lodash/throttle";
 
 import {
   isBrowser,
@@ -431,8 +432,19 @@ class Header extends Component {
         break;
       default:
     }
-    return emitter.emit(SWITCH_VS_COIN_RETURNED, vsCoin);
+    this.emitvsCoinSwitch(vsCoin);
   };
+  //Debounce switchVsCoin return message once every .75sec
+  debouncedVsCoinSwitch(vsCoin) {
+    return emitter.emit(SWITCH_VS_COIN_RETURNED, vsCoin);
+  }
+  emitvsCoinSwitch = debounce(
+    (payload) => {
+      return this.debouncedVsCoinSwitch(payload);
+    },
+    750,
+    { leading: false, trailing: true }
+  );
 
   render() {
     const { classes, t } = this.props;

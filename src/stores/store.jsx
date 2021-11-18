@@ -1440,7 +1440,6 @@ class Store {
         break;
       default:
     }
-    console.log(newVsCoin);
   };
 
   geckoPopulateFavList = async (payload) => {
