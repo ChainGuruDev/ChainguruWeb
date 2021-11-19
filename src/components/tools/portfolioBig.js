@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import { colors } from "../../theme";
+import { colors, colorsGuru } from "../../theme";
 import { formatMoney } from "../helpers";
 import WalletNicknameModal from "../components/walletNicknameModal.js";
 import WalletRemoveModal from "../components/walletRemoveModal.js";
@@ -11,6 +11,7 @@ import BackspaceRoundedIcon from "@material-ui/icons/BackspaceRounded";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 import AddCircleRoundedIcon from "@material-ui/icons/AddCircleRounded";
 import ArrowBackIosRoundedIcon from "@material-ui/icons/ArrowBackIosRounded";
+import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
 
 import {
   Card,
@@ -28,6 +29,7 @@ import {
   TableSortLabel,
   List,
   ListItem,
+  ListItemIcon,
   ListItemText,
   ListItemSecondaryAction,
   IconButton,
@@ -257,8 +259,17 @@ class PortfolioBig extends Component {
 
   dbUserDataReturned = (data) => {
     let wallets = [];
+    let walletColors = [];
     data.wallets.forEach((item, i) => {
       wallets.push(item.wallet);
+      var x = i;
+      x %= Object.keys(colorsGuru).length;
+      let data = {
+        wallet: item.wallet.toLowerCase(),
+        color: colorsGuru[Object.keys(colorsGuru)[x]],
+      };
+
+      walletColors.push(data);
     });
     if (!this.state.loading) {
       this._isMounted &&
@@ -267,17 +278,20 @@ class PortfolioBig extends Component {
           wallet: wallets,
         });
     }
+
     if (wallets.length > 0) {
       this.setState({
         loading: true,
         selectedWallet: "all",
         userWallets: wallets,
+        walletColors: walletColors,
         walletNicknames: data.walletNicknames,
       });
     } else {
       this.setState({
         loading: true,
         selectedWallet: wallets[0],
+        walletColors: walletColors,
         userWallets: wallets,
         walletNicknames: data.walletNicknames,
       });
@@ -489,6 +503,7 @@ class PortfolioBig extends Component {
       hideLowBalanceCoins,
       dbStatsData,
       walletNicknames,
+      walletColors,
       selectedWallet,
     } = this.state;
 
@@ -522,7 +537,34 @@ class PortfolioBig extends Component {
           onClick={() => this.nav("/short/detective/" + row.asset_code)}
         >
           <TableCell>
-            <img className={classes.tokenLogo} alt="" src={row.icon_url} />
+            <div
+              style={{
+                width: "max-content",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <img className={classes.tokenLogo} alt="" src={row.icon_url} />
+              {walletColors[
+                walletColors
+                  .map((e) => e.wallet)
+                  .indexOf(row.wallet_address.toLowerCase())
+              ] && (
+                <div
+                  style={{
+                    marginLeft: 10,
+                    backgroundColor:
+                      walletColors[
+                        walletColors
+                          .map((e) => e.wallet)
+                          .indexOf(row.wallet_address.toLowerCase())
+                      ].color,
+                    width: "7px",
+                    height: "50px",
+                  }}
+                />
+              )}
+            </div>
           </TableCell>
           <TableCell padding="none" align="left">
             <div>
@@ -530,30 +572,47 @@ class PortfolioBig extends Component {
             </div>
             {selectedWallet === "all" && (
               <div>
-                <Typography style={{ opacity: 0.6 }} variant={"subtitle2"}>
-                  at wallet:{" "}
-                  {(data = walletNicknames.find(
-                    (ele) => ele.wallet === row.wallet_address
-                  )) &&
-                    data.nickname +
-                      " (" +
+                {walletColors[
+                  walletColors
+                    .map((e) => e.wallet)
+                    .indexOf(row.wallet_address.toLowerCase())
+                ] && (
+                  <Typography
+                    style={{
+                      opacity: 0.6,
+                      color:
+                        walletColors[
+                          walletColors
+                            .map((e) => e.wallet)
+                            .indexOf(row.wallet_address.toLowerCase())
+                        ].color,
+                    }}
+                    variant={"subtitle2"}
+                  >
+                    at wallet:{" "}
+                    {(data = walletNicknames.find(
+                      (ele) => ele.wallet === row.wallet_address
+                    )) &&
+                      data.nickname +
+                        " (" +
+                        row.wallet_address.substring(0, 6) +
+                        "..." +
+                        row.wallet_address.substring(
+                          row.wallet_address.length - 4,
+                          row.wallet_address.length
+                        ) +
+                        ")"}
+                    {!walletNicknames.some(
+                      (e) => e.wallet === row.wallet_address
+                    ) &&
                       row.wallet_address.substring(0, 6) +
-                      "..." +
-                      row.wallet_address.substring(
-                        row.wallet_address.length - 4,
-                        row.wallet_address.length
-                      ) +
-                      ")"}
-                  {!walletNicknames.some(
-                    (e) => e.wallet === row.wallet_address
-                  ) &&
-                    row.wallet_address.substring(0, 6) +
-                      "..." +
-                      row.wallet_address.substring(
-                        row.wallet_address.length - 4,
-                        row.wallet_address.length
-                      )}
-                </Typography>
+                        "..." +
+                        row.wallet_address.substring(
+                          row.wallet_address.length - 4,
+                          row.wallet_address.length
+                        )}
+                  </Typography>
+                )}
               </div>
             )}
           </TableCell>
@@ -736,12 +795,12 @@ class PortfolioBig extends Component {
   };
 
   userWalletList = (wallets) => {
-    const { walletNicknames } = this.state;
+    const { walletNicknames, walletColors } = this.state;
     const { classes } = this.props;
 
     if (wallets.length > 0) {
       let data;
-      return wallets.map((wallet) => (
+      return wallets.map((wallet, i) => (
         <div key={wallet + "_id"}>
           <Divider />
           <ListItem
@@ -751,6 +810,9 @@ class PortfolioBig extends Component {
             onClick={() => this.walletClicked(wallet)}
             className={classes.list}
           >
+            <ListItemIcon>
+              <FiberManualRecordIcon style={{ color: walletColors[i].color }} />
+            </ListItemIcon>
             <ListItemText
               primary={
                 <React.Fragment>
@@ -797,9 +859,6 @@ class PortfolioBig extends Component {
         </div>
       ));
     }
-    wallets.forEach((item, i) => {
-      console.log(item);
-    });
   };
 
   toggleAddWallet = () => {

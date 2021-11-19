@@ -335,10 +335,9 @@ class CryptoDetective extends Component {
     ];
     let walletColors = [];
     data.wallets.forEach((item, i) => {
-      if (i > colours.length - 1) {
-        i = 0;
-      }
-      walletColors.push(colours[i]);
+      var x = i;
+      x %= colours.length;
+      walletColors.push(colours[x]);
       wallets.push(item.wallet);
     });
     if (coinData.id) {

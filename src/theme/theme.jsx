@@ -13,6 +13,14 @@ const Acumin = {
   `,
 };
 
+export const colorsGuru = {
+  cgGreen: "#79d8a2",
+  cgOrange: "#f79d6b",
+  cgYellow: "#fcc98b",
+  cgBlue: "#9de2f9",
+  cgRed: "#ed867c",
+};
+
 export const colors = {
   cgBlack: "#000000",
   cgRed: "#ed867c",
