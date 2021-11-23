@@ -40,6 +40,7 @@ import {
   TableCell,
   TableRow,
   TableHead,
+  CircularProgress,
 } from "@material-ui/core";
 
 //IMPORT ICONS
@@ -60,7 +61,7 @@ import CompassCalibrationIcon from "@material-ui/icons/CompassCalibration";
 import GitHubIcon from "@material-ui/icons/GitHub";
 import ChatIcon from "@material-ui/icons/Chat";
 
-import { CircularProgress, Pie } from "../muiCustom";
+import { CircularProgressLabel, Pie } from "../muiCustom";
 import {
   COINLIST_RETURNED,
   COIN_DATA_RETURNED,
@@ -1443,7 +1444,7 @@ class CryptoDetective extends Component {
           )}
         </TableCell>
         <TableCell align="left">
-          <CircularProgress
+          <CircularProgressLabel
             percentage={row.portfolioShare}
             colour={walletColors[i]}
             size={50}

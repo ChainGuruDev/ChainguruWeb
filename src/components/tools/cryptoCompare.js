@@ -155,26 +155,6 @@ class CryptoCompare extends Component {
 
   vsCoinReturned = (vsCoin) => {
     this.setState({ vs: vsCoin });
-    // if (this.state.bigChart) {
-    //   dispatcher.dispatch({
-    //     type: GET_COIN_PRICECHART,
-    //     content: [
-    //       this.state.coinDataA.coinID,
-    //       "A",
-    //       this.state.timeFrame,
-    //       vsCoin,
-    //     ],
-    //   });
-    //   dispatcher.dispatch({
-    //     type: GET_COIN_PRICECHART,
-    //     content: [
-    //       this.state.coinDataB.coinID,
-    //       "B",
-    //       this.state.timeFrame,
-    //       vsCoin,
-    //     ],
-    //   });
-    // }
   };
 
   graphTimeframeChanged = (data) => {

@@ -47,7 +47,7 @@ const Text = ({ percentage }) => {
   );
 };
 
-const CircularProgress = ({ percentage, colour, size }) => {
+const CircularProgressLabel = ({ percentage, colour, size }) => {
   const pct = cleanPercentage(percentage);
 
   return (
@@ -80,6 +80,7 @@ function drawPie(data, size, colours) {
   }
   return data.map((item, i) => (
     <CirclePie
+      key={i}
       colors={setColour(i)}
       pct={item.portfolioShare}
       offset={offset[i]}
@@ -128,4 +129,4 @@ const Pie = ({ data, colors, size }) => {
   );
 };
 
-export { CircularProgress, Pie };
+export { CircularProgressLabel, Pie };

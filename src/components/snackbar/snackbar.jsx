@@ -110,21 +110,56 @@ class MySnackbar extends Component {
         icon = <ErrorIcon color={colors.cgRed} />;
         color = colors.red;
         messageType = t("Snackbar.Error");
+        actions = [
+          <IconButton key="close" aria-label="Close" onClick={this.handleClose}>
+            <CloseIcon />
+          </IconButton>,
+        ];
         break;
       case "Success":
         icon = <SuccessIcon color={colors.cgGreen} />;
         color = colors.cgGreen;
         messageType = t("Snackbar.Success");
+        actions = [
+          <IconButton key="close" aria-label="Close" onClick={this.handleClose}>
+            <CloseIcon />
+          </IconButton>,
+        ];
         break;
       case "Warning":
         icon = <WarningIcon color={colors.cgOrange} />;
         color = colors.orange;
         messageType = t("Snackbar.Warning");
+        actions = [
+          <IconButton key="close" aria-label="Close" onClick={this.handleClose}>
+            <CloseIcon />
+          </IconButton>,
+        ];
         break;
       case "Info":
         icon = <InfoIcon color={colors.cgBlue} />;
         color = colors.blue;
         messageType = t("Snackbar.Info");
+        actions = [
+          <IconButton key="close" aria-label="Close" onClick={this.handleClose}>
+            <CloseIcon />
+          </IconButton>,
+        ];
+        break;
+      case "coingecko":
+        icon = null;
+        color = colors.cgDarkGreen;
+        messageType = t("Snackbar.Success");
+        actions = [
+          <IconButton
+            color="primary"
+            key="close"
+            aria-label="Close"
+            onClick={this.handleClose}
+          >
+            <CloseIcon />
+          </IconButton>,
+        ];
         break;
       case "Hash":
         icon = <SuccessIcon color={colors.cgBlue} />;
@@ -159,7 +194,7 @@ class MySnackbar extends Component {
           horizontal: "left",
         }}
         open={this.state.open}
-        autoHideDuration={6000}
+        autoHideDuration={4000}
         onClose={this.handleClose}
         message={
           <div
@@ -177,18 +212,37 @@ class MySnackbar extends Component {
                 maxWidth: "400px",
               }}
             >
-              <Typography
-                variant="body1"
-                style={{ fontSize: "12px", color: color }}
-              >
-                {messageType}
-              </Typography>
-              <Typography
-                variant="body1"
-                style={{ fontSize: "10px", color: colors.lightBlack }}
-              >
-                {message}
-              </Typography>
+              {type === "coingecko" && (
+                <div style={{ display: "inline-flex", alignItems: "center" }}>
+                  <Typography
+                    variant="body1"
+                    style={{ fontSize: "14px", marginRight: 15, color: color }}
+                  >
+                    Powered by
+                  </Typography>
+                  <img
+                    style={{ maxHeight: 30 }}
+                    alt="coinGecko"
+                    src={"/coingecko.webp"}
+                  />
+                </div>
+              )}
+              {type !== "coingecko" && (
+                <>
+                  <Typography
+                    variant="body1"
+                    style={{ fontSize: "12px", color: color }}
+                  >
+                    {messageType}
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    style={{ fontSize: "10px", color: colors.lightBlack }}
+                  >
+                    {message}
+                  </Typography>
+                </>
+              )}
             </div>
           </div>
         }

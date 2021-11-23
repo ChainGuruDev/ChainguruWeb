@@ -11,13 +11,15 @@ import {
 } from "@material-ui/core";
 
 import DeleteIcon from "@material-ui/icons/Delete";
-import { formatMoney, formatMoneyMCAP } from "../helpers";
+import { formatMoney, formatMoneyMCAP, getVsSymbol } from "../helpers";
 
 import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
 import AlltimeChart from "../components/AlltimeChart";
 
 import {
+  SWITCH_VS_COIN,
+  SWITCH_VS_COIN_RETURNED,
   COINGECKO_GET_ALLTIME_CHART,
   COINGECKO_ALLTIME_CHART_RETURNED,
   DB_DEL_BLUECHIPS_GURU,
@@ -95,7 +97,10 @@ class BlueChipCard extends Component {
   constructor(props) {
     super();
 
+    const vs = store.getStore("vsCoin");
+
     this.state = {
+      vsCoin: vs,
       loadingChart: true,
       chartData: [],
       editMode: props.editMode,
@@ -108,7 +113,8 @@ class BlueChipCard extends Component {
     this._isMounted = true;
 
     emitter.on(COINGECKO_ALLTIME_CHART_RETURNED, this.geckoAlltimeChart);
-
+    emitter.on(SWITCH_VS_COIN, this.newVsCoin);
+    emitter.on(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
     this._isMounted &&
       dispatcher.dispatch({
         type: COINGECKO_GET_ALLTIME_CHART,
@@ -117,11 +123,12 @@ class BlueChipCard extends Component {
   }
 
   componentWillUnmount() {
+    emitter.removeListener(SWITCH_VS_COIN, this.newVsCoin);
     emitter.removeListener(
       COINGECKO_ALLTIME_CHART_RETURNED,
       this.geckoAlltimeChart
     );
-
+    emitter.removeListener(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
     this._isMounted = false;
   }
 
@@ -130,6 +137,22 @@ class BlueChipCard extends Component {
       this._isMounted && this.setState({ editMode: this.props.editMode });
     }
   }
+
+  newVsCoin = () => {
+    this.setState({ loadingChart: true });
+  };
+
+  vsCoinReturned = (data) => {
+    this._isMounted &&
+      dispatcher.dispatch({
+        type: COINGECKO_GET_ALLTIME_CHART,
+        payload: this.props.data.id,
+      });
+
+    this.setState({
+      vsCoin: data,
+    });
+  };
 
   geckoAlltimeChart = (data) => {
     if (data[1] === this.props.data.id) {
@@ -140,10 +163,6 @@ class BlueChipCard extends Component {
       }
       const filteredData = data[0].prices.filter((a) => a);
       this.setState({ chartData: filteredData, loadingChart: false });
-      emitter.removeListener(
-        COINGECKO_ALLTIME_CHART_RETURNED,
-        this.geckoAlltimeChart
-      );
     }
   };
 
@@ -167,7 +186,7 @@ class BlueChipCard extends Component {
 
   render() {
     const { classes, data } = this.props;
-    const { loadingChart, chartData, editMode } = this.state;
+    const { loadingChart, chartData, editMode, vsCoin } = this.state;
     const darkMode = store.getStore("theme") === "dark" ? true : false;
     let id = data.id;
     return (
@@ -248,7 +267,7 @@ class BlueChipCard extends Component {
                       variant="h3"
                       style={{ marginBottom: 10 }}
                     >
-                      {data.current_price}
+                      {data.current_price + " " + getVsSymbol(vsCoin)}
                     </Typography>
                     {parseInt(data.market_cap) > 0 && (
                       <Grid

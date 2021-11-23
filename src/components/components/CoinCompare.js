@@ -8,6 +8,7 @@ import PriceChart from "../components/Chart.js";
 import ArrowDropUpRoundedIcon from "@material-ui/icons/ArrowDropUpRounded";
 import ArrowDropDownRoundedIcon from "@material-ui/icons/ArrowDropDownRounded";
 import { colors } from "../../theme";
+import { getVsSymbol } from "../helpers";
 
 import {
   COIN_DATA_RETURNED,
@@ -544,8 +545,9 @@ class CoinCompare extends Component {
                   align="right"
                   variant="subtitle1"
                   component={"span"}
+                  style={{ fontSize: "1.5rem", marginLeft: 5 }}
                 >
-                  {vs}
+                  {getVsSymbol(vs)}
                 </Typography>
               </Grid>
               <Grid container alignItems="center" justify="center" item xs={12}>

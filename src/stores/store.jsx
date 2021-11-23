@@ -44,6 +44,7 @@ import {
   USER_EDITIONS_RETURNED,
   GET_ARTIST_EDITIONS_DETAILS,
   PING_COINGECKO,
+  PING_COINGECKO_RETURNED,
   COINGECKO_POPULATE_FAVLIST,
   COINGECKO_POPULATE_FAVLIST_RETURNED,
   COINGECKO_POPULATE_TXLIST,
@@ -1317,7 +1318,10 @@ class Store {
     if (!this.store.geckoOnline) {
       try {
         let data = await CoinGeckoClient.ping();
-        this.store.geckoOnline = true;
+        if (data.code === 200) {
+          this.store.geckoOnline = true;
+          return emitter.emit(PING_COINGECKO_RETURNED, data.data.gecko_says);
+        }
         //TODO DISPATCH GECKO PING OK >> SNACKBAR POWERED BY GECKO
       } catch (err) {
         this.store.geckoOnline = false;
@@ -1931,6 +1935,8 @@ ${nonce}`,
 
   db_getBluechips = async () => {
     // TODO UPDATE TO ONLINE DB https://chainguru-db.herokuapp.com/
+    const vs = store.getStore("vsCoin");
+
     let data = await axios.get(
       `https://chainguru-db-dev.herokuapp.com/bluechips/guru`
     );
@@ -1939,7 +1945,7 @@ ${nonce}`,
     try {
       let data = await CoinGeckoClient.coins.markets({
         ids: tokenIDs,
-        vs_currency: "usd",
+        vs_currency: vs,
         price_change_percentage: "1y",
       });
       emitter.emit(DB_GET_BLUECHIPS_RETURNED, await data.data);
@@ -1950,6 +1956,8 @@ ${nonce}`,
 
   db_getBluechipsUser = async () => {
     const from = store.getStore("account").address;
+    const vs = store.getStore("vsCoin");
+
     // TODO UPDATE TO ONLINE DB https://chainguru-db.herokuapp.com/
     let data = await axios.post(
       `https://chainguru-db-dev.herokuapp.com/bluechips/user/`,
@@ -1968,7 +1976,7 @@ ${nonce}`,
       if (tokenIDs.length > 0) {
         let data = await CoinGeckoClient.coins.markets({
           ids: tokenIDs,
-          vs_currency: "usd",
+          vs_currency: vs,
           price_change_percentage: "1y",
         });
         emitter.emit(DB_GET_BLUECHIPS_USER_RETURNED, await data.data);
@@ -2263,11 +2271,13 @@ ${nonce}`,
 
   coingeckoGetAllTimeChart = async (payload) => {
     let chartData = [];
+    const vsCoin = store.getStore("vsCoin");
     try {
       chartData = await CoinGeckoClient.coins.fetchMarketChart(
         payload.payload,
         {
           days: "max",
+          vs_currency: vsCoin,
         }
       );
       emitter.emit(COINGECKO_ALLTIME_CHART_RETURNED, [
@@ -2340,6 +2350,7 @@ ${nonce}`,
     let vsCoin = store.getStore("vsCoin");
     let wallets = data.payload.wallet;
     let assetData;
+    console.log(data);
     try {
       //IF multiple wallets check which ones have the asset
       if (data.payload.wallet.length > 1) {

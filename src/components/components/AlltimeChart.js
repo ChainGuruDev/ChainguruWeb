@@ -55,6 +55,19 @@ class AlltimeChart extends Component {
     };
   }
 
+  componentDidUpdate(prevProps) {
+    if (prevProps.data !== this.props.data) {
+      this.setState({
+        series: [
+          {
+            name: this.props.id,
+            data: this.props.data,
+          },
+        ],
+      });
+    }
+  }
+
   render() {
     const { classes } = this.props;
     return (

@@ -32,6 +32,7 @@ import { isMobile } from "react-device-detect";
 
 import {
   PING_COINGECKO,
+  PING_COINGECKO_RETURNED,
   COINLIST_RETURNED,
   DARKMODE_SWITCH_RETURN,
   COIN_DATA_RETURNED,
@@ -253,7 +254,8 @@ class Medium extends Component {
     emitter.on(COIN_DATA_RETURNED, this.coinDataReturned);
     emitter.on(DARKMODE_SWITCH_RETURN, this.darkModeSwitch);
     emitter.on(ERROR, this.errorReturned);
-
+    emitter.on(PING_COINGECKO_RETURNED, this.pingCoingeckoReturned);
+    new Image().src = "/coingecko.webp";
     dispatcher.dispatch({
       type: PING_COINGECKO,
       content: {},
@@ -265,6 +267,7 @@ class Medium extends Component {
     emitter.removeListener(COIN_DATA_RETURNED, this.coinDataReturned);
     emitter.removeListener(DARKMODE_SWITCH_RETURN, this.darkModeSwitch);
     emitter.removeListener(ERROR, this.errorReturned);
+    emitter.removeListener(PING_COINGECKO_RETURNED, this.pingCoingeckoReturned);
   }
 
   darkModeSwitch = (mode) => {
@@ -294,6 +297,19 @@ class Medium extends Component {
       const snackbarObj = {
         snackbarMessage: error.toString(),
         snackbarType: "Error",
+      };
+      that.setState(snackbarObj);
+    });
+  };
+
+  pingCoingeckoReturned = (geckoMsg) => {
+    const snackbarObj = { snackbarMessage: null, snackbarType: null };
+    this.setState(snackbarObj);
+    const that = this;
+    setTimeout(() => {
+      const snackbarObj = {
+        snackbarMessage: geckoMsg,
+        snackbarType: "coingecko",
       };
       that.setState(snackbarObj);
     });

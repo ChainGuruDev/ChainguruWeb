@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import { formatMoney, formatMoneyMCAP } from "../helpers";
+import { formatMoney, formatMoneyMCAP, getVsSymbol } from "../helpers";
 import SparklineChart from "../components/SparklineChart.js";
 import LastPageIcon from "@material-ui/icons/LastPage";
 
@@ -71,6 +71,7 @@ class CoinList extends Component {
     this._isMounted = false;
 
     const coinList = store.getStore("coinList");
+    const vs = store.getStore("vsCoin");
 
     let reqPercentage = "";
     let labelA = "";
@@ -116,6 +117,7 @@ class CoinList extends Component {
 
     this.state = {
       coins: coinList ? coinList.length : 0,
+      vsCoin: vs,
       geckoDataLoaded: false,
       sortBy: "market_cap",
       sortOrder: "desc",
@@ -168,9 +170,9 @@ class CoinList extends Component {
     });
   };
 
-  vsCoinReturned = () => {
+  vsCoinReturned = (vs) => {
     const { page, perPage, sortBy, sortOrder, reqPercentage } = this.state;
-
+    this.setState({ vsCoin: vs });
     this._isMounted &&
       dispatcher.dispatch({
         type: GECKO_GET_COINS,
@@ -324,7 +326,7 @@ class CoinList extends Component {
 
   sortedList = () => {
     const { classes } = this.props;
-    const { geckoData } = this.state;
+    const { geckoData, vsCoin } = this.state;
 
     if (geckoData.length > 0) {
       return geckoData.map((row) => (
@@ -345,7 +347,7 @@ class CoinList extends Component {
           </TableCell>
           <TableCell align="right">
             <Typography variant={"body1"}>
-              {formatMoney(row.current_price)}
+              {formatMoney(row.current_price) + " " + getVsSymbol(vsCoin)}
             </Typography>
           </TableCell>
           <TableCell align="right">

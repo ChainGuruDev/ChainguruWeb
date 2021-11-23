@@ -30,7 +30,6 @@ import PortfolioRadar from "../tools/portfolioRadar";
 import Dashboard from "../tools/dashboard.js";
 
 import {
-  PING_COINGECKO,
   COINLIST_RETURNED,
   COIN_DATA_RETURNED,
   DARKMODE_SWITCH_RETURN,
@@ -255,11 +254,6 @@ class PortfolioManagement extends Component {
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
     emitter.on(COIN_DATA_RETURNED, this.coinDataReturned);
     emitter.on(DARKMODE_SWITCH_RETURN, this.darkModeSwitch);
-
-    dispatcher.dispatch({
-      type: PING_COINGECKO,
-      content: {},
-    });
   }
 
   componentWillUnmount() {

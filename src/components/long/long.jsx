@@ -27,10 +27,16 @@ import SwapHorizIcon from "@material-ui/icons/SwapHoriz";
 
 import Snackbar from "../snackbar";
 
-import { ERROR, DARKMODE_SWITCH_RETURN } from "../../constants";
+import {
+  ERROR,
+  DARKMODE_SWITCH_RETURN,
+  PING_COINGECKO,
+  PING_COINGECKO_RETURNED,
+} from "../../constants";
 
 import Store from "../../stores";
 const emitter = Store.emitter;
+const dispatcher = Store.dispatcher;
 
 const Swap = React.lazy(() => import("../tools/swap.js"));
 const CoinList = React.lazy(() => import("../tools/coins"));
@@ -173,21 +179,47 @@ class Long extends Component {
 
     const theme = getMode();
 
-    this.state = { snackbarMessage: "", valueTab: newTab, darkMode: theme };
+    this.state = {
+      snackbarType: null,
+      snackbarMessage: null,
+      valueTab: newTab,
+      darkMode: theme,
+    };
   }
 
   componentDidMount() {
+    new Image().src = "/coingecko.webp";
+    emitter.on(PING_COINGECKO_RETURNED, this.pingCoingeckoReturned);
+
     emitter.on(ERROR, this.errorReturned);
     emitter.on(DARKMODE_SWITCH_RETURN, this.darkModeSwitch);
+    dispatcher.dispatch({
+      type: PING_COINGECKO,
+      content: {},
+    });
   }
 
   componentWillUnmount() {
     emitter.removeListener(ERROR, this.errorReturned);
+    emitter.removeListener(PING_COINGECKO_RETURNED, this.pingCoingeckoReturned);
     emitter.removeListener(DARKMODE_SWITCH_RETURN, this.darkModeSwitch);
   }
 
   darkModeSwitch = (mode) => {
     this.setState({ darkMode: mode });
+  };
+
+  pingCoingeckoReturned = (geckoMsg) => {
+    const snackbarObj = { snackbarMessage: null, snackbarType: null };
+    this.setState(snackbarObj);
+    const that = this;
+    setTimeout(() => {
+      const snackbarObj = {
+        snackbarMessage: geckoMsg,
+        snackbarType: "coingecko",
+      };
+      that.setState(snackbarObj);
+    });
   };
 
   errorReturned = (error) => {

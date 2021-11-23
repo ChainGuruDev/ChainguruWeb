@@ -50,6 +50,7 @@ import {
   DB_DEL_BLUECHIPS_RETURNED,
   GET_COIN_LIST,
   COINLIST_RETURNED,
+  SWITCH_VS_COIN_RETURNED,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -124,6 +125,7 @@ class BlueChips extends Component {
     emitter.on(DB_DEL_BLUECHIPS_RETURNED, this.db_addDelBluechipReturned);
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
     emitter.on(LOGIN_RETURNED, this.loginReturned);
+    emitter.on(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
     if (store.getStore("account").address && store.getStore("userAuth")) {
       dispatcher.dispatch({
         type: DB_GET_BLUECHIPS_USER,
@@ -168,7 +170,22 @@ class BlueChips extends Component {
     emitter.removeListener(LOGIN_RETURNED, this.loginReturned);
 
     emitter.removeListener(COINLIST_RETURNED, this.coinlistReturned);
+    emitter.removeListener(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
   }
+
+  vsCoinReturned = (payload) => {
+    if (store.getStore("account").address && store.getStore("userAuth")) {
+      dispatcher.dispatch({
+        type: DB_GET_BLUECHIPS_USER,
+      });
+      dispatcher.dispatch({
+        type: DB_BLUECHIPS_CHECK,
+      });
+    }
+    dispatcher.dispatch({
+      type: DB_GET_BLUECHIPS,
+    });
+  };
 
   coinlistReturned = (payload) => {
     // console.log(payload);
@@ -187,7 +204,6 @@ class BlueChips extends Component {
   };
 
   loginReturned(state) {
-    console.log(state);
     if (store.getStore("account").address && state) {
       dispatcher.dispatch({
         type: DB_GET_BLUECHIPS_USER,

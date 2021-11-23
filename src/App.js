@@ -609,5 +609,5 @@ class App extends Component {
     );
   }
 }
-//<Footer />
+
 export default App;

@@ -13,6 +13,7 @@ import {
   Card,
 } from "@material-ui/core";
 import { withTranslation } from "react-i18next";
+import Snackbar from "../snackbar";
 
 import LensIcon from "@material-ui/icons/Lens";
 import FlashOnIcon from "@material-ui/icons/FlashOn";
@@ -32,6 +33,7 @@ import { isMobile } from "react-device-detect";
 
 import {
   PING_COINGECKO,
+  PING_COINGECKO_RETURNED,
   COINLIST_RETURNED,
   COIN_DATA_RETURNED,
   DARKMODE_SWITCH_RETURN,
@@ -170,6 +172,8 @@ class Short extends Component {
       selectA: false,
       selectB: false,
       coinID: this.props.match.params.coinID,
+      snackbarType: null,
+      snackbarMessage: null,
     };
   }
 
@@ -260,16 +264,36 @@ class Short extends Component {
   }
 
   componentDidMount() {
+    new Image().src = "/coingecko.webp";
+    emitter.on(PING_COINGECKO_RETURNED, this.pingCoingeckoReturned);
     emitter.on(COINLIST_RETURNED, this.coinlistReturned);
     emitter.on(COIN_DATA_RETURNED, this.coinDataReturned);
     emitter.on(DARKMODE_SWITCH_RETURN, this.darkModeSwitch);
+    dispatcher.dispatch({
+      type: PING_COINGECKO,
+      content: {},
+    });
   }
 
   componentWillUnmount() {
+    emitter.removeListener(PING_COINGECKO_RETURNED, this.pingCoingeckoReturned);
     emitter.removeListener(COINLIST_RETURNED, this.coinlistReturned);
     emitter.removeListener(COIN_DATA_RETURNED, this.coinDataReturned);
     emitter.removeListener(DARKMODE_SWITCH_RETURN, this.darkModeSwitch);
   }
+
+  pingCoingeckoReturned = (geckoMsg) => {
+    const snackbarObj = { snackbarMessage: null, snackbarType: null };
+    this.setState(snackbarObj);
+    const that = this;
+    setTimeout(() => {
+      const snackbarObj = {
+        snackbarMessage: geckoMsg,
+        snackbarType: "coingecko",
+      };
+      that.setState(snackbarObj);
+    });
+  };
 
   darkModeSwitch = (mode) => {
     this.setState({ darkMode: mode });
@@ -292,9 +316,16 @@ class Short extends Component {
     this.setState({ bigChart: !this.state.bigChart });
   };
 
+  renderSnackbar = () => {
+    var { snackbarType, snackbarMessage } = this.state;
+    return (
+      <Snackbar type={snackbarType} message={snackbarMessage} open={true} />
+    );
+  };
+
   render() {
     const { classes } = this.props;
-    const { valueTab, coinID, darkMode } = this.state;
+    const { valueTab, coinID, darkMode, snackbarMessage } = this.state;
     const handleChangeTabs = (event, newValueTab) => {
       this.setState({ valueTab: newValueTab });
       let newScreen = this.toolID2tool(newValueTab);
@@ -421,6 +452,7 @@ class Short extends Component {
             </Suspense>
           </TabPanel>
         </div>
+        {snackbarMessage && this.renderSnackbar()}
       </div>
     );
   }

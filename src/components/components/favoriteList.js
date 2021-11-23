@@ -4,7 +4,7 @@ import { withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
 import SparklineChart from "./SparklineChart.js";
 
-import { formatMoney, formatMoneyMCAP } from "../helpers";
+import { formatMoney, formatMoneyMCAP, getVsSymbol } from "../helpers";
 
 import {
   Table,
@@ -42,6 +42,7 @@ import {
 } from "../../constants";
 
 import Store from "../../stores";
+const store = Store.store;
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
 
@@ -63,6 +64,7 @@ class FavoriteList extends Component {
   constructor(props) {
     super();
 
+    let vs = store.getStore("vsCoin");
     this.state = {
       coinData: [],
       loading: true,
@@ -75,6 +77,7 @@ class FavoriteList extends Component {
       rowsPerPage: 10,
       formatedRows: [],
       isDeleting: null,
+      vsCoin: vs,
     };
   }
 
@@ -221,6 +224,7 @@ class FavoriteList extends Component {
       page,
       formatedRows,
       isDeleting,
+      vsCoin,
     } = this.state;
 
     function dynamicSort(property) {
@@ -309,7 +313,9 @@ class FavoriteList extends Component {
             <Typography variant="subtitle1">{row.symbol}</Typography>
           </TableCell>
           <TableCell align="right">
-            <Typography variant={"h4"}>{row.current_price}</Typography>
+            <Typography variant={"h4"}>
+              {row.current_price + " " + getVsSymbol(vsCoin)}
+            </Typography>
           </TableCell>
           <TableCell align="right">
             <Typography
@@ -478,6 +484,7 @@ class FavoriteList extends Component {
       rowsPerPage,
       formatedRows,
       rowData,
+      vsCoin,
     } = this.state;
 
     const handleChangePage = (newPage) => {
