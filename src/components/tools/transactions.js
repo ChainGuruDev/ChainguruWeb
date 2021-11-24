@@ -75,6 +75,12 @@ const styles = (theme) => ({
     minHeight: "100%",
     justifyContent: "space-around",
   },
+  header: {
+    backgroundColor: "#0004",
+  },
+  customCell: {
+    backgroundColor: "inherit",
+  },
   walletGrid: {
     borderRadius: "10px",
     padding: "10px",
@@ -671,16 +677,17 @@ class Transactions extends Component {
         {account.address && dbDataLoaded && (
           <>
             <Grid item xs={9}>
-              <Paper className={classes.favCard} elevation={3}>
+              <Card className={classes.favCard} elevation={3}>
                 <TableContainer className={classes.container} size="small">
                   <Table
                     stickyHeader
                     className={classes.table}
                     aria-label="assetList"
                   >
-                    <TableHead>
+                    <TableHead className={classes.header}>
                       <TableRow>
                         <TableCell
+                          className={classes.customCell}
                           style={{ width: "30px", height: "30px" }}
                           align="center"
                           padding="none"
@@ -693,7 +700,11 @@ class Transactions extends Component {
                             Type
                           </TableSortLabel>
                         </TableCell>
-                        <TableCell align="center" padding="none">
+                        <TableCell
+                          className={classes.customCell}
+                          align="center"
+                          padding="none"
+                        >
                           <TableSortLabel
                             active={sortBy === "mined_at"}
                             direction={sortOrder}
@@ -702,7 +713,11 @@ class Transactions extends Component {
                             Date
                           </TableSortLabel>
                         </TableCell>
-                        <TableCell align="left" padding="none">
+                        <TableCell
+                          className={classes.customCell}
+                          align="left"
+                          padding="none"
+                        >
                           <TableSortLabel
                             active={sortBy === "contract_name"}
                             direction={sortOrder}
@@ -711,7 +726,7 @@ class Transactions extends Component {
                             Name
                           </TableSortLabel>
                         </TableCell>
-                        <TableCell align="right">
+                        <TableCell className={classes.customCell} align="right">
                           <TableSortLabel
                             active={sortBy === "amount"}
                             direction={sortOrder}
@@ -720,7 +735,7 @@ class Transactions extends Component {
                             Amount
                           </TableSortLabel>
                         </TableCell>
-                        <TableCell align="right">
+                        <TableCell className={classes.customCell} align="right">
                           <TableSortLabel
                             active={sortBy === "rate_at_tx"}
                             direction={sortOrder}
@@ -732,7 +747,7 @@ class Transactions extends Component {
                             </Grid>
                           </TableSortLabel>
                         </TableCell>
-                        <TableCell align="right">
+                        <TableCell className={classes.customCell} align="right">
                           <TableSortLabel
                             active={sortBy === "worth_at_tx"}
                             direction={sortOrder}
@@ -744,7 +759,7 @@ class Transactions extends Component {
                             </Grid>
                           </TableSortLabel>
                         </TableCell>
-                        <TableCell align="right">
+                        <TableCell className={classes.customCell} align="right">
                           <TableSortLabel
                             active={sortBy === "profit_percent"}
                             direction={sortOrder}
@@ -761,7 +776,7 @@ class Transactions extends Component {
                     <TableBody>{this.drawTransactions(transactions)}</TableBody>
                   </Table>
                 </TableContainer>
-              </Paper>
+              </Card>
             </Grid>
             <Grid item xs={3}>
               <Card className={classes.favCard} elevation={3}>
