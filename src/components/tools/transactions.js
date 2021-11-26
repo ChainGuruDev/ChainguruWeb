@@ -7,8 +7,11 @@ import {
   differenceInPercentage,
 } from "../helpers";
 
+import { colors } from "../../theme";
+
 import {
   Card,
+  Link,
   Paper,
   Typography,
   Grid,
@@ -59,6 +62,47 @@ import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 import BackspaceRoundedIcon from "@material-ui/icons/BackspaceRounded";
 import RefreshRoundedIcon from "@material-ui/icons/RefreshRounded";
 
+//send
+// receive Transform(rotateY(180deg))
+import ForwardRoundedIcon from "@material-ui/icons/ForwardRounded";
+import RoomIcon from "@material-ui/icons/Room";
+// trade
+import SyncAltRoundedIcon from "@material-ui/icons/SyncAltRounded";
+
+// authorize
+import LockOpenRoundedIcon from "@material-ui/icons/LockOpenRounded";
+
+// execution
+import InsertDriveFileRoundedIcon from "@material-ui/icons/InsertDriveFileRounded";
+
+// deployment
+import NoteAddRoundedIcon from "@material-ui/icons/NoteAddRounded";
+
+// cancel
+import CancelScheduleSendRoundedIcon from "@material-ui/icons/CancelScheduleSendRounded";
+
+// deposit
+import AssignmentReturnedRoundedIcon from "@material-ui/icons/AssignmentReturnedRounded";
+
+// withdraw
+import AssignmentReturnRoundedIcon from "@material-ui/icons/AssignmentReturnRounded";
+
+// borrow
+import AssignmentRoundedIcon from "@material-ui/icons/AssignmentRounded";
+
+// repay
+import AssignmentTurnedInRoundedIcon from "@material-ui/icons/AssignmentTurnedInRounded";
+
+// stake
+import ArchiveRoundedIcon from "@material-ui/icons/ArchiveRounded";
+
+// unstake
+import UnarchiveRoundedIcon from "@material-ui/icons/UnarchiveRounded";
+
+// claim
+import SystemUpdateAltRoundedIcon from "@material-ui/icons/SystemUpdateAltRounded";
+
+import ExitToAppIcon from "@material-ui/icons/ExitToApp";
 import KeyboardArrowRightRoundedIcon from "@material-ui/icons/KeyboardArrowRightRounded";
 import KeyboardArrowLeftRoundedIcon from "@material-ui/icons/KeyboardArrowLeftRounded";
 
@@ -75,12 +119,7 @@ const styles = (theme) => ({
     minHeight: "100%",
     justifyContent: "space-around",
   },
-  header: {
-    backgroundColor: "#0004",
-  },
-  customCell: {
-    backgroundColor: "inherit",
-  },
+
   walletGrid: {
     borderRadius: "10px",
     padding: "10px",
@@ -100,10 +139,21 @@ const styles = (theme) => ({
   tokenLogo: {
     maxHeight: 30,
     minWidth: 30,
-    marginTop: 3,
+    margin: "0 5px",
   },
   container: {
     maxHeight: 500,
+  },
+  subtitle: {
+    opacity: 0.8,
+  },
+  dateGrid: {
+    minWidth: "160px",
+    textAlign: "center",
+  },
+  fromToSpenderGrid: {
+    margin: "0px 5px 0px 5px",
+    minWidth: 175,
   },
 });
 
@@ -217,7 +267,7 @@ class Transactions extends Component {
     }
     this.setState({
       loading: true,
-      selectedWallet: wallets[0],
+      selectedWallet: "all",
       userWallets: data.wallets,
       walletNicknames: data.walletNicknames,
     });
@@ -354,11 +404,24 @@ class Transactions extends Component {
   };
 
   walletClicked = (wallet) => {
-    this._isMounted &&
-      dispatcher.dispatch({
-        type: DB_GET_ADDRESS_TX,
-        wallet: [wallet],
+    if (wallet === "all") {
+      let wallets = [];
+      this.state.userWallets.forEach((item, i) => {
+        wallets.push(item.wallet);
       });
+
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: DB_GET_ADDRESS_TX,
+          wallet: this.state.userWallets,
+        });
+    } else {
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: DB_GET_ADDRESS_TX,
+          wallet: [wallet],
+        });
+    }
     this.setState({ selectedWallet: wallet, dbDataLoaded: false });
   };
 
@@ -472,36 +535,87 @@ class Transactions extends Component {
 
     if (sortedTXs.length > 0) {
       return sortedTXs.map((tx) => (
-        <TableRow
-          hover={true}
-          key={tx.id}
-          style={{ cursor: "pointer" }}
-          onClick={() =>
-            this.nav("/short/detective/" + tx.changes[0].asset.asset_code)
-          }
-        >
-          {(tx.type === "send" || tx.type === "receive") &&
-            tx.changes[0].asset.price && (
+        <>
+          <Grid
+            item
+            container
+            direction="row"
+            justify="flex-start"
+            alignItems="center"
+            key={tx.id}
+          >
+            {tx.type === "send" && (
               <>
-                <TableCell>
-                  {tx.direction === "in" && (
-                    <IconButton color="primary">
-                      <KeyboardArrowRightRoundedIcon />
-                    </IconButton>
-                  )}
-                  {tx.direction === "out" && (
-                    <IconButton color="secondary">
-                      <KeyboardArrowLeftRoundedIcon />
-                    </IconButton>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <Typography>
-                    {new Date(tx.mined_at * 1000).toLocaleDateString("en-US")}
+                <Grid item className={classes.dateGrid}>
+                  <Typography variant={"body2"} className={classes.subtitle}>
+                    {new Date(tx.mined_at * 1000).toLocaleString()}
                   </Typography>
-                </TableCell>
-                <TableCell padding="none" align="left">
-                  <Grid container direction={"row"} justify={"center"}>
+                </Grid>
+                <Divider orientation="vertical" />
+                <Grid
+                  key={tx.hash}
+                  item
+                  container
+                  direction="column"
+                  style={{
+                    alignItems: "center",
+                    maxWidth: "100px",
+                  }}
+                >
+                  <Typography variant={"body2"} className={classes.subtitle}>
+                    {tx.type}
+                  </Typography>
+                  <ForwardRoundedIcon style={{ color: colors.cgRed }} />
+                </Grid>
+
+                <Divider orientation="vertical" />
+                <Grid item className={classes.fromToSpenderGrid} align="left">
+                  <Grid
+                    container
+                    direction={"row"}
+                    justify={"center"}
+                    align="right"
+                    style={{ alignItems: "center" }}
+                  >
+                    <RoomIcon />
+                    <Grid
+                      item
+                      style={{ marginLeft: "10px", textAlign: "left" }}
+                    >
+                      <Typography
+                        variant={"body2"}
+                        className={classes.subtitle}
+                      >
+                        To:
+                      </Typography>
+                      <Typography variant={"h4"}>
+                        {tx.changes[0].address_to.substring(0, 6) +
+                          "..." +
+                          tx.changes[0].address_to.substring(
+                            tx.changes[0].address_to.length - 4,
+                            tx.changes[0].address_to.length
+                          )}
+                      </Typography>
+                    </Grid>
+                    <Link
+                      target="_blank"
+                      href={`https://etherscan.io/address/${tx.changes[0].address_to}`}
+                    >
+                      <IconButton size="small">
+                        <ExitToAppIcon fontSize="small" />
+                      </IconButton>
+                    </Link>
+                  </Grid>
+                </Grid>
+                <Divider orientation="vertical" />
+                <Grid item style={{ margin: "0px auto 0px 5px" }} align="left">
+                  <Grid
+                    container
+                    direction={"row"}
+                    justify={"center"}
+                    align="right"
+                    style={{ alignItems: "center" }}
+                  >
                     <img
                       onError={(e) => {
                         e.target.style.display = "none";
@@ -510,112 +624,1093 @@ class Transactions extends Component {
                       alt=""
                       src={tx.changes[0].asset.icon_url}
                     />
-                    <Typography style={{ marginLeft: 10 }} variant={"h4"}>
-                      {tx.changes[0].asset.name}
-                    </Typography>
+                    <Grid
+                      item
+                      style={{ marginLeft: "10px", textAlign: "left" }}
+                    >
+                      <Typography>
+                        -{" "}
+                        {formatMoney(
+                          formatBigNumbers(
+                            tx.changes[0].value,
+                            tx.changes[0].asset.decimals
+                          )
+                        )}
+                      </Typography>
+                      <Typography
+                        variant={"body2"}
+                        className={classes.subtitle}
+                      >
+                        {tx.changes[0].asset.name}
+                      </Typography>
+                    </Grid>
                   </Grid>
-                </TableCell>
-                <TableCell align={"right"}>
-                  <Typography>
-                    {formatMoney(
-                      formatBigNumbers(
-                        tx.changes[0].value,
-                        tx.changes[0].asset.decimals
-                      )
-                    )}
-                  </Typography>
-                </TableCell>
-                <TableCell align={"right"}>
-                  <Typography
-                    color={
-                      tx.changes[0].price > tx.changes[0].asset.price.value
-                        ? "primary"
-                        : "secondary"
-                    }
-                  >
-                    $ {formatMoney(tx.changes[0].price)}
-                  </Typography>
-                  <Typography
-                    color={
-                      tx.changes[0].price > tx.changes[0].asset.price.value
-                        ? "primary"
-                        : "secondary"
-                    }
-                  >
-                    ($ {formatMoney(tx.changes[0].asset.price.value)})
-                  </Typography>
-                </TableCell>
-                <TableCell align={"right"}>
-                  <Typography
-                    color={
-                      tx.changes[0].price > tx.changes[0].asset.price.value
-                        ? "primary"
-                        : "secondary"
-                    }
-                  >
-                    ${" "}
-                    {formatMoney(
-                      formatBigNumbers(
-                        tx.changes[0].value,
-                        tx.changes[0].asset.decimals
-                      ) * tx.changes[0].price
-                    )}
-                  </Typography>
-                  <Typography
-                    color={
-                      tx.changes[0].price > tx.changes[0].asset.price.value
-                        ? "primary"
-                        : "secondary"
-                    }
-                  >
-                    (${" "}
-                    {formatMoney(
-                      formatBigNumbers(
-                        tx.changes[0].value,
-                        tx.changes[0].asset.decimals
-                      ) * tx.changes[0].asset.price.value
-                    )}
-                    )
-                  </Typography>
-                </TableCell>
-                <TableCell align={"right"}>
-                  <Typography
-                    color={
-                      tx.changes[0].price > tx.changes[0].asset.price.value
-                        ? "primary"
-                        : "secondary"
-                    }
-                  >
-                    {differenceInPercentage(
-                      tx.changes[0].asset.price.value,
-                      tx.changes[0].price
-                    )}{" "}
-                    %
-                  </Typography>
-                  <Typography
-                    color={
-                      tx.changes[0].price > tx.changes[0].asset.price.value
-                        ? "primary"
-                        : "secondary"
-                    }
-                  >
-                    {(
-                      tx.changes[0].price *
-                        formatBigNumbers(
-                          tx.changes[0].value,
-                          tx.changes[0].asset.decimals
-                        ) -
-                      tx.changes[0].asset.price.value *
-                        formatBigNumbers(
-                          tx.changes[0].value,
-                          tx.changes[0].asset.decimals
-                        )
-                    ).toFixed(2)}
-                  </Typography>
-                </TableCell>
+                </Grid>
               </>
             )}
-        </TableRow>
+            {tx.type === "receive" && (
+              <>
+                <Grid item className={classes.dateGrid}>
+                  <Typography variant={"body2"} className={classes.subtitle}>
+                    {new Date(tx.mined_at * 1000).toLocaleString()}
+                  </Typography>
+                </Grid>
+                <Divider orientation="vertical" />
+                <Grid
+                  key={tx.hash}
+                  item
+                  container
+                  direction="column"
+                  style={{
+                    alignItems: "center",
+                    maxWidth: "100px",
+                  }}
+                >
+                  <Typography variant={"body2"} className={classes.subtitle}>
+                    {tx.type}
+                  </Typography>
+                  <ForwardRoundedIcon
+                    style={{
+                      color: colors.cgGreen,
+                      transform: "rotateY(180deg)",
+                    }}
+                  />
+                </Grid>
+                <Divider orientation="vertical" />
+                <Grid item className={classes.fromToSpenderGrid} align="left">
+                  <Grid
+                    container
+                    direction={"row"}
+                    justify={"center"}
+                    align="right"
+                    style={{ alignItems: "center" }}
+                  >
+                    <RoomIcon />
+                    <Grid
+                      item
+                      style={{ marginLeft: "10px", textAlign: "left" }}
+                    >
+                      <Typography
+                        variant={"body2"}
+                        className={classes.subtitle}
+                      >
+                        From:
+                      </Typography>
+                      <Typography variant={"h4"}>
+                        {tx.changes[0].address_from.substring(0, 6) +
+                          "..." +
+                          tx.changes[0].address_from.substring(
+                            tx.changes[0].address_from.length - 4,
+                            tx.changes[0].address_from.length
+                          )}
+                      </Typography>
+                    </Grid>
+                    <Link
+                      target="_blank"
+                      href={`https://etherscan.io/address/${tx.changes[0].address_from}`}
+                    >
+                      <IconButton size="small">
+                        <ExitToAppIcon fontSize="small" />
+                      </IconButton>
+                    </Link>
+                  </Grid>
+                </Grid>
+                <Divider orientation="vertical" />
+                <Grid item style={{ margin: "0px auto 0px 5px" }} align="left">
+                  <Grid
+                    container
+                    direction={"row"}
+                    justify={"center"}
+                    align="right"
+                    style={{ alignItems: "center" }}
+                  >
+                    <img
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                      }}
+                      className={classes.tokenLogo}
+                      alt=""
+                      src={tx.changes[0].asset.icon_url}
+                    />
+                    <Grid
+                      item
+                      style={{ marginLeft: "10px", textAlign: "left" }}
+                    >
+                      <Typography>
+                        {formatMoney(
+                          formatBigNumbers(
+                            tx.changes[0].value,
+                            tx.changes[0].asset.decimals
+                          )
+                        )}
+                      </Typography>
+                      <Typography
+                        variant={"body2"}
+                        className={classes.subtitle}
+                      >
+                        {tx.changes[0].asset.name}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </Grid>
+              </>
+            )}
+            {tx.type === "trade" &&
+              tx.changes[1].asset.price &&
+              tx.changes[0].asset.price && (
+                <>
+                  <Grid item className={classes.dateGrid}>
+                    <Typography variant={"body2"} className={classes.subtitle}>
+                      {new Date(tx.mined_at * 1000).toLocaleString()}
+                    </Typography>
+                  </Grid>
+                  <Divider orientation="vertical" />
+                  <Grid
+                    key={tx.hash}
+                    item
+                    container
+                    direction="column"
+                    style={{
+                      alignItems: "center",
+                      maxWidth: "100px",
+                    }}
+                  >
+                    <Typography variant={"body2"} className={classes.subtitle}>
+                      {tx.type}
+                    </Typography>
+                    <SyncAltRoundedIcon
+                      style={{
+                        color: colors.cgGreen,
+                      }}
+                    />
+                  </Grid>
+                  <Divider orientation="vertical" />
+                  {
+                    // tx.changes[1] is in token
+                  }
+                  {tx.changes[0].direction === "out" && (
+                    <>
+                      <Grid
+                        item
+                        style={{ margin: "0px 5px 0px 5px" }}
+                        align="left"
+                      >
+                        <Grid
+                          container
+                          direction={"row"}
+                          justify={"center"}
+                          align="right"
+                          style={{ alignItems: "center" }}
+                        >
+                          <img
+                            onError={(e) => {
+                              e.target.style.display = "none";
+                            }}
+                            className={classes.tokenLogo}
+                            alt=""
+                            src={tx.changes[0].asset.icon_url}
+                          />
+                          <Grid
+                            item
+                            style={{ marginLeft: "10px", textAlign: "left" }}
+                          >
+                            <Typography>
+                              {"-"}
+                              {formatMoney(
+                                formatBigNumbers(
+                                  tx.changes[0].value,
+                                  tx.changes[0].asset.decimals
+                                )
+                              )}
+                            </Typography>
+                            <Typography
+                              variant={"body2"}
+                              className={classes.subtitle}
+                            >
+                              {tx.changes[0].asset.name}
+                            </Typography>
+                          </Grid>
+                        </Grid>
+                      </Grid>
+                      <KeyboardArrowRightRoundedIcon />
+                      <Grid
+                        item
+                        style={{ margin: "0px auto 0px 5px" }}
+                        align="left"
+                      >
+                        <Grid
+                          container
+                          direction={"row"}
+                          justify={"center"}
+                          align="right"
+                          style={{ alignItems: "center" }}
+                        >
+                          <img
+                            onError={(e) => {
+                              e.target.style.display = "none";
+                            }}
+                            className={classes.tokenLogo}
+                            alt=""
+                            src={tx.changes[1].asset.icon_url}
+                          />
+                          <Grid
+                            item
+                            style={{ marginLeft: "10px", textAlign: "left" }}
+                          >
+                            <Typography>
+                              {formatMoney(
+                                formatBigNumbers(
+                                  tx.changes[1].value,
+                                  tx.changes[1].asset.decimals
+                                )
+                              )}
+                            </Typography>
+                            <Typography
+                              variant={"body2"}
+                              className={classes.subtitle}
+                            >
+                              {tx.changes[1].asset.name}
+                            </Typography>
+                          </Grid>
+                        </Grid>
+                      </Grid>
+                      <Grid item align={"right"} style={{ margin: "0 5px" }}>
+                        <Typography
+                          variant={"subtitle1"}
+                          className={classes.subtitle}
+                        >
+                          Price at tx
+                        </Typography>
+                        <Typography
+                          color={
+                            tx.changes[1].price <
+                            tx.changes[1].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          {tx.changes[1].asset.symbol} ${" "}
+                          {formatMoney(tx.changes[1].price)}
+                        </Typography>
+                        <Typography
+                          color={
+                            tx.changes[0].price >
+                            tx.changes[0].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          {tx.changes[0].asset.symbol} ${" "}
+                          {formatMoney(tx.changes[0].price)}
+                        </Typography>
+                      </Grid>
+                      <Grid item align={"right"} style={{ margin: "0 5px" }}>
+                        <Typography
+                          variant={"subtitle1"}
+                          className={classes.subtitle}
+                        >
+                          Price now
+                        </Typography>
+                        <Typography
+                          color={
+                            tx.changes[1].price <
+                            tx.changes[1].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          $ {formatMoney(tx.changes[1].asset.price.value)}
+                        </Typography>
+                        <Typography
+                          color={
+                            tx.changes[0].price >
+                            tx.changes[0].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          $ {formatMoney(tx.changes[0].asset.price.value)}
+                        </Typography>
+                      </Grid>
+                      <Grid item align={"right"} style={{ margin: "0 5px" }}>
+                        <Typography
+                          variant={"subtitle1"}
+                          className={classes.subtitle}
+                        >
+                          Value at tx
+                        </Typography>
+                        <Typography
+                          color={
+                            tx.changes[1].price <
+                            tx.changes[1].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          ${" "}
+                          {formatMoney(
+                            formatBigNumbers(
+                              tx.changes[1].value,
+                              tx.changes[1].asset.decimals
+                            ) * tx.changes[1].price
+                          )}
+                        </Typography>
+                        <Typography
+                          color={
+                            tx.changes[0].price >
+                            tx.changes[0].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          ${" "}
+                          {formatMoney(
+                            formatBigNumbers(
+                              tx.changes[0].value,
+                              tx.changes[0].asset.decimals
+                            ) * tx.changes[0].price
+                          )}
+                        </Typography>
+                      </Grid>
+                      <Grid item align={"right"} style={{ margin: "0 5px" }}>
+                        <Typography
+                          variant={"subtitle1"}
+                          className={classes.subtitle}
+                        >
+                          Value now
+                        </Typography>
+                        <Typography
+                          color={
+                            tx.changes[1].price <
+                            tx.changes[1].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          ${" "}
+                          {formatMoney(
+                            formatBigNumbers(
+                              tx.changes[1].value,
+                              tx.changes[1].asset.decimals
+                            ) * tx.changes[1].asset.price.value
+                          )}
+                        </Typography>
+                        <Typography
+                          color={
+                            tx.changes[0].price >
+                            tx.changes[0].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          ${" "}
+                          {formatMoney(
+                            formatBigNumbers(
+                              tx.changes[0].value,
+                              tx.changes[0].asset.decimals
+                            ) * tx.changes[0].asset.price.value
+                          )}
+                        </Typography>
+                      </Grid>
+                      <Grid item align={"right"} style={{ margin: "0 5px" }}>
+                        <Typography
+                          variant={"subtitle1"}
+                          className={classes.subtitle}
+                        >
+                          % P/L
+                        </Typography>
+
+                        <Typography
+                          color={
+                            tx.changes[1].price <
+                            tx.changes[1].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          {differenceInPercentage(
+                            tx.changes[1].price,
+                            tx.changes[1].asset.price.value
+                          )}{" "}
+                          %
+                        </Typography>
+                        <Typography
+                          color={
+                            tx.changes[1].price <
+                            tx.changes[1].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          {differenceInPercentage(
+                            tx.changes[0].asset.price.value,
+                            tx.changes[0].price
+                          )}{" "}
+                          %{" "}
+                        </Typography>
+                      </Grid>
+                      <Grid item align={"right"} style={{ margin: "0 5px" }}>
+                        <Typography
+                          variant={"subtitle1"}
+                          className={classes.subtitle}
+                        >
+                          $ P/L
+                        </Typography>
+                        <Typography
+                          color={
+                            tx.changes[1].price <
+                            tx.changes[1].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          ${" "}
+                          {(
+                            tx.changes[1].asset.price.value *
+                              formatBigNumbers(
+                                tx.changes[1].value,
+                                tx.changes[1].asset.decimals
+                              ) -
+                            tx.changes[1].price *
+                              formatBigNumbers(
+                                tx.changes[1].value,
+                                tx.changes[1].asset.decimals
+                              )
+                          ).toFixed(2)}
+                        </Typography>
+                        <Typography
+                          color={
+                            tx.changes[1].price <
+                            tx.changes[1].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          ${" "}
+                          {(
+                            tx.changes[0].price *
+                              formatBigNumbers(
+                                tx.changes[0].value,
+                                tx.changes[0].asset.decimals
+                              ) -
+                            tx.changes[0].asset.price.value *
+                              formatBigNumbers(
+                                tx.changes[0].value,
+                                tx.changes[0].asset.decimals
+                              )
+                          ).toFixed(2)}
+                        </Typography>
+                      </Grid>
+                      <Grid item align={"right"} style={{ margin: "0 5px" }}>
+                        <Typography
+                          variant={"subtitle1"}
+                          className={classes.subtitle}
+                          color={"secondary"}
+                        >
+                          Fees
+                        </Typography>
+                        <Typography color={"secondary"}>
+                          ${" "}
+                          {(
+                            formatMoney(formatBigNumbers(tx.fee.value, 18)) *
+                            tx.fee.price
+                          ).toFixed(2)}
+                        </Typography>
+                      </Grid>
+                      <Grid
+                        item
+                        align={"right"}
+                        style={{ margin: "0 0 0 5px" }}
+                      >
+                        <Typography
+                          variant={"subtitle1"}
+                          className={classes.subtitle}
+                          color={
+                            tx.changes[1].price <
+                            tx.changes[1].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          Total P/L
+                        </Typography>
+                        <Typography
+                          color={
+                            tx.changes[1].price <
+                            tx.changes[1].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          ${" "}
+                          {(
+                            tx.changes[1].asset.price.value *
+                              formatBigNumbers(
+                                tx.changes[1].value,
+                                tx.changes[1].asset.decimals
+                              ) -
+                            tx.changes[1].price *
+                              formatBigNumbers(
+                                tx.changes[1].value,
+                                tx.changes[1].asset.decimals
+                              ) +
+                            tx.changes[0].price *
+                              formatBigNumbers(
+                                tx.changes[0].value,
+                                tx.changes[0].asset.decimals
+                              ) -
+                            tx.changes[0].asset.price.value *
+                              formatBigNumbers(
+                                tx.changes[0].value,
+                                tx.changes[0].asset.decimals
+                              ) -
+                            formatMoney(formatBigNumbers(tx.fee.value, 18)) *
+                              tx.fee.price
+                          ).toFixed(2)}
+                        </Typography>
+                      </Grid>
+                    </>
+                  )}
+                  {tx.changes[0].direction === "in" && (
+                    <>
+                      <Grid
+                        item
+                        style={{ margin: "0px 5px 0px 5px" }}
+                        align="left"
+                      >
+                        <Grid
+                          container
+                          direction={"row"}
+                          justify={"center"}
+                          align="right"
+                          style={{ alignItems: "center" }}
+                        >
+                          <img
+                            onError={(e) => {
+                              e.target.style.display = "none";
+                            }}
+                            className={classes.tokenLogo}
+                            alt=""
+                            src={tx.changes[1].asset.icon_url}
+                          />
+                          <Grid
+                            item
+                            style={{ marginLeft: "10px", textAlign: "left" }}
+                          >
+                            <Typography>
+                              {"- " +
+                                formatMoney(
+                                  formatBigNumbers(
+                                    tx.changes[1].value,
+                                    tx.changes[1].asset.decimals
+                                  )
+                                )}
+                            </Typography>
+                            <Typography
+                              variant={"body2"}
+                              className={classes.subtitle}
+                            >
+                              {tx.changes[1].asset.name}
+                            </Typography>
+                          </Grid>
+                        </Grid>
+                      </Grid>
+                      <KeyboardArrowRightRoundedIcon
+                        style={{ color: colors.cgGreen }}
+                      />
+                      <Grid
+                        item
+                        style={{ margin: "0px auto 0px 5px" }}
+                        align="left"
+                      >
+                        <Grid
+                          container
+                          direction={"row"}
+                          justify={"center"}
+                          align="right"
+                          style={{ alignItems: "center" }}
+                        >
+                          <img
+                            onError={(e) => {
+                              e.target.style.display = "none";
+                            }}
+                            className={classes.tokenLogo}
+                            alt=""
+                            src={tx.changes[0].asset.icon_url}
+                          />
+                          <Grid
+                            item
+                            style={{ marginLeft: "10px", textAlign: "left" }}
+                          >
+                            <Typography>
+                              {formatMoney(
+                                formatBigNumbers(
+                                  tx.changes[0].value,
+                                  tx.changes[0].asset.decimals
+                                )
+                              )}
+                            </Typography>
+                            <Typography
+                              variant={"body2"}
+                              className={classes.subtitle}
+                            >
+                              {tx.changes[0].asset.name}
+                            </Typography>
+                          </Grid>
+                        </Grid>
+                      </Grid>
+                      <Grid item align={"right"} style={{ margin: "0 5px" }}>
+                        <Typography
+                          variant={"subtitle1"}
+                          className={classes.subtitle}
+                        >
+                          Price at tx
+                        </Typography>
+                        <Typography
+                          color={
+                            tx.changes[0].price <
+                            tx.changes[0].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          {tx.changes[0].asset.symbol} ${" "}
+                          {formatMoney(tx.changes[0].price)}
+                        </Typography>
+                        <Typography
+                          color={
+                            tx.changes[1].price >
+                            tx.changes[1].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          {tx.changes[1].asset.symbol} ${" "}
+                          {formatMoney(tx.changes[1].price)}
+                        </Typography>
+                      </Grid>
+                      <Grid item align={"right"} style={{ margin: "0 5px" }}>
+                        <Typography
+                          variant={"subtitle1"}
+                          className={classes.subtitle}
+                        >
+                          Price now
+                        </Typography>
+                        <Typography
+                          color={
+                            tx.changes[0].price <
+                            tx.changes[0].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          $ {formatMoney(tx.changes[0].asset.price.value)}
+                        </Typography>
+                        <Typography
+                          color={
+                            tx.changes[1].price >
+                            tx.changes[1].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          $ {formatMoney(tx.changes[1].asset.price.value)}
+                        </Typography>
+                      </Grid>
+                      <Grid item align={"right"} style={{ margin: "0 5px" }}>
+                        <Typography
+                          variant={"subtitle1"}
+                          className={classes.subtitle}
+                        >
+                          Value at tx
+                        </Typography>
+                        <Typography
+                          color={
+                            tx.changes[0].price <
+                            tx.changes[0].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          ${" "}
+                          {formatMoney(
+                            formatBigNumbers(
+                              tx.changes[0].value,
+                              tx.changes[0].asset.decimals
+                            ) * tx.changes[0].price
+                          )}
+                        </Typography>
+                        <Typography
+                          color={
+                            tx.changes[1].price >
+                            tx.changes[1].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          ${" "}
+                          {formatMoney(
+                            formatBigNumbers(
+                              tx.changes[1].value,
+                              tx.changes[1].asset.decimals
+                            ) * tx.changes[1].price
+                          )}
+                        </Typography>
+                      </Grid>
+                      <Grid item align={"right"} style={{ margin: "0 5px" }}>
+                        <Typography
+                          variant={"subtitle1"}
+                          className={classes.subtitle}
+                        >
+                          Value now
+                        </Typography>
+                        <Typography
+                          color={
+                            tx.changes[0].price <
+                            tx.changes[0].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          ${" "}
+                          {formatMoney(
+                            formatBigNumbers(
+                              tx.changes[0].value,
+                              tx.changes[0].asset.decimals
+                            ) * tx.changes[0].asset.price.value
+                          )}
+                        </Typography>
+                        <Typography
+                          color={
+                            tx.changes[1].price >
+                            tx.changes[1].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          ${" "}
+                          {formatMoney(
+                            formatBigNumbers(
+                              tx.changes[1].value,
+                              tx.changes[1].asset.decimals
+                            ) * tx.changes[1].asset.price.value
+                          )}
+                        </Typography>
+                      </Grid>
+                      <Grid item align={"right"} style={{ margin: "0 5px" }}>
+                        <Typography
+                          variant={"subtitle1"}
+                          className={classes.subtitle}
+                        >
+                          % P/L
+                        </Typography>
+
+                        <Typography
+                          color={
+                            tx.changes[0].price <
+                            tx.changes[0].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          {differenceInPercentage(
+                            tx.changes[0].price,
+                            tx.changes[0].asset.price.value
+                          )}{" "}
+                          %
+                        </Typography>
+                        <Typography
+                          color={
+                            tx.changes[0].price <
+                            tx.changes[0].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          {differenceInPercentage(
+                            tx.changes[1].asset.price.value,
+                            tx.changes[1].price
+                          )}{" "}
+                          %{" "}
+                        </Typography>
+                      </Grid>
+                      <Grid item align={"right"} style={{ margin: "0 5px" }}>
+                        <Typography
+                          variant={"subtitle1"}
+                          className={classes.subtitle}
+                        >
+                          $ P/L
+                        </Typography>
+                        <Typography
+                          color={
+                            tx.changes[0].price <
+                            tx.changes[0].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          ${" "}
+                          {(
+                            tx.changes[0].asset.price.value *
+                              formatBigNumbers(
+                                tx.changes[0].value,
+                                tx.changes[0].asset.decimals
+                              ) -
+                            tx.changes[0].price *
+                              formatBigNumbers(
+                                tx.changes[0].value,
+                                tx.changes[0].asset.decimals
+                              )
+                          ).toFixed(2)}
+                        </Typography>
+                        <Typography
+                          color={
+                            tx.changes[0].price <
+                            tx.changes[0].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          ${" "}
+                          {(
+                            tx.changes[1].price *
+                              formatBigNumbers(
+                                tx.changes[1].value,
+                                tx.changes[1].asset.decimals
+                              ) -
+                            tx.changes[1].asset.price.value *
+                              formatBigNumbers(
+                                tx.changes[1].value,
+                                tx.changes[1].asset.decimals
+                              )
+                          ).toFixed(2)}
+                        </Typography>
+                      </Grid>
+                      <Grid item align={"right"} style={{ margin: "0 5px" }}>
+                        <Typography
+                          variant={"subtitle1"}
+                          className={classes.subtitle}
+                          color={"secondary"}
+                        >
+                          Fees
+                        </Typography>
+                        <Typography color={"secondary"}>
+                          ${" "}
+                          {(
+                            formatMoney(formatBigNumbers(tx.fee.value, 18)) *
+                            tx.fee.price
+                          ).toFixed(2)}
+                        </Typography>
+                      </Grid>
+                      <Grid
+                        item
+                        align={"right"}
+                        style={{ margin: "0 0 0 5px" }}
+                      >
+                        <Typography
+                          variant={"subtitle1"}
+                          className={classes.subtitle}
+                          color={
+                            (
+                              tx.changes[0].asset.price.value *
+                                formatBigNumbers(
+                                  tx.changes[0].value,
+                                  tx.changes[0].asset.decimals
+                                ) -
+                              tx.changes[0].price *
+                                formatBigNumbers(
+                                  tx.changes[0].value,
+                                  tx.changes[0].asset.decimals
+                                ) +
+                              tx.changes[1].price *
+                                formatBigNumbers(
+                                  tx.changes[1].value,
+                                  tx.changes[1].asset.decimals
+                                ) -
+                              tx.changes[1].asset.price.value *
+                                formatBigNumbers(
+                                  tx.changes[1].value,
+                                  tx.changes[1].asset.decimals
+                                ) -
+                              formatMoney(formatBigNumbers(tx.fee.value, 18)) *
+                                tx.fee.price
+                            ).toFixed(2) > 0
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          Total P/L
+                        </Typography>
+                        <Typography
+                          color={
+                            (
+                              tx.changes[0].asset.price.value *
+                                formatBigNumbers(
+                                  tx.changes[0].value,
+                                  tx.changes[0].asset.decimals
+                                ) -
+                              tx.changes[0].price *
+                                formatBigNumbers(
+                                  tx.changes[0].value,
+                                  tx.changes[0].asset.decimals
+                                ) +
+                              tx.changes[1].price *
+                                formatBigNumbers(
+                                  tx.changes[1].value,
+                                  tx.changes[1].asset.decimals
+                                ) -
+                              tx.changes[1].asset.price.value *
+                                formatBigNumbers(
+                                  tx.changes[1].value,
+                                  tx.changes[1].asset.decimals
+                                ) -
+                              formatMoney(formatBigNumbers(tx.fee.value, 18)) *
+                                tx.fee.price
+                            ).toFixed(2) > 0
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          ${" "}
+                          {(
+                            tx.changes[0].asset.price.value *
+                              formatBigNumbers(
+                                tx.changes[0].value,
+                                tx.changes[0].asset.decimals
+                              ) -
+                            tx.changes[0].price *
+                              formatBigNumbers(
+                                tx.changes[0].value,
+                                tx.changes[0].asset.decimals
+                              ) +
+                            tx.changes[1].price *
+                              formatBigNumbers(
+                                tx.changes[1].value,
+                                tx.changes[1].asset.decimals
+                              ) -
+                            tx.changes[1].asset.price.value *
+                              formatBigNumbers(
+                                tx.changes[1].value,
+                                tx.changes[1].asset.decimals
+                              ) -
+                            formatMoney(formatBigNumbers(tx.fee.value, 18)) *
+                              tx.fee.price
+                          ).toFixed(2)}
+                        </Typography>
+                      </Grid>
+                    </>
+                  )}
+                </>
+              )}
+            {tx.type === "authorize" && (
+              <>
+                <Grid item className={classes.dateGrid}>
+                  <Typography variant={"body2"} className={classes.subtitle}>
+                    {new Date(tx.mined_at * 1000).toLocaleString()}
+                  </Typography>
+                </Grid>
+                <Divider orientation="vertical" />
+                <Grid
+                  key={tx.hash}
+                  item
+                  container
+                  direction="column"
+                  style={{
+                    alignItems: "center",
+                    maxWidth: "100px",
+                  }}
+                >
+                  <Typography variant={"body2"} className={classes.subtitle}>
+                    {tx.type}
+                  </Typography>
+                  <LockOpenRoundedIcon
+                    style={{
+                      color: colors.cgYellow,
+                    }}
+                  />
+                </Grid>
+                <Divider orientation="vertical" />
+                <Grid item className={classes.fromToSpenderGrid} align="left">
+                  <Grid
+                    container
+                    direction={"row"}
+                    justify={"center"}
+                    align="right"
+                    style={{ alignItems: "center" }}
+                  >
+                    <RoomIcon />
+                    <Grid
+                      item
+                      style={{ marginLeft: "10px", textAlign: "left" }}
+                    >
+                      <Typography
+                        variant={"body2"}
+                        className={classes.subtitle}
+                      >
+                        Spender:
+                      </Typography>
+                      <Typography variant={"h4"}>
+                        {tx.meta.spender.substring(0, 6) +
+                          "..." +
+                          tx.meta.spender.substring(
+                            tx.meta.spender.length - 4,
+                            tx.meta.spender.length
+                          )}
+                      </Typography>
+                    </Grid>
+                    <Link
+                      target="_blank"
+                      href={`https://etherscan.io/address/${tx.meta.spender}`}
+                    >
+                      <IconButton size="small">
+                        <ExitToAppIcon fontSize="small" />
+                      </IconButton>
+                    </Link>
+                  </Grid>
+                </Grid>
+                <Divider orientation="vertical" />
+                <Grid item style={{ margin: "0px auto 0px 5px" }} align="left">
+                  <Grid
+                    container
+                    direction={"row"}
+                    justify={"center"}
+                    align="right"
+                    style={{ alignItems: "center" }}
+                  >
+                    <img
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                      }}
+                      className={classes.tokenLogo}
+                      alt=""
+                      src={tx.meta.asset.icon_url}
+                    />
+                    <Grid
+                      item
+                      style={{ marginLeft: "10px", textAlign: "left" }}
+                    >
+                      <Typography>
+                        {formatMoney(
+                          formatBigNumbers(
+                            tx.meta.amount,
+                            tx.meta.asset.decimals
+                          )
+                        )}
+                      </Typography>
+                      <Typography
+                        variant={"body2"}
+                        className={classes.subtitle}
+                      >
+                        {tx.meta.asset.name}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </Grid>
+              </>
+            )}
+          </Grid>
+          <Divider variant="middle" />
+        </>
       ));
     }
   };
@@ -678,104 +1773,14 @@ class Transactions extends Component {
           <>
             <Grid item xs={9}>
               <Card className={classes.favCard} elevation={3}>
-                <TableContainer className={classes.container} size="small">
-                  <Table
-                    stickyHeader
-                    className={classes.table}
-                    aria-label="assetList"
-                  >
-                    <TableHead className={classes.header}>
-                      <TableRow>
-                        <TableCell
-                          className={classes.customCell}
-                          style={{ width: "30px", height: "30px" }}
-                          align="center"
-                          padding="none"
-                        >
-                          <TableSortLabel
-                            active={sortBy === "transfer_type"}
-                            direction={sortOrder}
-                            onClick={() => this.sortBy("transfer_type")}
-                          >
-                            Type
-                          </TableSortLabel>
-                        </TableCell>
-                        <TableCell
-                          className={classes.customCell}
-                          align="center"
-                          padding="none"
-                        >
-                          <TableSortLabel
-                            active={sortBy === "mined_at"}
-                            direction={sortOrder}
-                            onClick={() => this.sortBy("mined_at")}
-                          >
-                            Date
-                          </TableSortLabel>
-                        </TableCell>
-                        <TableCell
-                          className={classes.customCell}
-                          align="left"
-                          padding="none"
-                        >
-                          <TableSortLabel
-                            active={sortBy === "contract_name"}
-                            direction={sortOrder}
-                            onClick={() => this.sortBy("contract_name")}
-                          >
-                            Name
-                          </TableSortLabel>
-                        </TableCell>
-                        <TableCell className={classes.customCell} align="right">
-                          <TableSortLabel
-                            active={sortBy === "amount"}
-                            direction={sortOrder}
-                            onClick={() => this.sortBy("amount")}
-                          >
-                            Amount
-                          </TableSortLabel>
-                        </TableCell>
-                        <TableCell className={classes.customCell} align="right">
-                          <TableSortLabel
-                            active={sortBy === "rate_at_tx"}
-                            direction={sortOrder}
-                            onClick={() => this.sortBy("rate_at_tx")}
-                          >
-                            <Grid container direction={"column"}>
-                              <Typography>Price at tx</Typography>
-                              <Typography>(Price Now)</Typography>
-                            </Grid>
-                          </TableSortLabel>
-                        </TableCell>
-                        <TableCell className={classes.customCell} align="right">
-                          <TableSortLabel
-                            active={sortBy === "worth_at_tx"}
-                            direction={sortOrder}
-                            onClick={() => this.sortBy("worth_at_tx")}
-                          >
-                            <Grid container direction={"column"}>
-                              <Typography>Value at tx</Typography>
-                              <Typography>(Value Now)</Typography>
-                            </Grid>
-                          </TableSortLabel>
-                        </TableCell>
-                        <TableCell className={classes.customCell} align="right">
-                          <TableSortLabel
-                            active={sortBy === "profit_percent"}
-                            direction={sortOrder}
-                            onClick={() => this.sortBy("profit_percent")}
-                          >
-                            <Grid container direction={"column"}>
-                              <Typography>Profit %</Typography>
-                              <Typography>(Profit in $)</Typography>
-                            </Grid>
-                          </TableSortLabel>
-                        </TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>{this.drawTransactions(transactions)}</TableBody>
-                  </Table>
-                </TableContainer>
+                <Grid
+                  container
+                  direction="column"
+                  justify="flex-start"
+                  alignItems="stretch"
+                >
+                  {this.drawTransactions(transactions)}
+                </Grid>
               </Card>
             </Grid>
             <Grid item xs={3}>
@@ -857,6 +1862,28 @@ class Transactions extends Component {
                     component="nav"
                     aria-label="user wallet list"
                   >
+                    <ListItem
+                      key={"allwallets"}
+                      button
+                      selected={this.state.selectedWallet === "all"}
+                      onClick={() => this.walletClicked("all")}
+                      className={classes.list}
+                    >
+                      <ListItemText
+                        primary={
+                          <React.Fragment>
+                            <Typography
+                              display="inline"
+                              noWrap={true}
+                              className={classes.inline}
+                              color="textPrimary"
+                            >
+                              All
+                            </Typography>
+                          </React.Fragment>
+                        }
+                      />
+                    </ListItem>
                     {this.userWalletList(userWallets)}
                   </List>
                 </Grid>
