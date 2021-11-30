@@ -31,6 +31,10 @@ import {
   TableCell,
   TableSortLabel,
   TableContainer,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@material-ui/core";
 
 import {
@@ -61,6 +65,11 @@ import ArrowBackIosRoundedIcon from "@material-ui/icons/ArrowBackIosRounded";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 import BackspaceRoundedIcon from "@material-ui/icons/BackspaceRounded";
 import RefreshRoundedIcon from "@material-ui/icons/RefreshRounded";
+
+//confirmed
+import CheckCircleOutlineIcon from "@material-ui/icons/CheckCircleOutline";
+//failed
+import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline";
 
 //send
 // receive Transform(rotateY(180deg))
@@ -119,7 +128,6 @@ const styles = (theme) => ({
     minHeight: "100%",
     justifyContent: "space-around",
   },
-
   walletGrid: {
     borderRadius: "10px",
     padding: "10px",
@@ -131,6 +139,7 @@ const styles = (theme) => ({
     margin: 10,
     display: "flex",
     flex: 1,
+    flexDirection: "column",
   },
   card: {
     padding: 10,
@@ -146,6 +155,7 @@ const styles = (theme) => ({
   },
   subtitle: {
     opacity: 0.8,
+    textColor: "primary",
   },
   dateGrid: {
     minWidth: "160px",
@@ -154,6 +164,73 @@ const styles = (theme) => ({
   fromToSpenderGrid: {
     margin: "0px 5px 0px 5px",
     minWidth: 175,
+  },
+  mainTx: {
+    transition: "all .33s ease-in-out",
+    background:
+      "linear-gradient(90deg, rgba(121, 216, 162, 0.1) 0%, rgba(0,0,0,0.2) 10%)",
+    boxShadow: "inset 0px 0px 15px rgba(0,0,0,0.5)",
+    borderRadius: 10,
+    margin: "5px 0",
+    padding: 10,
+    [theme.breakpoints.down("xl")]: {
+      justifyContent: "center",
+    },
+    [theme.breakpoints.up("xl")]: {
+      justifyContent: "space-between",
+    },
+    "&:hover": {
+      boxShadow: "inset 0px 0px 15px rgba(0,0,0,0.3)",
+    },
+  },
+  mainTxFailed: {
+    transition: "all .33s ease-in-out",
+    background:
+      "linear-gradient(90deg, rgba(247, 157, 107, 0.1) 0%, rgba(0,0,0,0.2) 10%)",
+    boxShadow: "inset 0px 0px 15px rgba(0,0,0,0.5)",
+    borderRadius: 10,
+    margin: "5px 0",
+    padding: 10,
+    [theme.breakpoints.down("xl")]: {
+      justifyContent: "center",
+    },
+    [theme.breakpoints.up("xl")]: {
+      justifyContent: "space-between",
+    },
+    "&:hover": {
+      boxShadow: "inset 0px 0px 15px rgba(0,0,0,0.3)",
+    },
+  },
+  mainData: {
+    flexWrap: "nowrap",
+    justifyContent: "flex-start",
+    height: "auto",
+    [theme.breakpoints.down("xl")]: {
+      height: "30%",
+    },
+    [theme.breakpoints.up("xl")]: {
+      height: "100%",
+    },
+  },
+  extraData: {
+    margin: "0 0 0 auto",
+    maxWidth: "max-content",
+  },
+  divVert: {
+    width: "1px",
+    height: "2rem",
+  },
+  linkButton: {
+    padding: ".5rem",
+    marginLeft: 5,
+  },
+  txLink: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  formControl: {
+    minWidth: 120,
   },
 });
 
@@ -177,6 +254,9 @@ class Transactions extends Component {
       sortBy: "mined_at",
       sortOrder: "desc",
       transactions: null,
+      txLimit: 50,
+      txOffset: 0,
+      txQuery: null,
     };
 
     if (userAuth && account && account.address) {
@@ -298,7 +378,6 @@ class Transactions extends Component {
   };
 
   dbGetAddressTxReturned = (data) => {
-    console.log(data.transactions);
     if (data) {
       this.setState({
         error: false,
@@ -414,12 +493,18 @@ class Transactions extends Component {
         dispatcher.dispatch({
           type: DB_GET_ADDRESS_TX,
           wallet: this.state.userWallets,
+          limit: this.state.txLimit,
+          offset: this.state.txOffset,
+          query: this.state.txQuery,
         });
     } else {
       this._isMounted &&
         dispatcher.dispatch({
           type: DB_GET_ADDRESS_TX,
           wallet: [wallet],
+          limit: this.state.txLimit,
+          offset: this.state.txOffset,
+          query: this.state.txQuery,
         });
     }
     this.setState({ selectedWallet: wallet, dbDataLoaded: false });
@@ -534,26 +619,61 @@ class Transactions extends Component {
     }
 
     if (sortedTXs.length > 0) {
-      return sortedTXs.map((tx) => (
+      return sortedTXs.map((tx, idx) => (
         <>
           <Grid
             item
             container
             direction="row"
-            justify="flex-start"
             alignItems="center"
-            key={tx.id}
+            key={idx}
+            className={
+              tx.status === "confirmed" ? classes.mainTx : classes.mainTxFailed
+            }
           >
+            {tx.status === "confirmed" && (
+              <CheckCircleOutlineIcon color="primary" />
+            )}
+            {tx.status === "failed" && (
+              <div
+                style={{
+                  display: "grid",
+                  justifyItems: "center",
+                  alignItems: "center",
+                }}
+              >
+                <ErrorOutlineIcon color="secondary" />
+                <Typography variant={"subtitle2"} color="secondary">
+                  Failed
+                </Typography>
+              </div>
+            )}
             {tx.type === "send" && (
               <>
                 <Grid item className={classes.dateGrid}>
                   <Typography variant={"body2"} className={classes.subtitle}>
                     {new Date(tx.mined_at * 1000).toLocaleString()}
                   </Typography>
+                  <Link
+                    style={{ color: "inherit", textDecoration: "inherit" }}
+                    target="_blank"
+                    href={`https://etherscan.io/tx/${tx.hash}`}
+                  >
+                    <div className={classes.txLink}>
+                      <Typography
+                        variant={"subtitle2"}
+                        className={classes.subtitle}
+                      >
+                        Tx: {tx.hash.substring(0, 6) + "..."}
+                      </Typography>
+                      <IconButton className={classes.linkButton} size="small">
+                        <ExitToAppIcon fontSize="small" />
+                      </IconButton>
+                    </div>
+                  </Link>
                 </Grid>
-                <Divider orientation="vertical" />
+                <Divider orientation="vertical" className={classes.divVert} />
                 <Grid
-                  key={tx.hash}
                   item
                   container
                   direction="column"
@@ -568,46 +688,48 @@ class Transactions extends Component {
                   <ForwardRoundedIcon style={{ color: colors.cgRed }} />
                 </Grid>
 
-                <Divider orientation="vertical" />
-                <Grid item className={classes.fromToSpenderGrid} align="left">
-                  <Grid
-                    container
-                    direction={"row"}
-                    justify={"center"}
-                    align="right"
-                    style={{ alignItems: "center" }}
-                  >
-                    <RoomIcon />
-                    <Grid
-                      item
-                      style={{ marginLeft: "10px", textAlign: "left" }}
-                    >
-                      <Typography
-                        variant={"body2"}
-                        className={classes.subtitle}
+                <Divider orientation="vertical" className={classes.divVert} />
+                <Link
+                  style={{ color: "inherit", textDecoration: "inherit" }}
+                  target="_blank"
+                  href={`https://etherscan.io/address/${tx.changes[0].address_to}`}
+                >
+                  <Grid item className={classes.fromToSpenderGrid} align="left">
+                    {tx.changes[0] && (
+                      <Grid
+                        container
+                        direction={"row"}
+                        justify={"center"}
+                        align="right"
+                        style={{ alignItems: "center" }}
                       >
-                        To:
-                      </Typography>
-                      <Typography variant={"h4"}>
-                        {tx.changes[0].address_to.substring(0, 6) +
-                          "..." +
-                          tx.changes[0].address_to.substring(
-                            tx.changes[0].address_to.length - 4,
-                            tx.changes[0].address_to.length
-                          )}
-                      </Typography>
-                    </Grid>
-                    <Link
-                      target="_blank"
-                      href={`https://etherscan.io/address/${tx.changes[0].address_to}`}
-                    >
-                      <IconButton size="small">
-                        <ExitToAppIcon fontSize="small" />
-                      </IconButton>
-                    </Link>
+                        <Grid
+                          item
+                          style={{ marginLeft: "10px", textAlign: "left" }}
+                        >
+                          <Typography
+                            variant={"body2"}
+                            className={classes.subtitle}
+                          >
+                            To:
+                          </Typography>
+                          <Typography variant={"h4"}>
+                            {tx.changes[0].address_to.substring(0, 6) +
+                              "..." +
+                              tx.changes[0].address_to.substring(
+                                tx.changes[0].address_to.length - 4,
+                                tx.changes[0].address_to.length
+                              )}
+                          </Typography>
+                        </Grid>
+                        <IconButton className={classes.linkButton} size="small">
+                          <ExitToAppIcon fontSize="small" />
+                        </IconButton>
+                      </Grid>
+                    )}
                   </Grid>
-                </Grid>
-                <Divider orientation="vertical" />
+                </Link>
+                <Divider orientation="vertical" className={classes.divVert} />
                 <Grid item style={{ margin: "0px auto 0px 5px" }} align="left">
                   <Grid
                     container
@@ -654,8 +776,25 @@ class Transactions extends Component {
                   <Typography variant={"body2"} className={classes.subtitle}>
                     {new Date(tx.mined_at * 1000).toLocaleString()}
                   </Typography>
+                  <Link
+                    style={{ color: "inherit", textDecoration: "inherit" }}
+                    target="_blank"
+                    href={`https://etherscan.io/tx/${tx.hash}`}
+                  >
+                    <div className={classes.txLink}>
+                      <Typography
+                        variant={"subtitle2"}
+                        className={classes.subtitle}
+                      >
+                        Tx: {tx.hash.substring(0, 6) + "..."}
+                      </Typography>
+                      <IconButton className={classes.linkButton} size="small">
+                        <ExitToAppIcon fontSize="small" />
+                      </IconButton>
+                    </div>
+                  </Link>
                 </Grid>
-                <Divider orientation="vertical" />
+                <Divider orientation="vertical" className={classes.divVert} />
                 <Grid
                   key={tx.hash}
                   item
@@ -676,97 +815,143 @@ class Transactions extends Component {
                     }}
                   />
                 </Grid>
-                <Divider orientation="vertical" />
-                <Grid item className={classes.fromToSpenderGrid} align="left">
-                  <Grid
-                    container
-                    direction={"row"}
-                    justify={"center"}
-                    align="right"
-                    style={{ alignItems: "center" }}
-                  >
-                    <RoomIcon />
+                <Divider orientation="vertical" className={classes.divVert} />
+                {tx.changes[0] && (
+                  <>
                     <Grid
                       item
-                      style={{ marginLeft: "10px", textAlign: "left" }}
+                      className={classes.fromToSpenderGrid}
+                      align="left"
                     >
-                      <Typography
-                        variant={"body2"}
-                        className={classes.subtitle}
+                      <Link
+                        style={{
+                          color: "inherit",
+                          textDecoration: "inherit",
+                        }}
+                        target="_blank"
+                        href={`https://etherscan.io/address/${tx.changes[0].address_from}`}
                       >
-                        From:
-                      </Typography>
-                      <Typography variant={"h4"}>
-                        {tx.changes[0].address_from.substring(0, 6) +
-                          "..." +
-                          tx.changes[0].address_from.substring(
-                            tx.changes[0].address_from.length - 4,
-                            tx.changes[0].address_from.length
-                          )}
-                      </Typography>
+                        <Grid
+                          container
+                          direction={"row"}
+                          justify={"center"}
+                          align="right"
+                          style={{ alignItems: "center" }}
+                        >
+                          <Grid
+                            item
+                            style={{ marginLeft: "10px", textAlign: "left" }}
+                          >
+                            <Typography
+                              variant={"body2"}
+                              className={classes.subtitle}
+                            >
+                              From:
+                            </Typography>
+                            <Typography variant={"h4"}>
+                              {tx.changes[0].address_from.substring(0, 6) +
+                                "..." +
+                                tx.changes[0].address_from.substring(
+                                  tx.changes[0].address_from.length - 4,
+                                  tx.changes[0].address_from.length
+                                )}
+                            </Typography>
+                          </Grid>
+                          <IconButton
+                            className={classes.linkButton}
+                            size="small"
+                          >
+                            <ExitToAppIcon fontSize="small" />
+                          </IconButton>
+                        </Grid>
+                      </Link>
                     </Grid>
-                    <Link
-                      target="_blank"
-                      href={`https://etherscan.io/address/${tx.changes[0].address_from}`}
-                    >
-                      <IconButton size="small">
-                        <ExitToAppIcon fontSize="small" />
-                      </IconButton>
-                    </Link>
-                  </Grid>
-                </Grid>
-                <Divider orientation="vertical" />
-                <Grid item style={{ margin: "0px auto 0px 5px" }} align="left">
-                  <Grid
-                    container
-                    direction={"row"}
-                    justify={"center"}
-                    align="right"
-                    style={{ alignItems: "center" }}
-                  >
-                    <img
-                      onError={(e) => {
-                        e.target.style.display = "none";
-                      }}
-                      className={classes.tokenLogo}
-                      alt=""
-                      src={tx.changes[0].asset.icon_url}
+                    <Divider
+                      orientation="vertical"
+                      className={classes.divVert}
                     />
                     <Grid
                       item
-                      style={{ marginLeft: "10px", textAlign: "left" }}
+                      style={{ margin: "0px auto 0px 5px" }}
+                      align="left"
                     >
-                      <Typography>
-                        {formatMoney(
-                          formatBigNumbers(
-                            tx.changes[0].value,
-                            tx.changes[0].asset.decimals
-                          )
-                        )}
-                      </Typography>
-                      <Typography
-                        variant={"body2"}
-                        className={classes.subtitle}
+                      <Grid
+                        container
+                        direction={"row"}
+                        justify={"center"}
+                        align="right"
+                        style={{ alignItems: "center" }}
                       >
-                        {tx.changes[0].asset.name}
-                      </Typography>
+                        <img
+                          onError={(e) => {
+                            e.target.style.display = "none";
+                          }}
+                          className={classes.tokenLogo}
+                          alt=""
+                          src={tx.changes[0].asset.icon_url}
+                        />
+                        <Grid
+                          item
+                          style={{ marginLeft: "10px", textAlign: "left" }}
+                        >
+                          <Typography>
+                            {formatMoney(
+                              formatBigNumbers(
+                                tx.changes[0].value,
+                                tx.changes[0].asset.decimals
+                              )
+                            )}
+                          </Typography>
+                          <Typography
+                            variant={"body2"}
+                            className={classes.subtitle}
+                          >
+                            {tx.changes[0].asset.name}
+                          </Typography>
+                        </Grid>
+                      </Grid>
                     </Grid>
-                  </Grid>
-                </Grid>
+                  </>
+                )}
               </>
             )}
-            {tx.type === "trade" &&
-              tx.changes[1].asset.price &&
-              tx.changes[0].asset.price && (
-                <>
+            {tx.type === "trade" && tx.changes[0] && tx.changes[1] && (
+              <>
+                <Grid
+                  key={"mainData" + tx.hash}
+                  item
+                  container
+                  direction="row"
+                  alignItems="center"
+                  className={classes.mainData}
+                  xl={6}
+                  lg={12}
+                >
                   <Grid item className={classes.dateGrid}>
                     <Typography variant={"body2"} className={classes.subtitle}>
                       {new Date(tx.mined_at * 1000).toLocaleString()}
                     </Typography>
+                    <Link
+                      style={{ color: "inherit", textDecoration: "inherit" }}
+                      target="_blank"
+                      href={`https://etherscan.io/tx/${tx.hash}`}
+                    >
+                      <div className={classes.txLink}>
+                        <Typography
+                          variant={"subtitle2"}
+                          className={classes.subtitle}
+                        >
+                          Tx: {tx.hash.substring(0, 6) + "..."}
+                        </Typography>
+                        <IconButton className={classes.linkButton} size="small">
+                          <ExitToAppIcon fontSize="small" />
+                        </IconButton>
+                      </div>
+                    </Link>
                   </Grid>
-                  <Divider orientation="vertical" />
+                  <Divider orientation="vertical" className={classes.divVert} />
                   <Grid
-                    key={tx.hash}
+                    key={tx.hash + idx}
                     item
                     container
                     direction="column"
@@ -784,10 +969,7 @@ class Transactions extends Component {
                       }}
                     />
                   </Grid>
-                  <Divider orientation="vertical" />
-                  {
-                    // tx.changes[1] is in token
-                  }
+                  <Divider orientation="vertical" className={classes.divVert} />
                   {tx.changes[0].direction === "out" && (
                     <>
                       <Grid
@@ -812,7 +994,10 @@ class Transactions extends Component {
                           />
                           <Grid
                             item
-                            style={{ marginLeft: "10px", textAlign: "left" }}
+                            style={{
+                              marginLeft: "10px",
+                              textAlign: "left",
+                            }}
                           >
                             <Typography>
                               {"-"}
@@ -835,7 +1020,9 @@ class Transactions extends Component {
                       <KeyboardArrowRightRoundedIcon />
                       <Grid
                         item
-                        style={{ margin: "0px auto 0px 5px" }}
+                        style={{
+                          margin: "0px 5px 0px 5px",
+                        }}
                         align="left"
                       >
                         <Grid
@@ -855,7 +1042,10 @@ class Transactions extends Component {
                           />
                           <Grid
                             item
-                            style={{ marginLeft: "10px", textAlign: "left" }}
+                            style={{
+                              marginLeft: "10px",
+                              textAlign: "left",
+                            }}
                           >
                             <Typography>
                               {formatMoney(
@@ -873,301 +1063,6 @@ class Transactions extends Component {
                             </Typography>
                           </Grid>
                         </Grid>
-                      </Grid>
-                      <Grid item align={"right"} style={{ margin: "0 5px" }}>
-                        <Typography
-                          variant={"subtitle1"}
-                          className={classes.subtitle}
-                        >
-                          Price at tx
-                        </Typography>
-                        <Typography
-                          color={
-                            tx.changes[1].price <
-                            tx.changes[1].asset.price.value
-                              ? "primary"
-                              : "secondary"
-                          }
-                        >
-                          {tx.changes[1].asset.symbol} ${" "}
-                          {formatMoney(tx.changes[1].price)}
-                        </Typography>
-                        <Typography
-                          color={
-                            tx.changes[0].price >
-                            tx.changes[0].asset.price.value
-                              ? "primary"
-                              : "secondary"
-                          }
-                        >
-                          {tx.changes[0].asset.symbol} ${" "}
-                          {formatMoney(tx.changes[0].price)}
-                        </Typography>
-                      </Grid>
-                      <Grid item align={"right"} style={{ margin: "0 5px" }}>
-                        <Typography
-                          variant={"subtitle1"}
-                          className={classes.subtitle}
-                        >
-                          Price now
-                        </Typography>
-                        <Typography
-                          color={
-                            tx.changes[1].price <
-                            tx.changes[1].asset.price.value
-                              ? "primary"
-                              : "secondary"
-                          }
-                        >
-                          $ {formatMoney(tx.changes[1].asset.price.value)}
-                        </Typography>
-                        <Typography
-                          color={
-                            tx.changes[0].price >
-                            tx.changes[0].asset.price.value
-                              ? "primary"
-                              : "secondary"
-                          }
-                        >
-                          $ {formatMoney(tx.changes[0].asset.price.value)}
-                        </Typography>
-                      </Grid>
-                      <Grid item align={"right"} style={{ margin: "0 5px" }}>
-                        <Typography
-                          variant={"subtitle1"}
-                          className={classes.subtitle}
-                        >
-                          Value at tx
-                        </Typography>
-                        <Typography
-                          color={
-                            tx.changes[1].price <
-                            tx.changes[1].asset.price.value
-                              ? "primary"
-                              : "secondary"
-                          }
-                        >
-                          ${" "}
-                          {formatMoney(
-                            formatBigNumbers(
-                              tx.changes[1].value,
-                              tx.changes[1].asset.decimals
-                            ) * tx.changes[1].price
-                          )}
-                        </Typography>
-                        <Typography
-                          color={
-                            tx.changes[0].price >
-                            tx.changes[0].asset.price.value
-                              ? "primary"
-                              : "secondary"
-                          }
-                        >
-                          ${" "}
-                          {formatMoney(
-                            formatBigNumbers(
-                              tx.changes[0].value,
-                              tx.changes[0].asset.decimals
-                            ) * tx.changes[0].price
-                          )}
-                        </Typography>
-                      </Grid>
-                      <Grid item align={"right"} style={{ margin: "0 5px" }}>
-                        <Typography
-                          variant={"subtitle1"}
-                          className={classes.subtitle}
-                        >
-                          Value now
-                        </Typography>
-                        <Typography
-                          color={
-                            tx.changes[1].price <
-                            tx.changes[1].asset.price.value
-                              ? "primary"
-                              : "secondary"
-                          }
-                        >
-                          ${" "}
-                          {formatMoney(
-                            formatBigNumbers(
-                              tx.changes[1].value,
-                              tx.changes[1].asset.decimals
-                            ) * tx.changes[1].asset.price.value
-                          )}
-                        </Typography>
-                        <Typography
-                          color={
-                            tx.changes[0].price >
-                            tx.changes[0].asset.price.value
-                              ? "primary"
-                              : "secondary"
-                          }
-                        >
-                          ${" "}
-                          {formatMoney(
-                            formatBigNumbers(
-                              tx.changes[0].value,
-                              tx.changes[0].asset.decimals
-                            ) * tx.changes[0].asset.price.value
-                          )}
-                        </Typography>
-                      </Grid>
-                      <Grid item align={"right"} style={{ margin: "0 5px" }}>
-                        <Typography
-                          variant={"subtitle1"}
-                          className={classes.subtitle}
-                        >
-                          % P/L
-                        </Typography>
-
-                        <Typography
-                          color={
-                            tx.changes[1].price <
-                            tx.changes[1].asset.price.value
-                              ? "primary"
-                              : "secondary"
-                          }
-                        >
-                          {differenceInPercentage(
-                            tx.changes[1].price,
-                            tx.changes[1].asset.price.value
-                          )}{" "}
-                          %
-                        </Typography>
-                        <Typography
-                          color={
-                            tx.changes[1].price <
-                            tx.changes[1].asset.price.value
-                              ? "primary"
-                              : "secondary"
-                          }
-                        >
-                          {differenceInPercentage(
-                            tx.changes[0].asset.price.value,
-                            tx.changes[0].price
-                          )}{" "}
-                          %{" "}
-                        </Typography>
-                      </Grid>
-                      <Grid item align={"right"} style={{ margin: "0 5px" }}>
-                        <Typography
-                          variant={"subtitle1"}
-                          className={classes.subtitle}
-                        >
-                          $ P/L
-                        </Typography>
-                        <Typography
-                          color={
-                            tx.changes[1].price <
-                            tx.changes[1].asset.price.value
-                              ? "primary"
-                              : "secondary"
-                          }
-                        >
-                          ${" "}
-                          {(
-                            tx.changes[1].asset.price.value *
-                              formatBigNumbers(
-                                tx.changes[1].value,
-                                tx.changes[1].asset.decimals
-                              ) -
-                            tx.changes[1].price *
-                              formatBigNumbers(
-                                tx.changes[1].value,
-                                tx.changes[1].asset.decimals
-                              )
-                          ).toFixed(2)}
-                        </Typography>
-                        <Typography
-                          color={
-                            tx.changes[1].price <
-                            tx.changes[1].asset.price.value
-                              ? "primary"
-                              : "secondary"
-                          }
-                        >
-                          ${" "}
-                          {(
-                            tx.changes[0].price *
-                              formatBigNumbers(
-                                tx.changes[0].value,
-                                tx.changes[0].asset.decimals
-                              ) -
-                            tx.changes[0].asset.price.value *
-                              formatBigNumbers(
-                                tx.changes[0].value,
-                                tx.changes[0].asset.decimals
-                              )
-                          ).toFixed(2)}
-                        </Typography>
-                      </Grid>
-                      <Grid item align={"right"} style={{ margin: "0 5px" }}>
-                        <Typography
-                          variant={"subtitle1"}
-                          className={classes.subtitle}
-                          color={"secondary"}
-                        >
-                          Fees
-                        </Typography>
-                        <Typography color={"secondary"}>
-                          ${" "}
-                          {(
-                            formatMoney(formatBigNumbers(tx.fee.value, 18)) *
-                            tx.fee.price
-                          ).toFixed(2)}
-                        </Typography>
-                      </Grid>
-                      <Grid
-                        item
-                        align={"right"}
-                        style={{ margin: "0 0 0 5px" }}
-                      >
-                        <Typography
-                          variant={"subtitle1"}
-                          className={classes.subtitle}
-                          color={
-                            tx.changes[1].price <
-                            tx.changes[1].asset.price.value
-                              ? "primary"
-                              : "secondary"
-                          }
-                        >
-                          Total P/L
-                        </Typography>
-                        <Typography
-                          color={
-                            tx.changes[1].price <
-                            tx.changes[1].asset.price.value
-                              ? "primary"
-                              : "secondary"
-                          }
-                        >
-                          ${" "}
-                          {(
-                            tx.changes[1].asset.price.value *
-                              formatBigNumbers(
-                                tx.changes[1].value,
-                                tx.changes[1].asset.decimals
-                              ) -
-                            tx.changes[1].price *
-                              formatBigNumbers(
-                                tx.changes[1].value,
-                                tx.changes[1].asset.decimals
-                              ) +
-                            tx.changes[0].price *
-                              formatBigNumbers(
-                                tx.changes[0].value,
-                                tx.changes[0].asset.decimals
-                              ) -
-                            tx.changes[0].asset.price.value *
-                              formatBigNumbers(
-                                tx.changes[0].value,
-                                tx.changes[0].asset.decimals
-                              ) -
-                            formatMoney(formatBigNumbers(tx.fee.value, 18)) *
-                              tx.fee.price
-                          ).toFixed(2)}
-                        </Typography>
                       </Grid>
                     </>
                   )}
@@ -1195,7 +1090,10 @@ class Transactions extends Component {
                           />
                           <Grid
                             item
-                            style={{ marginLeft: "10px", textAlign: "left" }}
+                            style={{
+                              marginLeft: "10px",
+                              textAlign: "left",
+                            }}
                           >
                             <Typography>
                               {"- " +
@@ -1220,7 +1118,7 @@ class Transactions extends Component {
                       />
                       <Grid
                         item
-                        style={{ margin: "0px auto 0px 5px" }}
+                        style={{ margin: "0px 5px 0px 5px" }}
                         align="left"
                       >
                         <Grid
@@ -1240,7 +1138,10 @@ class Transactions extends Component {
                           />
                           <Grid
                             item
-                            style={{ marginLeft: "10px", textAlign: "left" }}
+                            style={{
+                              marginLeft: "10px",
+                              textAlign: "left",
+                            }}
                           >
                             <Typography>
                               {formatMoney(
@@ -1259,13 +1160,28 @@ class Transactions extends Component {
                           </Grid>
                         </Grid>
                       </Grid>
-                      <Grid item align={"right"} style={{ margin: "0 5px" }}>
-                        <Typography
-                          variant={"subtitle1"}
-                          className={classes.subtitle}
-                        >
-                          Price at tx
-                        </Typography>
+                    </>
+                  )}
+                </Grid>
+                {tx.changes[0].direction === "in" && (
+                  <Grid
+                    item
+                    container
+                    direction="row"
+                    justify="center"
+                    alignItems="flex-start"
+                    className={classes.extraData}
+                    xl={6}
+                    lg={12}
+                  >
+                    <Grid item align={"right"} style={{ margin: "0 5px" }}>
+                      <Typography
+                        variant={"subtitle1"}
+                        className={classes.subtitle}
+                      >
+                        Price at tx
+                      </Typography>
+                      {tx.changes[0].asset.price && (
                         <Typography
                           color={
                             tx.changes[0].price <
@@ -1277,6 +1193,8 @@ class Transactions extends Component {
                           {tx.changes[0].asset.symbol} ${" "}
                           {formatMoney(tx.changes[0].price)}
                         </Typography>
+                      )}
+                      {tx.changes[1].asset.price && (
                         <Typography
                           color={
                             tx.changes[1].price >
@@ -1288,14 +1206,16 @@ class Transactions extends Component {
                           {tx.changes[1].asset.symbol} ${" "}
                           {formatMoney(tx.changes[1].price)}
                         </Typography>
-                      </Grid>
-                      <Grid item align={"right"} style={{ margin: "0 5px" }}>
-                        <Typography
-                          variant={"subtitle1"}
-                          className={classes.subtitle}
-                        >
-                          Price now
-                        </Typography>
+                      )}
+                    </Grid>
+                    <Grid item align={"right"} style={{ margin: "0 5px" }}>
+                      <Typography
+                        variant={"subtitle1"}
+                        className={classes.subtitle}
+                      >
+                        Price now
+                      </Typography>
+                      {tx.changes[0].asset.price && (
                         <Typography
                           color={
                             tx.changes[0].price <
@@ -1306,6 +1226,8 @@ class Transactions extends Component {
                         >
                           $ {formatMoney(tx.changes[0].asset.price.value)}
                         </Typography>
+                      )}
+                      {tx.changes[1].asset.price && (
                         <Typography
                           color={
                             tx.changes[1].price >
@@ -1316,14 +1238,16 @@ class Transactions extends Component {
                         >
                           $ {formatMoney(tx.changes[1].asset.price.value)}
                         </Typography>
-                      </Grid>
-                      <Grid item align={"right"} style={{ margin: "0 5px" }}>
-                        <Typography
-                          variant={"subtitle1"}
-                          className={classes.subtitle}
-                        >
-                          Value at tx
-                        </Typography>
+                      )}
+                    </Grid>
+                    <Grid item align={"right"} style={{ margin: "0 5px" }}>
+                      <Typography
+                        variant={"subtitle1"}
+                        className={classes.subtitle}
+                      >
+                        Value at tx
+                      </Typography>
+                      {tx.changes[0].asset.price && (
                         <Typography
                           color={
                             tx.changes[0].price <
@@ -1340,6 +1264,8 @@ class Transactions extends Component {
                             ) * tx.changes[0].price
                           )}
                         </Typography>
+                      )}
+                      {tx.changes[1].asset.price && (
                         <Typography
                           color={
                             tx.changes[1].price >
@@ -1356,14 +1282,16 @@ class Transactions extends Component {
                             ) * tx.changes[1].price
                           )}
                         </Typography>
-                      </Grid>
-                      <Grid item align={"right"} style={{ margin: "0 5px" }}>
-                        <Typography
-                          variant={"subtitle1"}
-                          className={classes.subtitle}
-                        >
-                          Value now
-                        </Typography>
+                      )}
+                    </Grid>
+                    <Grid item align={"right"} style={{ margin: "0 5px" }}>
+                      <Typography
+                        variant={"subtitle1"}
+                        className={classes.subtitle}
+                      >
+                        Value now
+                      </Typography>
+                      {tx.changes[0].asset.price && (
                         <Typography
                           color={
                             tx.changes[0].price <
@@ -1380,6 +1308,8 @@ class Transactions extends Component {
                             ) * tx.changes[0].asset.price.value
                           )}
                         </Typography>
+                      )}
+                      {tx.changes[1].asset.price && (
                         <Typography
                           color={
                             tx.changes[1].price >
@@ -1396,15 +1326,16 @@ class Transactions extends Component {
                             ) * tx.changes[1].asset.price.value
                           )}
                         </Typography>
-                      </Grid>
-                      <Grid item align={"right"} style={{ margin: "0 5px" }}>
-                        <Typography
-                          variant={"subtitle1"}
-                          className={classes.subtitle}
-                        >
-                          % P/L
-                        </Typography>
-
+                      )}
+                    </Grid>
+                    <Grid item align={"right"} style={{ margin: "0 5px" }}>
+                      <Typography
+                        variant={"subtitle1"}
+                        className={classes.subtitle}
+                      >
+                        % P/L
+                      </Typography>
+                      {tx.changes[0].asset.price && (
                         <Typography
                           color={
                             tx.changes[0].price <
@@ -1419,10 +1350,12 @@ class Transactions extends Component {
                           )}{" "}
                           %
                         </Typography>
+                      )}
+                      {tx.changes[1].asset.price && (
                         <Typography
                           color={
-                            tx.changes[0].price <
-                            tx.changes[0].asset.price.value
+                            tx.changes[1].price >
+                            tx.changes[1].asset.price.value
                               ? "primary"
                               : "secondary"
                           }
@@ -1433,14 +1366,16 @@ class Transactions extends Component {
                           )}{" "}
                           %{" "}
                         </Typography>
-                      </Grid>
-                      <Grid item align={"right"} style={{ margin: "0 5px" }}>
-                        <Typography
-                          variant={"subtitle1"}
-                          className={classes.subtitle}
-                        >
-                          $ P/L
-                        </Typography>
+                      )}
+                    </Grid>
+                    <Grid item align={"right"} style={{ margin: "0 5px" }}>
+                      <Typography
+                        variant={"subtitle1"}
+                        className={classes.subtitle}
+                      >
+                        $ P/L
+                      </Typography>
+                      {tx.changes[0].asset.price && (
                         <Typography
                           color={
                             tx.changes[0].price <
@@ -1463,10 +1398,12 @@ class Transactions extends Component {
                               )
                           ).toFixed(2)}
                         </Typography>
+                      )}
+                      {tx.changes[1].asset.price && (
                         <Typography
                           color={
-                            tx.changes[0].price <
-                            tx.changes[0].asset.price.value
+                            tx.changes[1].price >
+                            tx.changes[1].asset.price.value
                               ? "primary"
                               : "secondary"
                           }
@@ -1485,23 +1422,24 @@ class Transactions extends Component {
                               )
                           ).toFixed(2)}
                         </Typography>
-                      </Grid>
-                      <Grid item align={"right"} style={{ margin: "0 5px" }}>
-                        <Typography
-                          variant={"subtitle1"}
-                          className={classes.subtitle}
-                          color={"secondary"}
-                        >
-                          Fees
-                        </Typography>
-                        <Typography color={"secondary"}>
-                          ${" "}
-                          {(
-                            formatMoney(formatBigNumbers(tx.fee.value, 18)) *
-                            tx.fee.price
-                          ).toFixed(2)}
-                        </Typography>
-                      </Grid>
+                      )}
+                    </Grid>
+                    <Grid item align={"right"} style={{ margin: "0 5px" }}>
+                      <Typography
+                        variant={"subtitle1"}
+                        className={classes.subtitle}
+                      >
+                        Fees
+                      </Typography>
+                      <Typography color={"secondary"}>
+                        ${" "}
+                        {(
+                          formatMoney(formatBigNumbers(tx.fee.value, 18)) *
+                          tx.fee.price
+                        ).toFixed(2)}
+                      </Typography>
+                    </Grid>
+                    {tx.changes[0].asset.price && tx.changes[1].asset.price && (
                       <Grid
                         item
                         align={"right"}
@@ -1510,34 +1448,6 @@ class Transactions extends Component {
                         <Typography
                           variant={"subtitle1"}
                           className={classes.subtitle}
-                          color={
-                            (
-                              tx.changes[0].asset.price.value *
-                                formatBigNumbers(
-                                  tx.changes[0].value,
-                                  tx.changes[0].asset.decimals
-                                ) -
-                              tx.changes[0].price *
-                                formatBigNumbers(
-                                  tx.changes[0].value,
-                                  tx.changes[0].asset.decimals
-                                ) +
-                              tx.changes[1].price *
-                                formatBigNumbers(
-                                  tx.changes[1].value,
-                                  tx.changes[1].asset.decimals
-                                ) -
-                              tx.changes[1].asset.price.value *
-                                formatBigNumbers(
-                                  tx.changes[1].value,
-                                  tx.changes[1].asset.decimals
-                                ) -
-                              formatMoney(formatBigNumbers(tx.fee.value, 18)) *
-                                tx.fee.price
-                            ).toFixed(2) > 0
-                              ? "primary"
-                              : "secondary"
-                          }
                         >
                           Total P/L
                         </Typography>
@@ -1598,18 +1508,344 @@ class Transactions extends Component {
                           ).toFixed(2)}
                         </Typography>
                       </Grid>
-                    </>
-                  )}
-                </>
-              )}
+                    )}
+                  </Grid>
+                )}
+                {tx.changes[0].direction === "out" && (
+                  <Grid
+                    item
+                    container
+                    direction="row"
+                    justify="center"
+                    alignItems="flex-start"
+                    className={classes.extraData}
+                    xl={6}
+                    lg={12}
+                  >
+                    <Grid item align={"right"} style={{ margin: "0 5px" }}>
+                      <Typography
+                        variant={"subtitle1"}
+                        className={classes.subtitle}
+                      >
+                        Price at tx
+                      </Typography>
+                      {tx.changes[1].price && (
+                        <Typography
+                          color={
+                            tx.changes[1].price <
+                            tx.changes[1].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          {tx.changes[1].asset.symbol} ${" "}
+                          {formatMoney(tx.changes[1].price)}
+                        </Typography>
+                      )}
+                      <Typography
+                        color={
+                          tx.changes[0].price > tx.changes[0].asset.price.value
+                            ? "primary"
+                            : "secondary"
+                        }
+                      >
+                        {tx.changes[0].asset.symbol} ${" "}
+                        {formatMoney(tx.changes[0].price)}
+                      </Typography>
+                    </Grid>
+                    <Grid item align={"right"} style={{ margin: "0 5px" }}>
+                      <Typography
+                        variant={"subtitle1"}
+                        className={classes.subtitle}
+                      >
+                        Price now
+                      </Typography>
+                      {tx.changes[1].price && (
+                        <Typography
+                          color={
+                            tx.changes[1].price <
+                            tx.changes[1].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          $ {formatMoney(tx.changes[1].asset.price.value)}
+                        </Typography>
+                      )}
+                      <Typography
+                        color={
+                          tx.changes[0].price > tx.changes[0].asset.price.value
+                            ? "primary"
+                            : "secondary"
+                        }
+                      >
+                        $ {formatMoney(tx.changes[0].asset.price.value)}
+                      </Typography>
+                    </Grid>
+                    <Grid item align={"right"} style={{ margin: "0 5px" }}>
+                      <Typography
+                        variant={"subtitle1"}
+                        className={classes.subtitle}
+                      >
+                        Value at tx
+                      </Typography>
+                      {tx.changes[1].price && (
+                        <Typography
+                          color={
+                            tx.changes[1].price <
+                            tx.changes[1].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          ${" "}
+                          {formatMoney(
+                            formatBigNumbers(
+                              tx.changes[1].value,
+                              tx.changes[1].asset.decimals
+                            ) * tx.changes[1].price
+                          )}
+                        </Typography>
+                      )}
+                      <Typography
+                        color={
+                          tx.changes[0].price > tx.changes[0].asset.price.value
+                            ? "primary"
+                            : "secondary"
+                        }
+                      >
+                        ${" "}
+                        {formatMoney(
+                          formatBigNumbers(
+                            tx.changes[0].value,
+                            tx.changes[0].asset.decimals
+                          ) * tx.changes[0].price
+                        )}
+                      </Typography>
+                    </Grid>
+                    <Grid item align={"right"} style={{ margin: "0 5px" }}>
+                      <Typography
+                        variant={"subtitle1"}
+                        className={classes.subtitle}
+                      >
+                        Value now
+                      </Typography>
+                      {tx.changes[1].price && (
+                        <Typography
+                          color={
+                            tx.changes[1].price <
+                            tx.changes[1].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          ${" "}
+                          {formatMoney(
+                            formatBigNumbers(
+                              tx.changes[1].value,
+                              tx.changes[1].asset.decimals
+                            ) * tx.changes[1].asset.price.value
+                          )}
+                        </Typography>
+                      )}
+                      <Typography
+                        color={
+                          tx.changes[0].price > tx.changes[0].asset.price.value
+                            ? "primary"
+                            : "secondary"
+                        }
+                      >
+                        ${" "}
+                        {formatMoney(
+                          formatBigNumbers(
+                            tx.changes[0].value,
+                            tx.changes[0].asset.decimals
+                          ) * tx.changes[0].asset.price.value
+                        )}
+                      </Typography>
+                    </Grid>
+                    <Grid item align={"right"} style={{ margin: "0 5px" }}>
+                      <Typography
+                        variant={"subtitle1"}
+                        className={classes.subtitle}
+                      >
+                        % P/L
+                      </Typography>
+                      {tx.changes[1].price && (
+                        <Typography
+                          color={
+                            tx.changes[1].price <
+                            tx.changes[1].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          {differenceInPercentage(
+                            tx.changes[1].price,
+                            tx.changes[1].asset.price.value
+                          )}{" "}
+                          %
+                        </Typography>
+                      )}
+                      <Typography
+                        color={
+                          tx.changes[0].price > tx.changes[0].asset.price.value
+                            ? "primary"
+                            : "secondary"
+                        }
+                      >
+                        {differenceInPercentage(
+                          tx.changes[0].asset.price.value,
+                          tx.changes[0].price
+                        )}{" "}
+                        %{" "}
+                      </Typography>
+                    </Grid>
+                    <Grid item align={"right"} style={{ margin: "0 5px" }}>
+                      <Typography
+                        variant={"subtitle1"}
+                        className={classes.subtitle}
+                      >
+                        $ P/L
+                      </Typography>
+                      {tx.changes[1].price && (
+                        <Typography
+                          color={
+                            tx.changes[1].price <
+                            tx.changes[1].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          ${" "}
+                          {(
+                            tx.changes[1].asset.price.value *
+                              formatBigNumbers(
+                                tx.changes[1].value,
+                                tx.changes[1].asset.decimals
+                              ) -
+                            tx.changes[1].price *
+                              formatBigNumbers(
+                                tx.changes[1].value,
+                                tx.changes[1].asset.decimals
+                              )
+                          ).toFixed(2)}
+                        </Typography>
+                      )}
+                      <Typography
+                        color={
+                          tx.changes[0].price > tx.changes[0].asset.price.value
+                            ? "primary"
+                            : "secondary"
+                        }
+                      >
+                        ${" "}
+                        {(
+                          tx.changes[0].price *
+                            formatBigNumbers(
+                              tx.changes[0].value,
+                              tx.changes[0].asset.decimals
+                            ) -
+                          tx.changes[0].asset.price.value *
+                            formatBigNumbers(
+                              tx.changes[0].value,
+                              tx.changes[0].asset.decimals
+                            )
+                        ).toFixed(2)}
+                      </Typography>
+                    </Grid>
+                    <Grid item align={"right"} style={{ margin: "0 5px" }}>
+                      <Typography
+                        variant={"subtitle1"}
+                        className={classes.subtitle}
+                      >
+                        Fees
+                      </Typography>
+                      <Typography color={"secondary"}>
+                        ${" "}
+                        {(
+                          formatMoney(formatBigNumbers(tx.fee.value, 18)) *
+                          tx.fee.price
+                        ).toFixed(2)}
+                      </Typography>
+                    </Grid>
+                    {tx.changes[1].price && (
+                      <Grid
+                        item
+                        align={"right"}
+                        style={{ margin: "0 0 0 5px" }}
+                      >
+                        <Typography
+                          variant={"subtitle1"}
+                          className={classes.subtitle}
+                        >
+                          Total P/L
+                        </Typography>
+                        <Typography
+                          color={
+                            tx.changes[1].price <
+                            tx.changes[1].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          ${" "}
+                          {(
+                            tx.changes[1].asset.price.value *
+                              formatBigNumbers(
+                                tx.changes[1].value,
+                                tx.changes[1].asset.decimals
+                              ) -
+                            tx.changes[1].price *
+                              formatBigNumbers(
+                                tx.changes[1].value,
+                                tx.changes[1].asset.decimals
+                              ) +
+                            tx.changes[0].price *
+                              formatBigNumbers(
+                                tx.changes[0].value,
+                                tx.changes[0].asset.decimals
+                              ) -
+                            tx.changes[0].asset.price.value *
+                              formatBigNumbers(
+                                tx.changes[0].value,
+                                tx.changes[0].asset.decimals
+                              ) -
+                            formatMoney(formatBigNumbers(tx.fee.value, 18)) *
+                              tx.fee.price
+                          ).toFixed(2)}
+                        </Typography>
+                      </Grid>
+                    )}
+                  </Grid>
+                )}
+              </>
+            )}
             {tx.type === "authorize" && (
               <>
                 <Grid item className={classes.dateGrid}>
                   <Typography variant={"body2"} className={classes.subtitle}>
                     {new Date(tx.mined_at * 1000).toLocaleString()}
                   </Typography>
+                  <Link
+                    style={{ color: "inherit", textDecoration: "inherit" }}
+                    target="_blank"
+                    href={`https://etherscan.io/tx/${tx.hash}`}
+                  >
+                    <div className={classes.txLink}>
+                      <Typography
+                        variant={"subtitle2"}
+                        className={classes.subtitle}
+                      >
+                        Tx: {tx.hash.substring(0, 6) + "..."}
+                      </Typography>
+                      <IconButton className={classes.linkButton} size="small">
+                        <ExitToAppIcon fontSize="small" />
+                      </IconButton>
+                    </div>
+                  </Link>
                 </Grid>
-                <Divider orientation="vertical" />
+                <Divider orientation="vertical" className={classes.divVert} />
                 <Grid
                   key={tx.hash}
                   item
@@ -1629,46 +1865,46 @@ class Transactions extends Component {
                     }}
                   />
                 </Grid>
-                <Divider orientation="vertical" />
+                <Divider orientation="vertical" className={classes.divVert} />
                 <Grid item className={classes.fromToSpenderGrid} align="left">
-                  <Grid
-                    container
-                    direction={"row"}
-                    justify={"center"}
-                    align="right"
-                    style={{ alignItems: "center" }}
+                  <Link
+                    style={{ color: "inherit", textDecoration: "inherit" }}
+                    target="_blank"
+                    href={`https://etherscan.io/address/${tx.meta.spender}`}
                   >
-                    <RoomIcon />
                     <Grid
-                      item
-                      style={{ marginLeft: "10px", textAlign: "left" }}
+                      container
+                      direction={"row"}
+                      justify={"center"}
+                      align="right"
+                      style={{ alignItems: "center" }}
                     >
-                      <Typography
-                        variant={"body2"}
-                        className={classes.subtitle}
+                      <Grid
+                        item
+                        style={{ marginLeft: "10px", textAlign: "left" }}
                       >
-                        Spender:
-                      </Typography>
-                      <Typography variant={"h4"}>
-                        {tx.meta.spender.substring(0, 6) +
-                          "..." +
-                          tx.meta.spender.substring(
-                            tx.meta.spender.length - 4,
-                            tx.meta.spender.length
-                          )}
-                      </Typography>
-                    </Grid>
-                    <Link
-                      target="_blank"
-                      href={`https://etherscan.io/address/${tx.meta.spender}`}
-                    >
-                      <IconButton size="small">
+                        <Typography
+                          variant={"body2"}
+                          className={classes.subtitle}
+                        >
+                          Spender:
+                        </Typography>
+                        <Typography variant={"h4"}>
+                          {tx.meta.spender.substring(0, 6) +
+                            "..." +
+                            tx.meta.spender.substring(
+                              tx.meta.spender.length - 4,
+                              tx.meta.spender.length
+                            )}
+                        </Typography>
+                      </Grid>
+                      <IconButton className={classes.linkButton} size="small">
                         <ExitToAppIcon fontSize="small" />
                       </IconButton>
-                    </Link>
-                  </Grid>
+                    </Grid>
+                  </Link>
                 </Grid>
-                <Divider orientation="vertical" />
+                <Divider orientation="vertical" className={classes.divVert} />
                 <Grid item style={{ margin: "0px auto 0px 5px" }} align="left">
                   <Grid
                     container
@@ -1708,10 +1944,170 @@ class Transactions extends Component {
                 </Grid>
               </>
             )}
+            {tx.type === "execution" && (
+              <>
+                <Grid item className={classes.dateGrid}>
+                  <Typography variant={"body2"} className={classes.subtitle}>
+                    {new Date(tx.mined_at * 1000).toLocaleString()}
+                  </Typography>
+                  <Link
+                    style={{ color: "inherit", textDecoration: "inherit" }}
+                    target="_blank"
+                    href={`https://etherscan.io/tx/${tx.hash}`}
+                  >
+                    <div className={classes.txLink}>
+                      <Typography
+                        variant={"subtitle2"}
+                        className={classes.subtitle}
+                      >
+                        Tx: {tx.hash.substring(0, 6) + "..."}
+                      </Typography>
+                      <IconButton className={classes.linkButton} size="small">
+                        <ExitToAppIcon fontSize="small" />
+                      </IconButton>
+                    </div>
+                  </Link>
+                </Grid>
+                <Divider orientation="vertical" className={classes.divVert} />
+                <Grid
+                  key={tx.hash}
+                  item
+                  container
+                  direction="column"
+                  style={{
+                    alignItems: "center",
+                    maxWidth: "100px",
+                  }}
+                >
+                  <Typography variant={"body2"} className={classes.subtitle}>
+                    {tx.type}
+                  </Typography>
+                  <InsertDriveFileRoundedIcon
+                    style={{
+                      color: colors.cgBlue,
+                    }}
+                  />
+                </Grid>
+                <Divider orientation="vertical" className={classes.divVert} />
+                <Grid
+                  item
+                  className={classes.fromToSpenderGrid}
+                  align="left"
+                  style={{ margin: "0px auto 0px 5px" }}
+                >
+                  <Link
+                    style={{ color: "inherit", textDecoration: "inherit" }}
+                    target="_blank"
+                    href={`https://etherscan.io/address/${tx.address_to}`}
+                  >
+                    <Grid
+                      container
+                      direction={"row"}
+                      justify={"center"}
+                      align="right"
+                      style={{ alignItems: "center" }}
+                    >
+                      <Grid
+                        item
+                        style={{ marginLeft: "10px", textAlign: "left" }}
+                      >
+                        <Typography
+                          variant={"body2"}
+                          className={classes.subtitle}
+                        >
+                          Contract:
+                        </Typography>
+                        <Typography variant={"h4"}>
+                          {tx.address_to.substring(0, 6) +
+                            "..." +
+                            tx.address_to.substring(
+                              tx.address_to.length - 4,
+                              tx.address_to.length
+                            )}
+                        </Typography>
+                      </Grid>
+                      <IconButton className={classes.linkButton} size="small">
+                        <ExitToAppIcon fontSize="small" />
+                      </IconButton>
+                    </Grid>
+                  </Link>
+                </Grid>
+              </>
+            )}
           </Grid>
           <Divider variant="middle" />
         </>
       ));
+    }
+  };
+
+  changeMaxTXs = (event) => {
+    let wallets = [];
+    let newTxLimit = event.target.value;
+    if (this.state.selectedWallet === "all") {
+      this.state.userWallets.forEach((item, i) => {
+        wallets.push(item.wallet);
+      });
+    } else {
+      wallets = [this.state.selectedWallet];
+    }
+
+    this.setState({ txLimit: newTxLimit });
+
+    this._isMounted &&
+      dispatcher.dispatch({
+        type: DB_GET_ADDRESS_TX,
+        wallet: wallets,
+        limit: newTxLimit,
+        offset: this.state.txOffset,
+        query: this.state.txQuery,
+      });
+  };
+
+  changeTxPage = (action) => {
+    const {
+      txOffset,
+      txLimit,
+      selectedWallet,
+      userWallets,
+      txQuery,
+    } = this.state;
+    let wallets = [];
+
+    if (selectedWallet === "all") {
+      userWallets.forEach((item, i) => {
+        wallets.push(item.wallet);
+      });
+    } else {
+      wallets = [selectedWallet];
+    }
+
+    let newOffset;
+    switch (action) {
+      case "prev":
+        newOffset = txOffset - 1;
+        this.setState({ txOffset: newOffset });
+        dispatcher.dispatch({
+          type: DB_GET_ADDRESS_TX,
+          wallet: wallets,
+          limit: txLimit,
+          offset: newOffset * txLimit,
+          query: txQuery,
+        });
+        break;
+      case "next":
+        newOffset = txOffset + 1;
+        this.setState({ txOffset: newOffset });
+        dispatcher.dispatch({
+          type: DB_GET_ADDRESS_TX,
+          wallet: wallets,
+          limit: txLimit,
+          offset: newOffset * txLimit,
+          query: txQuery,
+        });
+        break;
+      default:
+        break;
     }
   };
 
@@ -1729,6 +2125,8 @@ class Transactions extends Component {
       transactions,
       sortBy,
       sortOrder,
+      txLimit,
+      txOffset,
     } = this.state;
 
     return (
@@ -1778,8 +2176,54 @@ class Transactions extends Component {
                   direction="column"
                   justify="flex-start"
                   alignItems="stretch"
+                  style={{
+                    height: "600px",
+                    overflowY: "scroll",
+                    flexWrap: "noWrap",
+                    scrollbarWidth: "thin",
+                    scrollbarColor: `${colors.cgGreen} #30303080`,
+                    paddingRight: 10,
+                  }}
                 >
                   {this.drawTransactions(transactions)}
+                </Grid>
+                <Grid
+                  container
+                  direction="row"
+                  justify="flex-end"
+                  alignItems="center"
+                  style={{ marginTop: 10 }}
+                >
+                  <IconButton
+                    disabled={txOffset === 0}
+                    onClick={() => this.changeTxPage("prev")}
+                  >
+                    <KeyboardArrowLeftRoundedIcon />
+                  </IconButton>
+                  <div className={classes.pageCounter}>{txOffset}</div>
+                  <IconButton onClick={() => this.changeTxPage("next")}>
+                    <KeyboardArrowRightRoundedIcon />
+                  </IconButton>
+                  <FormControl
+                    variant="outlined"
+                    className={classes.formControl}
+                  >
+                    <InputLabel id="demo-simple-select-outlined-label">
+                      per page
+                    </InputLabel>
+                    <Select
+                      labelId="demo-simple-select-outlined-label"
+                      id="demo-simple-select-outlined"
+                      value={txLimit}
+                      onChange={this.changeMaxTXs}
+                      label="Age"
+                    >
+                      <MenuItem value={10}>10</MenuItem>
+                      <MenuItem value={25}>25</MenuItem>
+                      <MenuItem value={50}>50</MenuItem>
+                      <MenuItem value={100}>100</MenuItem>
+                    </Select>
+                  </FormControl>
                 </Grid>
               </Card>
             </Grid>

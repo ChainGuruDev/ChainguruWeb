@@ -2450,24 +2450,29 @@ ${nonce}`,
     }
   };
 
-  db_getAddressTx = async (payload) => {
+  db_getAddressTx = async (data) => {
     let vsCoin = store.getStore("vsCoin");
     let wallets = [];
-    payload.wallet.forEach((item, i) => {
+    data.wallet.forEach((item, i) => {
       wallets.push(item.toLowerCase());
     });
-    let query = "";
-    if (payload.query) {
-      query = payload.query;
+    let payload = {};
+    payload.addresses = wallets;
+    payload.currency = vsCoin;
+    if (data.query) {
+      payload.query = data.query;
     }
+    if (data.limit) {
+      payload.limit = data.limit;
+    }
+    if (data.offset) {
+      payload.offset = data.offset;
+    }
+    console.log(payload);
     try {
       const addressTx = await axios.post(
-        `https://chainguru-db.herokuapp.com/zerion/address/tx`,
-        {
-          addresses: wallets,
-          currency: vsCoin,
-          query: query,
-        }
+        `https://chainguru-db-dev.herokuapp.com/zerion/address/tx`,
+        payload
       );
       emitter.emit(DB_GET_ADDRESS_TX_RETURNED, addressTx.data);
     } catch (err) {
