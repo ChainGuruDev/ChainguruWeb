@@ -9,6 +9,7 @@ import PriceChart from "../components/Chart.js";
 import LSvoteResultModal from "../components/lsVoteResultModal.js";
 
 import LongShortMini from "./longShortMini.js";
+import TransactionsBig from "./transactionsBig.js";
 
 import {
   formatMoney,
@@ -87,6 +88,8 @@ import {
   DB_GET_PORTFOLIO,
   DB_GET_PORTFOLIO_RETURNED,
   GETTING_NEW_CHART_DATA,
+  DB_GET_ADDRESS_TX,
+  DB_GET_ADDRESS_TX_RETURNED,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -246,6 +249,8 @@ class CryptoDetective extends Component {
     emitter.on(COIN_PRICECHART_RETURNED, this.priceChartReturned);
     emitter.on(DB_GET_ASSETSTATS_RETURNED, this.db_getAssetStatsReturned);
     emitter.on(GETTING_NEW_CHART_DATA, this.newSearch);
+    emitter.on(DB_GET_ADDRESS_TX_RETURNED, this.txReturned);
+
     if (userAuth && account && account.address) {
       dispatcher.dispatch({
         type: DB_GET_USERDATA,
@@ -290,6 +295,8 @@ class CryptoDetective extends Component {
     );
     emitter.removeListener(COIN_PRICECHART_RETURNED, this.priceChartReturned);
     emitter.removeListener(GETTING_NEW_CHART_DATA, this.newSearch);
+    emitter.removeListener(DB_GET_ADDRESS_TX_RETURNED, this.txReturned);
+
     clearInterval(this.interval);
   }
 
@@ -323,6 +330,17 @@ class CryptoDetective extends Component {
     this.nav(newID);
   }
 
+  txReturned = (data) => {
+    if (data) {
+      this.setState({
+        error: false,
+        loading: false,
+        txDataLoaded: true,
+        transactions: data.transactions,
+      });
+    }
+  };
+
   userDataReturned = (data) => {
     const { coinData } = this.state;
     const { classes } = this.props;
@@ -350,6 +368,11 @@ class CryptoDetective extends Component {
             assetCode: coinData.contract_address,
           },
         });
+        dispatcher.dispatch({
+          type: DB_GET_ADDRESS_TX,
+          wallet: wallets,
+          query: coinData.contract_address,
+        });
       } else if (coinData.symbol === "eth") {
         dispatcher.dispatch({
           type: DB_GET_ASSETSTATS,
@@ -357,6 +380,11 @@ class CryptoDetective extends Component {
             wallet: wallets,
             assetCode: coinData.symbol,
           },
+        });
+        dispatcher.dispatch({
+          type: DB_GET_ADDRESS_TX,
+          wallet: wallets,
+          query: coinData.symbol,
         });
       }
     }
@@ -399,6 +427,11 @@ class CryptoDetective extends Component {
             assetCode: data[0].contract_address,
           },
         });
+        dispatcher.dispatch({
+          type: DB_GET_ADDRESS_TX,
+          wallet: userWallets,
+          query: data[0].contract_address,
+        });
       } else if (data[0].symbol === "eth") {
         dispatcher.dispatch({
           type: DB_GET_ASSETSTATS,
@@ -406,6 +439,11 @@ class CryptoDetective extends Component {
             wallet: userWallets,
             assetCode: data[0].symbol,
           },
+        });
+        dispatcher.dispatch({
+          type: DB_GET_ADDRESS_TX,
+          wallet: userWallets,
+          query: data[0].symbol,
         });
       }
     }
@@ -417,6 +455,7 @@ class CryptoDetective extends Component {
     this.setState({
       coinData: data[0],
       dataLoaded: true,
+      txDataLoaded: false,
     });
   };
 
@@ -2142,6 +2181,23 @@ class CryptoDetective extends Component {
             </AccordionDetails>
           </Accordion>
         </Card>
+        {this.state.txDataLoaded && this.state.transactions.length > 0 && (
+          <Accordion>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="transactionsAccordion"
+              id="transactions-header"
+            >
+              <Typography variant="h4">Transactions</Typography>
+            </AccordionSummary>
+            <AccordionDetails style={{ padding: 0 }}>
+              <TransactionsBig
+                tx={this.state.transactions}
+                wallets={this.state.userWallets}
+              />
+            </AccordionDetails>
+          </Accordion>
+        )}
       </div>
     );
   };

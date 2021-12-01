@@ -6,7 +6,6 @@ import { formatMoney } from "../helpers";
 import WalletNicknameModal from "../components/walletNicknameModal.js";
 import WalletRemoveModal from "../components/walletRemoveModal.js";
 import PortfolioChart from "../components/PortfolioChart.js";
-import RefreshRoundedIcon from "@material-ui/icons/RefreshRounded";
 import BackspaceRoundedIcon from "@material-ui/icons/BackspaceRounded";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 import AddCircleRoundedIcon from "@material-ui/icons/AddCircleRounded";
@@ -52,7 +51,6 @@ import {
   DB_GET_PORTFOLIO_ASSET_STATS_RETURNED,
   DB_GET_PORTFOLIO_CHART,
   DB_GET_PORTFOLIO_CHART_RETURNED,
-  DB_UPDATE_PORTFOLIO,
   DB_UPDATE_PORTFOLIO_RETURNED,
   DB_SET_USER_WALLET_NICKNAME_RETURNED,
   DB_REMOVE_USER_WALLET_NICKNAME_RETURNED,
@@ -1267,7 +1265,7 @@ class PortfolioBig extends Component {
                       )}
                       {this.state.chartDataLoaded &&
                         this.state.chartVariation &&
-                        this.state.timeFrame != "d" && (
+                        this.state.timeFrame !== "d" && (
                           <Grid container item justify="space-around">
                             <Grid
                               item

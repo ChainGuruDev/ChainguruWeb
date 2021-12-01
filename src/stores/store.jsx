@@ -2468,7 +2468,6 @@ ${nonce}`,
     if (data.offset) {
       payload.offset = data.offset;
     }
-    console.log(payload);
     try {
       const addressTx = await axios.post(
         `https://chainguru-db-dev.herokuapp.com/zerion/address/tx`,
