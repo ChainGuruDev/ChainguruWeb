@@ -2374,6 +2374,7 @@ ${nonce}`,
           asset_code: [data.payload.assetCode],
         }
       );
+      console.log(assetData);
       emitter.emit(
         DB_GET_ASSETSTATS_RETURNED,
         await portfolioAssetStats.data,

@@ -2168,8 +2168,21 @@ class CryptoDetective extends Component {
               <Typography variant="h4">Description</Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <Typography variant="subtitle1">
-                <div style={{ textAlign: "left" }}>
+              <Typography
+                variant="subtitle1"
+                style={{
+                  textAlign: "left",
+                  color: "inherit",
+                  textDecoration: "inherit",
+                }}
+              >
+                <div
+                  style={{
+                    textAlign: "left",
+                    color: "inherit",
+                    textDecoration: "inherit",
+                  }}
+                >
                   {ReactHtmlParser(
                     coinData.description.es.replaceAll(
                       "https://www.coingecko.com/en/coins/",
