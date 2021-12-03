@@ -145,6 +145,8 @@ import {
   DB_BLUECHIPS_CHECK_RETURNED,
   DB_GET_ADDRESS_TX,
   DB_GET_ADDRESS_TX_RETURNED,
+  DB_GET_CRYPTONEWS,
+  DB_GET_CRYPTONEWS_RETURNED,
 } from "../constants";
 
 import {
@@ -455,6 +457,9 @@ class Store {
             break;
           case DB_GET_ADDRESS_TX:
             this.db_getAddressTx(payload);
+            break;
+          case DB_GET_CRYPTONEWS:
+            this.db_getCryptoNews(payload);
             break;
           default: {
             break;
@@ -2374,7 +2379,6 @@ ${nonce}`,
           asset_code: [data.payload.assetCode],
         }
       );
-      console.log(assetData);
       emitter.emit(
         DB_GET_ASSETSTATS_RETURNED,
         await portfolioAssetStats.data,
@@ -2685,6 +2689,41 @@ ${nonce}`,
         }
       );
       emitter.emit(DB_REMOVE_USER_WALLET_NICKNAME_RETURNED, await data.data);
+    } catch (err) {
+      console.log(err.message);
+      emitter.emit(ERROR, err.message);
+    }
+  };
+
+  db_getCryptoNews = async (payload) => {
+    //eg. search params
+    //     "params": {
+    //     "currencies": "eth,btc",
+    //     "filter":"bullish",
+    //     "regions": ["es","en","fr","it"],
+    //     "page":"5"
+    // }
+    try {
+      let searchParams = {};
+      if (payload.currencies) {
+        searchParams.currencies = payload.currencies;
+      }
+      if (payload.filter) {
+        searchParams.filter = payload.filter;
+      }
+      if (payload.regions) {
+        searchParams.regions = payload.regions;
+      }
+      if (payload.page) {
+        searchParams.page = payload.page;
+      }
+      let news = await axios.post(
+        `https://chainguru-db-dev.herokuapp.com/cryptopanic/getNews`,
+        {
+          params: searchParams,
+        }
+      );
+      emitter.emit(DB_GET_CRYPTONEWS_RETURNED, await news.data);
     } catch (err) {
       console.log(err.message);
       emitter.emit(ERROR, err.message);

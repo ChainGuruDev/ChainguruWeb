@@ -549,25 +549,27 @@ class PortfolioBig extends Component {
               }}
             >
               <img className={classes.tokenLogo} alt="" src={row.icon_url} />
-              {walletColors[
-                walletColors
-                  .map((e) => e.wallet)
-                  .indexOf(row.wallet_address.toLowerCase())
-              ] && (
-                <div
-                  style={{
-                    marginLeft: 10,
-                    backgroundColor:
-                      walletColors[
-                        walletColors
-                          .map((e) => e.wallet)
-                          .indexOf(row.wallet_address.toLowerCase())
-                      ].color,
-                    width: "7px",
-                    height: "50px",
-                  }}
-                />
-              )}
+
+              {selectedWallet === "all" &&
+                walletColors[
+                  walletColors
+                    .map((e) => e.wallet)
+                    .indexOf(row.wallet_address.toLowerCase())
+                ] && (
+                  <div
+                    style={{
+                      marginLeft: 10,
+                      backgroundColor:
+                        walletColors[
+                          walletColors
+                            .map((e) => e.wallet)
+                            .indexOf(row.wallet_address.toLowerCase())
+                        ].color,
+                      width: "7px",
+                      height: "50px",
+                    }}
+                  />
+                )}
             </div>
           </TableCell>
           <TableCell padding="none" align="left">

@@ -90,6 +90,15 @@ function formatMoneyMCAP(
   }
 }
 
+function timeDifference(date, date2) {
+  var date1 = new Date(date);
+  if (!date2) {
+    date2 = new Date();
+  }
+  var diffInMs = parseInt(date2 - date1);
+  return timeConversion(diffInMs);
+}
+
 function timeConversion(millisec) {
   var seconds = (millisec / 1000).toFixed(1);
 
@@ -185,6 +194,7 @@ export {
   formatMoney,
   formatMoneyMCAP,
   timeConversion,
+  timeDifference,
   getHash,
   formatBigNumbers,
   differenceInPercentage,

@@ -15,6 +15,7 @@ import {
 import { withTranslation } from "react-i18next";
 import Snackbar from "../snackbar";
 
+import MenuBookRoundedIcon from "@material-ui/icons/MenuBookRounded";
 import LensIcon from "@material-ui/icons/Lens";
 import FlashOnIcon from "@material-ui/icons/FlashOn";
 import CompareArrowsIcon from "@material-ui/icons/CompareArrows";
@@ -51,6 +52,7 @@ const Favorites = React.lazy(() => import("../tools/favorites.js"));
 const LongShort = React.lazy(() => import("../tools/longShort.js"));
 const CoinList = React.lazy(() => import("../tools/coins.js"));
 const Swap = React.lazy(() => import("../tools/swap.js"));
+const CryptoNews = React.lazy(() => import("../tools/news.js"));
 
 const styles = (theme) => ({
   root: {
@@ -198,6 +200,9 @@ class Short extends Component {
       case "swap":
         toolID = 5;
         break;
+      case "news":
+        toolID = 6;
+        break;
       default:
         break;
     }
@@ -224,6 +229,9 @@ class Short extends Component {
         break;
       case 5:
         tool = "swap";
+        break;
+      case 6:
+        tool = "news";
         break;
       default:
         tool = "";
@@ -360,8 +368,14 @@ class Short extends Component {
               icon={<TrendingUpIcon />}
               {...a11yProps(3)}
             />
+
             <Tab label="Coins" icon={<LensIcon />} {...a11yProps(4)} />
             <Tab label="Swap" icon={<SwapHorizIcon />} {...a11yProps(5)} />
+            <Tab
+              label="News"
+              icon={<MenuBookRoundedIcon />}
+              {...a11yProps(6)}
+            />
           </Tabs>
         </AppBar>
         <div
@@ -449,6 +463,41 @@ class Short extends Component {
               }
             >
               <Swap />
+            </Suspense>
+          </TabPanel>
+          <TabPanel value={valueTab} index={6}>
+            <Suspense
+              fallback={
+                <div
+                  style={{
+                    flex: 1,
+                    display: "flex",
+                    width: "100%",
+                    minHeight: "100%",
+                    justifyContent: "space-around",
+                  }}
+                >
+                  <Grid container item xs={8}>
+                    <Card
+                      style={{
+                        padding: 10,
+                        margin: 10,
+                        display: "flex",
+                        flex: 1,
+                        direction: "row",
+                        alignContent: "center",
+                        textAlign: "center",
+                        justifyContent: "center",
+                      }}
+                      elevation={3}
+                    >
+                      <CircularProgress />
+                    </Card>
+                  </Grid>
+                </div>
+              }
+            >
+              <CryptoNews />
             </Suspense>
           </TabPanel>
         </div>
