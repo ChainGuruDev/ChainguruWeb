@@ -2703,19 +2703,20 @@ ${nonce}`,
     //     "regions": ["es","en","fr","it"],
     //     "page":"5"
     // }
+
     try {
       let searchParams = {};
-      if (payload.currencies) {
-        searchParams.currencies = payload.currencies;
+      if (payload.params.currencies) {
+        searchParams.currencies = payload.params.currencies;
       }
-      if (payload.filter) {
-        searchParams.filter = payload.filter;
+      if (payload.params.filter) {
+        searchParams.filter = payload.params.filter;
       }
-      if (payload.regions) {
-        searchParams.regions = payload.regions;
+      if (payload.params.regions) {
+        searchParams.regions = payload.params.regions;
       }
-      if (payload.page) {
-        searchParams.page = payload.page;
+      if (payload.params.page) {
+        searchParams.page = payload.params.page;
       }
       let news = await axios.post(
         `https://chainguru-db-dev.herokuapp.com/cryptopanic/getNews`,
