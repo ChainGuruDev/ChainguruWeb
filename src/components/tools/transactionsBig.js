@@ -358,13 +358,13 @@ class TransactionsBig extends Component {
 
     if (sortedTXs.length > 0) {
       return sortedTXs.map((tx, idx) => (
-        <>
+        <div key={`row_${idx}`}>
           <Grid
             item
             container
             direction="row"
             alignItems="center"
-            key={idx}
+            key={`rootTxRow_${idx}`}
             className={
               tx.status === "confirmed" ? classes.mainTx : classes.mainTxFailed
             }
@@ -372,6 +372,7 @@ class TransactionsBig extends Component {
             {tx.type === "send" && (
               <>
                 <Grid
+                  key={`rootSendTx_Grid1_${idx}`}
                   item
                   container
                   direction="row"
@@ -425,6 +426,7 @@ class TransactionsBig extends Component {
                 <Divider orientation="vertical" className={classes.divVert} />
                 <Grid
                   item
+                  key={`rootSendTx_Grid2_${idx}`}
                   container
                   direction="column"
                   style={{
@@ -437,7 +439,6 @@ class TransactionsBig extends Component {
                   </Typography>
                   <ForwardRoundedIcon style={{ color: colors.cgRed }} />
                 </Grid>
-
                 <Divider orientation="vertical" className={classes.divVert} />
                 <Link
                   style={{ color: "inherit", textDecoration: "inherit" }}
@@ -448,6 +449,7 @@ class TransactionsBig extends Component {
                     {tx.changes[0] && (
                       <Grid
                         container
+                        key={`rootSendTx_ToGrid_${idx}`}
                         direction={"row"}
                         justify={"center"}
                         align="right"
@@ -482,6 +484,7 @@ class TransactionsBig extends Component {
                 <Divider orientation="vertical" className={classes.divVert} />
                 <Grid item style={{ margin: "0px auto 0px 5px" }} align="left">
                   <Grid
+                    key={`rootSendTx_AssetGrid_${idx}`}
                     container
                     direction={"row"}
                     justify={"center"}
@@ -524,6 +527,7 @@ class TransactionsBig extends Component {
               <>
                 <Grid
                   item
+                  key={`rootReceiveTx_Grid1_${idx}`}
                   container
                   direction="row"
                   justify="center"
@@ -697,7 +701,7 @@ class TransactionsBig extends Component {
             {tx.type === "trade" && tx.changes[0] && tx.changes[1] && (
               <>
                 <Grid
-                  key={"mainData" + tx.hash}
+                  key={`rootTradeTx_Grid1_${idx}`}
                   item
                   container
                   direction="row"
@@ -708,6 +712,7 @@ class TransactionsBig extends Component {
                 >
                   <Grid
                     item
+                    key={`sendTx_Grid1_${idx}`}
                     container
                     direction="row"
                     justify="center"
@@ -765,7 +770,7 @@ class TransactionsBig extends Component {
                   </Grid>
                   <Divider orientation="vertical" className={classes.divVert} />
                   <Grid
-                    key={tx.hash + idx}
+                    key={`sendTx_Grid2_${idx}`}
                     item
                     container
                     direction="column"
@@ -792,6 +797,7 @@ class TransactionsBig extends Component {
                         align="left"
                       >
                         <Grid
+                          key={`sendTx_OUT_Grid1_${idx}`}
                           container
                           direction={"row"}
                           justify={"center"}
@@ -889,6 +895,7 @@ class TransactionsBig extends Component {
                       >
                         <Grid
                           container
+                          key={`sendTx_IN_Grid1_${idx}`}
                           direction={"row"}
                           justify={"center"}
                           align="right"
@@ -1878,8 +1885,8 @@ class TransactionsBig extends Component {
               </>
             )}
           </Grid>
-          <Divider variant="middle" />
-        </>
+          <Divider key={`divRow_${idx}`} variant="middle" />
+        </div>
       ));
     }
   };
@@ -1969,6 +1976,8 @@ class TransactionsBig extends Component {
       txOffset,
     } = this.state;
 
+    console.log("render TXs");
+
     return (
       <div className={classes.root}>
         <>
@@ -2019,10 +2028,18 @@ class TransactionsBig extends Component {
                   onChange={this.changeMaxTXs}
                   label="Age"
                 >
-                  <MenuItem value={10}>10</MenuItem>
-                  <MenuItem value={25}>25</MenuItem>
-                  <MenuItem value={50}>50</MenuItem>
-                  <MenuItem value={100}>100</MenuItem>
+                  <MenuItem key={"10"} value={10}>
+                    10
+                  </MenuItem>
+                  <MenuItem key={"25"} value={25}>
+                    25
+                  </MenuItem>
+                  <MenuItem key={"50"} value={50}>
+                    50
+                  </MenuItem>
+                  <MenuItem key={"100"} value={100}>
+                    100
+                  </MenuItem>
                 </Select>
               </FormControl>
             </Grid>

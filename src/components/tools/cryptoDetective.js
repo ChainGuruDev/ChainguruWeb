@@ -90,12 +90,15 @@ import {
   GETTING_NEW_CHART_DATA,
   DB_GET_ADDRESS_TX,
   DB_GET_ADDRESS_TX_RETURNED,
+  LOGIN_RETURNED,
 } from "../../constants";
 
 import Store from "../../stores";
 const emitter = Store.emitter;
 const store = Store.store;
 const dispatcher = Store.dispatcher;
+
+const CryptoNews = React.lazy(() => import("../tools/news.js"));
 
 const styles = (theme) => ({
   root: {
@@ -211,8 +214,8 @@ class CryptoDetective extends Component {
     const userWallets = store.getStore("userWallets");
 
     this.newSearch = this.newSearch.bind(this);
-
     this.state = {
+      userAuth: userAuth,
       account: account,
       loading: false,
       coinList: [],
@@ -250,6 +253,7 @@ class CryptoDetective extends Component {
     emitter.on(DB_GET_ASSETSTATS_RETURNED, this.db_getAssetStatsReturned);
     emitter.on(GETTING_NEW_CHART_DATA, this.newSearch);
     emitter.on(DB_GET_ADDRESS_TX_RETURNED, this.txReturned);
+    emitter.on(LOGIN_RETURNED, this.loginReturned);
 
     if (userAuth && account && account.address) {
       dispatcher.dispatch({
@@ -296,6 +300,7 @@ class CryptoDetective extends Component {
     emitter.removeListener(COIN_PRICECHART_RETURNED, this.priceChartReturned);
     emitter.removeListener(GETTING_NEW_CHART_DATA, this.newSearch);
     emitter.removeListener(DB_GET_ADDRESS_TX_RETURNED, this.txReturned);
+    emitter.removeListener(LOGIN_RETURNED, this.loginReturned);
 
     clearInterval(this.interval);
   }
@@ -320,8 +325,22 @@ class CryptoDetective extends Component {
     }
   }
 
+  loginReturned = () => {
+    const account = store.getStore("account");
+    const userAuth = store.getStore("userAuth");
+
+    if (userAuth && account && account.address) {
+      dispatcher.dispatch({
+        type: DB_GET_USERDATA,
+        address: account.address,
+      });
+    }
+    this.setState({ userAuth: userAuth });
+  };
+
   newSearch(newID) {
     this.setState({
+      loading: true,
       loadingPriceChart: true,
       portfolioStats: null,
       portfolioDataLoaded: false,
@@ -621,7 +640,7 @@ class CryptoDetective extends Component {
       totalReturned: null,
       totalFeeSpent: null,
     };
-    let createPortfolio = (wallet, balance, portfolioShare) => {
+    var createPortfolio = (wallet, balance, portfolioShare) => {
       return {
         wallet,
         balance,
@@ -676,9 +695,10 @@ class CryptoDetective extends Component {
   };
 
   priceChartReturned = (data) => {
-    this.setState({ loadingPriceChart: false });
+    this.setState({ loadingPriceChart: false, loading: false });
   };
 
+  //TODO REVISAR EL EXPAND CONTRACT, PARECE Q DE ACA VIENE EL QUILOMBO
   expandPortfolioData = (currentState) => {
     let newState = !currentState;
     var rotated = currentState;
@@ -1614,7 +1634,7 @@ class CryptoDetective extends Component {
               alignItems="flex-start"
               item
             ></Grid>
-            <LongShortMini tokenID={coinData.id} />
+            {this.state.userAuth && <LongShortMini tokenID={coinData.id} />}
           </Grid>
         </Grid>
       </div>
@@ -2194,23 +2214,39 @@ class CryptoDetective extends Component {
             </AccordionDetails>
           </Accordion>
         </Card>
-        {this.state.txDataLoaded && this.state.transactions.length > 0 && (
+        {!this.state.loading && coinData.id && (
           <Accordion>
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
               aria-controls="transactionsAccordion"
               id="transactions-header"
             >
-              <Typography variant="h4">Transactions</Typography>
+              <Typography variant="h4">Crypto News</Typography>
             </AccordionSummary>
             <AccordionDetails style={{ padding: 0 }}>
-              <TransactionsBig
-                tx={this.state.transactions}
-                wallets={this.state.userWallets}
-              />
+              <CryptoNews currency={coinData.symbol} />
             </AccordionDetails>
           </Accordion>
         )}
+        {!this.state.loading &&
+          this.state.txDataLoaded &&
+          this.state.transactions.length > 0 && (
+            <Accordion>
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="transactionsAccordion"
+                id="transactions-header"
+              >
+                <Typography variant="h4">Transactions</Typography>
+              </AccordionSummary>
+              <AccordionDetails style={{ padding: 0 }}>
+                <TransactionsBig
+                  tx={this.state.transactions}
+                  wallets={this.state.userWallets}
+                />
+              </AccordionDetails>
+            </Accordion>
+          )}
       </div>
     );
   };
@@ -2231,8 +2267,7 @@ class CryptoDetective extends Component {
 
   render() {
     const { classes } = this.props;
-    const { dataLoaded, coinData, modalOpen, modalData } = this.state;
-
+    const { dataLoaded, coinData, modalOpen, modalData, userAuth } = this.state;
     return (
       <div className={classes.root}>
         <Grid

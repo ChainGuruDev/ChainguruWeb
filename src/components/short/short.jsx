@@ -497,7 +497,17 @@ class Short extends Component {
                 </div>
               }
             >
-              <CryptoNews />
+              <div
+                style={{
+                  maxWidth: "100%",
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+              >
+                <div style={{ maxWidth: "80%" }}>
+                  <CryptoNews />
+                </div>
+              </div>
             </Suspense>
           </TabPanel>
         </div>

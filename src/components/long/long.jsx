@@ -20,6 +20,7 @@ import ShowChartIcon from "@material-ui/icons/ShowChart";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import LensIcon from "@material-ui/icons/Lens";
 import SwapHorizIcon from "@material-ui/icons/SwapHoriz";
+import MenuBookRoundedIcon from "@material-ui/icons/MenuBookRounded";
 
 // import CoinList from "../tools/coins";
 // import DollarCostAverage from "../tools/dollarCostAverage.js";
@@ -44,6 +45,7 @@ const DollarCostAverage = React.lazy(() =>
   import("../tools/dollarCostAverage.js")
 );
 const BlueChips = React.lazy(() => import("../tools/blueChips.js"));
+const CryptoNews = React.lazy(() => import("../tools/news.js"));
 
 const styles = (theme) => ({
   background: {
@@ -165,6 +167,8 @@ class Long extends Component {
       newTab = 2;
     } else if (props.match.params.toolID === "swap") {
       newTab = 3;
+    } else if (props.match.params.toolID === "news") {
+      newTab = 4;
     }
 
     function getMode() {
@@ -266,6 +270,11 @@ class Long extends Component {
             />
             <LongTab label="Coins" icon={<LensIcon />} {...a11yProps(2)} />
             <LongTab label="Swap" icon={<SwapHorizIcon />} {...a11yProps(3)} />
+            <Tab
+              label="News"
+              icon={<MenuBookRoundedIcon />}
+              {...a11yProps(4)}
+            />
           </LongTabs>
         </AppBar>
         <div
@@ -326,6 +335,41 @@ class Long extends Component {
               }
             >
               <Swap />
+            </Suspense>
+          </TabPanel>
+          <TabPanel value={valueTab} index={4}>
+            <Suspense
+              fallback={
+                <div
+                  style={{
+                    flex: 1,
+                    display: "flex",
+                    width: "100%",
+                    minHeight: "100%",
+                    justifyContent: "space-around",
+                  }}
+                >
+                  <Grid container item xs={8}>
+                    <Card
+                      style={{
+                        padding: 10,
+                        margin: 10,
+                        display: "flex",
+                        flex: 1,
+                        direction: "row",
+                        alignContent: "center",
+                        textAlign: "center",
+                        justifyContent: "center",
+                      }}
+                      elevation={3}
+                    >
+                      <CircularProgress />
+                    </Card>
+                  </Grid>
+                </div>
+              }
+            >
+              <CryptoNews />
             </Suspense>
           </TabPanel>
         </div>

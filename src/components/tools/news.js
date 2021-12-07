@@ -4,24 +4,6 @@ import { withStyles } from "@material-ui/core/styles";
 
 import { colors } from "../../theme";
 import { timeDifference } from "../helpers";
-import FirstPageIcon from "@material-ui/icons/FirstPage";
-import KeyboardArrowLeft from "@material-ui/icons/KeyboardArrowLeft";
-import KeyboardArrowRight from "@material-ui/icons/KeyboardArrowRight";
-import LastPageIcon from "@material-ui/icons/LastPage";
-
-import ThumbUpRoundedIcon from "@material-ui/icons/ThumbUp"; //Liked
-import ThumbDownRoundedIcon from "@material-ui/icons/ThumbDownRounded"; //Disliked
-import TrendingUpRoundedIcon from "@material-ui/icons/TrendingUpRounded"; //Bullish
-import TrendingDownRoundedIcon from "@material-ui/icons/TrendingDownRounded"; //Bearish
-import ReportProblemRoundedIcon from "@material-ui/icons/ReportProblemRounded"; //Important
-import EmojiEmotionsRoundedIcon from "@material-ui/icons/EmojiEmotionsRounded"; //Lol
-import StarRoundedIcon from "@material-ui/icons/StarRounded"; //Saved
-import NotInterestedRoundedIcon from "@material-ui/icons/NotInterestedRounded"; //Toxic
-import ChatRoundedIcon from "@material-ui/icons/ChatRounded"; //Comments
-import KeyboardArrowRightRoundedIcon from "@material-ui/icons/KeyboardArrowRightRounded";
-import KeyboardArrowLeftRoundedIcon from "@material-ui/icons/KeyboardArrowLeftRounded";
-import SearchIcon from "@material-ui/icons/Search";
-import LinkRoundedIcon from "@material-ui/icons/LinkRounded";
 
 import {
   Card,
@@ -43,6 +25,25 @@ import {
   TextField,
   InputAdornment,
 } from "@material-ui/core";
+import CoinSearchBar from "../components/CoinSearchBar.js";
+
+import FirstPageIcon from "@material-ui/icons/FirstPage";
+import KeyboardArrowLeft from "@material-ui/icons/KeyboardArrowLeft";
+import KeyboardArrowRight from "@material-ui/icons/KeyboardArrowRight";
+import LastPageIcon from "@material-ui/icons/LastPage";
+import ThumbUpRoundedIcon from "@material-ui/icons/ThumbUp"; //Liked
+import ThumbDownRoundedIcon from "@material-ui/icons/ThumbDownRounded"; //Disliked
+import TrendingUpRoundedIcon from "@material-ui/icons/TrendingUpRounded"; //Bullish
+import TrendingDownRoundedIcon from "@material-ui/icons/TrendingDownRounded"; //Bearish
+import ReportProblemRoundedIcon from "@material-ui/icons/ReportProblemRounded"; //Important
+import EmojiEmotionsRoundedIcon from "@material-ui/icons/EmojiEmotionsRounded"; //Lol
+import StarRoundedIcon from "@material-ui/icons/StarRounded"; //Saved
+import NotInterestedRoundedIcon from "@material-ui/icons/NotInterestedRounded"; //Toxic
+import ChatRoundedIcon from "@material-ui/icons/ChatRounded"; //Comments
+import KeyboardArrowRightRoundedIcon from "@material-ui/icons/KeyboardArrowRightRounded";
+import KeyboardArrowLeftRoundedIcon from "@material-ui/icons/KeyboardArrowLeftRounded";
+import SearchIcon from "@material-ui/icons/Search";
+import LinkRoundedIcon from "@material-ui/icons/LinkRounded";
 
 import { DB_GET_CRYPTONEWS, DB_GET_CRYPTONEWS_RETURNED } from "../../constants";
 
@@ -136,34 +137,56 @@ const validRegions = [
 ];
 
 class CryptoNews extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this._isMounted = false;
+
+    const currencies = props.currency;
 
     this.state = {
       loading: true,
       news: null,
       page: 1,
-      currencies: null,
+      currencies: currencies,
       newsFilter: "",
       newsRegions: [],
     };
   }
 
   componentDidMount() {
+    const { currencies } = this.state;
     this._isMounted = true;
     emitter.on(DB_GET_CRYPTONEWS_RETURNED, this.cryptoNewsReturned);
-
     this._isMounted &&
       dispatcher.dispatch({
         type: DB_GET_CRYPTONEWS,
-        params: {},
+        params: {
+          currencies: currencies,
+        },
       });
   }
 
   componentWillUnmount() {
     emitter.removeListener(DB_GET_CRYPTONEWS_RETURNED, this.cryptoNewsReturned);
     this._isMounted = false;
+  }
+
+  componentDidUpdate(prevProps) {
+    const { newsFilter, newsRegions } = this.state;
+
+    if (prevProps.currency !== this.props.currency) {
+      this.setState({
+        currencies: this.props.currency,
+      });
+      let params = {
+        currencies: this.props.currency,
+        newsFilter: newsFilter,
+        newsRegions: newsRegions,
+        page: 1,
+      };
+
+      this.getNews(params);
+    }
   }
 
   getNews = (params) => {
@@ -316,12 +339,15 @@ class CryptoNews extends Component {
                 {item.title}
               </Grid>
               <Grid item style={{ display: "flex" }}>
-                <Link target="_blank" href={item.url}>
-                  <Tooltip
-                    classes={{ tooltip: classes.tooltip }}
-                    title="Join discussion on CryptoPanic"
-                    arrow
-                  >
+                <Link
+                  target="_blank"
+                  href={item.url}
+                  style={{ color: "inherit", textDecoration: "inherit" }}
+                >
+                  <div style={{ display: "flex" }}>
+                    <Typography variant="subtitle2">
+                      Discuss on CryptoPanic
+                    </Typography>{" "}
                     <IconButton
                       color="primary"
                       aria-label="link to news"
@@ -330,7 +356,7 @@ class CryptoNews extends Component {
                     >
                       <LinkRoundedIcon fontSize="small" />
                     </IconButton>
-                  </Tooltip>
+                  </div>
                 </Link>
                 <div style={{ display: "flex" }}>
                   <Typography variant="subtitle2">Source: </Typography>
@@ -376,7 +402,44 @@ class CryptoNews extends Component {
           )}
         </Grid>
       ));
+    } else {
+      return (
+        <Grid
+          key={"noNews"}
+          container
+          direction="row"
+          justify="flex-start"
+          alignItems="center"
+          item
+          xs={12}
+          className={classes.newsRow}
+        >
+          <Grid item className={classes.newsTitle}>
+            <Grid container direction="row" style={{ textAlign: "center" }}>
+              <Typography>There are no matching results.</Typography>
+              <Typography>Try different news kind or regions.</Typography>
+            </Grid>
+          </Grid>
+        </Grid>
+      );
     }
+  };
+
+  newTokenFilter = (newToken) => {
+    const { newsFilter, newsRegions } = this.state;
+    const params = {
+      filter: newsFilter,
+      regions: newsRegions,
+      page: 1,
+      currencies: newToken,
+    };
+
+    this.setState({
+      currencies: newToken,
+      page: 1,
+      loading: true,
+    });
+    this.getNews(params);
   };
 
   detective = (id) => {
@@ -455,16 +518,6 @@ class CryptoNews extends Component {
     }
   };
 
-  delayedHandleNewFilter = (newFilter) => {
-    let that = this;
-    if (this.state.timeout) {
-      clearTimeout(this.state.timeout);
-    }
-    this.state.timeout = setTimeout(function () {
-      that.handleNewFilter(newFilter); //this is your existing function
-    }, 600);
-  };
-
   handleNewFilter = (newFilter) => {
     this.setState({
       currencies: newFilter,
@@ -499,117 +552,112 @@ class CryptoNews extends Component {
       newsRegions,
     } = this.state;
 
+    console.log("news component render");
+
     return (
       <div className={classes.root}>
-        <Grid item xs={8}>
-          <Card className={classes.rootCard} elevation={3}>
-            <Grid container direction="row" spacing={3}>
-              <Grid
-                item
-                xs={12}
-                style={{
-                  padding: 12,
-                  display: "flex",
-                  justifyContent: "flex-start",
-                }}
-              >
-                <FormControl className={classes.newsFilterForm}>
-                  <InputLabel shrink id="demo-simple-select-label">
-                    Showing
-                  </InputLabel>
-                  <Select
-                    value={newsFilter}
-                    onChange={this.handleChangeFilter}
-                    displayEmpty
-                    className={classes.newsFilterSelect}
-                    inputProps={{ "aria-label": "News Filter" }}
-                  >
-                    <MenuItem value={""}>All</MenuItem>
-                    <MenuItem value={"rising"}>Rising</MenuItem>
-                    <MenuItem value={"hot"}>Hot</MenuItem>
-                    <MenuItem value={"bullish"}>Bullish</MenuItem>
-                    <MenuItem value={"bearish"}>Bearish</MenuItem>
-                    <MenuItem value={"important"}>Important</MenuItem>
-                    <MenuItem value={"lol"}>Lol</MenuItem>
-                    <MenuItem value={"saved"}>Saved</MenuItem>
-                  </Select>
-                </FormControl>
-                <FormControl className={classes.newsRegionsForm}>
-                  <InputLabel shrink id="news-region-filter-label">
-                    From regions
-                  </InputLabel>
-                  <Select
-                    labelId="news-region-filter-label"
-                    id="news-region-filter"
-                    multiple
-                    value={newsRegions}
-                    onChange={this.handleChangeRegions}
-                    input={<Input />}
-                    renderValue={(selected) => selected.join(",")}
-                    MenuProps={MenuProps}
-                  >
-                    {validRegionsShort.map((region, i) => (
-                      <MenuItem key={region} value={region}>
-                        <Checkbox checked={newsRegions.indexOf(region) > -1} />
-                        <ListItemText primary={validRegions[i]} />
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <FormControl className={classes.newsFilterSymbol}>
-                  <InputLabel shrink htmlFor="filter-currency">
-                    Filter by Token Symbol
-                  </InputLabel>
-                  <Input
-                    id="news-query-filter"
-                    onChange={(e) =>
-                      this.delayedHandleNewFilter(e.target.value)
-                    }
-                    style={{ height: "48px" }}
-                    endAdornment={
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label="toggle password visibility"
-                          onClick={() => this.handleClickFilter()}
-                        >
-                          <SearchIcon />
-                        </IconButton>
-                      </InputAdornment>
-                    }
-                  />
-                </FormControl>
-              </Grid>
-              <Grid item xs={12}>
-                {loading && <CircularProgress />}
-                {!loading && <>{this.drawNews(news)}</>}
-              </Grid>
-
-              <Grid
-                container
-                direction="row"
-                justify="flex-end"
-                alignItems="center"
-                style={{ padding: 12 }}
-              >
-                <IconButton
-                  disabled={page === 1}
-                  size="small"
-                  onClick={() => this.changeNewsPage("prev")}
+        <Card className={classes.rootCard} elevation={3}>
+          <Grid container direction="row" spacing={3}>
+            <Grid
+              item
+              xs={12}
+              style={{
+                padding: 12,
+                display: "flex",
+                justifyContent: "flex-start",
+              }}
+            >
+              <FormControl className={classes.newsFilterForm} noValidate>
+                <InputLabel shrink id="demo-simple-select-label">
+                  Type
+                </InputLabel>
+                <Select
+                  value={newsFilter}
+                  onChange={this.handleChangeFilter}
+                  displayEmpty
+                  className={classes.newsFilterSelect}
                 >
-                  <KeyboardArrowLeftRoundedIcon />
-                </IconButton>
-                <div className={classes.pageCounter}>{page}</div>
-                <IconButton
-                  disabled={page === 10}
-                  size="small"
-                  onClick={() => this.changeNewsPage("next")}
+                  <MenuItem value={""}>All</MenuItem>
+                  <MenuItem value={"rising"}>Rising</MenuItem>
+                  <MenuItem value={"hot"}>Hot</MenuItem>
+                  <MenuItem value={"bullish"}>Bullish</MenuItem>
+                  <MenuItem value={"bearish"}>Bearish</MenuItem>
+                  <MenuItem value={"important"}>Important</MenuItem>
+                  <MenuItem value={"lol"}>Lol</MenuItem>
+                  <MenuItem value={"saved"}>Saved</MenuItem>
+                </Select>
+              </FormControl>
+              <div className={classes.newsRegionsForm}>
+                <InputLabel shrink id="news-region-filter-label">
+                  From regions
+                </InputLabel>
+                <Select
+                  labelId="news-region-filter-label"
+                  id="news-region-filter"
+                  multiple
+                  value={newsRegions}
+                  onChange={this.handleChangeRegions}
+                  input={<Input />}
+                  renderValue={(selected) => selected.join(",")}
+                  MenuProps={MenuProps}
                 >
-                  <KeyboardArrowRightRoundedIcon />
-                </IconButton>
-              </Grid>
+                  {validRegionsShort.map((region, i) => (
+                    <MenuItem key={region} value={region}>
+                      <Checkbox checked={newsRegions.indexOf(region) > -1} />
+                      <ListItemText primary={validRegions[i]} />
+                    </MenuItem>
+                  ))}
+                </Select>
+              </div>
+              <div style={{ minWidth: 250, alignSelf: "end", marginLeft: 10 }}>
+                <CoinSearchBar
+                  label="Filter by Token"
+                  id="news"
+                  callback={this.newTokenFilter}
+                />
+              </div>
             </Grid>
-          </Card>
-        </Grid>
+            <Grid
+              item
+              xs={12}
+              style={{
+                maxHeight: "500px",
+                overflowY: loading ? "" : "scroll",
+                scrollbarWidth: "thin",
+                scrollbarColor: `${colors.cgGreen} #30303080`,
+                paddingRight: 10,
+                width: "100%",
+              }}
+            >
+              {loading && <CircularProgress />}
+              {!loading && <>{this.drawNews(news)}</>}
+            </Grid>
+
+            <Grid
+              container
+              direction="row"
+              justify="flex-end"
+              alignItems="center"
+              style={{ padding: 12 }}
+            >
+              <IconButton
+                disabled={page === 1}
+                size="small"
+                onClick={() => this.changeNewsPage("prev")}
+              >
+                <KeyboardArrowLeftRoundedIcon />
+              </IconButton>
+              <div className={classes.pageCounter}>{page}</div>
+              <IconButton
+                disabled={page === 10}
+                size="small"
+                onClick={() => this.changeNewsPage("next")}
+              >
+                <KeyboardArrowRightRoundedIcon />
+              </IconButton>
+            </Grid>
+          </Grid>
+        </Card>
       </div>
     );
   }

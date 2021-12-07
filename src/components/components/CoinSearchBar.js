@@ -59,11 +59,15 @@ class CoinSearchBar extends Component {
       emitter.emit(GETTING_NEW_CHART_DATA, newValue.id);
       let _id = newValue.id;
       if (compareBarID) {
-        dispatcher.dispatch({
-          type: GET_COIN_DATA,
-          content: _id,
-          BarID: compareBarID,
-        });
+        if (compareBarID === "news") {
+          this.props.callback(newValue.symbol);
+        } else {
+          dispatcher.dispatch({
+            type: GET_COIN_DATA,
+            content: _id,
+            BarID: compareBarID,
+          });
+        }
       } else {
         dispatcher.dispatch({
           type: GET_COIN_DATA,

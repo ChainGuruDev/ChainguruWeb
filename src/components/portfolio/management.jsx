@@ -21,6 +21,7 @@ import TrackChangesRoundedIcon from "@material-ui/icons/TrackChangesRounded";
 import DashboardIcon from "@material-ui/icons/Dashboard";
 import ReceiptIcon from "@material-ui/icons/Receipt";
 import SwapHorizIcon from "@material-ui/icons/SwapHoriz";
+import MenuBookRoundedIcon from "@material-ui/icons/MenuBookRounded";
 
 //Load Tools
 import Transactions from "../tools/transactions";
@@ -41,6 +42,7 @@ const dispatcher = Store.dispatcher;
 const store = Store.store;
 
 const Swap = React.lazy(() => import("../tools/swap.js"));
+const CryptoNews = React.lazy(() => import("../tools/news.js"));
 
 const styles = (theme) => ({
   root: {
@@ -207,6 +209,10 @@ class PortfolioManagement extends Component {
       case "swap":
         toolID = 5;
         break;
+      case "news":
+        toolID = 6;
+        break;
+
       default:
         break;
     }
@@ -234,6 +240,10 @@ class PortfolioManagement extends Component {
       case 5:
         tool = "swap";
         break;
+      case 6:
+        tool = "news";
+        break;
+
       default:
         tool = "";
         break;
@@ -332,6 +342,11 @@ class PortfolioManagement extends Component {
               icon={<SwapHorizIcon />}
               {...a11yProps(5)}
             />
+            <Tab
+              label="News"
+              icon={<MenuBookRoundedIcon />}
+              {...a11yProps(6)}
+            />
           </PortfolioTabs>
         </AppBar>
         <div
@@ -368,6 +383,41 @@ class PortfolioManagement extends Component {
               }
             >
               <Swap />
+            </Suspense>
+          </TabPanel>
+          <TabPanel value={valueTab} index={6}>
+            <Suspense
+              fallback={
+                <div
+                  style={{
+                    flex: 1,
+                    display: "flex",
+                    width: "100%",
+                    minHeight: "100%",
+                    justifyContent: "space-around",
+                  }}
+                >
+                  <Grid container item xs={8}>
+                    <Card
+                      style={{
+                        padding: 10,
+                        margin: 10,
+                        display: "flex",
+                        flex: 1,
+                        direction: "row",
+                        alignContent: "center",
+                        textAlign: "center",
+                        justifyContent: "center",
+                      }}
+                      elevation={3}
+                    >
+                      <CircularProgress />
+                    </Card>
+                  </Grid>
+                </div>
+              }
+            >
+              <CryptoNews />
             </Suspense>
           </TabPanel>
         </div>

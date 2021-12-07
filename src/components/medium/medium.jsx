@@ -21,14 +21,9 @@ import FlashOnIcon from "@material-ui/icons/FlashOn";
 import CompareArrowsIcon from "@material-ui/icons/CompareArrows";
 import LensIcon from "@material-ui/icons/Lens";
 import SwapHorizIcon from "@material-ui/icons/SwapHoriz";
+import MenuBookRoundedIcon from "@material-ui/icons/MenuBookRounded";
 
 import { isMobile } from "react-device-detect";
-
-//Load Tools NOW USING REACT.LAzy
-// import CryptoDetective from "../tools/cryptoDetective";
-// import CryptoCompare from "../tools/cryptoCompare";
-// import Favorites from "../tools/favorites";
-// import CoinList from "../tools/coins";
 
 import {
   PING_COINGECKO,
@@ -49,6 +44,7 @@ const CryptoCompare = React.lazy(() => import("../tools/cryptoCompare.js"));
 const Favorites = React.lazy(() => import("../tools/favorites.js"));
 const CoinList = React.lazy(() => import("../tools/coins.js"));
 const Swap = React.lazy(() => import("../tools/swap.js"));
+const CryptoNews = React.lazy(() => import("../tools/news.js"));
 
 const styles = (theme) => ({
   root: {
@@ -193,6 +189,9 @@ class Medium extends Component {
       case "swap":
         toolID = 4;
         break;
+      case "news":
+        toolID = 5;
+        break;
       default:
         break;
     }
@@ -216,6 +215,9 @@ class Medium extends Component {
         break;
       case 4:
         tool = "swap";
+        break;
+      case 5:
+        tool = "news";
         break;
       default:
         tool = "";
@@ -358,6 +360,11 @@ class Medium extends Component {
             />
             <Tab label="Coins" icon={<LensIcon />} {...a11yProps(3)} />
             <Tab label="Swap" icon={<SwapHorizIcon />} {...a11yProps(4)} />
+            <Tab
+              label="News"
+              icon={<MenuBookRoundedIcon />}
+              {...a11yProps(5)}
+            />
           </Tabs>
         </AppBar>
         <div
@@ -432,6 +439,41 @@ class Medium extends Component {
               }
             >
               <Swap />
+            </Suspense>
+          </TabPanel>
+          <TabPanel value={valueTab} index={5}>
+            <Suspense
+              fallback={
+                <div
+                  style={{
+                    flex: 1,
+                    display: "flex",
+                    width: "100%",
+                    minHeight: "100%",
+                    justifyContent: "space-around",
+                  }}
+                >
+                  <Grid container item xs={8}>
+                    <Card
+                      style={{
+                        padding: 10,
+                        margin: 10,
+                        display: "flex",
+                        flex: 1,
+                        direction: "row",
+                        alignContent: "center",
+                        textAlign: "center",
+                        justifyContent: "center",
+                      }}
+                      elevation={3}
+                    >
+                      <CircularProgress />
+                    </Card>
+                  </Grid>
+                </div>
+              }
+            >
+              <CryptoNews />
             </Suspense>
           </TabPanel>
         </div>
