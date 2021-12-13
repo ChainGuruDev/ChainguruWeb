@@ -134,9 +134,7 @@ const styles = (theme) => ({
   timeframeBTNSelected: {
     backgroundColor: colors.cgGreen + "50",
   },
-  header: {
-    backgroundColor: "#0004",
-  },
+
   customCell: {
     backgroundColor: "inherit",
   },
@@ -1469,14 +1467,9 @@ class PortfolioBig extends Component {
                       <TableHead className={classes.header}>
                         <TableRow>
                           <TableCell
-                            className={classes.customCell}
                             style={{ width: "30px", height: "30px" }}
                           ></TableCell>
-                          <TableCell
-                            className={classes.customCell}
-                            align="left"
-                            padding="none"
-                          >
+                          <TableCell align="left" padding="none">
                             <TableSortLabel
                               active={sortBy === "name"}
                               direction={sortOrder}
@@ -1485,10 +1478,7 @@ class PortfolioBig extends Component {
                               Name
                             </TableSortLabel>
                           </TableCell>
-                          <TableCell
-                            className={classes.customCell}
-                            align="right"
-                          >
+                          <TableCell align="right">
                             <TableSortLabel
                               active={sortBy === "quantityDecimals"}
                               direction={sortOrder}
@@ -1498,7 +1488,6 @@ class PortfolioBig extends Component {
                             </TableSortLabel>
                           </TableCell>
                           <TableCell
-                            className={classes.customCell}
                             align="right"
                             onClick={() => this.sortBy("balance")}
                           >
@@ -1511,7 +1500,6 @@ class PortfolioBig extends Component {
                             </TableSortLabel>
                           </TableCell>
                           <TableCell
-                            className={classes.customCell}
                             align="right"
                             onClick={() => this.sortBy("value")}
                           >
@@ -1527,7 +1515,6 @@ class PortfolioBig extends Component {
                             </TableSortLabel>
                           </TableCell>
                           <TableCell
-                            className={classes.customCell}
                             align="right"
                             onClick={() => this.sortBy("profit_percent")}
                           >
@@ -1543,7 +1530,6 @@ class PortfolioBig extends Component {
                             </TableSortLabel>
                           </TableCell>
                           <TableCell
-                            className={classes.customCell}
                             align="right"
                             onClick={() => this.sortBy("total_returned")}
                           >
