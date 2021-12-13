@@ -552,8 +552,6 @@ class CryptoNews extends Component {
       newsRegions,
     } = this.state;
 
-    console.log("news component render");
-
     return (
       <div className={classes.root}>
         <Card className={classes.rootCard} elevation={3}>

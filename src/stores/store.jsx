@@ -2475,7 +2475,7 @@ ${nonce}`,
     }
     try {
       const addressTx = await axios.post(
-        `https://chainguru-db-dev.herokuapp.com/zerion/address/tx`,
+        `https://chainguru-db.herokuapp.com/zerion/address/tx`,
         payload
       );
       emitter.emit(DB_GET_ADDRESS_TX_RETURNED, addressTx.data);
@@ -2696,14 +2696,6 @@ ${nonce}`,
   };
 
   db_getCryptoNews = async (payload) => {
-    //eg. search params
-    //     "params": {
-    //     "currencies": "eth,btc",
-    //     "filter":"bullish",
-    //     "regions": ["es","en","fr","it"],
-    //     "page":"5"
-    // }
-
     try {
       let searchParams = {};
       if (payload.params.currencies) {
@@ -2719,7 +2711,7 @@ ${nonce}`,
         searchParams.page = payload.params.page;
       }
       let news = await axios.post(
-        `https://chainguru-db-dev.herokuapp.com/cryptopanic/getNews`,
+        `https://chainguru-db.herokuapp.com/cryptopanic/getNews`,
         {
           params: searchParams,
         }

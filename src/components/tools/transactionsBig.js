@@ -1976,8 +1976,6 @@ class TransactionsBig extends Component {
       txOffset,
     } = this.state;
 
-    console.log("render TXs");
-
     return (
       <div className={classes.root}>
         <>

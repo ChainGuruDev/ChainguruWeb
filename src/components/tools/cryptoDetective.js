@@ -193,13 +193,24 @@ const styles = (theme) => ({
     mozTransition: "all 0.5s cubic-bezier(.22,.61,.36,1)",
     oTransition: "all 0.5s cubic-bezier(.22,.61,.36,1)",
     transition: "all 0.5s cubic-bezier(.22,.61,.36,1)",
+    transform: "rotate(180deg)",
   },
-  expandContract: {
+  unexpandIcon: {
+    webkitTransition: "all 0.5s cubic-bezier(.22,.61,.36,1)",
+    mozTransition: "all 0.5s cubic-bezier(.22,.61,.36,1)",
+    oTransition: "all 0.5s cubic-bezier(.22,.61,.36,1)",
+    transition: "all 0.5s cubic-bezier(.22,.61,.36,1)",
+    transform: "rotate(0deg)",
+  },
+  expand: {
+    opacity: 1,
+    transition: "all .5s cubic-bezier(.65,.05,.36,1)",
+  },
+  contract: {
     opacity: 0,
     maxHeight: "0px",
     transition: "all .5s cubic-bezier(.65,.05,.36,1)",
   },
-
   itemContainer: {
     transition: "all .5s cubic-bezier(.65,.05,.36,1)",
   },
@@ -698,36 +709,33 @@ class CryptoDetective extends Component {
     this.setState({ loadingPriceChart: false, loading: false });
   };
 
-  //TODO REVISAR EL EXPAND CONTRACT, PARECE Q DE ACA VIENE EL QUILOMBO
   expandPortfolioData = (currentState) => {
     let newState = !currentState;
     var rotated = currentState;
 
-    var expandContract = document.getElementById("expandContract");
-    var expandContractItemContainer = document.getElementById(
-      "expandedItemsContainer"
-    );
+    if (!this.state.expandContractElement) {
+      var expandContract = document.getElementById("expandContract");
+    } else {
+      var expandContract = this.state.expandContractElement;
+    }
 
-    var div = document.getElementById("expandIcon"),
-      angle = newState ? 0 : 180;
-    let expandedHeight;
-    if (expandContract.firstChild) {
-      expandedHeight = expandContract.firstChild.clientHeight + 10 + "px";
+    if (!this.state.expandedHeight) {
+      if (expandContract.firstChild) {
+        var expandedHeight = expandContract.firstChild.clientHeight + 10 + "px";
+      }
+    } else {
+      var expandedHeight = this.state.expandedHeight;
     }
     expandContract.firstChild.style.transform = newState
       ? "translateY(0%)"
       : `translateY(-${expandedHeight})`;
-    expandContract.style.opacity = newState ? 1 : 0;
+    // expandContract.style.opacity = newState ? 1 : 0;
     expandContract.style.maxHeight = newState ? expandedHeight : 0;
-
-    div.style.webkitTransform = "rotate(" + angle + "deg)";
-    div.style.mozTransform = "rotate(" + angle + "deg)";
-    div.style.msTransform = "rotate(" + angle + "deg)";
-    div.style.oTransform = "rotate(" + angle + "deg)";
-    div.style.transform = "rotate(" + angle + "deg)";
 
     this.setState({
       portfolioDataExpanded: newState,
+      expandContractElement: expandContract,
+      expandedHeight: expandedHeight,
     });
   };
 
@@ -1699,7 +1707,11 @@ class CryptoDetective extends Component {
                     {
                       <ExpandMoreIcon
                         id="expandIcon"
-                        className={classes.expandIcon}
+                        className={
+                          portfolioDataExpanded
+                            ? classes.expandIcon
+                            : classes.unexpandIcon
+                        }
                       />
                     }
                   </IconButton>
@@ -1820,7 +1832,9 @@ class CryptoDetective extends Component {
                 </Grid>
                 <div style={{ overflow: "hidden", padding: "1px" }}>
                   <Grid
-                    className={classes.expandContract}
+                    className={
+                      portfolioDataExpanded ? classes.expand : classes.contract
+                    }
                     id="expandContract"
                     direction="column"
                     container
@@ -2182,8 +2196,8 @@ class CryptoDetective extends Component {
           <Accordion>
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
-              aria-controls="panel1a-content"
-              id="panel1a-header"
+              aria-controls="description-content"
+              id="description-header"
             >
               <Typography variant="h4">Description</Typography>
             </AccordionSummary>
