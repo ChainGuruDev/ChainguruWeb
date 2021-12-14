@@ -170,9 +170,9 @@ class BigChart extends Component {
                   {coinDataA.name}
                 </div>
                 <Typography variant={"h3"}>
-                  {`${
+                  {`${formatMoney(
                     coinDataA.market_data.current_price[vsCoin]
-                  } ${getVsSymbol(vsCoin)}
+                  )} ${getVsSymbol(vsCoin)}
                   `}
                 </Typography>
               </Grid>
@@ -506,9 +506,9 @@ class BigChart extends Component {
                   {coinDataB.name}
                 </div>
                 <Typography variant={"h3"}>
-                  {`${
+                  {`${formatMoney(
                     coinDataB.market_data.current_price[vsCoin]
-                  } ${getVsSymbol(vsCoin)}`}
+                  )} ${getVsSymbol(vsCoin)}`}
                 </Typography>
               </Grid>
               <Grid item>
