@@ -222,7 +222,15 @@ class CoinCompare extends Component {
                     }
                     style={
                       this.state.timeFrame === 1
-                        ? { background: colors.cgOrange + 25 }
+                        ? {
+                            background:
+                              coinData.market_data
+                                .price_change_percentage_7d_in_currency[vs] > 0
+                                ? colors.cgGreen
+                                : colors.cgOrange,
+                            color: "#000",
+                            fontSize: "16px",
+                          }
                         : {}
                     }
                     label={`${coinData.market_data.price_change_percentage_24h_in_currency[vs]}%`}
@@ -257,7 +265,15 @@ class CoinCompare extends Component {
                     label={`${coinData.market_data.price_change_percentage_7d_in_currency[vs]}%`}
                     style={
                       this.state.timeFrame === 7
-                        ? { background: colors.cgOrange + 25 }
+                        ? {
+                            background:
+                              coinData.market_data
+                                .price_change_percentage_7d_in_currency[vs] > 0
+                                ? colors.cgGreen
+                                : colors.cgOrange,
+                            color: "#000",
+                            fontSize: "16px",
+                          }
                         : {}
                     }
                     onClick={() => {
@@ -292,7 +308,15 @@ class CoinCompare extends Component {
                     }
                     style={
                       this.state.timeFrame === 30
-                        ? { background: colors.cgOrange + 25 }
+                        ? {
+                            background:
+                              coinData.market_data
+                                .price_change_percentage_30d_in_currency[vs] > 0
+                                ? colors.cgGreen
+                                : colors.cgOrange,
+                            color: "#000",
+                            fontSize: "16px",
+                          }
                         : {}
                     }
                     label={`${coinData.market_data.price_change_percentage_30d_in_currency[vs]}%`}
@@ -335,6 +359,20 @@ class CoinCompare extends Component {
                           .price_change_percentage_60d_in_currency[vs] > 0
                           ? "primary"
                           : "secondary"
+                      }
+                      style={
+                        this.state.timeFrame === 60
+                          ? {
+                              background:
+                                coinData.market_data
+                                  .price_change_percentage_60d_in_currency[vs] >
+                                0
+                                  ? colors.cgGreen
+                                  : colors.cgOrange,
+                              color: "#000",
+                              fontSize: "16px",
+                            }
+                          : {}
                       }
                       icon={
                         coinData.market_data
@@ -389,6 +427,21 @@ class CoinCompare extends Component {
                           <ArrowDropDownRoundedIcon />
                         )
                       }
+                      style={
+                        this.state.timeFrame === 200
+                          ? {
+                              background:
+                                coinData.market_data
+                                  .price_change_percentage_200d_in_currency[
+                                  vs
+                                ] > 0
+                                  ? colors.cgGreen
+                                  : colors.cgOrange,
+                              color: "#000",
+                              fontSize: "16px",
+                            }
+                          : {}
+                      }
                       label={`${coinData.market_data.price_change_percentage_200d_in_currency[vs]}%`}
                       onClick={() => {
                         handleClick(200);
@@ -435,6 +488,20 @@ class CoinCompare extends Component {
                         ) : (
                           <ArrowDropDownRoundedIcon />
                         )
+                      }
+                      style={
+                        this.state.timeFrame === 360
+                          ? {
+                              background:
+                                coinData.market_data
+                                  .price_change_percentage_1y_in_currency[vs] >
+                                0
+                                  ? colors.cgGreen
+                                  : colors.cgOrange,
+                              color: "#000",
+                              fontSize: "16px",
+                            }
+                          : {}
                       }
                       label={`${coinData.market_data.price_change_percentage_1y_in_currency[vs]}%`}
                       onClick={() => {

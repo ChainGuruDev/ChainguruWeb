@@ -17,8 +17,9 @@ const dispatcher = Store.dispatcher;
 const store = Store.store;
 
 const styles = (theme) => ({
-  root: {
+  compareChart: {
     marginTop: 10,
+    height: "100%",
   },
 });
 
@@ -296,10 +297,7 @@ class CompareChart extends Component {
           legend: {
             position: "top",
           },
-          chart: {
-            width: "100%",
-            height: "100%",
-          },
+
           xaxis: {
             type: "datetime",
             categories: [],
@@ -360,11 +358,12 @@ class CompareChart extends Component {
   render() {
     const { classes } = this.props;
     return (
-      <div className={classes.root}>
+      <div className={classes.compareChart}>
         <Chart
           options={this.state.options}
           series={this.state.series}
           type="line"
+          height="100%"
         />
       </div>
     );

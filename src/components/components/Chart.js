@@ -26,7 +26,7 @@ const styles = (theme) => ({
   root: {
     marginTop: 10,
     display: "flexGrow",
-    minHeight: "50vh",
+    minHeight: "385px",
     marginBottom: 20,
   },
 });
