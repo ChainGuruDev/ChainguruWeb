@@ -220,11 +220,12 @@ class Store {
       ],
       coinList: [],
       userData: {},
-      theme: "light",
+      theme: "dark",
       geckoOnline: false,
       chainId: null,
       authToken: null,
       authTokenExp: null,
+      userWallets: null,
     };
 
     dispatcher.register(
@@ -707,6 +708,8 @@ class Store {
   };
 
   darkModeSwitch = (state) => {
+    console.log("here");
+    console.log(state);
     let theme = state.content ? "dark" : "light";
     store.setStore({ theme: theme });
     return emitter.emit(DARKMODE_SWITCH_RETURN, state.content);
@@ -2354,11 +2357,12 @@ ${nonce}`,
   db_getAssetStats = async (data) => {
     let vsCoin = store.getStore("vsCoin");
     let wallets = data.payload.wallet;
-    let assetData;
+    let assetData = null;
     try {
       //IF multiple wallets check which ones have the asset
       if (data.payload.wallet.length > 1) {
         wallets = [];
+
         assetData = await axios.post(
           `https://chainguru-db.herokuapp.com/zerion/address/assets`,
           {
@@ -2370,6 +2374,15 @@ ${nonce}`,
         for (var i = 0; i < (await assetData.data.length); i++) {
           wallets.push(assetData.data[i].wallet_address);
         }
+      } else {
+        assetData = await axios.post(
+          `https://chainguru-db.herokuapp.com/zerion/address/assets`,
+          {
+            addresses: wallets,
+            currency: vsCoin,
+            asset_codes: [data.payload.assetCode],
+          }
+        );
       }
       let portfolioAssetStats = await axios.post(
         `https://chainguru-db.herokuapp.com/zerion/assets/stats`,
@@ -2379,11 +2392,14 @@ ${nonce}`,
           asset_code: [data.payload.assetCode],
         }
       );
-      emitter.emit(
-        DB_GET_ASSETSTATS_RETURNED,
-        await portfolioAssetStats.data,
-        await assetData.data
-      );
+
+      if (assetData !== null && portfolioAssetStats !== null) {
+        emitter.emit(
+          DB_GET_ASSETSTATS_RETURNED,
+          await portfolioAssetStats.data,
+          await assetData.data
+        );
+      }
     } catch (err) {
       console.log(err.message);
     }

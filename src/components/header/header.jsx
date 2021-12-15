@@ -12,11 +12,7 @@ import ENS from "ethjs-ens";
 import { withTranslation } from "react-i18next";
 import debounce from "lodash/throttle";
 
-import {
-  isBrowser,
-  isMobile,
-  withOrientationChange,
-} from "react-device-detect";
+import { isMobile, withOrientationChange } from "react-device-detect";
 
 import { ReactComponent as CGLogo } from "../../assets/logos/logo_chainguru.svg";
 import { ReactComponent as Usd } from "../../assets/dolar.svg";

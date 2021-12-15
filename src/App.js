@@ -34,7 +34,7 @@ const store = Store.store;
 class App extends Component {
   state = {
     headerValue: null,
-    darkMode: null,
+    darkMode: true,
     theme: createMuiTheme(),
     vsCoin: "usd",
   };
@@ -83,6 +83,9 @@ class App extends Component {
           chainId: window.ethereum.chainId,
           web3context: { library: { provider: window.ethereum } },
           userAuth: false,
+          authToken: null,
+          authTokenExp: null,
+          userWallets: null,
         });
         // console.log(window.ethereum);
         console.log("emitted on app render account change");
@@ -106,12 +109,17 @@ class App extends Component {
 
   getMode = () => {
     let savedmode;
+
     try {
       savedmode = JSON.parse(localStorage.getItem("dark"));
-      store.setStore({ theme: savedmode ? "dark" : "light" });
-      return savedmode || false;
+      if (savedmode) {
+        store.setStore({ theme: savedmode ? "dark" : "light" });
+      } else {
+        store.setStore({ theme: "dark" });
+      }
+      return savedmode || true;
     } catch (err) {
-      return false;
+      return true;
     }
   };
 

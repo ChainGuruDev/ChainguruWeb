@@ -240,13 +240,15 @@ class OneInch_Store {
       });
 
       // GET GAS COST AND TOKEN PRICES
-
       let _tokenTickers = `weth%2C${payload.from.symbol}%2C${payload.to.symbol}`;
-      let pricesRequest = await axios.get(
-        `https://api.covalenthq.com/v1/pricing/tickers/?tickers=${_tokenTickers}&key=${config.covalentApi}`
+      let pricesRequest = await axios.post(
+        `https://chainguru-db-dev.herokuapp.com/covalent/getTokenPrices`,
+        {
+          tokenTickers: _tokenTickers,
+        }
       );
       //Add token prices to response
-      data.data.prices = pricesRequest.data.data.items;
+      data.data.prices = pricesRequest.data;
       emitter.emit(ONEINCH_GET_QUOTE_RETURNED, data.data);
     } catch (err) {
       console.log(err);

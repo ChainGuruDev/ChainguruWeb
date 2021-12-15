@@ -11,7 +11,7 @@ import {
 } from "@material-ui/core";
 
 import DeleteIcon from "@material-ui/icons/Delete";
-import { formatMoney, formatMoneyMCAP, getVsSymbol } from "../helpers";
+import { getVsSymbol } from "../helpers";
 
 import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";

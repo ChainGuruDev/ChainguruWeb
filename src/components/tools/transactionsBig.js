@@ -246,29 +246,32 @@ class TransactionsBig extends Component {
       DB_GET_ADDRESS_TX_RETURNED,
       this.dbGetAddressTxReturned
     );
+
     this._isMounted = false;
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.selected !== this.props.selected) {
-      this.setState({
-        selectedWallet: this.props.selected,
-      });
-    }
-    if (prevProps.wallets !== this.props.wallets) {
-      this.setState({
-        userWallets: this.props.wallets,
-      });
-    }
-    if (prevProps.query !== this.props.query) {
-      this.setState({
-        txQuery: this.props.query,
-      });
-    }
-    if (prevProps.tx !== this.props.tx) {
-      this.setState({
-        transactions: this.props.tx,
-      });
+    if (this._isMounted) {
+      if (prevProps.selected !== this.props.selected) {
+        this.setState({
+          selectedWallet: this.props.selected,
+        });
+      }
+      if (prevProps.wallets !== this.props.wallets) {
+        this.setState({
+          userWallets: this.props.wallets,
+        });
+      }
+      if (prevProps.query !== this.props.query) {
+        this.setState({
+          txQuery: this.props.query,
+        });
+      }
+      if (prevProps.tx !== this.props.tx) {
+        this.setState({
+          transactions: this.props.tx,
+        });
+      }
     }
   }
 
@@ -1260,21 +1263,55 @@ class TransactionsBig extends Component {
                         ).toFixed(2)}
                       </Typography>
                     </Grid>
-                    {tx.changes[0].asset.price && tx.changes[1].asset.price && (
-                      <Grid
-                        item
-                        align={"right"}
-                        style={{ margin: "0 0 0 5px" }}
-                      >
-                        <Typography
-                          variant={"subtitle1"}
-                          className={classes.subtitle}
+                    {tx.changes[0].asset.price &&
+                      tx.changes[1].asset.price &&
+                      tx.changes[0].value &&
+                      tx.changes[1].value && (
+                        <Grid
+                          item
+                          align={"right"}
+                          style={{ margin: "0 0 0 5px" }}
                         >
-                          Total P/L
-                        </Typography>
-                        <Typography
-                          color={
-                            (
+                          <Typography
+                            variant={"subtitle1"}
+                            className={classes.subtitle}
+                          >
+                            Total P/L
+                          </Typography>
+                          <Typography
+                            color={
+                              (
+                                tx.changes[0].asset.price.value *
+                                  formatBigNumbers(
+                                    tx.changes[0].value,
+                                    tx.changes[0].asset.decimals
+                                  ) -
+                                tx.changes[0].price *
+                                  formatBigNumbers(
+                                    tx.changes[0].value,
+                                    tx.changes[0].asset.decimals
+                                  ) +
+                                tx.changes[1].price *
+                                  formatBigNumbers(
+                                    tx.changes[1].value,
+                                    tx.changes[1].asset.decimals
+                                  ) -
+                                tx.changes[1].asset.price.value *
+                                  formatBigNumbers(
+                                    tx.changes[1].value,
+                                    tx.changes[1].asset.decimals
+                                  ) -
+                                formatMoney(
+                                  formatBigNumbers(tx.fee.value, 18)
+                                ) *
+                                  tx.fee.price
+                              ).toFixed(2) > 0
+                                ? "primary"
+                                : "secondary"
+                            }
+                          >
+                            ${" "}
+                            {(
                               tx.changes[0].asset.price.value *
                                 formatBigNumbers(
                                   tx.changes[0].value,
@@ -1297,39 +1334,10 @@ class TransactionsBig extends Component {
                                 ) -
                               formatMoney(formatBigNumbers(tx.fee.value, 18)) *
                                 tx.fee.price
-                            ).toFixed(2) > 0
-                              ? "primary"
-                              : "secondary"
-                          }
-                        >
-                          ${" "}
-                          {(
-                            tx.changes[0].asset.price.value *
-                              formatBigNumbers(
-                                tx.changes[0].value,
-                                tx.changes[0].asset.decimals
-                              ) -
-                            tx.changes[0].price *
-                              formatBigNumbers(
-                                tx.changes[0].value,
-                                tx.changes[0].asset.decimals
-                              ) +
-                            tx.changes[1].price *
-                              formatBigNumbers(
-                                tx.changes[1].value,
-                                tx.changes[1].asset.decimals
-                              ) -
-                            tx.changes[1].asset.price.value *
-                              formatBigNumbers(
-                                tx.changes[1].value,
-                                tx.changes[1].asset.decimals
-                              ) -
-                            formatMoney(formatBigNumbers(tx.fee.value, 18)) *
-                              tx.fee.price
-                          ).toFixed(2)}
-                        </Typography>
-                      </Grid>
-                    )}
+                            ).toFixed(2)}
+                          </Typography>
+                        </Grid>
+                      )}
                   </Grid>
                 )}
                 {tx.changes[0].direction === "out" && (
@@ -1363,16 +1371,19 @@ class TransactionsBig extends Component {
                           {formatMoney(tx.changes[1].price)}
                         </Typography>
                       )}
-                      <Typography
-                        color={
-                          tx.changes[0].price > tx.changes[0].asset.price.value
-                            ? "primary"
-                            : "secondary"
-                        }
-                      >
-                        {tx.changes[0].asset.symbol} ${" "}
-                        {formatMoney(tx.changes[0].price)}
-                      </Typography>
+                      {tx.changes[0].price && (
+                        <Typography
+                          color={
+                            tx.changes[0].price >
+                            tx.changes[0].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          {tx.changes[0].asset.symbol} ${" "}
+                          {formatMoney(tx.changes[0].price)}
+                        </Typography>
+                      )}
                     </Grid>
                     <Grid item align={"right"} style={{ margin: "0 5px" }}>
                       <Typography
@@ -1393,15 +1404,18 @@ class TransactionsBig extends Component {
                           $ {formatMoney(tx.changes[1].asset.price.value)}
                         </Typography>
                       )}
-                      <Typography
-                        color={
-                          tx.changes[0].price > tx.changes[0].asset.price.value
-                            ? "primary"
-                            : "secondary"
-                        }
-                      >
-                        $ {formatMoney(tx.changes[0].asset.price.value)}
-                      </Typography>
+                      {tx.changes[0].price && (
+                        <Typography
+                          color={
+                            tx.changes[0].price >
+                            tx.changes[0].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          $ {formatMoney(tx.changes[0].asset.price.value)}
+                        </Typography>
+                      )}
                     </Grid>
                     <Grid item align={"right"} style={{ margin: "0 5px" }}>
                       <Typography
@@ -1428,21 +1442,24 @@ class TransactionsBig extends Component {
                           )}
                         </Typography>
                       )}
-                      <Typography
-                        color={
-                          tx.changes[0].price > tx.changes[0].asset.price.value
-                            ? "primary"
-                            : "secondary"
-                        }
-                      >
-                        ${" "}
-                        {formatMoney(
-                          formatBigNumbers(
-                            tx.changes[0].value,
-                            tx.changes[0].asset.decimals
-                          ) * tx.changes[0].price
-                        )}
-                      </Typography>
+                      {tx.changes[0].price && (
+                        <Typography
+                          color={
+                            tx.changes[0].price >
+                            tx.changes[0].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          ${" "}
+                          {formatMoney(
+                            formatBigNumbers(
+                              tx.changes[0].value,
+                              tx.changes[0].asset.decimals
+                            ) * tx.changes[0].price
+                          )}
+                        </Typography>
+                      )}
                     </Grid>
                     <Grid item align={"right"} style={{ margin: "0 5px" }}>
                       <Typography
@@ -1469,21 +1486,24 @@ class TransactionsBig extends Component {
                           )}
                         </Typography>
                       )}
-                      <Typography
-                        color={
-                          tx.changes[0].price > tx.changes[0].asset.price.value
-                            ? "primary"
-                            : "secondary"
-                        }
-                      >
-                        ${" "}
-                        {formatMoney(
-                          formatBigNumbers(
-                            tx.changes[0].value,
-                            tx.changes[0].asset.decimals
-                          ) * tx.changes[0].asset.price.value
-                        )}
-                      </Typography>
+                      {tx.changes[0].price && (
+                        <Typography
+                          color={
+                            tx.changes[0].price >
+                            tx.changes[0].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          ${" "}
+                          {formatMoney(
+                            formatBigNumbers(
+                              tx.changes[0].value,
+                              tx.changes[0].asset.decimals
+                            ) * tx.changes[0].asset.price.value
+                          )}
+                        </Typography>
+                      )}
                     </Grid>
                     <Grid item align={"right"} style={{ margin: "0 5px" }}>
                       <Typography
@@ -1508,19 +1528,22 @@ class TransactionsBig extends Component {
                           %
                         </Typography>
                       )}
-                      <Typography
-                        color={
-                          tx.changes[0].price > tx.changes[0].asset.price.value
-                            ? "primary"
-                            : "secondary"
-                        }
-                      >
-                        {differenceInPercentage(
-                          tx.changes[0].asset.price.value,
-                          tx.changes[0].price
-                        )}{" "}
-                        %{" "}
-                      </Typography>
+                      {tx.changes[0].price && (
+                        <Typography
+                          color={
+                            tx.changes[0].price >
+                            tx.changes[0].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          {differenceInPercentage(
+                            tx.changes[0].asset.price.value,
+                            tx.changes[0].price
+                          )}{" "}
+                          %{" "}
+                        </Typography>
+                      )}
                     </Grid>
                     <Grid item align={"right"} style={{ margin: "0 5px" }}>
                       <Typography
@@ -1553,27 +1576,30 @@ class TransactionsBig extends Component {
                           ).toFixed(2)}
                         </Typography>
                       )}
-                      <Typography
-                        color={
-                          tx.changes[0].price > tx.changes[0].asset.price.value
-                            ? "primary"
-                            : "secondary"
-                        }
-                      >
-                        ${" "}
-                        {(
-                          tx.changes[0].price *
-                            formatBigNumbers(
-                              tx.changes[0].value,
-                              tx.changes[0].asset.decimals
-                            ) -
-                          tx.changes[0].asset.price.value *
-                            formatBigNumbers(
-                              tx.changes[0].value,
-                              tx.changes[0].asset.decimals
-                            )
-                        ).toFixed(2)}
-                      </Typography>
+                      {tx.changes[0].price && (
+                        <Typography
+                          color={
+                            tx.changes[0].price >
+                            tx.changes[0].asset.price.value
+                              ? "primary"
+                              : "secondary"
+                          }
+                        >
+                          ${" "}
+                          {(
+                            tx.changes[0].price *
+                              formatBigNumbers(
+                                tx.changes[0].value,
+                                tx.changes[0].asset.decimals
+                              ) -
+                            tx.changes[0].asset.price.value *
+                              formatBigNumbers(
+                                tx.changes[0].value,
+                                tx.changes[0].asset.decimals
+                              )
+                          ).toFixed(2)}
+                        </Typography>
+                      )}
                     </Grid>
                     <Grid item align={"right"} style={{ margin: "0 5px" }}>
                       <Typography
@@ -1590,7 +1616,7 @@ class TransactionsBig extends Component {
                         ).toFixed(2)}
                       </Typography>
                     </Grid>
-                    {tx.changes[1].price && (
+                    {tx.changes[1].price && tx.changes[0].price && (
                       <Grid
                         item
                         align={"right"}

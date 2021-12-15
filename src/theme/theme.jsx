@@ -58,9 +58,9 @@ function getMode() {
   let savedmode;
   try {
     savedmode = JSON.parse(localStorage.getItem("dark"));
-    return savedmode || false;
+    return savedmode || true;
   } catch (err) {
-    return false;
+    return true;
   }
 }
 

@@ -434,9 +434,10 @@ class CryptoDetective extends Component {
     let userWallets = null;
     if (this.state.userWallets) {
       userWallets = this.state.userWallets;
-    } else if (account.address) {
-      userWallets = [account.address];
     }
+    // else if (account.address) {
+    //   userWallets = [account.address];
+    // }
     if (data[0].id) {
       dispatcher.dispatch({
         type: GET_COIN_PRICECHART,
@@ -510,22 +511,24 @@ class CryptoDetective extends Component {
         type: GET_COIN_PRICECHART,
         content: [coinData.id, this.props.id, this.state.timeFrame, vsCoin],
       });
-      if (coinData.contract_address) {
-        dispatcher.dispatch({
-          type: DB_GET_ASSETSTATS,
-          payload: {
-            wallet: userWallets,
-            assetCode: coinData.contract_address,
-          },
-        });
-      } else if (coinData.symbol === "eth") {
-        dispatcher.dispatch({
-          type: DB_GET_ASSETSTATS,
-          payload: {
-            wallet: userWallets,
-            assetCode: coinData.symbol,
-          },
-        });
+      if (userWallets) {
+        if (coinData.contract_address) {
+          dispatcher.dispatch({
+            type: DB_GET_ASSETSTATS,
+            payload: {
+              wallet: userWallets,
+              assetCode: coinData.contract_address,
+            },
+          });
+        } else if (coinData.symbol === "eth") {
+          dispatcher.dispatch({
+            type: DB_GET_ASSETSTATS,
+            payload: {
+              wallet: userWallets,
+              assetCode: coinData.symbol,
+            },
+          });
+        }
       }
     }
 
@@ -713,28 +716,26 @@ class CryptoDetective extends Component {
     let newState = !currentState;
     var rotated = currentState;
 
-    if (!this.state.expandContractElement) {
-      var expandContract = document.getElementById("expandContract");
-    } else {
-      var expandContract = this.state.expandContractElement;
-    }
+    var expandContract = document.getElementById("expandContract");
+    var expandedContainer = document.getElementById("expandedItemsContainer");
 
     if (!this.state.expandedHeight) {
-      if (expandContract.firstChild) {
-        var expandedHeight = expandContract.firstChild.clientHeight + 10 + "px";
+      if (expandedContainer) {
+        var expandedHeight = expandedContainer.clientHeight + 10 + "px";
       }
     } else {
       var expandedHeight = this.state.expandedHeight;
     }
-    expandContract.firstChild.style.transform = newState
-      ? "translateY(0%)"
-      : `translateY(-${expandedHeight})`;
-    // expandContract.style.opacity = newState ? 1 : 0;
+    if (expandedContainer) {
+      expandedContainer.style.transform = newState
+        ? "translateY(0%)"
+        : `translateY(-${expandedHeight})`;
+      // expandContract.style.opacity = newState ? 1 : 0;
+    }
     expandContract.style.maxHeight = newState ? expandedHeight : 0;
 
     this.setState({
       portfolioDataExpanded: newState,
-      expandContractElement: expandContract,
       expandedHeight: expandedHeight,
     });
   };
@@ -1848,7 +1849,6 @@ class CryptoDetective extends Component {
                       className={classes.itemContainer}
                     >
                       <Divider />
-
                       <Table aria-label="portfolioHoldings">
                         <TableHead>
                           <TableRow>

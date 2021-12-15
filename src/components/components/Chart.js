@@ -43,7 +43,6 @@ class PriceChart extends Component {
     }
 
     const tema = store.getStore("theme");
-    //console.log(tema);
 
     this.state = {
       options: {
