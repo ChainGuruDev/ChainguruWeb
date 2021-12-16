@@ -113,11 +113,7 @@ function TabPanel(props) {
       aria-labelledby={`simple-tab-${index}`}
       {...other}
     >
-      {value === index && (
-        <Box p={3}>
-          <Typography component={"span"}>{children}</Typography>
-        </Box>
-      )}
+      {value === index && <Box p={3}>{children}</Box>}
     </div>
   );
 }
@@ -473,7 +469,7 @@ class Medium extends Component {
                 </div>
               }
             >
-              <CryptoNews />
+              <CryptoNews toolTimeframe={"medium"} />
             </Suspense>
           </TabPanel>
         </div>

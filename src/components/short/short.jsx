@@ -120,11 +120,7 @@ function TabPanel(props) {
       aria-labelledby={`tools-tab-${index}`}
       {...other}
     >
-      {value === index && (
-        <Box p={3}>
-          <Typography component={"span"}>{children}</Typography>
-        </Box>
-      )}
+      {value === index && <Box p={3}>{children}</Box>}
     </div>
   );
 }
@@ -505,7 +501,7 @@ class Short extends Component {
                 }}
               >
                 <div style={{ maxWidth: "80%" }}>
-                  <CryptoNews />
+                  <CryptoNews toolTimeframe={"short"} />
                 </div>
               </div>
             </Suspense>

@@ -17,6 +17,8 @@ import { colors } from "../../theme";
 
 //Import ICONS
 import ShowChartIcon from "@material-ui/icons/ShowChart";
+import SearchIcon from "@material-ui/icons/Search";
+
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import LensIcon from "@material-ui/icons/Lens";
 import SwapHorizIcon from "@material-ui/icons/SwapHoriz";
@@ -41,6 +43,9 @@ const dispatcher = Store.dispatcher;
 
 const Swap = React.lazy(() => import("../tools/swap.js"));
 const CoinList = React.lazy(() => import("../tools/coins"));
+
+const CryptoDetective = React.lazy(() => import("../tools/cryptoDetective"));
+
 const DollarCostAverage = React.lazy(() =>
   import("../tools/dollarCostAverage.js")
 );
@@ -131,11 +136,7 @@ function TabPanel(props) {
       aria-labelledby={`simple-tab-${index}`}
       {...other}
     >
-      {value === index && (
-        <Box p={3}>
-          <Typography component={"span"}>{children}</Typography>
-        </Box>
-      )}
+      {value === index && <Box p={3}>{children}</Box>}
     </div>
   );
 }
@@ -155,21 +156,9 @@ function a11yProps(index) {
 
 class Long extends Component {
   constructor(props) {
-    super();
+    super(props);
 
-    let newTab = 0;
-
-    if (props.match.params.toolID === "bluechips") {
-      newTab = 0;
-    } else if (props.match.params.toolID === "dca") {
-      newTab = 1;
-    } else if (props.match.params.toolID === "coins") {
-      newTab = 2;
-    } else if (props.match.params.toolID === "swap") {
-      newTab = 3;
-    } else if (props.match.params.toolID === "news") {
-      newTab = 4;
-    }
+    let toolID = this.tool2toolID(this.props.match.params.tool);
 
     function getMode() {
       let savedmode;
@@ -186,10 +175,66 @@ class Long extends Component {
     this.state = {
       snackbarType: null,
       snackbarMessage: null,
-      valueTab: newTab,
+      valueTab: toolID,
       darkMode: theme,
+      coinID: this.props.match.params.coinID,
     };
   }
+
+  tool2toolID = (tool) => {
+    let toolID = 0;
+    switch (tool) {
+      case "bluechips":
+        toolID = 0;
+        break;
+      case "dca":
+        toolID = 1;
+        break;
+      case "coins":
+        toolID = 2;
+        break;
+      case "detective":
+        toolID = 3;
+        break;
+      case "swap":
+        toolID = 4;
+        break;
+      case "news":
+        toolID = 5;
+        break;
+      default:
+        break;
+    }
+    return toolID;
+  };
+
+  toolID2tool = (toolID) => {
+    let tool;
+    switch (toolID) {
+      case 0:
+        tool = "bluechips";
+        break;
+      case 1:
+        tool = "dca";
+        break;
+      case 2:
+        tool = "coins";
+        break;
+      case 3:
+        tool = "detective";
+        break;
+      case 4:
+        tool = "swap";
+        break;
+      case 5:
+        tool = "news";
+        break;
+      default:
+        tool = "";
+        break;
+    }
+    return tool;
+  };
 
   componentDidMount() {
     new Image().src = "/coingecko.webp";
@@ -207,6 +252,31 @@ class Long extends Component {
     emitter.removeListener(ERROR, this.errorReturned);
     emitter.removeListener(PING_COINGECKO_RETURNED, this.pingCoingeckoReturned);
     emitter.removeListener(DARKMODE_SWITCH_RETURN, this.darkModeSwitch);
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.match.params.coinID !== this.props.match.params.coinID) {
+      if (this.props.match.params.tool === "detective") {
+        this.setState({
+          valueTab: 3,
+          coinID: this.props.match.params.coinID,
+        });
+      } else {
+        if (prevProps.match.params.tool !== this.props.match.params.tool) {
+          let newValueTab = this.tool2toolID(this.props.match.params.tool);
+          this.setState({
+            valueTab: newValueTab,
+          });
+        }
+      }
+    } else {
+      if (prevProps.match.params.tool !== this.props.match.params.tool) {
+        let newValueTab = this.tool2toolID(this.props.match.params.tool);
+        this.setState({
+          valueTab: newValueTab,
+        });
+      }
+    }
   }
 
   darkModeSwitch = (mode) => {
@@ -242,9 +312,12 @@ class Long extends Component {
 
   render() {
     const { classes } = this.props;
-    const { snackbarMessage, valueTab, darkMode } = this.state;
+    const { snackbarMessage, valueTab, darkMode, coinID } = this.state;
+
     const handleChangeTabs = (event, newValueTab) => {
       this.setState({ valueTab: newValueTab });
+      let newScreen = this.toolID2tool(newValueTab);
+      this.nav("/long/" + newScreen);
     };
 
     return (
@@ -269,11 +342,17 @@ class Long extends Component {
               {...a11yProps(1)}
             />
             <LongTab label="Coins" icon={<LensIcon />} {...a11yProps(2)} />
-            <LongTab label="Swap" icon={<SwapHorizIcon />} {...a11yProps(3)} />
+            <LongTab
+              label="CryptoDetective"
+              icon={<SearchIcon />}
+              {...a11yProps(3)}
+            />
+
+            <LongTab label="Swap" icon={<SwapHorizIcon />} {...a11yProps(4)} />
             <Tab
               label="News"
               icon={<MenuBookRoundedIcon />}
-              {...a11yProps(4)}
+              {...a11yProps(5)}
             />
           </LongTabs>
         </AppBar>
@@ -334,10 +413,24 @@ class Long extends Component {
                 </div>
               }
             >
-              <Swap />
+              {coinID && <CryptoDetective coinID={coinID} />}
+              {!coinID && <CryptoDetective coinID={"bitcoin"} />}
             </Suspense>
           </TabPanel>
           <TabPanel value={valueTab} index={4}>
+            <Suspense
+              fallback={
+                <div style={{ textAlign: "center" }}>
+                  <Card className={classes.favCard} elevation={3}>
+                    <CircularProgress />
+                  </Card>
+                </div>
+              }
+            >
+              <Swap />
+            </Suspense>
+          </TabPanel>
+          <TabPanel value={valueTab} index={5}>
             <Suspense
               fallback={
                 <div
@@ -369,7 +462,7 @@ class Long extends Component {
                 </div>
               }
             >
-              <CryptoNews />
+              <CryptoNews toolTimeframe={"long"} />
             </Suspense>
           </TabPanel>
         </div>

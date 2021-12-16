@@ -635,7 +635,7 @@ class CoinList extends Component {
     this.props.history.push(screen);
   };
   detective = (id) => {
-    this.nav("/short/detective/" + id);
+    this.nav(`/${this.props.timeFrame}/detective/` + id);
   };
 }
 

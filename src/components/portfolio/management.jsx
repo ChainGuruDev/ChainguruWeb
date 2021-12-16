@@ -130,11 +130,7 @@ function TabPanel(props) {
       style={{ minHeight: "100%" }}
       {...other}
     >
-      {value === index && (
-        <Box p={2}>
-          <Typography component={"span"}>{children}</Typography>
-        </Box>
-      )}
+      {value === index && <Box p={2}>{children}</Box>}
     </div>
   );
 }
@@ -417,7 +413,7 @@ class PortfolioManagement extends Component {
                 </div>
               }
             >
-              <CryptoNews />
+              <CryptoNews toolTimeframe={"long"} />
             </Suspense>
           </TabPanel>
         </div>

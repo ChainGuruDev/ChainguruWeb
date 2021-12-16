@@ -527,7 +527,15 @@ class App extends Component {
               />
               <Medium darkMode={darkMode} />
             </Route>
-            <Route path="/long/:toolID">
+            <Route path="/long/:tool/:coinID">
+              <Header
+                setHeaderValue={this.setHeaderValue}
+                headerValue={headerValue}
+                vsCoin={this.state.vsCoin}
+              />
+              <Long />
+            </Route>
+            <Route path="/long/:tool">
               <Header
                 setHeaderValue={this.setHeaderValue}
                 headerValue={headerValue}

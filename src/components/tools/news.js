@@ -443,7 +443,7 @@ class CryptoNews extends Component {
   };
 
   detective = (id) => {
-    this.nav("/short/detective/" + id);
+    this.nav(`/${this.props.toolTimeframe}/detective/` + id);
   };
 
   nav = (screen) => {
