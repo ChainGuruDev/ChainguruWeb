@@ -147,6 +147,8 @@ import {
   DB_GET_ADDRESS_TX_RETURNED,
   DB_GET_CRYPTONEWS,
   DB_GET_CRYPTONEWS_RETURNED,
+  DB_GET_USER_GAMESTATS,
+  DB_GET_USER_GAMESTATS_RETURNED,
 } from "../constants";
 
 import {
@@ -226,6 +228,7 @@ class Store {
       authToken: null,
       authTokenExp: null,
       userWallets: null,
+      userNickname: null,
     };
 
     dispatcher.register(
@@ -461,6 +464,9 @@ class Store {
             break;
           case DB_GET_CRYPTONEWS:
             this.db_getCryptoNews(payload);
+            break;
+          case DB_GET_USER_GAMESTATS:
+            this.db_getUserGamestats(payload);
             break;
           default: {
             break;
@@ -1689,6 +1695,7 @@ ${nonce}`,
       });
 
       store.setStore({
+        userNickname: _user.data.nickname,
         userFavorites: _user.data.favorites.tokenIDs,
         userWallets: wallets,
       });
@@ -2262,10 +2269,18 @@ ${nonce}`,
 
   db_getLeaderboard = async () => {
     try {
-      let data = await axios.get(
+      let user = store.getStore("account");
+      let leaderboard = await axios.get(
         `https://chainguru-db.herokuapp.com/users/leaderboard`
       );
-      emitter.emit(DB_GET_LEADERBOARD_RETURNED, await data.data);
+      let currentUser = await axios.get(
+        `https://chainguru-db.herokuapp.com/users/${user.address}/minigames`
+      );
+      const data = {
+        leaderboard: leaderboard.data,
+        currentUser: currentUser.data,
+      };
+      emitter.emit(DB_GET_LEADERBOARD_RETURNED, await data);
     } catch (err) {
       if (err) {
         console.log(err.message);
@@ -2736,6 +2751,20 @@ ${nonce}`,
     } catch (err) {
       console.log(err.message);
       emitter.emit(ERROR, err.message);
+    }
+  };
+
+  db_getUserGamestats = async (payload) => {
+    let user = store.getStore("account");
+    try {
+      let data = await axios.get(
+        `https://chainguru-db.herokuapp.com/users/${user.address}/minigames`
+      );
+      emitter.emit(DB_GET_USER_GAMESTATS_RETURNED, await data.data);
+    } catch (err) {
+      if (err) {
+        console.log(err.message);
+      }
     }
   };
 }

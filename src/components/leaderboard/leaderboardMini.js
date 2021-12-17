@@ -54,15 +54,18 @@ class LeaderboardMini extends Component {
 
     this.state = {
       loading: true,
-      leaderboard: [],
+      leaderboard: null,
+      currentUser: null,
     };
-    dispatcher.dispatch({
-      type: DB_GET_LEADERBOARD,
-    });
   }
 
   componentDidMount() {
+    this._isMounted = true;
     emitter.on(DB_GET_LEADERBOARD_RETURNED, this.dbGetLeaderboardReturned);
+    this._isMounted &&
+      dispatcher.dispatch({
+        type: DB_GET_LEADERBOARD,
+      });
   }
 
   componentWillUnmount() {
@@ -73,71 +76,195 @@ class LeaderboardMini extends Component {
   }
 
   dbGetLeaderboardReturned = (data) => {
-    this.setState({ loading: false, leaderboard: data });
+    this._isMounted &&
+      this.setState({
+        loading: false,
+        leaderboard: data.leaderboard,
+        currentUser: data.currentUser[0],
+      });
   };
 
   drawLeaderboard = (data) => {
     const { classes } = this.props;
+    const { currentUser } = this.state;
+    let userHasPlayed = false;
+    let userInTop10 = false;
+    let currentUserIndex = null;
+    if (currentUser) {
+      userHasPlayed = true;
+      var userIndex = data.findIndex(
+        (x) => x.nickname === currentUser.nickname
+      );
+      if (userIndex < 10) {
+        userInTop10 = true;
+      }
+      data[userIndex].user = true;
+      currentUser.user = true;
+      currentUser.position = userIndex + 1;
+      console.log(userIndex);
+      console.log(data[userIndex]);
+    }
+
     if (data.length > 0) {
       //LIMIT TOP 10
-      let leaderboardData = data.length > 10 ? data.slice(0, 10) : data;
-      return leaderboardData.map((user, i) => (
-        <li
-          key={`${user}_${i}`}
-          style={{ display: "inherit", minWidth: "100%" }}
-        >
-          <Grid
-            item
-            container
-            direction="row"
-            alignItems="flex-start"
-            style={{ padding: "10px" }}
+      console.log(userHasPlayed);
+      console.log(userInTop10);
+      if (userHasPlayed && userInTop10) {
+        const leaderboardTop10 = data.length > 10 ? data.slice(0, 10) : data;
+        return leaderboardTop10.map((user, i) => (
+          <li
+            key={`${user}_${i}`}
+            style={{
+              display: "inherit",
+              minWidth: "100%",
+              marginLeft: "-20px",
+              paddingLeft: "10px",
+              background: user.user
+                ? "linear-gradient(90deg, rgba(121, 216, 162, 0.2) 0%, rgba(0,0,0, 0) 50%)"
+                : "",
+            }}
           >
             <Grid
-              container
               item
-              style={{
-                maxWidth: "max-content",
-                filter:
-                  i === 0
-                    ? `drop-shadow(0px 0px 3px ${colors.cgGreen})`
-                    : `drop-shadow(0px 0px 3px ${colors.black})`,
-              }}
-              alignItems="center"
+              container
+              direction="row"
+              alignItems="flex-start"
+              style={{ padding: "10px" }}
             >
-              <Avatar
-                alt="avatar"
-                src={this.getAvatarType(user)}
-                className={
-                  i === 0 ? classes.firstProfile : classes.largeProfile
-                }
-              />
-            </Grid>
-            {user.nickname && (
               <Grid
-                style={{
-                  marginLeft: 10,
-                  filter: "drop-shadow(1px 1px 1px rgba(0,0,0,0.25))",
-                }}
+                container
                 item
+                style={{
+                  maxWidth: "max-content",
+                  filter:
+                    i === 0
+                      ? `drop-shadow(0px 0px 3px ${colors.cgGreen})`
+                      : `drop-shadow(0px 0px 3px ${colors.black})`,
+                }}
+                alignItems="center"
               >
-                <Typography color="primary" variant={i === 0 ? "h4" : "h5"}>
-                  {user.nickname}
-                </Typography>
-                <Typography color="secondary" variant={"body2"}>
-                  xp: {user.experiencePoints}
+                <Avatar
+                  alt="avatar"
+                  src={this.getAvatarType(user)}
+                  className={
+                    i === 0 ? classes.firstProfile : classes.largeProfile
+                  }
+                />
+              </Grid>
+              {user.nickname && (
+                <Grid
+                  style={{
+                    marginLeft: 10,
+                    filter: "drop-shadow(1px 1px 1px rgba(0,0,0,0.25))",
+                  }}
+                  item
+                >
+                  <Typography color="primary" variant={i === 0 ? "h4" : "h5"}>
+                    {user.nickname}
+                  </Typography>
+                  <Typography color="secondary" variant={"body2"}>
+                    xp: {user.experiencePoints}
+                  </Typography>
+                </Grid>
+              )}
+              {!user.nickname && (
+                <Grid style={{ marginLeft: 10 }} item>
+                  Anon User
+                </Grid>
+              )}
+              <Grid style={{ margin: "0 0 0 auto", alignSelf: "center" }} item>
+                <Typography
+                  variant={i === 0 ? "h2" : "h3"}
+                  color={i === 0 ? "primary" : ""}
+                >
+                  {user.position}
                 </Typography>
               </Grid>
-            )}
-            {!user.nickname && (
-              <Grid style={{ marginLeft: 10 }} item>
-                Anon User
+            </Grid>
+            <Divider />
+          </li>
+        ));
+      }
+      if (userHasPlayed && !userInTop10) {
+        const leaderboardTop10 = data.length > 10 ? data.slice(0, 9) : data;
+        leaderboardTop10.push(currentUser);
+        console.log(leaderboardTop10);
+        console.log(userIndex);
+        return leaderboardTop10.map((user, i) => (
+          <li
+            key={`${user}_${i}`}
+            style={{
+              display: "inherit",
+              minWidth: "100%",
+              marginLeft: "-20px",
+              paddingLeft: "10px",
+
+              background: user.user
+                ? "linear-gradient(90deg, rgba(121, 216, 162, 0.2) 0%, rgba(0,0,0, 0) 50%)"
+                : "",
+            }}
+          >
+            <Grid
+              item
+              container
+              direction="row"
+              alignItems="flex-start"
+              style={{ padding: "10px" }}
+            >
+              <Grid
+                container
+                item
+                style={{
+                  maxWidth: "max-content",
+                  filter:
+                    i === 0
+                      ? `drop-shadow(0px 0px 3px ${colors.cgGreen})`
+                      : `drop-shadow(0px 0px 3px ${colors.black})`,
+                }}
+                alignItems="center"
+              >
+                <Avatar
+                  alt="avatar"
+                  src={this.getAvatarType(user)}
+                  className={
+                    i === 0 ? classes.firstProfile : classes.largeProfile
+                  }
+                />
               </Grid>
-            )}
-          </Grid>
-          <Divider />
-        </li>
-      ));
+              {user.nickname && (
+                <Grid
+                  style={{
+                    marginLeft: 10,
+                    filter: "drop-shadow(1px 1px 1px rgba(0,0,0,0.25))",
+                  }}
+                  item
+                >
+                  <Typography color="primary" variant={i === 0 ? "h4" : "h5"}>
+                    {user.nickname}
+                  </Typography>
+                  <Typography color="secondary" variant={"body2"}>
+                    xp: {user.experiencePoints}
+                  </Typography>
+                </Grid>
+              )}
+              {!user.nickname && (
+                <Grid style={{ marginLeft: 10 }} item>
+                  Anon User
+                </Grid>
+              )}
+              <Grid style={{ margin: "0 0 0 auto", alignSelf: "center" }} item>
+                <Typography
+                  variant={i === 0 ? "h2" : "h3"}
+                  color={i === 0 ? "primary" : ""}
+                >
+                  {user.position}
+                </Typography>
+              </Grid>
+            </Grid>
+            <Divider />
+          </li>
+        ));
+      }
     }
   };
 
