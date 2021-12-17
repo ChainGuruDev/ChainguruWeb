@@ -413,8 +413,8 @@ class Long extends Component {
                 </div>
               }
             >
-              {coinID && <CryptoDetective coinID={coinID} />}
-              {!coinID && <CryptoDetective coinID={"bitcoin"} />}
+              {coinID && <CryptoDetective toolTimeframe={"long"} coinID={coinID} />}
+              {!coinID && <CryptoDetective toolTimeframe={"long"} coinID={"bitcoin"} />}
             </Suspense>
           </TabPanel>
           <TabPanel value={valueTab} index={4}>
@@ -472,7 +472,6 @@ class Long extends Component {
   }
 
   nav = (screen) => {
-    console.log(screen);
     this.props.history.push(screen);
   };
 

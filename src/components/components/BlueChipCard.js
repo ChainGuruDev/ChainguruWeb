@@ -123,11 +123,11 @@ class BlueChipCard extends Component {
   }
 
   componentWillUnmount() {
-    emitter.removeListener(SWITCH_VS_COIN, this.newVsCoin);
     emitter.removeListener(
       COINGECKO_ALLTIME_CHART_RETURNED,
       this.geckoAlltimeChart
     );
+    emitter.removeListener(SWITCH_VS_COIN, this.newVsCoin);
     emitter.removeListener(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
     this._isMounted = false;
   }
@@ -139,7 +139,7 @@ class BlueChipCard extends Component {
   }
 
   newVsCoin = () => {
-    this.setState({ loadingChart: true });
+    this._isMounted && this.setState({ loadingChart: true });
   };
 
   vsCoinReturned = (data) => {
@@ -149,7 +149,7 @@ class BlueChipCard extends Component {
         payload: this.props.data.id,
       });
 
-    this.setState({
+      this._isMounted && this.setState({
       vsCoin: data,
     });
   };
@@ -162,13 +162,13 @@ class BlueChipCard extends Component {
         delete data[0].prices[i];
       }
       const filteredData = data[0].prices.filter((a) => a);
-      this.setState({ chartData: filteredData, loadingChart: false });
+      this._isMounted && this.setState({ chartData: filteredData, loadingChart: false });
     }
   };
 
   guruRemoveChip = (e, id) => {
     e.stopPropagation();
-    this.setState({ loading: true });
+    this._isMounted && this.setState({ loading: true });
     if (this.props.type === "USER") {
       this._isMounted &&
         dispatcher.dispatch({
@@ -202,9 +202,7 @@ class BlueChipCard extends Component {
         >
           <Grid
             onClick={
-              !loadingChart
-                ? () => this.nav(`./short/detective/` + id)
-                : () => console.log("")
+              () => this.navDetective(id) 
             }
             container
             direction="row"
@@ -355,6 +353,10 @@ class BlueChipCard extends Component {
       </Grid>
     );
   }
+
+  navDetective = (id) => {
+    this.nav(`/long/detective/` + id);
+  };
 
   nav = (screen) => {
     this.props.history.push(screen);

@@ -407,8 +407,8 @@ class Medium extends Component {
                 </div>
               }
             >
-              {coinID && <CryptoDetective coinID={coinID} />}
-              {!coinID && <CryptoDetective coinID={"bitcoin"} />}
+              {coinID && <CryptoDetective toolTimeframe={"medium"} coinID={coinID} />}
+              {!coinID && <CryptoDetective toolTimeframe={"medium"} coinID={"bitcoin"} />}
             </Suspense>
           </TabPanel>
           <TabPanel value={valueTab} index={3}>

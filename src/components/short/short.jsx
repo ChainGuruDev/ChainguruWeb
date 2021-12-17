@@ -418,8 +418,8 @@ class Short extends Component {
                 </div>
               }
             >
-              {coinID && <CryptoDetective coinID={coinID} />}
-              {!coinID && <CryptoDetective coinID={"bitcoin"} />}
+              {coinID && <CryptoDetective toolTimeframe={"short"} coinID={coinID} />}
+              {!coinID && <CryptoDetective toolTimeframe={"short"} coinID={"bitcoin"} />}
             </Suspense>
           </TabPanel>
           <TabPanel value={valueTab} index={3}>
