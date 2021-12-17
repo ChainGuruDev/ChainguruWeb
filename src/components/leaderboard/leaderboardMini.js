@@ -109,8 +109,12 @@ class LeaderboardMini extends Component {
       //LIMIT TOP 10
       console.log(userHasPlayed);
       console.log(userInTop10);
-      if (userHasPlayed && userInTop10) {
-        const leaderboardTop10 = data.length > 10 ? data.slice(0, 10) : data;
+
+      if (userHasPlayed && !userInTop10) {
+        const leaderboardTop10 = data.length > 10 ? data.slice(0, 9) : data;
+        leaderboardTop10.push(currentUser);
+        console.log(leaderboardTop10);
+        console.log(userIndex);
         return leaderboardTop10.map((user, i) => (
           <li
             key={`${user}_${i}`}
@@ -119,6 +123,7 @@ class LeaderboardMini extends Component {
               minWidth: "100%",
               marginLeft: "-20px",
               paddingLeft: "10px",
+
               background: user.user
                 ? "linear-gradient(90deg, rgba(121, 216, 162, 0.2) 0%, rgba(0,0,0, 0) 50%)"
                 : "",
@@ -184,12 +189,8 @@ class LeaderboardMini extends Component {
             <Divider />
           </li>
         ));
-      }
-      if (userHasPlayed && !userInTop10) {
-        const leaderboardTop10 = data.length > 10 ? data.slice(0, 9) : data;
-        leaderboardTop10.push(currentUser);
-        console.log(leaderboardTop10);
-        console.log(userIndex);
+      } else {
+        const leaderboardTop10 = data.length > 10 ? data.slice(0, 10) : data;
         return leaderboardTop10.map((user, i) => (
           <li
             key={`${user}_${i}`}
@@ -198,7 +199,6 @@ class LeaderboardMini extends Component {
               minWidth: "100%",
               marginLeft: "-20px",
               paddingLeft: "10px",
-
               background: user.user
                 ? "linear-gradient(90deg, rgba(121, 216, 162, 0.2) 0%, rgba(0,0,0, 0) 50%)"
                 : "",
