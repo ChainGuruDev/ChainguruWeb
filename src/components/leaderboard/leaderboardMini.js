@@ -101,20 +101,14 @@ class LeaderboardMini extends Component {
       data[userIndex].user = true;
       currentUser.user = true;
       currentUser.position = userIndex + 1;
-      console.log(userIndex);
-      console.log(data[userIndex]);
     }
 
     if (data.length > 0) {
       //LIMIT TOP 10
-      console.log(userHasPlayed);
-      console.log(userInTop10);
 
       if (userHasPlayed && !userInTop10) {
         const leaderboardTop10 = data.length > 10 ? data.slice(0, 9) : data;
         leaderboardTop10.push(currentUser);
-        console.log(leaderboardTop10);
-        console.log(userIndex);
         return leaderboardTop10.map((user, i) => (
           <li
             key={`${user}_${i}`}
@@ -180,7 +174,7 @@ class LeaderboardMini extends Component {
               <Grid style={{ margin: "0 0 0 auto", alignSelf: "center" }} item>
                 <Typography
                   variant={i === 0 ? "h2" : "h3"}
-                  color={i === 0 ? "primary" : ""}
+                  color={i === 0 ? "primary" : "inherit"}
                 >
                   {user.position}
                 </Typography>
@@ -255,7 +249,7 @@ class LeaderboardMini extends Component {
               <Grid style={{ margin: "0 0 0 auto", alignSelf: "center" }} item>
                 <Typography
                   variant={i === 0 ? "h2" : "h3"}
-                  color={i === 0 ? "primary" : ""}
+                  color={i === 0 ? "primary" : "initial"}
                 >
                   {user.position}
                 </Typography>

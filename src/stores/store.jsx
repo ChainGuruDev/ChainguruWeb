@@ -111,6 +111,8 @@ import {
   DB_GET_LEADERBOARD_RETURNED,
   DB_GET_PORTFOLIO,
   DB_GET_PORTFOLIO_RETURNED,
+  DB_GET_PORTFOLIO_MULTICHAIN,
+  DB_GET_PORTFOLIO_MULTICHAIN_RETURNED,
   DB_GET_PORTFOLIO_STATS,
   DB_GET_PORTFOLIO_STATS_RETURNED,
   DB_GET_PORTFOLIO_ASSET_STATS,
@@ -410,6 +412,9 @@ class Store {
             break;
           case DB_GET_PORTFOLIO:
             this.db_getPortfolio(payload);
+            break;
+          case DB_GET_PORTFOLIO_MULTICHAIN:
+            this.db_getPortfolioMultichain(payload);
             break;
           case DB_GET_PORTFOLIO_STATS:
             this.db_getPortfolioStats(payload);
@@ -714,8 +719,6 @@ class Store {
   };
 
   darkModeSwitch = (state) => {
-    console.log("here");
-    console.log(state);
     let theme = state.content ? "dark" : "light";
     store.setStore({ theme: theme });
     return emitter.emit(DARKMODE_SWITCH_RETURN, state.content);
@@ -2479,7 +2482,77 @@ ${nonce}`,
           item.type = "NFT";
         }
       });
+      console.log("Get Portfolio");
+      console.log(portfolioAssets);
+
       emitter.emit(DB_GET_PORTFOLIO_RETURNED, portfolioAssets.data);
+    } catch (err) {
+      emitter.emit(ERROR, await err.message);
+      console.log(err.message);
+    }
+  };
+
+  //GET PORTFOLIO MULTICHAIN
+  db_getPortfolioMultichain = async (payload) => {
+    let vsCoin = store.getStore("vsCoin");
+    const account = store.getStore("account");
+    function createData(
+      wallet_address,
+      asset_code,
+      name,
+      symbol,
+      decimals,
+      type,
+      icon_url,
+      price,
+      is_displayable,
+      is_verified,
+      quantity,
+      stats,
+      profit_percent
+    ) {
+      return {
+        wallet_address,
+        asset_code,
+        name,
+        symbol,
+        decimals,
+        type,
+        icon_url,
+        price,
+        is_displayable,
+        is_verified,
+        quantity,
+        stats,
+        profit_percent,
+      };
+    }
+
+    try {
+      const portfolioAssets = await axios.post(
+        `https://chainguru-db.herokuapp.com/zerion/address/getAssetsMultiChain`,
+        {
+          addresses: payload.wallet,
+          currency: vsCoin,
+        }
+      );
+      portfolioAssets.data.mainnetAssets.forEach((item, i) => {
+        if (item.price) {
+          let quantityDecimals = item.quantity / Math.pow(10, item.decimals);
+          let balance = quantityDecimals * item.price.value;
+          item.balance = balance;
+          item.quantityDecimals = quantityDecimals;
+        } else {
+          let quantityDecimals = item.quantity / Math.pow(10, item.decimals);
+          item.balance = 0;
+          item.quantityDecimals = quantityDecimals;
+        }
+        if (item.quantityDecimals === 1) {
+          item.type = "NFT";
+        }
+      });
+
+      emitter.emit(DB_GET_PORTFOLIO_MULTICHAIN_RETURNED, portfolioAssets.data);
     } catch (err) {
       emitter.emit(ERROR, await err.message);
       console.log(err.message);
@@ -2526,7 +2599,6 @@ ${nonce}`,
           currency: vsCoin,
         }
       );
-
       emitter.emit(
         DB_GET_PORTFOLIO_STATS_RETURNED,
         portfolioStats.data.portfolio

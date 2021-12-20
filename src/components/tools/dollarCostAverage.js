@@ -474,9 +474,29 @@ class DollarCostAverage extends Component {
                   </Typography>
                 </Grid>
               )}
-              {!totals[0] &&
-                ("What Is Dollar-Cost Averaging (DCA)?",
-                "Dollar-cost averaging (DCA) is an investment strategy in which an investor divides up the total amount to be invested across periodic purchases of a target asset in an effort to reduce the impact of volatility on the overall purchase. The purchases occur regardless of the asset's price and at regular intervals. In effect, this strategy removes much of the detailed work of attempting to time the market in order to make purchases of equities at the best prices. Dollar-cost averaging is also known as the constant dollar plan. ")}
+              {!totals[0] && (
+                <>
+                  <Typography
+                    variant={"h3"}
+                    gutterBottom
+                    style={{ color: colors.cgBlue }}
+                  >
+                    What Is Dollar-Cost Averaging (DCA)?
+                  </Typography>
+                  <Typography variant={"h4"}>
+                    Dollar-cost averaging (DCA) is an investment strategy in
+                    which an investor divides up the total amount to be invested
+                    across periodic purchases of a target asset in an effort to
+                    reduce the impact of volatility on the overall purchase. The
+                    purchases occur regardless of the asset's price and at
+                    regular intervals. In effect, this strategy removes much of
+                    the detailed work of attempting to time the market in order
+                    to make purchases of equities at the best prices.
+                    Dollar-cost averaging is also known as the constant dollar
+                    plan.
+                  </Typography>
+                </>
+              )}
             </Grid>
           </Grid>
         </Card>
