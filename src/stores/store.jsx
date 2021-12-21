@@ -2542,6 +2542,12 @@ ${nonce}`,
           let balance = quantityDecimals * item.price.value;
           item.balance = balance;
           item.quantityDecimals = quantityDecimals;
+          if (item.decimals === 6) {
+            if (item.quantity.length === 18) {
+              item.quantityDecimals = item.quantity / Math.pow(10, 18);
+              item.balance = quantityDecimals * item.price.value;
+            }
+          }
         } else {
           let quantityDecimals = item.quantity / Math.pow(10, item.decimals);
           item.balance = 0;
@@ -2549,6 +2555,39 @@ ${nonce}`,
         }
         if (item.quantityDecimals === 1) {
           item.type = "NFT";
+        }
+      });
+      //fix decimals for tokens with less than 18 decimals (USDT)
+      portfolioAssets.data.bscAssets.forEach((item, i) => {
+        if (item.decimals === 6) {
+          if (item.quantity.length === 18) {
+            item.quantity = item.quantity / Math.pow(10, 18);
+            item.value = item.quantity * item.price;
+          }
+        }
+      });
+      portfolioAssets.data.arbitrumAssets.forEach((item, i) => {
+        if (item.decimals === 6) {
+          if (item.quantity.length === 18) {
+            item.quantity = item.quantity / Math.pow(10, 18);
+            item.value = item.quantity * item.price;
+          }
+        }
+      });
+      portfolioAssets.data.optimismAssets.forEach((item, i) => {
+        if (item.decimals === 6) {
+          if (item.quantity.length === 18) {
+            item.quantity = item.quantity / Math.pow(10, 18);
+            item.value = item.quantity * item.price;
+          }
+        }
+      });
+      portfolioAssets.data.polygonAssets.forEach((item, i) => {
+        if (item.decimals === 6) {
+          if (item.quantity.length === 18) {
+            item.quantity = item.quantity / Math.pow(10, 18);
+            item.value = item.quantity * item.price;
+          }
         }
       });
 

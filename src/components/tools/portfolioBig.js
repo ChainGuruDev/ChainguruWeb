@@ -412,18 +412,18 @@ class PortfolioBig extends Component {
       this._isMounted &&
         dispatcher.dispatch({
           type: DB_GET_PORTFOLIO_CHART,
-          wallet: [portfolioData[0].wallet_address],
+          wallet: [mainnetAssets[0].wallet_address],
           timeframe: "w",
         });
       this._isMounted &&
         dispatcher.dispatch({
           type: DB_GET_PORTFOLIO_STATS,
-          wallet: [portfolioData[0].wallet_address],
+          wallet: [mainnetAssets[0].wallet_address],
         });
       this._isMounted &&
         dispatcher.dispatch({
           type: DB_GET_PORTFOLIO_ASSET_STATS,
-          wallet: [portfolioData[0].wallet_address],
+          wallet: [mainnetAssets[0].wallet_address],
           portfolioData: mainnetAssets,
         });
     }
@@ -1196,7 +1196,7 @@ class PortfolioBig extends Component {
               </TableCell>
             </>
           )}
-          {row.chain === "bscamc" && (
+          {row.chain === "bsc" && (
             <>
               <TableCell>
                 <div
