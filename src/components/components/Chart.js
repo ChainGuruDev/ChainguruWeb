@@ -181,7 +181,7 @@ class PriceChart extends Component {
   db_getAssetStatsReturned = (data) => {
     // console.log(data);
     if (data[0] && data[0].stats !== null) {
-      // console.log(`average buy price ${data[0].stats.avg_buy_price_net}`);
+      console.log(data[0].stats);
       this.setState({
         options: {
           ...this.state.options,
@@ -189,23 +189,28 @@ class PriceChart extends Component {
             yaxis: [
               {
                 y:
-                  data[0].stats.avg_sell_price_net !== null
-                    ? data[0].stats.avg_sell_price_net
-                    : data[0].stats.avg_sell_price,
+                  data[0].stats.avg_sell_price !== null
+                    ? data[0].stats.avg_sell_price_net !== null
+                      ? data[0].stats.avg_sell_price_net
+                      : data[0].stats.avg_sell_price
+                    : null,
                 label: {
                   borderColor: "#ed867c",
                   style: {
                     background: "#ed867c",
-                    fontSize: "14px",
+                    fontSize: "15px",
                     fontWeight: 400,
                     fontFamily:
                       "Acumin Variable Concept Default ExtraCondensed UltraBlack",
                   },
-                  text: `avg. SELL price ${formatMoney(
-                    data[0].stats.avg_sell_price_net !== null
-                      ? data[0].stats.avg_sell_price_net
-                      : data[0].stats.avg_sell_price
-                  )}`,
+                  text:
+                    data[0].stats.avg_sell_price !== null
+                      ? `avg. SELL price ${formatMoney(
+                          data[0].stats.avg_sell_price_net !== null
+                            ? data[0].stats.avg_sell_price_net
+                            : data[0].stats.avg_sell_price
+                        )}`
+                      : "",
                 },
               },
               {
@@ -215,9 +220,11 @@ class PriceChart extends Component {
                     : data[0].stats.avg_buy_price,
                 label: {
                   borderColor: "#569973",
+                  position: "left",
+                  textAnchor: "start",
                   style: {
                     background: "#569973",
-                    fontSize: "14px",
+                    fontSize: "15px",
                     fontWeight: 400,
                     fontFamily:
                       "Acumin Variable Concept Default ExtraCondensed UltraBlack",
@@ -239,7 +246,7 @@ class PriceChart extends Component {
                   borderColor: "#fbba6a",
                   style: {
                     background: "#fbba6a",
-                    fontSize: "14px",
+                    fontSize: "15px",
                     fontWeight: 400,
                     fontFamily:
                       "Acumin Variable Concept Default ExtraCondensed UltraBlack",
@@ -261,7 +268,7 @@ class PriceChart extends Component {
                   borderColor: "#f68e55",
                   style: {
                     background: "#f68e55",
-                    fontSize: "14px",
+                    fontSize: "15px",
                     fontWeight: 400,
                     fontFamily:
                       "Acumin Variable Concept Default ExtraCondensed UltraBlack",
@@ -283,7 +290,7 @@ class PriceChart extends Component {
                   borderColor: "#ed8278",
                   style: {
                     background: "#ed8278",
-                    fontSize: "14px",
+                    fontSize: "15px",
                     fontWeight: 400,
                     fontFamily:
                       "Acumin Variable Concept Default ExtraCondensed UltraBlack",
