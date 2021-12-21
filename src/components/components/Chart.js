@@ -181,7 +181,6 @@ class PriceChart extends Component {
   db_getAssetStatsReturned = (data) => {
     // console.log(data);
     if (data[0] && data[0].stats !== null) {
-      console.log(data[0].stats);
       this.setState({
         options: {
           ...this.state.options,
