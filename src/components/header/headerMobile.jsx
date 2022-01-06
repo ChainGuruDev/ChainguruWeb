@@ -1,8 +1,20 @@
 import React, { Component } from "react";
+import clsx from "clsx";
 import { withStyles } from "@material-ui/core/styles";
 import { Typography } from "@material-ui/core";
 import FormGroup from "@material-ui/core/FormGroup";
-import { Paper, Grid, IconButton } from "@material-ui/core";
+import {
+  Paper,
+  Grid,
+  IconButton,
+  SwipeableDrawer,
+  List,
+  Link,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Divider,
+} from "@material-ui/core";
 
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Checkbox from "@material-ui/core/Checkbox";
@@ -12,11 +24,21 @@ import ENS from "ethjs-ens";
 import { withTranslation } from "react-i18next";
 import debounce from "lodash/throttle";
 
+import { isMobile, withOrientationChange } from "react-device-detect";
+
+//IMPORT CUSTOM LOGOS AND SVGS
 import { ReactComponent as CGLogo } from "../../assets/logos/logo_chainguru.svg";
+import { ReactComponent as CGIsologo } from "../../assets/logos/iso_chainguru.svg";
 import { ReactComponent as Usd } from "../../assets/dolar.svg";
 import { ReactComponent as Eur } from "../../assets/euro.svg";
 import { ReactComponent as Btc } from "../../assets/bitcoin.svg";
 import { ReactComponent as Eth } from "../../assets/ethereum.svg";
+
+import { ReactComponent as FastIcon } from "../../assets/fast.svg";
+import { ReactComponent as MediumIcon } from "../../assets/medium.svg";
+import { ReactComponent as LongIcon } from "../../assets/longDrawer.svg";
+
+import { ReactComponent as WalletIcon } from "../../assets/wallet.svg";
 
 import {
   CONNECTION_CONNECTED,
@@ -35,6 +57,7 @@ import Brightness2RoundedIcon from "@material-ui/icons/Brightness2Rounded";
 import EvStationIcon from "@material-ui/icons/EvStation";
 
 import SettingsIcon from "@material-ui/icons/Settings";
+import MenuIcon from "@material-ui/icons/Menu";
 
 import UnlockModal from "../unlock/unlockModal.jsx";
 
@@ -52,19 +75,25 @@ const styles = (theme) => ({
   },
   headerV2: {
     width: "100%",
-    minHeight: "110px",
-    height: "110px",
+    minHeight: "60px",
+    height: "60px",
     display: "flex",
-    padding: "17px 24px",
+    padding: "10px 12px",
   },
   icon: {
     display: "flex",
-    justifyContent: "flex-start",
-    alignItems: "flex-start",
+    justifyContent: "center",
+    alignItems: "center",
     alignSelf: "center",
     cursor: "pointer",
+    maxHeight: "40px",
+    maxWidth: "40px",
+    margin: "0px auto 0px auto",
+  },
+  iconDrawer: {
+    display: "flex",
     maxHeight: "50px",
-    maxWidth: "100px",
+    margin: "10px 0px",
   },
   imageIcon: {
     display: "flex",
@@ -150,10 +179,6 @@ const styles = (theme) => ({
     display: "flex",
     alignItems: "center",
     justifyContent: "flex-end",
-    flex: "auto",
-    [theme.breakpoints.down("sm")]: {
-      flex: "0",
-    },
   },
   darkModeSwitch: {
     display: "flex",
@@ -163,7 +188,6 @@ const styles = (theme) => ({
   },
   walletAddress: {
     padding: "12px",
-    border: "2px solid rgb(174, 174, 174)",
     borderRadius: "50px",
     display: "flex",
     alignItems: "center",
@@ -173,8 +197,9 @@ const styles = (theme) => ({
       background: "rgba(47, 128, 237, 0.1)",
     },
   },
-  gasPrice: {
-    maxHeight: "50px",
+  menuIcon: {
+    maxHeight: "45px",
+    maxWidth: "45px",
     padding: "12px",
     borderRadius: "50px",
     display: "flex",
@@ -189,19 +214,25 @@ const styles = (theme) => ({
   },
   vsCoinDIV: {
     alignSelf: "center",
-    maxHeight: "50px",
+    maxHeight: "45px",
+    maxWidth: "45px",
     padding: "0px",
-    borderRadius: "50px",
+    borderRadius: "40px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    marginRight: "15px",
+    margin: "0 10px 0 auto",
     cursor: "pointer",
     "&:hover": {
       background: "rgba(47, 128, 237, 0.1)",
     },
   },
-
+  vsCoinIcon: {
+    maxHeight: "40px",
+  },
+  longIcon: {
+    maxHeight: 45,
+  },
   walletTitle: {
     flex: 1,
     color: colors.darkGray,
@@ -223,7 +254,7 @@ const styles = (theme) => ({
   },
 });
 
-class Header extends Component {
+class HeaderMobile extends Component {
   constructor(props) {
     super(props);
 
@@ -239,13 +270,11 @@ class Header extends Component {
           address: account.address,
         });
       }
-      try {
-        this.setAddressEnsName();
-      } catch (err) {
-        console.log(err.message);
-      }
+      var address = account.address.substring(0, 6) + "...";
     }
 
+    const iOS = process.browser && /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const timeFrame = this.props.match.path.split("/")[1];
     this.state = {
       account: account,
       theme: theme,
@@ -253,6 +282,10 @@ class Header extends Component {
       modalOpen: false,
       gasColor: colors.lightGray,
       vsCoin: vsCoin,
+      address: address ? address : null,
+      drawerOpen: false,
+      iOS: iOS,
+      timeFrame: timeFrame,
     };
   }
 
@@ -287,13 +320,25 @@ class Header extends Component {
     const currentSection = this.props.match.path.split("/")[1];
     if (prevProps.match.path !== this.props.match.path) {
       if (currentSection === "short") {
-        this.setState({ cgLogoColor: colors.cgOrange });
+        this.setState({
+          cgLogoColor: colors.cgOrange,
+          timeFrame: currentSection,
+        });
       } else if (currentSection === "medium") {
-        this.setState({ cgLogoColor: colors.cgGreen });
+        this.setState({
+          cgLogoColor: colors.cgGreen,
+          timeFrame: currentSection,
+        });
       } else if (currentSection === "long") {
-        this.setState({ cgLogoColor: colors.cgBlue });
+        this.setState({
+          cgLogoColor: colors.cgBlue,
+          timeFrame: currentSection,
+        });
       } else if (currentSection === "portfolio") {
-        this.setState({ cgLogoColor: colors.cgYellow });
+        this.setState({
+          cgLogoColor: colors.cgYellow,
+          timeFrame: currentSection,
+        });
       } else {
         this.setState({ cgLogoColor: colors.cgRed });
       }
@@ -359,7 +404,12 @@ class Header extends Component {
 
   connectionConnected = () => {
     let _acc = store.getStore("account");
-    this.setState({ account: _acc });
+
+    if (_acc && _acc.address) {
+      var address = _acc.address.substring(0, 6) + "...";
+    }
+
+    this.setState({ account: _acc, address: address });
     //WALLET IS NOW CONNECTED
     //CHECK IF USER IS ALREADY CREATED
     dispatcher.dispatch({
@@ -370,40 +420,10 @@ class Header extends Component {
     //   type: DB_GET_USERDATA,
     //   address: _acc.address,
     // });
-
-    try {
-      this.setAddressEnsName();
-    } catch (err) {
-      console.log(err.message);
-    }
   };
 
   connectionDisconnected = () => {
-    this.setState({ account: store.getStore("account") });
-  };
-
-  setAddressEnsName = async () => {
-    const context = store.getStore("web3context");
-
-    if (context && context.library && context.library.provider) {
-      const provider = context.library.provider;
-      const account = store.getStore("account");
-      const { address } = account;
-      const network = provider.networkVersion;
-      if (network === "1") {
-        const ens = new ENS({ provider, network });
-        if (ens && address) {
-          try {
-            const addressEnsName = await ens.reverse(address).catch(() => {});
-            if (addressEnsName) {
-              this.setState({ addressEnsName });
-            }
-          } catch (err) {
-            console.log(err.message);
-          }
-        }
-      }
-    }
+    this.setState({ account: store.getStore("account"), address: null });
   };
 
   darkModeSwitchReturned = (payload) => {
@@ -442,18 +462,19 @@ class Header extends Component {
 
   render() {
     const { classes, t } = this.props;
-    const { account, addressEnsName, modalOpen, darkModeBool } = this.state;
-    var address = null;
-    if (account.address) {
-      address =
-        account.address.substring(0, 6) +
-        "..." +
-        account.address.substring(
-          account.address.length - 4,
-          account.address.length
-        );
-    }
-    const addressAlias = addressEnsName || address;
+    const {
+      account,
+      modalOpen,
+      darkModeBool,
+      address,
+      drawerOpen,
+      iOS,
+      timeFrame,
+    } = this.state;
+
+    const toggleDrawer = (newState) => (event) => {
+      this.setState({ drawerOpen: newState });
+    };
 
     const handleChangeDarkMode = (event) => {
       let state = event.target.checked;
@@ -462,6 +483,160 @@ class Header extends Component {
         content: state,
       });
     };
+
+    const renderDrawer = (timeFrame) => {
+      const { match, location, history } = this.props;
+
+      const header = (
+        <React.Fragment>
+          <div className={classes.iconDrawer}>
+            <CGLogo
+              className={classes.imageIcon}
+              fill={this.state.cgLogoColor}
+            />
+          </div>
+          <Divider />
+        </React.Fragment>
+      );
+      const timeFrameIcons = [
+        <FastIcon style={{ maxHeight: 45, fill: colors.cgOrange }} />,
+        <MediumIcon style={{ maxHeight: 45, fill: colors.cgGreen }} />,
+        <LongIcon className={classes.longIcon} />,
+        <WalletIcon style={{ maxHeight: 45, fill: colors.cgYellow }} />,
+      ];
+
+      const navPointer = [
+        "/short/shortLong",
+        "/medium/compare/bitcoin/ethereum",
+        "/long/bluechips",
+        "/portfolio",
+      ];
+
+      const navBar = (url) => {
+        toggleDrawer(false);
+        history.push(url);
+      };
+
+      switch (timeFrame) {
+        case "short":
+          var body = (
+            <>
+              {["short", "medium", "long", "portfolio"].map((text, index) => (
+                <ListItem
+                  button
+                  key={text}
+                  onClick={() => navBar(navPointer[index])}
+                >
+                  <ListItemIcon>{timeFrameIcons[index]}</ListItemIcon>
+                  <ListItemText primary={text} />
+                </ListItem>
+              ))}
+            </>
+          );
+          break;
+        default:
+          break;
+      }
+
+      return (
+        <div style={{ width: 200 }}>
+          {header}
+          <List>{body}</List>
+        </div>
+      );
+    };
+
+    // <div
+    //   className={classes.vsCoinDIV}
+    //   style={{ border: `2px solid ${this.state.cgLogoColor}` }}
+    // >
+    //   {this.state.vsCoin === "usd" && (
+    //     <Usd
+    //       className={classes.vsCoinIcon}
+    //       fill={this.state.cgLogoColor}
+    //       onClick={() => {
+    //         this.vsCoinSwitch("eur");
+    //       }}
+    //     />
+    //   )}
+    //   {this.state.vsCoin === "eur" && (
+    //     <Eur
+    //       className={classes.vsCoinIcon}
+    //       fill={this.state.cgLogoColor}
+    //       onClick={() => {
+    //         this.vsCoinSwitch("btc");
+    //       }}
+    //     />
+    //   )}
+    //   {this.state.vsCoin === "btc" && (
+    //     <Btc
+    //       className={classes.vsCoinIcon}
+    //       fill={this.state.cgLogoColor}
+    //       onClick={() => {
+    //         this.vsCoinSwitch("eth");
+    //       }}
+    //     />
+    //   )}
+    //   {this.state.vsCoin === "eth" && (
+    //     <Eth
+    //       className={classes.vsCoinIcon}
+    //       fill={this.state.cgLogoColor}
+    //       onClick={() => {
+    //         this.vsCoinSwitch("usd");
+    //       }}
+    //     />
+    //   )}
+    // </div>
+    // <div
+    //   className={classes.gasPrice}
+    //   style={{ border: `2px solid ${this.state.gasColor}` }}
+    // >
+    //   <Typography variant={"h5"}>{this.state.gasPrice}</Typography>
+    //   <EvStationIcon
+    //     style={{
+    //       color: this.state.gasColor + "50",
+    //       position: "absolute",
+    //       scale: "1.4",
+    //     }}
+    //     onClick={() => {
+    //       dispatcher.dispatch({
+    //         type: CHECK_GASPRICE,
+    //       });
+    //     }}
+    //   />
+    // </div>
+    // <div className={classes.account}>
+    //   {address && (
+    //     <Typography
+    //       variant={"h5"}
+    //       className={classes.walletAddress}
+    //       noWrap
+    //       onClick={this.addressClicked}
+    //     >
+    //       {address}
+    //       <div className={classes.connectedDot}></div>
+    //     </Typography>
+    //   )}
+    //   {!address && (
+    //     <Typography
+    //       variant={"h5"}
+    //       className={classes.walletAddress}
+    //       noWrap
+    //       onClick={this.addressClicked}
+    //     >
+    //       {t("Market.Connect")}
+    //     </Typography>
+    //   )}
+    //   <IconButton
+    //     onClick={() => {
+    //       this.nav("user/profile");
+    //     }}
+    //     style={{ marginLeft: 10 }}
+    //     aria-label="settings"
+    //   >
+    //     <SettingsIcon />
+    //   </IconButton>
+    // </div>
 
     return (
       <Paper className={classes.rootHeader}>
@@ -475,8 +650,16 @@ class Header extends Component {
             className={classes.headerV2}
             style={{ borderBottom: `3px solid ${this.state.cgLogoColor}` }}
           >
+            <div
+              className={classes.menuIcon}
+              style={{ border: `2px solid ${this.state.cgLogoColor}` }}
+            >
+              <IconButton onClick={toggleDrawer(true)} aria-label="settings">
+                <MenuIcon />
+              </IconButton>
+            </div>
             <div className={classes.icon}>
-              <CGLogo
+              <CGIsologo
                 className={classes.imageIcon}
                 fill={this.state.cgLogoColor}
                 onClick={() => {
@@ -484,108 +667,18 @@ class Header extends Component {
                 }}
               />
             </div>
-            <div className={classes.links}>
-              {this.renderLink("short")}
-              {this.renderLink("medium")}
-              {this.renderLink("long")}
-              {this.renderLink("portfolio")}
-              {this.renderLink("market")}
-            </div>
-            <div
-              className={classes.vsCoinDIV}
-              style={{ border: `2px solid ${this.state.cgLogoColor}` }}
-            >
-              {this.state.vsCoin === "usd" && (
-                <Usd
-                  className={classes.vsCoinIcon}
-                  fill={this.state.cgLogoColor}
-                  onClick={() => {
-                    this.vsCoinSwitch("eur");
-                  }}
-                />
-              )}
-              {this.state.vsCoin === "eur" && (
-                <Eur
-                  className={classes.vsCoinIcon}
-                  fill={this.state.cgLogoColor}
-                  onClick={() => {
-                    this.vsCoinSwitch("btc");
-                  }}
-                />
-              )}
-              {this.state.vsCoin === "btc" && (
-                <Btc
-                  className={classes.vsCoinIcon}
-                  fill={this.state.cgLogoColor}
-                  onClick={() => {
-                    this.vsCoinSwitch("eth");
-                  }}
-                />
-              )}
-              {this.state.vsCoin === "eth" && (
-                <Eth
-                  className={classes.vsCoinIcon}
-                  fill={this.state.cgLogoColor}
-                  onClick={() => {
-                    this.vsCoinSwitch("usd");
-                  }}
-                />
-              )}
-            </div>
-            <div
-              className={classes.gasPrice}
-              style={{ border: `2px solid ${this.state.gasColor}` }}
-            >
-              <EvStationIcon
-                style={{ color: this.state.gasColor }}
-                onClick={() => {
-                  dispatcher.dispatch({
-                    type: CHECK_GASPRICE,
-                  });
-                }}
-              />
-              <Typography variant={"h5"}>{this.state.gasPrice}</Typography>
-            </div>
-            <div className={classes.darkModeSwitch}>
-              <FormGroup
-                style={{
-                  display: "flex",
-                  justifyContent: "right",
-                  alignItems: "center",
-                }}
-              >
-                <FormControlLabel
-                  style={{
-                    display: "flex",
-                    justifyContent: "right",
-                    alignItems: "center",
-                  }}
-                  control={
-                    <Checkbox
-                      style={{
-                        display: "flex",
-                        justifyContent: "right",
-                        alignItems: "center",
-                      }}
-                      icon={<Brightness2OutlinedIcon fontSize="small" />}
-                      checkedIcon={<Brightness2RoundedIcon fontSize="small" />}
-                      name="darkModeSwitch"
-                      onChange={handleChangeDarkMode}
-                      checked={darkModeBool}
-                    />
-                  }
-                />
-              </FormGroup>
-            </div>
             <div className={classes.account}>
               {address && (
                 <Typography
                   variant={"h5"}
                   className={classes.walletAddress}
+                  style={{
+                    border: "2px solid " + this.state.cgLogoColor,
+                  }}
                   noWrap
                   onClick={this.addressClicked}
                 >
-                  {addressAlias}
+                  {address}
                   <div className={classes.connectedDot}></div>
                 </Typography>
               )}
@@ -595,26 +688,66 @@ class Header extends Component {
                   className={classes.walletAddress}
                   noWrap
                   onClick={this.addressClicked}
+                  style={{
+                    border: "2px solid " + this.state.cgLogoColor,
+                  }}
                 >
                   {t("Market.Connect")}
                 </Typography>
               )}
-              <IconButton
-                onClick={() => {
-                  this.nav("user/profile");
-                }}
-                style={{ marginLeft: 10 }}
-                aria-label="settings"
-              >
-                <SettingsIcon />
-              </IconButton>
             </div>
           </div>
         </Grid>
+        <SwipeableDrawer
+          anchor={"left"}
+          open={drawerOpen}
+          onClose={toggleDrawer(false)}
+          onOpen={toggleDrawer(true)}
+        >
+          {renderDrawer(timeFrame)}
+        </SwipeableDrawer>
         {modalOpen && this.renderModal()}
       </Paper>
     );
   }
+  //
+  // {this.renderLink("short")}
+  // {this.renderLink("medium")}
+  // {this.renderLink("long")}
+  // {this.renderLink("portfolio")}
+  // {this.renderLink("market")}
+
+  // <div className={classes.darkModeSwitch}>
+  //   <FormGroup
+  //     style={{
+  //       display: "flex",
+  //       justifyContent: "right",
+  //       alignItems: "center",
+  //     }}
+  //   >
+  //     <FormControlLabel
+  //       style={{
+  //         display: "flex",
+  //         justifyContent: "right",
+  //         alignItems: "center",
+  //       }}
+  //       control={
+  //         <Checkbox
+  //           style={{
+  //             display: "flex",
+  //             justifyContent: "right",
+  //             alignItems: "center",
+  //           }}
+  //           icon={<Brightness2OutlinedIcon fontSize="small" />}
+  //           checkedIcon={<Brightness2RoundedIcon fontSize="small" />}
+  //           name="darkModeSwitch"
+  //           onChange={handleChangeDarkMode}
+  //           checked={darkModeBool}
+  //         />
+  //       }
+  //     />
+  //   </FormGroup>
+  // </div>
 
   renderLink = (screen) => {
     const { classes, t } = this.props;
@@ -714,4 +847,6 @@ class Header extends Component {
   };
 }
 
-export default withTranslation()(withRouter(withStyles(styles)(Header)));
+export default withTranslation()(
+  withRouter(withStyles(styles)(withOrientationChange(HeaderMobile)))
+);

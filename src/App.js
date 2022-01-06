@@ -3,11 +3,14 @@ import CssBaseline from "@material-ui/core/CssBaseline";
 import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
 import { BrowserRouter, Switch, Route } from "react-router-dom";
 import "./i18n";
+import { isMobile } from "react-device-detect";
 import createBreakpoints from "@material-ui/core/styles/createBreakpoints";
 import Web3 from "web3";
 import AcuminTTF from "./assets/fonts/AcuminVariableConcept.otf";
 
 import Header from "./components/header";
+import HeaderMobile from "./components/header/headerMobile.jsx";
+
 import Home from "./components/home";
 import Short from "./components/short";
 import Medium from "./components/medium";
@@ -455,165 +458,350 @@ class App extends Component {
     const { headerValue, darkMode, theme } = this.state;
 
     //ACA IBA LO COMPONENT UPDATE
-
     return (
       <MuiThemeProvider theme={theme}>
         <CssBaseline />
         <BrowserRouter>
           <Switch>
             <Route path="/short/:tool/:coinID/:coinID_B">
-              <Header
-                setHeaderValue={this.setHeaderValue}
-                headerValue={headerValue}
-                darkMode={darkMode}
-              />
+              {isMobile && (
+                <HeaderMobile
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
+              {!isMobile && (
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
+
               <Short darkMode={darkMode} />
             </Route>
             <Route path="/short/:tool/:coinID">
-              <Header
-                setHeaderValue={this.setHeaderValue}
-                headerValue={headerValue}
-                darkMode={darkMode}
-              />
+              {isMobile && (
+                <HeaderMobile
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
+              {!isMobile && (
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
               <Short darkMode={darkMode} />
             </Route>
             <Route path="/short/:tool/">
-              <Header
-                setHeaderValue={this.setHeaderValue}
-                headerValue={headerValue}
-                darkMode={darkMode}
-              />
+              {isMobile && (
+                <HeaderMobile
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
+              {!isMobile && (
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
               <Short darkMode={darkMode} />
             </Route>
             <Route path="/short">
-              <Header
-                setHeaderValue={this.setHeaderValue}
-                headerValue={headerValue}
-                darkMode={darkMode}
-                vsCoin={this.state.vsCoin}
-              />
+              {isMobile && (
+                <HeaderMobile
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
+              {!isMobile && (
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
               <Short darkMode={darkMode} />
             </Route>
             <Route path="/medium/:tool/:coinID/:coinID_B">
-              <Header
-                setHeaderValue={this.setHeaderValue}
-                headerValue={headerValue}
-                darkMode={darkMode}
-              />
+              {isMobile && (
+                <HeaderMobile
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
+              {!isMobile && (
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
               <Medium darkMode={darkMode} />
             </Route>
             <Route path="/medium/:tool/:coinID">
-              <Header
-                setHeaderValue={this.setHeaderValue}
-                headerValue={headerValue}
-                darkMode={darkMode}
-              />
+              {isMobile && (
+                <HeaderMobile
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
+              {!isMobile && (
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
               <Medium darkMode={darkMode} />
             </Route>
             <Route path="/medium/:tool/">
-              <Header
-                setHeaderValue={this.setHeaderValue}
-                headerValue={headerValue}
-                darkMode={darkMode}
-              />
+              {isMobile && (
+                <HeaderMobile
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
+              {!isMobile && (
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
               <Medium darkMode={darkMode} />
             </Route>
             <Route path="/medium">
-              <Header
-                setHeaderValue={this.setHeaderValue}
-                headerValue={headerValue}
-                darkMode={darkMode}
-                vsCoin={this.state.vsCoin}
-              />
+              {isMobile && (
+                <HeaderMobile
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
+              {!isMobile && (
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
               <Medium darkMode={darkMode} />
             </Route>
             <Route path="/long/:tool/:coinID">
-              <Header
-                setHeaderValue={this.setHeaderValue}
-                headerValue={headerValue}
-                vsCoin={this.state.vsCoin}
-              />
+              {isMobile && (
+                <HeaderMobile
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
+              {!isMobile && (
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
               <Long />
             </Route>
             <Route path="/long/:tool">
-              <Header
-                setHeaderValue={this.setHeaderValue}
-                headerValue={headerValue}
-                vsCoin={this.state.vsCoin}
-              />
+              {isMobile && (
+                <HeaderMobile
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
+              {!isMobile && (
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
               <Long />
             </Route>
             <Route path="/long">
-              <Header
-                setHeaderValue={this.setHeaderValue}
-                headerValue={headerValue}
-                vsCoin={this.state.vsCoin}
-              />
+              {isMobile && (
+                <HeaderMobile
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
+              {!isMobile && (
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
               <Long />
             </Route>
             <Route path="/portfolio/:tool">
-              <Header
-                setHeaderValue={this.setHeaderValue}
-                headerValue={headerValue}
-                vsCoin={this.state.vsCoin}
-              />
+              {isMobile && (
+                <HeaderMobile
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
+              {!isMobile && (
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
               <PortfolioManagement />
             </Route>
             <Route path="/portfolio">
-              <Header
-                setHeaderValue={this.setHeaderValue}
-                headerValue={headerValue}
-                vsCoin={this.state.vsCoin}
-              />
+              {isMobile && (
+                <HeaderMobile
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
+              {!isMobile && (
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
               <PortfolioManagement />
             </Route>
             <Route path="/market/adminPanel">
-              <Header
-                setHeaderValue={this.setHeaderValue}
-                headerValue={headerValue}
-              />
+              {isMobile && (
+                <HeaderMobile
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
+              {!isMobile && (
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
               <AdminPanel />
             </Route>
             <Route path="/market/artist/:artistAccount">
-              <Header
-                setHeaderValue={this.setHeaderValue}
-                headerValue={headerValue}
-              />
+              {isMobile && (
+                <HeaderMobile
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
+              {!isMobile && (
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
               <Artist />
             </Route>
             <Route path="/market/user/:userAccount">
-              <Header
-                setHeaderValue={this.setHeaderValue}
-                headerValue={headerValue}
-              />
+              {isMobile && (
+                <HeaderMobile
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
+              {!isMobile && (
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
               <User />
             </Route>
             <Route path="/market/edition/new">
-              <Header
-                setHeaderValue={this.setHeaderValue}
-                headerValue={headerValue}
-              />
+              {isMobile && (
+                <HeaderMobile
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
+              {!isMobile && (
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
               <NewEdit />
             </Route>
             <Route path="/market/edition/:editionNumber">
-              <Header
-                setHeaderValue={this.setHeaderValue}
-                headerValue={headerValue}
-              />
+              {isMobile && (
+                <HeaderMobile
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
+              {!isMobile && (
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
               <Show />
             </Route>
             <Route path="/market">
-              <Header
-                setHeaderValue={this.setHeaderValue}
-                headerValue={headerValue}
-              />
+              {isMobile && (
+                <HeaderMobile
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
+              {!isMobile && (
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
               <Market />
             </Route>
             <Route path="/user/profile">
-              <Header
-                setHeaderValue={this.setHeaderValue}
-                headerValue={headerValue}
-              />
+              {isMobile && (
+                <HeaderMobile
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
+              {!isMobile && (
+                <Header
+                  setHeaderValue={this.setHeaderValue}
+                  headerValue={headerValue}
+                  darkMode={darkMode}
+                />
+              )}
               <Profile />
             </Route>
             <Route path="/">

@@ -61,6 +61,8 @@ import {
   DB_ADD_WALLET,
   DB_ADD_WALLET_RETURNED,
   DB_DEL_WALLET_RETURNED,
+  DB_GET_PORTFOLIO_POSITIONS,
+  DB_GET_PORTFOLIO_POSITIONS_RETURNED,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -153,7 +155,7 @@ class PortfolioBig extends Component {
       loading: false,
       dbDataLoaded: false,
       dbStatsData: false,
-      sortBy: "balance",
+      sortBy: "value",
       sortOrder: "desc",
       hideBlacklisted: true,
       hideLowBalanceCoins: true,
@@ -211,6 +213,10 @@ class PortfolioBig extends Component {
     emitter.on(CHECK_ACCOUNT_RETURNED, this.checkAccountReturned);
     emitter.on(DB_ADD_WALLET_RETURNED, this.dbWalletReturned);
     emitter.on(DB_DEL_WALLET_RETURNED, this.dbWalletReturned);
+    emitter.on(
+      DB_GET_PORTFOLIO_POSITIONS_RETURNED,
+      this.db_getPortfolioPositionsReturned
+    );
   }
 
   componentWillUnmount() {
@@ -252,6 +258,11 @@ class PortfolioBig extends Component {
     emitter.removeListener(CHECK_ACCOUNT_RETURNED, this.checkAccountReturned);
     emitter.removeListener(DB_ADD_WALLET_RETURNED, this.dbWalletReturned);
     emitter.removeListener(DB_DEL_WALLET_RETURNED, this.dbWalletReturned);
+    emitter.removeListener(
+      DB_GET_PORTFOLIO_POSITIONS_RETURNED,
+      this.db_getPortfolioPositionsReturned
+    );
+
     this._isMounted = false;
   }
 
@@ -279,9 +290,14 @@ class PortfolioBig extends Component {
       walletColors.push(data);
     });
     if (!this.state.loading) {
+      // this._isMounted &&
+      //   dispatcher.dispatch({
+      //     type: DB_GET_PORTFOLIO_MULTICHAIN,
+      //     wallet: wallets,
+      //   });
       this._isMounted &&
         dispatcher.dispatch({
-          type: DB_GET_PORTFOLIO_MULTICHAIN,
+          type: DB_GET_PORTFOLIO_POSITIONS,
           wallet: wallets,
         });
     }
@@ -336,8 +352,8 @@ class PortfolioBig extends Component {
     }
     if (property === "value") {
       return function (a, b) {
-        const a_prices = a.price ? a.price[property] : 0;
-        const b_prices = b.price ? b.price[property] : 0;
+        const a_prices = a.value ? a.value : 0;
+        const b_prices = b.value ? b.value : 0;
 
         var result = a_prices < b_prices ? -1 : a_prices > b_prices ? 1 : 0;
 
@@ -371,6 +387,15 @@ class PortfolioBig extends Component {
 
         return result * sortOrder;
       };
+    } else if (property === "price") {
+      return function (a, b) {
+        const a_stats = a.asset.price ? a.asset.price.value : 0;
+        const b_stats = b.asset.price ? b.asset.price.value : 0;
+
+        var result = a_stats < b_stats ? -1 : a_stats > b_stats ? 1 : 0;
+
+        return result * sortOrder;
+      };
     } else {
       return function (a, b) {
         var result =
@@ -384,7 +409,7 @@ class PortfolioBig extends Component {
   dbGetPortfolioReturned = (portfolioData) => {
     let keys = [];
     let assetPrice = [];
-
+    console.log(portfolioData);
     portfolioData.mainnetAssets.forEach((item, i) => {
       keys.push(item.asset_code);
       assetPrice.push(item.price ? item.price.value : null);
@@ -438,6 +463,55 @@ class PortfolioBig extends Component {
     });
   };
 
+  db_getPortfolioPositionsReturned = (portfolioData) => {
+    if (this.state.selectedWallet === "all") {
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: DB_GET_PORTFOLIO_CHART,
+          wallet: this.state.userWallets,
+          timeframe: "w",
+        });
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: DB_GET_PORTFOLIO_STATS,
+          wallet: this.state.userWallets,
+        });
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: DB_GET_PORTFOLIO_ASSET_STATS,
+          wallet: this.state.userWallets,
+          portfolioData: portfolioData,
+        });
+    } else {
+      // this._isMounted &&
+      //   dispatcher.dispatch({
+      //     type: DB_GET_PORTFOLIO_CHART,
+      //     wallet: [mainnetAssets[0].wallet_address],
+      //     timeframe: "w",
+      //   });
+      // this._isMounted &&
+      //   dispatcher.dispatch({
+      //     type: DB_GET_PORTFOLIO_STATS,
+      //     wallet: [mainnetAssets[0].wallet_address],
+      //   });
+      // this._isMounted &&
+      //   dispatcher.dispatch({
+      //     type: DB_GET_PORTFOLIO_ASSET_STATS,
+      //     wallet: [mainnetAssets[0].wallet_address],
+      //     portfolioData: mainnetAssets,
+      //   });
+    }
+
+    this.setState({
+      error: false,
+      loading: false,
+      dbDataLoaded: true,
+      dbStatsData: false,
+      portfolioData: portfolioData,
+      chartVariation: null,
+    });
+  };
+
   db_getPortfolioChartReturned = (portfolioChart) => {
     const priceEnd = portfolioChart[0][1];
     const priceStart = portfolioChart[portfolioChart.length - 1][1];
@@ -472,25 +546,26 @@ class PortfolioBig extends Component {
 
   dbGetPortfolioAssetStatsReturned = (portfolioStats) => {
     const { portfolioData } = this.state;
-    portfolioData.mainnetAssets.forEach((item, i) => {
-      item.profit_percent = portfolioStats[i].profit_percent;
-      item.stats = portfolioStats[i].stats;
+    portfolioData.forEach((item, i) => {
+      if (item.chain === "ethereum") {
+        item.profit_percent = portfolioStats[i].profit_percent;
+        item.stats = portfolioStats[i].stats;
+      }
     });
 
-    let winnersLosers;
-    winnersLosers = portfolioData.mainnetAssets.sort(
-      this.dynamicSort("total_returned")
-    );
-    winnersLosers.reverse();
+    // let winnersLosers;
+    // winnersLosers = portfolioData.sort(this.dynamicSort("total_returned"));
+    // winnersLosers.reverse();
+    //
+    // winners: winnersLosers.slice(0, 5),
+    // losers: winnersLosers
+    //   .slice(winnersLosers.length - 5, winnersLosers.length)
+    //   .reverse(),
     this.setState({
       error: false,
       loading: false,
       dbStatsData: true,
       portfolioData: portfolioData,
-      winners: winnersLosers.slice(0, 5),
-      losers: winnersLosers
-        .slice(winnersLosers.length - 5, winnersLosers.length)
-        .reverse(),
     });
   };
 
@@ -502,7 +577,1184 @@ class PortfolioBig extends Component {
     console.log(this.state.lpTokens);
   };
 
+  drawChainIcon = (chain) => {
+    switch (chain) {
+      case "ethereum":
+        return (
+          <img
+            src="/chainIcons/ethereum.png"
+            style={{ maxWidth: 25, marginLeft: 10 }}
+          />
+        );
+        break;
+      case "xdai":
+        return (
+          <img
+            src="/chainIcons/xdai.png"
+            style={{ maxWidth: 25, marginLeft: 10 }}
+          />
+        );
+        break;
+      case "avalanche":
+        return (
+          <img
+            src="/chainIcons/avalanche.png"
+            style={{ maxWidth: 25, marginLeft: 10 }}
+          />
+        );
+        break;
+      case "optimism":
+        return (
+          <img
+            src="/chainIcons/optimism.png"
+            style={{ maxWidth: 25, marginLeft: 10 }}
+          />
+        );
+        break;
+      case "arbitrum":
+        return (
+          <img
+            src="/chainIcons/arbitrum.png"
+            style={{ maxWidth: 25, marginLeft: 10 }}
+          />
+        );
+        break;
+      case "binance-smart-chain":
+        return (
+          <img
+            src="/chainIcons/bsc.png"
+            style={{ maxWidth: 25, marginLeft: 10 }}
+          />
+        );
+        break;
+      case "polygon":
+        return (
+          <img
+            src="/chainIcons/polygon.png"
+            style={{ maxWidth: 25, marginLeft: 10 }}
+          />
+        );
+        break;
+      default:
+        return <div>{chain}</div>;
+        break;
+    }
+  };
+
   //END EMITTER EVENT FUNCTIONS
+  /* SortedLIST renderer for previous version
+  // sortedList = (portfolioData) => {
+  //   const { classes } = this.props;
+  //   const {
+  //     sortBy,
+  //     hideLowBalanceCoins,
+  //     dbStatsData,
+  //     walletNicknames,
+  //     walletColors,
+  //     selectedWallet,
+  //   } = this.state;
+  //   let filteredData = [];
+  //   if (hideLowBalanceCoins) {
+  //     portfolioData.mainnetAssets.forEach((item, i) => {
+  //       item.chain = "mainnet";
+  //       if (item.balance > 0.01) {
+  //         filteredData.push(portfolioData.mainnetAssets[i]);
+  //       } else {
+  //       }
+  //       if (item.type === "NFT") {
+  //         filteredData.push(portfolioData.mainnetAssets[i]);
+  //       }
+  //     });
+  //     //Append optimism assets
+  //     portfolioData.optimismAssets.forEach((item, i) => {
+  //       item.chain = "optimism";
+  //       item.balance = item.value;
+  //       if (item.value > 0.01) {
+  //         filteredData.push(portfolioData.optimismAssets[i]);
+  //       }
+  //       if (item.type === "NFT") {
+  //         filteredData.push(portfolioData.optimismAssets[i]);
+  //       }
+  //     });
+  //     //Append bsc assets
+  //     portfolioData.bscAssets.forEach((item, i) => {
+  //       item.chain = "bsc";
+  //       item.balance = item.value;
+  //       if (item.value > 0.01) {
+  //         filteredData.push(portfolioData.bscAssets[i]);
+  //       }
+  //       if (item.type === "NFT") {
+  //         filteredData.push(portfolioData.bscAssets[i]);
+  //       }
+  //     });
+  //     //Append Arbitrum assets
+  //     portfolioData.arbitrumAssets.forEach((item, i) => {
+  //       item.chain = "arbitrum";
+  //       item.balance = item.value;
+  //       if (item.value > 0.01) {
+  //         filteredData.push(portfolioData.arbitrumAssets[i]);
+  //       }
+  //       if (item.type === "NFT") {
+  //         filteredData.push(portfolioData.arbitrumAssets[i]);
+  //       }
+  //     });
+  //     //Append polygon assets
+  //     portfolioData.polygonAssets.forEach((item, i) => {
+  //       item.chain = "polygon";
+  //       item.balance = item.value;
+  //       if (item.value > 0.01) {
+  //         filteredData.push(portfolioData.polygonAssets[i]);
+  //       }
+  //       if (item.type === "NFT") {
+  //         filteredData.push(portfolioData.polygonAssets[i]);
+  //       }
+  //     });
+  //   } else {
+  //     filteredData = portfolioData;
+  //   }
+  //   let sortedRows;
+  //   if (this.state.sortOrder === "asc") {
+  //     sortedRows = filteredData.sort(this.dynamicSort(sortBy));
+  //   } else {
+  //     sortedRows = filteredData.sort(this.dynamicSort(`-${sortBy}`));
+  //   }
+  //   if (sortedRows.length > 0) {
+  //     let data;
+  //     return sortedRows.map((row) => (
+  //       <TableRow
+  //         hover={true}
+  //         key={`${row.asset_code}_${row.wallet_address}_${row.chain}`}
+  //         style={{ cursor: "pointer" }}
+  //         onClick={() => this.nav("/short/detective/" + row.asset_code)}
+  //       >
+  //         {row.chain === "mainnet" && (
+  //           <>
+  //             <TableCell>
+  //               <div
+  //                 style={{
+  //                   width: "max-content",
+  //                   display: "flex",
+  //                   alignItems: "center",
+  //                 }}
+  //               >
+  //                 <img
+  //                   className={classes.tokenLogo}
+  //                   alt=""
+  //                   src={row.icon_url}
+  //                 />
+  //
+  //                 {selectedWallet === "all" &&
+  //                   walletColors[
+  //                     walletColors
+  //                       .map((e) => e.wallet)
+  //                       .indexOf(row.wallet_address.toLowerCase())
+  //                   ] && (
+  //                     <div
+  //                       style={{
+  //                         marginLeft: 10,
+  //                         backgroundColor:
+  //                           walletColors[
+  //                             walletColors
+  //                               .map((e) => e.wallet)
+  //                               .indexOf(row.wallet_address.toLowerCase())
+  //                           ].color,
+  //                         width: "7px",
+  //                         height: "50px",
+  //                       }}
+  //                     />
+  //                   )}
+  //               </div>
+  //             </TableCell>
+  //             <TableCell padding="none" align="left">
+  //               <div>
+  //                 <Typography variant={"h4"}>{row.name}</Typography>
+  //               </div>
+  //               {selectedWallet === "all" && (
+  //                 <div>
+  //                   {walletColors[
+  //                     walletColors
+  //                       .map((e) => e.wallet)
+  //                       .indexOf(row.wallet_address.toLowerCase())
+  //                   ] && (
+  //                     <Typography
+  //                       style={{
+  //                         opacity: 0.6,
+  //                         color:
+  //                           walletColors[
+  //                             walletColors
+  //                               .map((e) => e.wallet)
+  //                               .indexOf(row.wallet_address.toLowerCase())
+  //                           ].color,
+  //                       }}
+  //                       variant={"subtitle2"}
+  //                     >
+  //                       at wallet:{" "}
+  //                       {(data = walletNicknames.find(
+  //                         (ele) => ele.wallet === row.wallet_address
+  //                       )) &&
+  //                         data.nickname +
+  //                           " (" +
+  //                           row.wallet_address.substring(0, 6) +
+  //                           "..." +
+  //                           row.wallet_address.substring(
+  //                             row.wallet_address.length - 4,
+  //                             row.wallet_address.length
+  //                           ) +
+  //                           ")"}
+  //                       {!walletNicknames.some(
+  //                         (e) => e.wallet === row.wallet_address
+  //                       ) &&
+  //                         row.wallet_address.substring(0, 6) +
+  //                           "..." +
+  //                           row.wallet_address.substring(
+  //                             row.wallet_address.length - 4,
+  //                             row.wallet_address.length
+  //                           )}
+  //                     </Typography>
+  //                   )}
+  //                 </div>
+  //               )}
+  //             </TableCell>
+  //             <TableCell align="right">
+  //               <div>
+  //                 <Typography variant={"body1"}>
+  //                   {formatMoney(row.quantityDecimals)}
+  //                 </Typography>
+  //               </div>
+  //               <div>
+  //                 <Typography style={{ opacity: 0.6 }} variant={"subtitle2"}>
+  //                   {row.symbol}
+  //                 </Typography>
+  //               </div>
+  //             </TableCell>
+  //             <TableCell align="right">
+  //               <Typography variant={"body1"}>
+  //                 $ {row.balance && formatMoney(row.balance)}
+  //               </Typography>
+  //             </TableCell>
+  //             <TableCell align="right">
+  //               {row.price && (
+  //                 <>
+  //                   <div>
+  //                     <Typography variant={"body1"}>
+  //                       {formatMoney(row.price.value)}
+  //                     </Typography>
+  //                   </div>
+  //                   {row.price.relative_change_24h && (
+  //                     <div>
+  //                       <Typography
+  //                         color={
+  //                           row.price.relative_change_24h > 0
+  //                             ? "primary"
+  //                             : "secondary"
+  //                         }
+  //                         variant={"subtitle2"}
+  //                       >
+  //                         {row.price.relative_change_24h.toFixed(2)} %
+  //                       </Typography>
+  //                     </div>
+  //                   )}
+  //                 </>
+  //               )}
+  //             </TableCell>
+  //             <TableCell align="right">
+  //               {dbStatsData &&
+  //                 (row.profit_percent && (
+  //                   <>
+  //                     <Typography
+  //                       variant={"body1"}
+  //                       color={row.profit_percent > 0 ? "primary" : "secondary"}
+  //                     >
+  //                       {formatMoney(row.profit_percent)} %
+  //                     </Typography>
+  //                     <Typography variant={"body1"}>
+  //                       ($ {formatMoney(row.stats.avg_buy_price)})
+  //                     </Typography>
+  //                   </>
+  //                 ),
+  //                 row.profit_percent && (
+  //                   <>
+  //                     <Typography
+  //                       variant={"body1"}
+  //                       color={row.profit_percent > 0 ? "primary" : "secondary"}
+  //                     >
+  //                       {formatMoney(row.profit_percent)} %
+  //                     </Typography>
+  //                     <Typography variant={"body1"}>
+  //                       ($ {formatMoney(row.stats.avg_buy_price)})
+  //                     </Typography>
+  //                   </>
+  //                 ))}
+  //               {!dbStatsData && (
+  //                 <>
+  //                   <CircularProgress />
+  //                 </>
+  //               )}
+  //             </TableCell>
+  //
+  //             <TableCell align="right">
+  //               {row.stats && row.stats.total_returned && (
+  //                 <>
+  //                   <Typography
+  //                     className={
+  //                       row.stats.total_returned > 0
+  //                         ? classes.profit_green
+  //                         : classes.profit_red
+  //                     }
+  //                     variant={"body1"}
+  //                   >
+  //                     $ {row.stats.total_returned.toFixed(1)}
+  //                   </Typography>
+  //                   {row.stats.total_returned_net && (
+  //                     <Typography
+  //                       className={
+  //                         row.stats.total_returned_net > 0
+  //                           ? classes.profit_green
+  //                           : classes.profit_red
+  //                       }
+  //                       variant={"body1"}
+  //                     >
+  //                       $ {row.stats.total_returned_net.toFixed(1)}
+  //                     </Typography>
+  //                   )}
+  //                 </>
+  //               )}
+  //             </TableCell>
+  //           </>
+  //         )}
+  //         {row.chain === "optimism" && (
+  //           <>
+  //             <TableCell>
+  //               <div
+  //                 style={{
+  //                   width: "max-content",
+  //                   display: "flex",
+  //                   alignItems: "center",
+  //                 }}
+  //               >
+  //                 <img
+  //                   className={classes.tokenLogo}
+  //                   alt=""
+  //                   src={row.icon_url}
+  //                 />
+  //
+  //                 {selectedWallet === "all" &&
+  //                   walletColors[
+  //                     walletColors
+  //                       .map((e) => e.wallet)
+  //                       .indexOf(row.wallet_address.toLowerCase())
+  //                   ] && (
+  //                     <div
+  //                       style={{
+  //                         marginLeft: 10,
+  //                         backgroundColor:
+  //                           walletColors[
+  //                             walletColors
+  //                               .map((e) => e.wallet)
+  //                               .indexOf(row.wallet_address.toLowerCase())
+  //                           ].color,
+  //                         width: "7px",
+  //                         height: "50px",
+  //                       }}
+  //                     />
+  //                   )}
+  //               </div>
+  //             </TableCell>
+  //             <TableCell padding="none" align="left">
+  //               <div>
+  //                 <Typography variant={"h4"}>{row.name}</Typography>
+  //               </div>
+  //               {selectedWallet === "all" && (
+  //                 <div style={{ display: "flex" }}>
+  //                   {walletColors[
+  //                     walletColors
+  //                       .map((e) => e.wallet)
+  //                       .indexOf(row.wallet_address.toLowerCase())
+  //                   ] && (
+  //                     <>
+  //                       <Typography
+  //                         style={{
+  //                           opacity: 0.6,
+  //                           color:
+  //                             walletColors[
+  //                               walletColors
+  //                                 .map((e) => e.wallet)
+  //                                 .indexOf(row.wallet_address.toLowerCase())
+  //                             ].color,
+  //                         }}
+  //                         variant={"subtitle2"}
+  //                       >
+  //                         at wallet:{" "}
+  //                         {(data = walletNicknames.find(
+  //                           (ele) => ele.wallet === row.wallet_address
+  //                         )) &&
+  //                           data.nickname +
+  //                             " (" +
+  //                             row.wallet_address.substring(0, 6) +
+  //                             "..." +
+  //                             row.wallet_address.substring(
+  //                               row.wallet_address.length - 4,
+  //                               row.wallet_address.length
+  //                             ) +
+  //                             ")"}
+  //                         {!walletNicknames.some(
+  //                           (e) => e.wallet === row.wallet_address
+  //                         ) &&
+  //                           row.wallet_address.substring(0, 6) +
+  //                             "..." +
+  //                             row.wallet_address.substring(
+  //                               row.wallet_address.length - 4,
+  //                               row.wallet_address.length
+  //                             )}
+  //                       </Typography>
+  //                       <img
+  //                         src="/chainIcons/optimism.png"
+  //                         style={{ maxWidth: 25, marginLeft: 10 }}
+  //                       />
+  //                     </>
+  //                   )}
+  //                 </div>
+  //               )}
+  //               {selectedWallet !== "all" && (
+  //                 <img
+  //                   src="/chainIcons/optimism.png"
+  //                   style={{ maxWidth: 25, marginRight: 10 }}
+  //                 />
+  //               )}
+  //             </TableCell>
+  //             <TableCell align="right">
+  //               <div>
+  //                 <Typography variant={"body1"}>
+  //                   {formatMoney(row.quantity / Math.pow(10, row.decimals))}
+  //                 </Typography>
+  //               </div>
+  //               <div>
+  //                 <Typography style={{ opacity: 0.6 }} variant={"subtitle2"}>
+  //                   {row.symbol}
+  //                 </Typography>
+  //               </div>
+  //             </TableCell>
+  //             <TableCell align="right">
+  //               <Typography variant={"body1"}>
+  //                 $ {row.balance && formatMoney(row.balance)}
+  //               </Typography>
+  //             </TableCell>
+  //             <TableCell align="right">
+  //               {row.price && (
+  //                 <>
+  //                   <div>
+  //                     <Typography variant={"body1"}>
+  //                       {formatMoney(row.price)}
+  //                     </Typography>
+  //                   </div>
+  //                   {row.price.relative_change_24h && (
+  //                     <div>
+  //                       <Typography
+  //                         color={
+  //                           row.price.relative_change_24h > 0
+  //                             ? "primary"
+  //                             : "secondary"
+  //                         }
+  //                         variant={"subtitle2"}
+  //                       >
+  //                         {row.price.relative_change_24h.toFixed(2)} %
+  //                       </Typography>
+  //                     </div>
+  //                   )}
+  //                 </>
+  //               )}
+  //             </TableCell>
+  //             <TableCell align="right">
+  //               {dbStatsData &&
+  //                 (row.profit_percent && (
+  //                   <>
+  //                     <Typography
+  //                       variant={"body1"}
+  //                       color={row.profit_percent > 0 ? "primary" : "secondary"}
+  //                     >
+  //                       {formatMoney(row.profit_percent)} %
+  //                     </Typography>
+  //                     <Typography variant={"body1"}>
+  //                       ($ {formatMoney(row.stats.avg_buy_price)})
+  //                     </Typography>
+  //                   </>
+  //                 ),
+  //                 row.profit_percent && (
+  //                   <>
+  //                     <Typography
+  //                       variant={"body1"}
+  //                       color={row.profit_percent > 0 ? "primary" : "secondary"}
+  //                     >
+  //                       {formatMoney(row.profit_percent)} %
+  //                     </Typography>
+  //                     <Typography variant={"body1"}>
+  //                       ($ {formatMoney(row.stats.avg_buy_price)})
+  //                     </Typography>
+  //                   </>
+  //                 ))}
+  //               {!dbStatsData && (
+  //                 <>
+  //                   <CircularProgress />
+  //                 </>
+  //               )}
+  //             </TableCell>
+  //
+  //             <TableCell align="right">
+  //               {row.stats && row.stats.total_returned && (
+  //                 <>
+  //                   <Typography
+  //                     className={
+  //                       row.stats.total_returned > 0
+  //                         ? classes.profit_green
+  //                         : classes.profit_red
+  //                     }
+  //                     variant={"body1"}
+  //                   >
+  //                     $ {row.stats.total_returned.toFixed(1)}
+  //                   </Typography>
+  //                   {row.stats.total_returned_net && (
+  //                     <Typography
+  //                       className={
+  //                         row.stats.total_returned_net > 0
+  //                           ? classes.profit_green
+  //                           : classes.profit_red
+  //                       }
+  //                       variant={"body1"}
+  //                     >
+  //                       $ {row.stats.total_returned_net.toFixed(1)}
+  //                     </Typography>
+  //                   )}
+  //                 </>
+  //               )}
+  //             </TableCell>
+  //           </>
+  //         )}
+  //         {row.chain === "arbitrum" && (
+  //           <>
+  //             <TableCell>
+  //               <div
+  //                 style={{
+  //                   width: "max-content",
+  //                   display: "flex",
+  //                   alignItems: "center",
+  //                 }}
+  //               >
+  //                 <img
+  //                   className={classes.tokenLogo}
+  //                   alt=""
+  //                   src={row.icon_url}
+  //                 />
+  //
+  //                 {selectedWallet === "all" &&
+  //                   walletColors[
+  //                     walletColors
+  //                       .map((e) => e.wallet)
+  //                       .indexOf(row.wallet_address.toLowerCase())
+  //                   ] && (
+  //                     <div
+  //                       style={{
+  //                         marginLeft: 10,
+  //                         backgroundColor:
+  //                           walletColors[
+  //                             walletColors
+  //                               .map((e) => e.wallet)
+  //                               .indexOf(row.wallet_address.toLowerCase())
+  //                           ].color,
+  //                         width: "7px",
+  //                         height: "50px",
+  //                       }}
+  //                     />
+  //                   )}
+  //               </div>
+  //             </TableCell>
+  //             <TableCell padding="none" align="left">
+  //               <div>
+  //                 <Typography variant={"h4"}>{row.name}</Typography>
+  //               </div>
+  //               {selectedWallet === "all" && (
+  //                 <div style={{ display: "flex" }}>
+  //                   {walletColors[
+  //                     walletColors
+  //                       .map((e) => e.wallet)
+  //                       .indexOf(row.wallet_address.toLowerCase())
+  //                   ] && (
+  //                     <>
+  //                       <Typography
+  //                         style={{
+  //                           opacity: 0.6,
+  //                           color:
+  //                             walletColors[
+  //                               walletColors
+  //                                 .map((e) => e.wallet)
+  //                                 .indexOf(row.wallet_address.toLowerCase())
+  //                             ].color,
+  //                         }}
+  //                         variant={"subtitle2"}
+  //                       >
+  //                         at wallet:{" "}
+  //                         {(data = walletNicknames.find(
+  //                           (ele) => ele.wallet === row.wallet_address
+  //                         )) &&
+  //                           data.nickname +
+  //                             " (" +
+  //                             row.wallet_address.substring(0, 6) +
+  //                             "..." +
+  //                             row.wallet_address.substring(
+  //                               row.wallet_address.length - 4,
+  //                               row.wallet_address.length
+  //                             ) +
+  //                             ")"}
+  //                         {!walletNicknames.some(
+  //                           (e) => e.wallet === row.wallet_address
+  //                         ) &&
+  //                           row.wallet_address.substring(0, 6) +
+  //                             "..." +
+  //                             row.wallet_address.substring(
+  //                               row.wallet_address.length - 4,
+  //                               row.wallet_address.length
+  //                             )}
+  //                       </Typography>
+  //                       <img
+  //                         src="/chainIcons/arbitrum.png"
+  //                         style={{ maxWidth: 25, marginLeft: 10 }}
+  //                       />
+  //                     </>
+  //                   )}
+  //                 </div>
+  //               )}
+  //               {selectedWallet !== "all" && (
+  //                 <img
+  //                   src="/chainIcons/arbitrum.png"
+  //                   style={{ maxWidth: 25, marginRight: 10 }}
+  //                 />
+  //               )}
+  //             </TableCell>
+  //             <TableCell align="right">
+  //               <div>
+  //                 <Typography variant={"body1"}>
+  //                   {formatMoney(row.quantity / Math.pow(10, row.decimals))}
+  //                 </Typography>
+  //               </div>
+  //               <div>
+  //                 <Typography style={{ opacity: 0.6 }} variant={"subtitle2"}>
+  //                   {row.symbol}
+  //                 </Typography>
+  //               </div>
+  //             </TableCell>
+  //             <TableCell align="right">
+  //               <Typography variant={"body1"}>
+  //                 $ {row.balance && formatMoney(row.balance)}
+  //               </Typography>
+  //             </TableCell>
+  //             <TableCell align="right">
+  //               {row.price && (
+  //                 <>
+  //                   <div>
+  //                     <Typography variant={"body1"}>
+  //                       {formatMoney(row.price)}
+  //                     </Typography>
+  //                   </div>
+  //                   {row.price.relative_change_24h && (
+  //                     <div>
+  //                       <Typography
+  //                         color={
+  //                           row.price.relative_change_24h > 0
+  //                             ? "primary"
+  //                             : "secondary"
+  //                         }
+  //                         variant={"subtitle2"}
+  //                       >
+  //                         {row.price.relative_change_24h.toFixed(2)} %
+  //                       </Typography>
+  //                     </div>
+  //                   )}
+  //                 </>
+  //               )}
+  //             </TableCell>
+  //             <TableCell align="right">
+  //               {dbStatsData &&
+  //                 (row.profit_percent && (
+  //                   <>
+  //                     <Typography
+  //                       variant={"body1"}
+  //                       color={row.profit_percent > 0 ? "primary" : "secondary"}
+  //                     >
+  //                       {formatMoney(row.profit_percent)} %
+  //                     </Typography>
+  //                     <Typography variant={"body1"}>
+  //                       ($ {formatMoney(row.stats.avg_buy_price)})
+  //                     </Typography>
+  //                   </>
+  //                 ),
+  //                 row.profit_percent && (
+  //                   <>
+  //                     <Typography
+  //                       variant={"body1"}
+  //                       color={row.profit_percent > 0 ? "primary" : "secondary"}
+  //                     >
+  //                       {formatMoney(row.profit_percent)} %
+  //                     </Typography>
+  //                     <Typography variant={"body1"}>
+  //                       ($ {formatMoney(row.stats.avg_buy_price)})
+  //                     </Typography>
+  //                   </>
+  //                 ))}
+  //               {!dbStatsData && (
+  //                 <>
+  //                   <CircularProgress />
+  //                 </>
+  //               )}
+  //             </TableCell>
+  //
+  //             <TableCell align="right">
+  //               {row.stats && row.stats.total_returned && (
+  //                 <>
+  //                   <Typography
+  //                     className={
+  //                       row.stats.total_returned > 0
+  //                         ? classes.profit_green
+  //                         : classes.profit_red
+  //                     }
+  //                     variant={"body1"}
+  //                   >
+  //                     $ {row.stats.total_returned.toFixed(1)}
+  //                   </Typography>
+  //                   {row.stats.total_returned_net && (
+  //                     <Typography
+  //                       className={
+  //                         row.stats.total_returned_net > 0
+  //                           ? classes.profit_green
+  //                           : classes.profit_red
+  //                       }
+  //                       variant={"body1"}
+  //                     >
+  //                       $ {row.stats.total_returned_net.toFixed(1)}
+  //                     </Typography>
+  //                   )}
+  //                 </>
+  //               )}
+  //             </TableCell>
+  //           </>
+  //         )}
+  //         {row.chain === "bsc" && (
+  //           <>
+  //             <TableCell>
+  //               <div
+  //                 style={{
+  //                   width: "max-content",
+  //                   display: "flex",
+  //                   alignItems: "center",
+  //                 }}
+  //               >
+  //                 <img
+  //                   className={classes.tokenLogo}
+  //                   alt=""
+  //                   src={row.icon_url}
+  //                 />
+  //
+  //                 {selectedWallet === "all" &&
+  //                   walletColors[
+  //                     walletColors
+  //                       .map((e) => e.wallet)
+  //                       .indexOf(row.wallet_address.toLowerCase())
+  //                   ] && (
+  //                     <div
+  //                       style={{
+  //                         marginLeft: 10,
+  //                         backgroundColor:
+  //                           walletColors[
+  //                             walletColors
+  //                               .map((e) => e.wallet)
+  //                               .indexOf(row.wallet_address.toLowerCase())
+  //                           ].color,
+  //                         width: "7px",
+  //                         height: "50px",
+  //                       }}
+  //                     />
+  //                   )}
+  //               </div>
+  //             </TableCell>
+  //             <TableCell padding="none" align="left">
+  //               <div>
+  //                 <Typography variant={"h4"}>{row.name}</Typography>
+  //               </div>
+  //               {selectedWallet === "all" && (
+  //                 <div style={{ display: "flex" }}>
+  //                   {walletColors[
+  //                     walletColors
+  //                       .map((e) => e.wallet)
+  //                       .indexOf(row.wallet_address.toLowerCase())
+  //                   ] && (
+  //                     <>
+  //                       <Typography
+  //                         style={{
+  //                           opacity: 0.6,
+  //                           color:
+  //                             walletColors[
+  //                               walletColors
+  //                                 .map((e) => e.wallet)
+  //                                 .indexOf(row.wallet_address.toLowerCase())
+  //                             ].color,
+  //                         }}
+  //                         variant={"subtitle2"}
+  //                       >
+  //                         at wallet:{" "}
+  //                         {(data = walletNicknames.find(
+  //                           (ele) => ele.wallet === row.wallet_address
+  //                         )) &&
+  //                           data.nickname +
+  //                             " (" +
+  //                             row.wallet_address.substring(0, 6) +
+  //                             "..." +
+  //                             row.wallet_address.substring(
+  //                               row.wallet_address.length - 4,
+  //                               row.wallet_address.length
+  //                             ) +
+  //                             ")"}
+  //                         {!walletNicknames.some(
+  //                           (e) => e.wallet === row.wallet_address
+  //                         ) &&
+  //                           row.wallet_address.substring(0, 6) +
+  //                             "..." +
+  //                             row.wallet_address.substring(
+  //                               row.wallet_address.length - 4,
+  //                               row.wallet_address.length
+  //                             )}
+  //                       </Typography>
+  //                       <img
+  //                         src="/chainIcons/bsc.png"
+  //                         style={{ maxWidth: 25, marginLeft: 10 }}
+  //                       />
+  //                     </>
+  //                   )}
+  //                 </div>
+  //               )}
+  //               {selectedWallet !== "all" && (
+  //                 <img
+  //                   src="/chainIcons/bsc.png"
+  //                   style={{ maxWidth: 25, marginRight: 10 }}
+  //                 />
+  //               )}
+  //             </TableCell>
+  //             <TableCell align="right">
+  //               <div>
+  //                 <Typography variant={"body1"}>
+  //                   {formatMoney(row.quantity / Math.pow(10, row.decimals))}
+  //                 </Typography>
+  //               </div>
+  //               <div>
+  //                 <Typography style={{ opacity: 0.6 }} variant={"subtitle2"}>
+  //                   {row.symbol}
+  //                 </Typography>
+  //               </div>
+  //             </TableCell>
+  //             <TableCell align="right">
+  //               <Typography variant={"body1"}>
+  //                 $ {row.balance && formatMoney(row.balance)}
+  //               </Typography>
+  //             </TableCell>
+  //             <TableCell align="right">
+  //               {row.price && (
+  //                 <>
+  //                   <div>
+  //                     <Typography variant={"body1"}>
+  //                       {formatMoney(row.price)}
+  //                     </Typography>
+  //                   </div>
+  //                   {row.price.relative_change_24h && (
+  //                     <div>
+  //                       <Typography
+  //                         color={
+  //                           row.price.relative_change_24h > 0
+  //                             ? "primary"
+  //                             : "secondary"
+  //                         }
+  //                         variant={"subtitle2"}
+  //                       >
+  //                         {row.price.relative_change_24h.toFixed(2)} %
+  //                       </Typography>
+  //                     </div>
+  //                   )}
+  //                 </>
+  //               )}
+  //             </TableCell>
+  //             <TableCell align="right">
+  //               {dbStatsData &&
+  //                 (row.profit_percent && (
+  //                   <>
+  //                     <Typography
+  //                       variant={"body1"}
+  //                       color={row.profit_percent > 0 ? "primary" : "secondary"}
+  //                     >
+  //                       {formatMoney(row.profit_percent)} %
+  //                     </Typography>
+  //                     <Typography variant={"body1"}>
+  //                       ($ {formatMoney(row.stats.avg_buy_price)})
+  //                     </Typography>
+  //                   </>
+  //                 ),
+  //                 row.profit_percent && (
+  //                   <>
+  //                     <Typography
+  //                       variant={"body1"}
+  //                       color={row.profit_percent > 0 ? "primary" : "secondary"}
+  //                     >
+  //                       {formatMoney(row.profit_percent)} %
+  //                     </Typography>
+  //                     <Typography variant={"body1"}>
+  //                       ($ {formatMoney(row.stats.avg_buy_price)})
+  //                     </Typography>
+  //                   </>
+  //                 ))}
+  //               {!dbStatsData && (
+  //                 <>
+  //                   <CircularProgress />
+  //                 </>
+  //               )}
+  //             </TableCell>
+  //
+  //             <TableCell align="right">
+  //               {row.stats && row.stats.total_returned && (
+  //                 <>
+  //                   <Typography
+  //                     className={
+  //                       row.stats.total_returned > 0
+  //                         ? classes.profit_green
+  //                         : classes.profit_red
+  //                     }
+  //                     variant={"body1"}
+  //                   >
+  //                     $ {row.stats.total_returned.toFixed(1)}
+  //                   </Typography>
+  //                   {row.stats.total_returned_net && (
+  //                     <Typography
+  //                       className={
+  //                         row.stats.total_returned_net > 0
+  //                           ? classes.profit_green
+  //                           : classes.profit_red
+  //                       }
+  //                       variant={"body1"}
+  //                     >
+  //                       $ {row.stats.total_returned_net.toFixed(1)}
+  //                     </Typography>
+  //                   )}
+  //                 </>
+  //               )}
+  //             </TableCell>
+  //           </>
+  //         )}
+  //         {row.chain === "polygon" && (
+  //           <>
+  //             <TableCell>
+  //               <div
+  //                 style={{
+  //                   width: "max-content",
+  //                   display: "flex",
+  //                   alignItems: "center",
+  //                 }}
+  //               >
+  //                 <img
+  //                   className={classes.tokenLogo}
+  //                   alt=""
+  //                   src={row.icon_url}
+  //                 />
+  //
+  //                 {selectedWallet === "all" &&
+  //                   walletColors[
+  //                     walletColors
+  //                       .map((e) => e.wallet)
+  //                       .indexOf(row.wallet_address.toLowerCase())
+  //                   ] && (
+  //                     <div
+  //                       style={{
+  //                         marginLeft: 10,
+  //                         backgroundColor:
+  //                           walletColors[
+  //                             walletColors
+  //                               .map((e) => e.wallet)
+  //                               .indexOf(row.wallet_address.toLowerCase())
+  //                           ].color,
+  //                         width: "7px",
+  //                         height: "50px",
+  //                       }}
+  //                     />
+  //                   )}
+  //               </div>
+  //             </TableCell>
+  //             <TableCell padding="none" align="left">
+  //               <div>
+  //                 <Typography variant={"h4"}>{row.name}</Typography>
+  //               </div>
+  //               {selectedWallet === "all" && (
+  //                 <div style={{ display: "flex" }}>
+  //                   {walletColors[
+  //                     walletColors
+  //                       .map((e) => e.wallet)
+  //                       .indexOf(row.wallet_address.toLowerCase())
+  //                   ] && (
+  //                     <>
+  //                       <Typography
+  //                         style={{
+  //                           opacity: 0.6,
+  //                           color:
+  //                             walletColors[
+  //                               walletColors
+  //                                 .map((e) => e.wallet)
+  //                                 .indexOf(row.wallet_address.toLowerCase())
+  //                             ].color,
+  //                         }}
+  //                         variant={"subtitle2"}
+  //                       >
+  //                         at wallet:{" "}
+  //                         {(data = walletNicknames.find(
+  //                           (ele) => ele.wallet === row.wallet_address
+  //                         )) &&
+  //                           data.nickname +
+  //                             " (" +
+  //                             row.wallet_address.substring(0, 6) +
+  //                             "..." +
+  //                             row.wallet_address.substring(
+  //                               row.wallet_address.length - 4,
+  //                               row.wallet_address.length
+  //                             ) +
+  //                             ")"}
+  //                         {!walletNicknames.some(
+  //                           (e) => e.wallet === row.wallet_address
+  //                         ) &&
+  //                           row.wallet_address.substring(0, 6) +
+  //                             "..." +
+  //                             row.wallet_address.substring(
+  //                               row.wallet_address.length - 4,
+  //                               row.wallet_address.length
+  //                             )}
+  //                       </Typography>
+  //                       <img
+  //                         src="/chainIcons/polygon.png"
+  //                         style={{ maxWidth: 25, marginLeft: 10 }}
+  //                       />
+  //                     </>
+  //                   )}
+  //                 </div>
+  //               )}
+  //               {selectedWallet !== "all" && (
+  //                 <img
+  //                   src="/chainIcons/polygon.png"
+  //                   style={{ maxWidth: 25, marginRight: 10 }}
+  //                 />
+  //               )}
+  //             </TableCell>
+  //             <TableCell align="right">
+  //               <div>
+  //                 <Typography variant={"body1"}>
+  //                   {formatMoney(row.quantity / Math.pow(10, row.decimals))}
+  //                 </Typography>
+  //               </div>
+  //               <div>
+  //                 <Typography style={{ opacity: 0.6 }} variant={"subtitle2"}>
+  //                   {row.symbol}
+  //                 </Typography>
+  //               </div>
+  //             </TableCell>
+  //             <TableCell align="right">
+  //               <Typography variant={"body1"}>
+  //                 $ {row.balance && formatMoney(row.balance)}
+  //               </Typography>
+  //             </TableCell>
+  //             <TableCell align="right">
+  //               {row.price && (
+  //                 <>
+  //                   <div>
+  //                     <Typography variant={"body1"}>
+  //                       {formatMoney(row.price)}
+  //                     </Typography>
+  //                   </div>
+  //                   {row.price.relative_change_24h && (
+  //                     <div>
+  //                       <Typography
+  //                         color={
+  //                           row.price.relative_change_24h > 0
+  //                             ? "primary"
+  //                             : "secondary"
+  //                         }
+  //                         variant={"subtitle2"}
+  //                       >
+  //                         {row.price.relative_change_24h.toFixed(2)} %
+  //                       </Typography>
+  //                     </div>
+  //                   )}
+  //                 </>
+  //               )}
+  //             </TableCell>
+  //             <TableCell align="right">
+  //               {dbStatsData &&
+  //                 (row.profit_percent && (
+  //                   <>
+  //                     <Typography
+  //                       variant={"body1"}
+  //                       color={row.profit_percent > 0 ? "primary" : "secondary"}
+  //                     >
+  //                       {formatMoney(row.profit_percent)} %
+  //                     </Typography>
+  //                     <Typography variant={"body1"}>
+  //                       ($ {formatMoney(row.stats.avg_buy_price)})
+  //                     </Typography>
+  //                   </>
+  //                 ),
+  //                 row.profit_percent && (
+  //                   <>
+  //                     <Typography
+  //                       variant={"body1"}
+  //                       color={row.profit_percent > 0 ? "primary" : "secondary"}
+  //                     >
+  //                       {formatMoney(row.profit_percent)} %
+  //                     </Typography>
+  //                     <Typography variant={"body1"}>
+  //                       ($ {formatMoney(row.stats.avg_buy_price)})
+  //                     </Typography>
+  //                   </>
+  //                 ))}
+  //               {!dbStatsData && (
+  //                 <>
+  //                   <CircularProgress />
+  //                 </>
+  //               )}
+  //             </TableCell>
+  //
+  //             <TableCell align="right">
+  //               {row.stats && row.stats.total_returned && (
+  //                 <>
+  //                   <Typography
+  //                     className={
+  //                       row.stats.total_returned > 0
+  //                         ? classes.profit_green
+  //                         : classes.profit_red
+  //                     }
+  //                     variant={"body1"}
+  //                   >
+  //                     $ {row.stats.total_returned.toFixed(1)}
+  //                   </Typography>
+  //                   {row.stats.total_returned_net && (
+  //                     <Typography
+  //                       className={
+  //                         row.stats.total_returned_net > 0
+  //                           ? classes.profit_green
+  //                           : classes.profit_red
+  //                       }
+  //                       variant={"body1"}
+  //                     >
+  //                       $ {row.stats.total_returned_net.toFixed(1)}
+  //                     </Typography>
+  //                   )}
+  //                 </>
+  //               )}
+  //             </TableCell>
+  //           </>
+  //         )}
+  //       </TableRow>
+  //     ));
+  //   }
+  // };
+*/
   sortedList = (portfolioData) => {
     const { classes } = this.props;
     const {
@@ -515,58 +1767,9 @@ class PortfolioBig extends Component {
     } = this.state;
     let filteredData = [];
     if (hideLowBalanceCoins) {
-      portfolioData.mainnetAssets.forEach((item, i) => {
-        item.chain = "mainnet";
-        if (item.balance > 0.01) {
-          filteredData.push(portfolioData.mainnetAssets[i]);
-        } else {
-        }
-        if (item.type === "NFT") {
-          filteredData.push(portfolioData.mainnetAssets[i]);
-        }
-      });
-      //Append optimism assets
-      portfolioData.optimismAssets.forEach((item, i) => {
-        item.chain = "optimism";
-        item.balance = item.value;
+      portfolioData.forEach((item, i) => {
         if (item.value > 0.01) {
-          filteredData.push(portfolioData.optimismAssets[i]);
-        }
-        if (item.type === "NFT") {
-          filteredData.push(portfolioData.optimismAssets[i]);
-        }
-      });
-      //Append bsc assets
-      portfolioData.bscAssets.forEach((item, i) => {
-        item.chain = "bsc";
-        item.balance = item.value;
-        if (item.value > 0.01) {
-          filteredData.push(portfolioData.bscAssets[i]);
-        }
-        if (item.type === "NFT") {
-          filteredData.push(portfolioData.bscAssets[i]);
-        }
-      });
-      //Append Arbitrum assets
-      portfolioData.arbitrumAssets.forEach((item, i) => {
-        item.chain = "arbitrum";
-        item.balance = item.value;
-        if (item.value > 0.01) {
-          filteredData.push(portfolioData.arbitrumAssets[i]);
-        }
-        if (item.type === "NFT") {
-          filteredData.push(portfolioData.arbitrumAssets[i]);
-        }
-      });
-      //Append polygon assets
-      portfolioData.polygonAssets.forEach((item, i) => {
-        item.chain = "polygon";
-        item.balance = item.value;
-        if (item.value > 0.01) {
-          filteredData.push(portfolioData.polygonAssets[i]);
-        }
-        if (item.type === "NFT") {
-          filteredData.push(portfolioData.polygonAssets[i]);
+          filteredData.push(portfolioData[i]);
         }
       });
     } else {
@@ -578,1038 +1781,207 @@ class PortfolioBig extends Component {
     } else {
       sortedRows = filteredData.sort(this.dynamicSort(`-${sortBy}`));
     }
+
     if (sortedRows.length > 0) {
       let data;
       return sortedRows.map((row) => (
         <TableRow
           hover={true}
-          key={`${row.asset_code}_${row.wallet_address}_${row.chain}`}
+          key={`${row.id}+${Math.random(0, 99999)}`}
           style={{ cursor: "pointer" }}
           onClick={() => this.nav("/short/detective/" + row.asset_code)}
         >
-          {row.chain === "mainnet" && (
-            <>
-              <TableCell>
-                <div
-                  style={{
-                    width: "max-content",
-                    display: "flex",
-                    alignItems: "center",
-                  }}
-                >
-                  <img
-                    className={classes.tokenLogo}
-                    alt=""
-                    src={row.icon_url}
-                  />
+          <TableCell>
+            <div
+              style={{
+                width: "max-content",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <img
+                className={classes.tokenLogo}
+                alt=""
+                src={row.asset.icon_url}
+              />
 
-                  {selectedWallet === "all" &&
-                    walletColors[
-                      walletColors
-                        .map((e) => e.wallet)
-                        .indexOf(row.wallet_address.toLowerCase())
-                    ] && (
-                      <div
-                        style={{
-                          marginLeft: 10,
-                          backgroundColor:
-                            walletColors[
-                              walletColors
-                                .map((e) => e.wallet)
-                                .indexOf(row.wallet_address.toLowerCase())
-                            ].color,
-                          width: "7px",
-                          height: "50px",
-                        }}
-                      />
-                    )}
-                </div>
-              </TableCell>
-              <TableCell padding="none" align="left">
+              {selectedWallet === "all" &&
+                walletColors[
+                  walletColors
+                    .map((e) => e.wallet)
+                    .indexOf(row.wallet.toLowerCase())
+                ] && (
+                  <div
+                    style={{
+                      marginLeft: 10,
+                      backgroundColor:
+                        walletColors[
+                          walletColors
+                            .map((e) => e.wallet)
+                            .indexOf(row.wallet.toLowerCase())
+                        ].color,
+                      width: "7px",
+                      height: "50px",
+                    }}
+                  />
+                )}
+            </div>
+          </TableCell>
+          <TableCell padding="none" align="left">
+            <div>
+              <Typography variant={"h4"}>{row.name}</Typography>
+            </div>
+            {selectedWallet === "all" && (
+              <div style={{ display: "flex" }}>
+                {walletColors[
+                  walletColors
+                    .map((e) => e.wallet)
+                    .indexOf(row.wallet.toLowerCase())
+                ] && (
+                  <>
+                    <Typography
+                      style={{
+                        opacity: 0.6,
+                        color:
+                          walletColors[
+                            walletColors
+                              .map((e) => e.wallet)
+                              .indexOf(row.wallet.toLowerCase())
+                          ].color,
+                      }}
+                      variant={"subtitle2"}
+                    >
+                      at wallet:{" "}
+                      {(data = walletNicknames.find(
+                        (ele) => ele.wallet === row.wallet
+                      )) &&
+                        data.nickname +
+                          " (" +
+                          row.wallet.substring(0, 6) +
+                          "..." +
+                          row.wallet.substring(
+                            row.wallet.length - 4,
+                            row.wallet.length
+                          ) +
+                          ")"}
+                      {!walletNicknames.some((e) => e.wallet === row.wallet) &&
+                        row.wallet.substring(0, 6) +
+                          "..." +
+                          row.wallet.substring(
+                            row.wallet.length - 4,
+                            row.wallet.length
+                          )}
+                    </Typography>
+                    {this.drawChainIcon(row.chain)}
+                  </>
+                )}
+              </div>
+            )}
+          </TableCell>
+          <TableCell align="right">
+            <div>
+              <Typography variant={"body1"}>
+                {formatMoney(row.quantityDecimals)}
+              </Typography>
+            </div>
+            <div>
+              <Typography style={{ opacity: 0.6 }} variant={"subtitle2"}>
+                {row.asset.symbol}
+              </Typography>
+            </div>
+          </TableCell>
+          <TableCell align="right">
+            <Typography variant={"body1"}>
+              $ {row.value && formatMoney(row.value)}
+            </Typography>
+          </TableCell>
+          <TableCell align="right">
+            {row.asset.price && (
+              <>
                 <div>
-                  <Typography variant={"h4"}>{row.name}</Typography>
+                  <Typography variant={"body1"}>
+                    {formatMoney(row.asset.price.value)}
+                  </Typography>
                 </div>
-                {selectedWallet === "all" && (
+                {row.asset.price.relative_change_24h && (
                   <div>
-                    {walletColors[
-                      walletColors
-                        .map((e) => e.wallet)
-                        .indexOf(row.wallet_address.toLowerCase())
-                    ] && (
-                      <Typography
-                        style={{
-                          opacity: 0.6,
-                          color:
-                            walletColors[
-                              walletColors
-                                .map((e) => e.wallet)
-                                .indexOf(row.wallet_address.toLowerCase())
-                            ].color,
-                        }}
-                        variant={"subtitle2"}
-                      >
-                        at wallet:{" "}
-                        {(data = walletNicknames.find(
-                          (ele) => ele.wallet === row.wallet_address
-                        )) &&
-                          data.nickname +
-                            " (" +
-                            row.wallet_address.substring(0, 6) +
-                            "..." +
-                            row.wallet_address.substring(
-                              row.wallet_address.length - 4,
-                              row.wallet_address.length
-                            ) +
-                            ")"}
-                        {!walletNicknames.some(
-                          (e) => e.wallet === row.wallet_address
-                        ) &&
-                          row.wallet_address.substring(0, 6) +
-                            "..." +
-                            row.wallet_address.substring(
-                              row.wallet_address.length - 4,
-                              row.wallet_address.length
-                            )}
-                      </Typography>
-                    )}
+                    <Typography
+                      color={
+                        row.asset.price.relative_change_24h > 0
+                          ? "primary"
+                          : "secondary"
+                      }
+                      variant={"subtitle2"}
+                    >
+                      {row.asset.price.relative_change_24h.toFixed(2)} %
+                    </Typography>
                   </div>
                 )}
-              </TableCell>
-              <TableCell align="right">
-                <div>
+              </>
+            )}
+          </TableCell>
+          <TableCell align="right">
+            {dbStatsData &&
+              (row.profit_percent && (
+                <>
+                  <Typography
+                    variant={"body1"}
+                    color={row.profit_percent > 0 ? "primary" : "secondary"}
+                  >
+                    {formatMoney(row.profit_percent)} %
+                  </Typography>
                   <Typography variant={"body1"}>
-                    {formatMoney(row.quantityDecimals)}
+                    ($ {formatMoney(row.stats.avg_buy_price)})
                   </Typography>
-                </div>
-                <div>
-                  <Typography style={{ opacity: 0.6 }} variant={"subtitle2"}>
-                    {row.symbol}
+                </>
+              ),
+              row.profit_percent && (
+                <>
+                  <Typography
+                    variant={"body1"}
+                    color={row.profit_percent > 0 ? "primary" : "secondary"}
+                  >
+                    {formatMoney(row.profit_percent)} %
                   </Typography>
-                </div>
-              </TableCell>
-              <TableCell align="right">
-                <Typography variant={"body1"}>
-                  $ {row.balance && formatMoney(row.balance)}
-                </Typography>
-              </TableCell>
-              <TableCell align="right">
-                {row.price && (
-                  <>
-                    <div>
-                      <Typography variant={"body1"}>
-                        {formatMoney(row.price.value)}
-                      </Typography>
-                    </div>
-                    {row.price.relative_change_24h && (
-                      <div>
-                        <Typography
-                          color={
-                            row.price.relative_change_24h > 0
-                              ? "primary"
-                              : "secondary"
-                          }
-                          variant={"subtitle2"}
-                        >
-                          {row.price.relative_change_24h.toFixed(2)} %
-                        </Typography>
-                      </div>
-                    )}
-                  </>
-                )}
-              </TableCell>
-              <TableCell align="right">
-                {dbStatsData &&
-                  (row.profit_percent && (
-                    <>
-                      <Typography
-                        variant={"body1"}
-                        color={row.profit_percent > 0 ? "primary" : "secondary"}
-                      >
-                        {formatMoney(row.profit_percent)} %
-                      </Typography>
-                      <Typography variant={"body1"}>
-                        ($ {formatMoney(row.stats.avg_buy_price)})
-                      </Typography>
-                    </>
-                  ),
-                  row.profit_percent && (
-                    <>
-                      <Typography
-                        variant={"body1"}
-                        color={row.profit_percent > 0 ? "primary" : "secondary"}
-                      >
-                        {formatMoney(row.profit_percent)} %
-                      </Typography>
-                      <Typography variant={"body1"}>
-                        ($ {formatMoney(row.stats.avg_buy_price)})
-                      </Typography>
-                    </>
-                  ))}
-                {!dbStatsData && (
-                  <>
-                    <CircularProgress />
-                  </>
-                )}
-              </TableCell>
-
-              <TableCell align="right">
-                {row.stats && row.stats.total_returned && (
-                  <>
-                    <Typography
-                      className={
-                        row.stats.total_returned > 0
-                          ? classes.profit_green
-                          : classes.profit_red
-                      }
-                      variant={"body1"}
-                    >
-                      $ {row.stats.total_returned.toFixed(1)}
-                    </Typography>
-                    {row.stats.total_returned_net && (
-                      <Typography
-                        className={
-                          row.stats.total_returned_net > 0
-                            ? classes.profit_green
-                            : classes.profit_red
-                        }
-                        variant={"body1"}
-                      >
-                        $ {row.stats.total_returned_net.toFixed(1)}
-                      </Typography>
-                    )}
-                  </>
-                )}
-              </TableCell>
-            </>
-          )}
-          {row.chain === "optimism" && (
-            <>
-              <TableCell>
-                <div
-                  style={{
-                    width: "max-content",
-                    display: "flex",
-                    alignItems: "center",
-                  }}
+                  <Typography variant={"body1"}>
+                    ($ {formatMoney(row.stats.avg_buy_price)})
+                  </Typography>
+                </>
+              ))}
+            {!dbStatsData && (
+              <>
+                <CircularProgress />
+              </>
+            )}
+          </TableCell>
+          <TableCell align="right">
+            {row.stats && row.stats.total_returned && (
+              <>
+                <Typography
+                  className={
+                    row.stats.total_returned > 0
+                      ? classes.profit_green
+                      : classes.profit_red
+                  }
+                  variant={"body1"}
                 >
-                  <img
-                    className={classes.tokenLogo}
-                    alt=""
-                    src={row.icon_url}
-                  />
-
-                  {selectedWallet === "all" &&
-                    walletColors[
-                      walletColors
-                        .map((e) => e.wallet)
-                        .indexOf(row.wallet_address.toLowerCase())
-                    ] && (
-                      <div
-                        style={{
-                          marginLeft: 10,
-                          backgroundColor:
-                            walletColors[
-                              walletColors
-                                .map((e) => e.wallet)
-                                .indexOf(row.wallet_address.toLowerCase())
-                            ].color,
-                          width: "7px",
-                          height: "50px",
-                        }}
-                      />
-                    )}
-                </div>
-              </TableCell>
-              <TableCell padding="none" align="left">
-                <div>
-                  <Typography variant={"h4"}>{row.name}</Typography>
-                </div>
-                {selectedWallet === "all" && (
-                  <div style={{ display: "flex" }}>
-                    {walletColors[
-                      walletColors
-                        .map((e) => e.wallet)
-                        .indexOf(row.wallet_address.toLowerCase())
-                    ] && (
-                      <>
-                        <Typography
-                          style={{
-                            opacity: 0.6,
-                            color:
-                              walletColors[
-                                walletColors
-                                  .map((e) => e.wallet)
-                                  .indexOf(row.wallet_address.toLowerCase())
-                              ].color,
-                          }}
-                          variant={"subtitle2"}
-                        >
-                          at wallet:{" "}
-                          {(data = walletNicknames.find(
-                            (ele) => ele.wallet === row.wallet_address
-                          )) &&
-                            data.nickname +
-                              " (" +
-                              row.wallet_address.substring(0, 6) +
-                              "..." +
-                              row.wallet_address.substring(
-                                row.wallet_address.length - 4,
-                                row.wallet_address.length
-                              ) +
-                              ")"}
-                          {!walletNicknames.some(
-                            (e) => e.wallet === row.wallet_address
-                          ) &&
-                            row.wallet_address.substring(0, 6) +
-                              "..." +
-                              row.wallet_address.substring(
-                                row.wallet_address.length - 4,
-                                row.wallet_address.length
-                              )}
-                        </Typography>
-                        <img
-                          src="/chainIcons/optimism.png"
-                          style={{ maxWidth: 25, marginLeft: 10 }}
-                        />
-                      </>
-                    )}
-                  </div>
-                )}
-                {selectedWallet !== "all" && (
-                  <img
-                    src="/chainIcons/optimism.png"
-                    style={{ maxWidth: 25, marginRight: 10 }}
-                  />
-                )}
-              </TableCell>
-              <TableCell align="right">
-                <div>
-                  <Typography variant={"body1"}>
-                    {formatMoney(row.quantity / Math.pow(10, row.decimals))}
-                  </Typography>
-                </div>
-                <div>
-                  <Typography style={{ opacity: 0.6 }} variant={"subtitle2"}>
-                    {row.symbol}
-                  </Typography>
-                </div>
-              </TableCell>
-              <TableCell align="right">
-                <Typography variant={"body1"}>
-                  $ {row.balance && formatMoney(row.balance)}
+                  $ {row.stats.total_returned.toFixed(1)}
                 </Typography>
-              </TableCell>
-              <TableCell align="right">
-                {row.price && (
-                  <>
-                    <div>
-                      <Typography variant={"body1"}>
-                        {formatMoney(row.price)}
-                      </Typography>
-                    </div>
-                    {row.price.relative_change_24h && (
-                      <div>
-                        <Typography
-                          color={
-                            row.price.relative_change_24h > 0
-                              ? "primary"
-                              : "secondary"
-                          }
-                          variant={"subtitle2"}
-                        >
-                          {row.price.relative_change_24h.toFixed(2)} %
-                        </Typography>
-                      </div>
-                    )}
-                  </>
-                )}
-              </TableCell>
-              <TableCell align="right">
-                {dbStatsData &&
-                  (row.profit_percent && (
-                    <>
-                      <Typography
-                        variant={"body1"}
-                        color={row.profit_percent > 0 ? "primary" : "secondary"}
-                      >
-                        {formatMoney(row.profit_percent)} %
-                      </Typography>
-                      <Typography variant={"body1"}>
-                        ($ {formatMoney(row.stats.avg_buy_price)})
-                      </Typography>
-                    </>
-                  ),
-                  row.profit_percent && (
-                    <>
-                      <Typography
-                        variant={"body1"}
-                        color={row.profit_percent > 0 ? "primary" : "secondary"}
-                      >
-                        {formatMoney(row.profit_percent)} %
-                      </Typography>
-                      <Typography variant={"body1"}>
-                        ($ {formatMoney(row.stats.avg_buy_price)})
-                      </Typography>
-                    </>
-                  ))}
-                {!dbStatsData && (
-                  <>
-                    <CircularProgress />
-                  </>
-                )}
-              </TableCell>
-
-              <TableCell align="right">
-                {row.stats && row.stats.total_returned && (
-                  <>
-                    <Typography
-                      className={
-                        row.stats.total_returned > 0
-                          ? classes.profit_green
-                          : classes.profit_red
-                      }
-                      variant={"body1"}
-                    >
-                      $ {row.stats.total_returned.toFixed(1)}
-                    </Typography>
-                    {row.stats.total_returned_net && (
-                      <Typography
-                        className={
-                          row.stats.total_returned_net > 0
-                            ? classes.profit_green
-                            : classes.profit_red
-                        }
-                        variant={"body1"}
-                      >
-                        $ {row.stats.total_returned_net.toFixed(1)}
-                      </Typography>
-                    )}
-                  </>
-                )}
-              </TableCell>
-            </>
-          )}
-          {row.chain === "arbitrum" && (
-            <>
-              <TableCell>
-                <div
-                  style={{
-                    width: "max-content",
-                    display: "flex",
-                    alignItems: "center",
-                  }}
-                >
-                  <img
-                    className={classes.tokenLogo}
-                    alt=""
-                    src={row.icon_url}
-                  />
-
-                  {selectedWallet === "all" &&
-                    walletColors[
-                      walletColors
-                        .map((e) => e.wallet)
-                        .indexOf(row.wallet_address.toLowerCase())
-                    ] && (
-                      <div
-                        style={{
-                          marginLeft: 10,
-                          backgroundColor:
-                            walletColors[
-                              walletColors
-                                .map((e) => e.wallet)
-                                .indexOf(row.wallet_address.toLowerCase())
-                            ].color,
-                          width: "7px",
-                          height: "50px",
-                        }}
-                      />
-                    )}
-                </div>
-              </TableCell>
-              <TableCell padding="none" align="left">
-                <div>
-                  <Typography variant={"h4"}>{row.name}</Typography>
-                </div>
-                {selectedWallet === "all" && (
-                  <div style={{ display: "flex" }}>
-                    {walletColors[
-                      walletColors
-                        .map((e) => e.wallet)
-                        .indexOf(row.wallet_address.toLowerCase())
-                    ] && (
-                      <>
-                        <Typography
-                          style={{
-                            opacity: 0.6,
-                            color:
-                              walletColors[
-                                walletColors
-                                  .map((e) => e.wallet)
-                                  .indexOf(row.wallet_address.toLowerCase())
-                              ].color,
-                          }}
-                          variant={"subtitle2"}
-                        >
-                          at wallet:{" "}
-                          {(data = walletNicknames.find(
-                            (ele) => ele.wallet === row.wallet_address
-                          )) &&
-                            data.nickname +
-                              " (" +
-                              row.wallet_address.substring(0, 6) +
-                              "..." +
-                              row.wallet_address.substring(
-                                row.wallet_address.length - 4,
-                                row.wallet_address.length
-                              ) +
-                              ")"}
-                          {!walletNicknames.some(
-                            (e) => e.wallet === row.wallet_address
-                          ) &&
-                            row.wallet_address.substring(0, 6) +
-                              "..." +
-                              row.wallet_address.substring(
-                                row.wallet_address.length - 4,
-                                row.wallet_address.length
-                              )}
-                        </Typography>
-                        <img
-                          src="/chainIcons/arbitrum.png"
-                          style={{ maxWidth: 25, marginLeft: 10 }}
-                        />
-                      </>
-                    )}
-                  </div>
-                )}
-                {selectedWallet !== "all" && (
-                  <img
-                    src="/chainIcons/arbitrum.png"
-                    style={{ maxWidth: 25, marginRight: 10 }}
-                  />
-                )}
-              </TableCell>
-              <TableCell align="right">
-                <div>
-                  <Typography variant={"body1"}>
-                    {formatMoney(row.quantity / Math.pow(10, row.decimals))}
+                {row.stats.total_returned_net && (
+                  <Typography
+                    className={
+                      row.stats.total_returned_net > 0
+                        ? classes.profit_green
+                        : classes.profit_red
+                    }
+                    variant={"body1"}
+                  >
+                    $ {row.stats.total_returned_net.toFixed(1)}
                   </Typography>
-                </div>
-                <div>
-                  <Typography style={{ opacity: 0.6 }} variant={"subtitle2"}>
-                    {row.symbol}
-                  </Typography>
-                </div>
-              </TableCell>
-              <TableCell align="right">
-                <Typography variant={"body1"}>
-                  $ {row.balance && formatMoney(row.balance)}
-                </Typography>
-              </TableCell>
-              <TableCell align="right">
-                {row.price && (
-                  <>
-                    <div>
-                      <Typography variant={"body1"}>
-                        {formatMoney(row.price)}
-                      </Typography>
-                    </div>
-                    {row.price.relative_change_24h && (
-                      <div>
-                        <Typography
-                          color={
-                            row.price.relative_change_24h > 0
-                              ? "primary"
-                              : "secondary"
-                          }
-                          variant={"subtitle2"}
-                        >
-                          {row.price.relative_change_24h.toFixed(2)} %
-                        </Typography>
-                      </div>
-                    )}
-                  </>
                 )}
-              </TableCell>
-              <TableCell align="right">
-                {dbStatsData &&
-                  (row.profit_percent && (
-                    <>
-                      <Typography
-                        variant={"body1"}
-                        color={row.profit_percent > 0 ? "primary" : "secondary"}
-                      >
-                        {formatMoney(row.profit_percent)} %
-                      </Typography>
-                      <Typography variant={"body1"}>
-                        ($ {formatMoney(row.stats.avg_buy_price)})
-                      </Typography>
-                    </>
-                  ),
-                  row.profit_percent && (
-                    <>
-                      <Typography
-                        variant={"body1"}
-                        color={row.profit_percent > 0 ? "primary" : "secondary"}
-                      >
-                        {formatMoney(row.profit_percent)} %
-                      </Typography>
-                      <Typography variant={"body1"}>
-                        ($ {formatMoney(row.stats.avg_buy_price)})
-                      </Typography>
-                    </>
-                  ))}
-                {!dbStatsData && (
-                  <>
-                    <CircularProgress />
-                  </>
-                )}
-              </TableCell>
-
-              <TableCell align="right">
-                {row.stats && row.stats.total_returned && (
-                  <>
-                    <Typography
-                      className={
-                        row.stats.total_returned > 0
-                          ? classes.profit_green
-                          : classes.profit_red
-                      }
-                      variant={"body1"}
-                    >
-                      $ {row.stats.total_returned.toFixed(1)}
-                    </Typography>
-                    {row.stats.total_returned_net && (
-                      <Typography
-                        className={
-                          row.stats.total_returned_net > 0
-                            ? classes.profit_green
-                            : classes.profit_red
-                        }
-                        variant={"body1"}
-                      >
-                        $ {row.stats.total_returned_net.toFixed(1)}
-                      </Typography>
-                    )}
-                  </>
-                )}
-              </TableCell>
-            </>
-          )}
-          {row.chain === "bsc" && (
-            <>
-              <TableCell>
-                <div
-                  style={{
-                    width: "max-content",
-                    display: "flex",
-                    alignItems: "center",
-                  }}
-                >
-                  <img
-                    className={classes.tokenLogo}
-                    alt=""
-                    src={row.icon_url}
-                  />
-
-                  {selectedWallet === "all" &&
-                    walletColors[
-                      walletColors
-                        .map((e) => e.wallet)
-                        .indexOf(row.wallet_address.toLowerCase())
-                    ] && (
-                      <div
-                        style={{
-                          marginLeft: 10,
-                          backgroundColor:
-                            walletColors[
-                              walletColors
-                                .map((e) => e.wallet)
-                                .indexOf(row.wallet_address.toLowerCase())
-                            ].color,
-                          width: "7px",
-                          height: "50px",
-                        }}
-                      />
-                    )}
-                </div>
-              </TableCell>
-              <TableCell padding="none" align="left">
-                <div>
-                  <Typography variant={"h4"}>{row.name}</Typography>
-                </div>
-                {selectedWallet === "all" && (
-                  <div style={{ display: "flex" }}>
-                    {walletColors[
-                      walletColors
-                        .map((e) => e.wallet)
-                        .indexOf(row.wallet_address.toLowerCase())
-                    ] && (
-                      <>
-                        <Typography
-                          style={{
-                            opacity: 0.6,
-                            color:
-                              walletColors[
-                                walletColors
-                                  .map((e) => e.wallet)
-                                  .indexOf(row.wallet_address.toLowerCase())
-                              ].color,
-                          }}
-                          variant={"subtitle2"}
-                        >
-                          at wallet:{" "}
-                          {(data = walletNicknames.find(
-                            (ele) => ele.wallet === row.wallet_address
-                          )) &&
-                            data.nickname +
-                              " (" +
-                              row.wallet_address.substring(0, 6) +
-                              "..." +
-                              row.wallet_address.substring(
-                                row.wallet_address.length - 4,
-                                row.wallet_address.length
-                              ) +
-                              ")"}
-                          {!walletNicknames.some(
-                            (e) => e.wallet === row.wallet_address
-                          ) &&
-                            row.wallet_address.substring(0, 6) +
-                              "..." +
-                              row.wallet_address.substring(
-                                row.wallet_address.length - 4,
-                                row.wallet_address.length
-                              )}
-                        </Typography>
-                        <img
-                          src="/chainIcons/bsc.png"
-                          style={{ maxWidth: 25, marginLeft: 10 }}
-                        />
-                      </>
-                    )}
-                  </div>
-                )}
-                {selectedWallet !== "all" && (
-                  <img
-                    src="/chainIcons/bsc.png"
-                    style={{ maxWidth: 25, marginRight: 10 }}
-                  />
-                )}
-              </TableCell>
-              <TableCell align="right">
-                <div>
-                  <Typography variant={"body1"}>
-                    {formatMoney(row.quantity / Math.pow(10, row.decimals))}
-                  </Typography>
-                </div>
-                <div>
-                  <Typography style={{ opacity: 0.6 }} variant={"subtitle2"}>
-                    {row.symbol}
-                  </Typography>
-                </div>
-              </TableCell>
-              <TableCell align="right">
-                <Typography variant={"body1"}>
-                  $ {row.balance && formatMoney(row.balance)}
-                </Typography>
-              </TableCell>
-              <TableCell align="right">
-                {row.price && (
-                  <>
-                    <div>
-                      <Typography variant={"body1"}>
-                        {formatMoney(row.price)}
-                      </Typography>
-                    </div>
-                    {row.price.relative_change_24h && (
-                      <div>
-                        <Typography
-                          color={
-                            row.price.relative_change_24h > 0
-                              ? "primary"
-                              : "secondary"
-                          }
-                          variant={"subtitle2"}
-                        >
-                          {row.price.relative_change_24h.toFixed(2)} %
-                        </Typography>
-                      </div>
-                    )}
-                  </>
-                )}
-              </TableCell>
-              <TableCell align="right">
-                {dbStatsData &&
-                  (row.profit_percent && (
-                    <>
-                      <Typography
-                        variant={"body1"}
-                        color={row.profit_percent > 0 ? "primary" : "secondary"}
-                      >
-                        {formatMoney(row.profit_percent)} %
-                      </Typography>
-                      <Typography variant={"body1"}>
-                        ($ {formatMoney(row.stats.avg_buy_price)})
-                      </Typography>
-                    </>
-                  ),
-                  row.profit_percent && (
-                    <>
-                      <Typography
-                        variant={"body1"}
-                        color={row.profit_percent > 0 ? "primary" : "secondary"}
-                      >
-                        {formatMoney(row.profit_percent)} %
-                      </Typography>
-                      <Typography variant={"body1"}>
-                        ($ {formatMoney(row.stats.avg_buy_price)})
-                      </Typography>
-                    </>
-                  ))}
-                {!dbStatsData && (
-                  <>
-                    <CircularProgress />
-                  </>
-                )}
-              </TableCell>
-
-              <TableCell align="right">
-                {row.stats && row.stats.total_returned && (
-                  <>
-                    <Typography
-                      className={
-                        row.stats.total_returned > 0
-                          ? classes.profit_green
-                          : classes.profit_red
-                      }
-                      variant={"body1"}
-                    >
-                      $ {row.stats.total_returned.toFixed(1)}
-                    </Typography>
-                    {row.stats.total_returned_net && (
-                      <Typography
-                        className={
-                          row.stats.total_returned_net > 0
-                            ? classes.profit_green
-                            : classes.profit_red
-                        }
-                        variant={"body1"}
-                      >
-                        $ {row.stats.total_returned_net.toFixed(1)}
-                      </Typography>
-                    )}
-                  </>
-                )}
-              </TableCell>
-            </>
-          )}
-          {row.chain === "polygon" && (
-            <>
-              <TableCell>
-                <div
-                  style={{
-                    width: "max-content",
-                    display: "flex",
-                    alignItems: "center",
-                  }}
-                >
-                  <img
-                    className={classes.tokenLogo}
-                    alt=""
-                    src={row.icon_url}
-                  />
-
-                  {selectedWallet === "all" &&
-                    walletColors[
-                      walletColors
-                        .map((e) => e.wallet)
-                        .indexOf(row.wallet_address.toLowerCase())
-                    ] && (
-                      <div
-                        style={{
-                          marginLeft: 10,
-                          backgroundColor:
-                            walletColors[
-                              walletColors
-                                .map((e) => e.wallet)
-                                .indexOf(row.wallet_address.toLowerCase())
-                            ].color,
-                          width: "7px",
-                          height: "50px",
-                        }}
-                      />
-                    )}
-                </div>
-              </TableCell>
-              <TableCell padding="none" align="left">
-                <div>
-                  <Typography variant={"h4"}>{row.name}</Typography>
-                </div>
-                {selectedWallet === "all" && (
-                  <div style={{ display: "flex" }}>
-                    {walletColors[
-                      walletColors
-                        .map((e) => e.wallet)
-                        .indexOf(row.wallet_address.toLowerCase())
-                    ] && (
-                      <>
-                        <Typography
-                          style={{
-                            opacity: 0.6,
-                            color:
-                              walletColors[
-                                walletColors
-                                  .map((e) => e.wallet)
-                                  .indexOf(row.wallet_address.toLowerCase())
-                              ].color,
-                          }}
-                          variant={"subtitle2"}
-                        >
-                          at wallet:{" "}
-                          {(data = walletNicknames.find(
-                            (ele) => ele.wallet === row.wallet_address
-                          )) &&
-                            data.nickname +
-                              " (" +
-                              row.wallet_address.substring(0, 6) +
-                              "..." +
-                              row.wallet_address.substring(
-                                row.wallet_address.length - 4,
-                                row.wallet_address.length
-                              ) +
-                              ")"}
-                          {!walletNicknames.some(
-                            (e) => e.wallet === row.wallet_address
-                          ) &&
-                            row.wallet_address.substring(0, 6) +
-                              "..." +
-                              row.wallet_address.substring(
-                                row.wallet_address.length - 4,
-                                row.wallet_address.length
-                              )}
-                        </Typography>
-                        <img
-                          src="/chainIcons/polygon.png"
-                          style={{ maxWidth: 25, marginLeft: 10 }}
-                        />
-                      </>
-                    )}
-                  </div>
-                )}
-                {selectedWallet !== "all" && (
-                  <img
-                    src="/chainIcons/polygon.png"
-                    style={{ maxWidth: 25, marginRight: 10 }}
-                  />
-                )}
-              </TableCell>
-              <TableCell align="right">
-                <div>
-                  <Typography variant={"body1"}>
-                    {formatMoney(row.quantity / Math.pow(10, row.decimals))}
-                  </Typography>
-                </div>
-                <div>
-                  <Typography style={{ opacity: 0.6 }} variant={"subtitle2"}>
-                    {row.symbol}
-                  </Typography>
-                </div>
-              </TableCell>
-              <TableCell align="right">
-                <Typography variant={"body1"}>
-                  $ {row.balance && formatMoney(row.balance)}
-                </Typography>
-              </TableCell>
-              <TableCell align="right">
-                {row.price && (
-                  <>
-                    <div>
-                      <Typography variant={"body1"}>
-                        {formatMoney(row.price)}
-                      </Typography>
-                    </div>
-                    {row.price.relative_change_24h && (
-                      <div>
-                        <Typography
-                          color={
-                            row.price.relative_change_24h > 0
-                              ? "primary"
-                              : "secondary"
-                          }
-                          variant={"subtitle2"}
-                        >
-                          {row.price.relative_change_24h.toFixed(2)} %
-                        </Typography>
-                      </div>
-                    )}
-                  </>
-                )}
-              </TableCell>
-              <TableCell align="right">
-                {dbStatsData &&
-                  (row.profit_percent && (
-                    <>
-                      <Typography
-                        variant={"body1"}
-                        color={row.profit_percent > 0 ? "primary" : "secondary"}
-                      >
-                        {formatMoney(row.profit_percent)} %
-                      </Typography>
-                      <Typography variant={"body1"}>
-                        ($ {formatMoney(row.stats.avg_buy_price)})
-                      </Typography>
-                    </>
-                  ),
-                  row.profit_percent && (
-                    <>
-                      <Typography
-                        variant={"body1"}
-                        color={row.profit_percent > 0 ? "primary" : "secondary"}
-                      >
-                        {formatMoney(row.profit_percent)} %
-                      </Typography>
-                      <Typography variant={"body1"}>
-                        ($ {formatMoney(row.stats.avg_buy_price)})
-                      </Typography>
-                    </>
-                  ))}
-                {!dbStatsData && (
-                  <>
-                    <CircularProgress />
-                  </>
-                )}
-              </TableCell>
-
-              <TableCell align="right">
-                {row.stats && row.stats.total_returned && (
-                  <>
-                    <Typography
-                      className={
-                        row.stats.total_returned > 0
-                          ? classes.profit_green
-                          : classes.profit_red
-                      }
-                      variant={"body1"}
-                    >
-                      $ {row.stats.total_returned.toFixed(1)}
-                    </Typography>
-                    {row.stats.total_returned_net && (
-                      <Typography
-                        className={
-                          row.stats.total_returned_net > 0
-                            ? classes.profit_green
-                            : classes.profit_red
-                        }
-                        variant={"body1"}
-                      >
-                        $ {row.stats.total_returned_net.toFixed(1)}
-                      </Typography>
-                    )}
-                  </>
-                )}
-              </TableCell>
-            </>
-          )}
+              </>
+            )}
+          </TableCell>
         </TableRow>
       ));
     }
@@ -1838,7 +2210,7 @@ class PortfolioBig extends Component {
             <>
               <Grid
                 item
-                key={row.asset_code}
+                key={row.id}
                 container
                 direction="row"
                 justify="space-between"
@@ -2490,24 +2862,24 @@ class PortfolioBig extends Component {
                           </TableCell>
                           <TableCell
                             align="right"
-                            onClick={() => this.sortBy("balance")}
-                          >
-                            <TableSortLabel
-                              active={sortBy === "balance"}
-                              direction={sortOrder}
-                              onClick={() => this.sortBy("balance")}
-                            >
-                              Value
-                            </TableSortLabel>
-                          </TableCell>
-                          <TableCell
-                            align="right"
                             onClick={() => this.sortBy("value")}
                           >
                             <TableSortLabel
                               active={sortBy === "value"}
                               direction={sortOrder}
                               onClick={() => this.sortBy("value")}
+                            >
+                              Value
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell
+                            align="right"
+                            onClick={() => this.sortBy("price")}
+                          >
+                            <TableSortLabel
+                              active={sortBy === "price"}
+                              direction={sortOrder}
+                              onClick={() => this.sortBy("price")}
                             >
                               <Grid>
                                 <Grid item>Price</Grid>

@@ -20,7 +20,6 @@ import { ReactComponent as WalletIcon } from "../../assets/wallet.svg";
 const styles = (theme) => ({
   root: {
     outline: "none",
-
     flex: 1,
     display: "flex",
     width: "100%",
@@ -253,7 +252,7 @@ class Home extends Component {
               <Card
                 className={`${classes.card} ${classes.short}`}
                 onClick={() => {
-                  this.nav("/short/compare/bitcoin/ethereum");
+                  this.nav("/short/shortLong");
                 }}
               >
                 <FastIcon

@@ -346,7 +346,7 @@ class Short extends Component {
             scrollButtons="auto"
             indicatorColor="secondary"
             textColor="secondary"
-            centered
+            centered={!isMobile}
           >
             <Tab
               label="Crypto Compare"
@@ -418,8 +418,12 @@ class Short extends Component {
                 </div>
               }
             >
-              {coinID && <CryptoDetective toolTimeframe={"short"} coinID={coinID} />}
-              {!coinID && <CryptoDetective toolTimeframe={"short"} coinID={"bitcoin"} />}
+              {coinID && (
+                <CryptoDetective toolTimeframe={"short"} coinID={coinID} />
+              )}
+              {!coinID && (
+                <CryptoDetective toolTimeframe={"short"} coinID={"bitcoin"} />
+              )}
             </Suspense>
           </TabPanel>
           <TabPanel value={valueTab} index={3}>

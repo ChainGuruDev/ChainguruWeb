@@ -14,6 +14,7 @@ import {
 import { withTranslation } from "react-i18next";
 import PropTypes from "prop-types";
 import { colors } from "../../theme";
+import { isMobile } from "react-device-detect";
 
 //Import ICONS
 import ShowChartIcon from "@material-ui/icons/ShowChart";
@@ -327,9 +328,10 @@ class Long extends Component {
             value={valueTab}
             onChange={handleChangeTabs}
             aria-label="tool tabs"
+            variant={isMobile ? "scrollable" : "standard"}
             scrollButtons="auto"
+            centered={!isMobile}
             textColor="secondary"
-            centered
           >
             <LongTab
               label="BlueChips"
@@ -413,8 +415,12 @@ class Long extends Component {
                 </div>
               }
             >
-              {coinID && <CryptoDetective toolTimeframe={"long"} coinID={coinID} />}
-              {!coinID && <CryptoDetective toolTimeframe={"long"} coinID={"bitcoin"} />}
+              {coinID && (
+                <CryptoDetective toolTimeframe={"long"} coinID={coinID} />
+              )}
+              {!coinID && (
+                <CryptoDetective toolTimeframe={"long"} coinID={"bitcoin"} />
+              )}
             </Suspense>
           </TabPanel>
           <TabPanel value={valueTab} index={4}>

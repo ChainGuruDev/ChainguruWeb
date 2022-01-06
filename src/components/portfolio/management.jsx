@@ -14,6 +14,7 @@ import {
 } from "@material-ui/core";
 import { withTranslation } from "react-i18next";
 import { colors } from "../../theme";
+import { isMobile, isBrowser } from "react-device-detect";
 
 import ViewQuiltIcon from "@material-ui/icons/ViewQuilt";
 import ShuffleIcon from "@material-ui/icons/Shuffle";
@@ -304,9 +305,10 @@ class PortfolioManagement extends Component {
             onChange={handleChangeTabs}
             aria-label="tool tabs"
             scrollButtons="auto"
+            variant={isMobile ? "scrollable" : "standard"}
             indicatorColor="primary"
             textColor="primary"
-            centered
+            centered={isBrowser}
           >
             <PortfolioTab
               label="Dashboard"

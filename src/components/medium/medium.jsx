@@ -341,7 +341,7 @@ class Medium extends Component {
             scrollButtons="auto"
             indicatorColor="primary"
             textColor="primary"
-            centered
+            centered={!isMobile}
           >
             <Tab
               label="Crypto Compare"
@@ -407,8 +407,12 @@ class Medium extends Component {
                 </div>
               }
             >
-              {coinID && <CryptoDetective toolTimeframe={"medium"} coinID={coinID} />}
-              {!coinID && <CryptoDetective toolTimeframe={"medium"} coinID={"bitcoin"} />}
+              {coinID && (
+                <CryptoDetective toolTimeframe={"medium"} coinID={coinID} />
+              )}
+              {!coinID && (
+                <CryptoDetective toolTimeframe={"medium"} coinID={"bitcoin"} />
+              )}
             </Suspense>
           </TabPanel>
           <TabPanel value={valueTab} index={3}>
