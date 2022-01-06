@@ -2891,7 +2891,7 @@ ${nonce}`,
     let vsCoin = store.getStore("vsCoin");
     try {
       const portfolioAssets = await axios.post(
-        `https://chainguru-db-dev.herokuapp.com/zerion/address/positions`,
+        `https://chainguru-db.herokuapp.com/zerion/address/positions`,
         {
           addresses: payload.wallet,
           currency: vsCoin,
