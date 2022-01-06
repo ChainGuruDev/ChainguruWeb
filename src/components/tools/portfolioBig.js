@@ -1829,7 +1829,7 @@ class PortfolioBig extends Component {
           </TableCell>
           <TableCell padding="none" align="left">
             <div>
-              <Typography variant={"h4"}>{row.name}</Typography>
+              <Typography variant={"h4"}>{row.asset.name}</Typography>
             </div>
             {selectedWallet === "all" && (
               <div style={{ display: "flex" }}>
@@ -2227,7 +2227,7 @@ class PortfolioBig extends Component {
                 </Grid>
                 <Grid style={{ textAlign: "left" }} item>
                   <Typography color={type === "win" ? "primary" : "secondary"}>
-                    {row.name}
+                    {row.asset.name}
                   </Typography>
                 </Grid>
                 <Grid item>
