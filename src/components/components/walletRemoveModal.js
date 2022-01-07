@@ -97,7 +97,7 @@ class WalletRemoveModal extends Component {
             <Grid item style={{ textAlign: "center" }} xs={12}>
               <Typography variant={"h4"}>Confirm wallet removal</Typography>
               <Typography style={{ marginTop: 10 }} variant={"h5"}>
-                We will stop tracking this wallet, and will remove it from your
+                You will stop tracking this wallet, and will remove it from your
                 wallets list.
               </Typography>
               <Divider variant="middle" style={{ marginBottom: "10px" }} />
