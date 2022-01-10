@@ -3,6 +3,7 @@ import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { colors, colorsGuru } from "../../theme";
 import { formatMoney } from "../helpers";
+
 import WalletNicknameModal from "../components/walletNicknameModal.js";
 import WalletRemoveModal from "../components/walletRemoveModal.js";
 import PortfolioChart from "../components/PortfolioChart.js";
@@ -12,6 +13,8 @@ import AddCircleRoundedIcon from "@material-ui/icons/AddCircleRounded";
 import ArrowBackIosRoundedIcon from "@material-ui/icons/ArrowBackIosRounded";
 import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
 import PieChartIcon from "@material-ui/icons/PieChart";
+import LockIcon from "@material-ui/icons/Lock";
+import AddIcon from "@material-ui/icons/Add";
 
 import {
   Card,
@@ -36,9 +39,12 @@ import {
   TextField,
   CircularProgress,
   Tooltip,
+  Avatar,
+  Badge,
 } from "@material-ui/core";
 
 import Skeleton from "@material-ui/lab/Skeleton";
+import AvatarGroup from "@material-ui/lab/AvatarGroup";
 
 import {
   ERROR,
@@ -139,6 +145,37 @@ const styles = (theme) => ({
   chainIcon: { maxWidth: 25, maxHeight: 25, scale: 0.8 },
   customCell: {
     backgroundColor: "inherit",
+  },
+  smallAvatar: {
+    maxWidth: 20,
+    maxHeight: 20,
+    padding: "35px 25px",
+  },
+  rewardBadge: {
+    backgroundColor: "#44b700",
+    color: "#44b700",
+    boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
+    "&::after": {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      borderRadius: "75%",
+      animation: "$ripple 1.2s infinite ease-in-out",
+      border: "2px solid currentColor",
+      content: '""',
+    },
+  },
+  "@keyframes ripple": {
+    "0%": {
+      transform: "scale(.8)",
+      opacity: 1,
+    },
+    "100%": {
+      transform: "scale(1.2)",
+      opacity: 0,
+    },
   },
 });
 
@@ -638,8 +675,158 @@ class PortfolioBig extends Component {
     }
   };
 
-  drawMultipleAssetIcons = (icons) => {
+  drawMultipleAssetIcons = (icons, symbols) => {
+    const { classes } = this.props;
+
     //TODO, draw in a cool way multiple assets for multiple staking/rewards obj
+    return (
+      <div
+        style={{
+          width: "max-content",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        {symbols.rewards.length === 0 && (
+          <AvatarGroup>
+            {icons.deposited.map((icon, i) => (
+              <Tooltip
+                key={`staking_deposited_${i}`}
+                arrow
+                title={symbols.deposited[i]}
+              >
+                <Badge
+                  style={{ border: "none" }}
+                  anchorOrigin={{
+                    vertical: "top",
+                    horizontal: "left",
+                  }}
+                  badgeContent={
+                    <Avatar
+                      key={`staking_avatar_${Math.random()}`}
+                      style={{
+                        width: 22,
+                        height: 22,
+                        backgroundColor: colors.cgRed,
+                      }}
+                    >
+                      <LockIcon fontSize="small" />
+                    </Avatar>
+                  }
+                >
+                  <Badge
+                    style={{ border: "none" }}
+                    anchorOrigin={{
+                      vertical: "bottom",
+                      horizontal: "right",
+                    }}
+                    badgeContent={
+                      <Avatar
+                        key={`rewards_avatar_${Math.random()}`}
+                        className={classes.rewardBadge}
+                        style={{
+                          width: 22,
+                          height: 22,
+                          backgroundColor: colors.cgGreen,
+                        }}
+                      >
+                        <AddIcon style={{ color: "black" }} fontSize="small" />
+                      </Avatar>
+                    }
+                  >
+                    <Avatar
+                      key={`staking ${symbols.deposited[i]}`}
+                      alt={symbols.deposited[i]}
+                      src={icon}
+                    >
+                      {!icon && symbols.deposited[i]}
+                    </Avatar>
+                  </Badge>
+                </Badge>
+              </Tooltip>
+            ))}
+          </AvatarGroup>
+        )}
+        {symbols.rewards.length !== 0 && (
+          <>
+            <AvatarGroup>
+              {icons.deposited.map((icon, i) => (
+                <Tooltip
+                  key={`deposited_tooltip_${i}`}
+                  arrow
+                  title={symbols.deposited[i]}
+                >
+                  <Badge
+                    style={{ border: "none" }}
+                    anchorOrigin={{
+                      vertical: "top",
+                      horizontal: "right",
+                    }}
+                    badgeContent={
+                      <Avatar
+                        style={{
+                          width: 22,
+                          height: 22,
+                          backgroundColor: colors.cgRed,
+                        }}
+                      >
+                        <LockIcon fontSize="small" />
+                      </Avatar>
+                    }
+                  >
+                    <Avatar
+                      key={`deposited ${symbols.deposited[i]}`}
+                      alt={symbols.deposited[i]}
+                      src={icon}
+                    >
+                      {!icon && symbols.deposited[i]}
+                    </Avatar>
+                  </Badge>
+                </Tooltip>
+              ))}
+            </AvatarGroup>
+            <AvatarGroup style={{ marginTop: 5 }}>
+              {icons.rewards.map((icon, i) => (
+                <Tooltip
+                  key={`rewards_tooltip_${i}`}
+                  arrow
+                  title={symbols.rewards[i]}
+                >
+                  <Badge
+                    style={{ border: "none" }}
+                    anchorOrigin={{
+                      vertical: "bottom",
+                      horizontal: "right",
+                    }}
+                    badgeContent={
+                      <Avatar
+                        className={classes.rewardBadge}
+                        style={{
+                          width: 22,
+                          height: 22,
+                          backgroundColor: colors.cgGreen,
+                        }}
+                      >
+                        <AddIcon style={{ color: "black" }} fontSize="small" />
+                      </Avatar>
+                    }
+                  >
+                    <Avatar
+                      key={`rewards ${symbols.rewards[i]}`}
+                      alt={symbols.rewards[i]}
+                      src={icon}
+                    >
+                      {!icon && symbols.rewards[i]}
+                    </Avatar>
+                  </Badge>
+                </Tooltip>
+              ))}
+            </AvatarGroup>
+          </>
+        )}
+      </div>
+    );
   };
 
   sortedList = (portfolioData) => {
@@ -745,7 +932,6 @@ class PortfolioBig extends Component {
       });
       assetsData.push(protocolAssetsGrouped[key]);
     }
-    console.log(assetsData);
 
     //Sort Rows by sortBy State criteria
     let sortedRows;
@@ -965,22 +1151,15 @@ class PortfolioBig extends Component {
               hover={true}
               key={`${row.id}+${Math.random(0, 99999)}`}
               style={{ cursor: "pointer" }}
-              onClick={() => this.nav("/short/detective/" + row.asset_code)}
+              onClick={() =>
+                this.nav(
+                  "/short/detective/" +
+                    row.items[row.items.length - 1].asset.asset_code
+                )
+              }
             >
               <TableCell>
-                <div
-                  style={{
-                    width: "max-content",
-                    display: "flex",
-                    alignItems: "center",
-                  }}
-                >
-                  <img
-                    className={classes.tokenLogo}
-                    alt=""
-                    src={row.icon_url.deposited[0]}
-                  />
-                </div>
+                {this.drawMultipleAssetIcons(row.icon_url, row.symbol)}
               </TableCell>
               <TableCell padding="none" align="left">
                 <div>
@@ -2008,7 +2187,11 @@ class PortfolioBig extends Component {
                       <TableHead className={classes.header}>
                         <TableRow>
                           <TableCell
-                            style={{ width: "30px", height: "30px" }}
+                            style={{
+                              width: "30px",
+                              height: "30px",
+                              zIndex: 10,
+                            }}
                           ></TableCell>
                           <TableCell align="left" padding="none">
                             <TableSortLabel
