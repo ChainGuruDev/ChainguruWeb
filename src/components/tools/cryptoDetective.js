@@ -268,22 +268,28 @@ class CryptoDetective extends Component {
     emitter.on(LOGIN_RETURNED, this.loginReturned);
 
     if (userAuth && account && account.address) {
-      this._isMounted && dispatcher.dispatch({
-        type: DB_GET_USERDATA,
-        address: account.address,
-      });
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: DB_GET_USERDATA,
+          address: account.address,
+        });
     }
 
     if (this.props.coinID) {
-      this._isMounted && dispatcher.dispatch({
-        type: GET_COIN_DATA,
-        content: this.props.coinID,
-      });
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: GET_COIN_DATA,
+          content: this.props.coinID,
+        });
     }
     if (!this.state.vs) {
       this.getVsCoin();
     }
-    this._isMounted && (this.interval = setInterval(() => this.updateTokenData(), 60 * 1000 * 5)); //update every 5mins
+    this._isMounted &&
+      (this.interval = setInterval(
+        () => this.updateTokenData(),
+        60 * 1000 * 5
+      )); //update every 5mins
   }
 
   componentWillUnmount() {
@@ -321,29 +327,32 @@ class CryptoDetective extends Component {
   componentDidUpdate(prevProps) {
     if (prevProps.match.params.coinID !== this.props.match.params.coinID) {
       if (this.props.match.params.coinID) {
-        console.log("newSearch")
-        this._isMounted && this.setState({
-          loading: true,
-          loadingPriceChart: true,
-          portfolioBalances: null,
-          portfolioStats: null,
-          portfolioDataLoaded: false,
-          portfolioDataExpanded: false,
-        });
-        this._isMounted && dispatcher.dispatch({
-          type: GET_COIN_DATA,
-          content: this.props.match.params.coinID,
-        });
+        console.log("newSearch");
+        this._isMounted &&
+          this.setState({
+            loading: true,
+            loadingPriceChart: true,
+            portfolioBalances: null,
+            portfolioStats: null,
+            portfolioDataLoaded: false,
+            portfolioDataExpanded: false,
+          });
+        this._isMounted &&
+          dispatcher.dispatch({
+            type: GET_COIN_DATA,
+            content: this.props.match.params.coinID,
+          });
       }
     }
   }
 
   updateTokenData() {
     if (this.state.coinData.id) {
-      this._isMounted && dispatcher.dispatch({
-        type: GET_COIN_DATA,
-        content: this.state.coinData.id,
-      });
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: GET_COIN_DATA,
+          content: this.state.coinData.id,
+        });
     }
   }
 
@@ -352,34 +361,37 @@ class CryptoDetective extends Component {
     const userAuth = store.getStore("userAuth");
 
     if (userAuth && account && account.address) {
-      this._isMounted && dispatcher.dispatch({
-        type: DB_GET_USERDATA,
-        address: account.address,
-      });
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: DB_GET_USERDATA,
+          address: account.address,
+        });
     }
     this._isMounted && this.setState({ userAuth: userAuth });
   };
 
   newSearch(newID) {
-    this._isMounted && this.setState({
-      loading: true,
-      loadingPriceChart: true,
-      portfolioBalances: null,
-      portfolioStats: null,
-      portfolioDataLoaded: false,
-      portfolioDataExpanded: false,
-    });
+    this._isMounted &&
+      this.setState({
+        loading: true,
+        loadingPriceChart: true,
+        portfolioBalances: null,
+        portfolioStats: null,
+        portfolioDataLoaded: false,
+        portfolioDataExpanded: false,
+      });
     this.nav(newID);
   }
 
   txReturned = (data) => {
     if (data) {
-      this._isMounted && this.setState({
-        error: false,
-        loading: false,
-        txDataLoaded: true,
-        transactions: data.transactions,
-      });
+      this._isMounted &&
+        this.setState({
+          error: false,
+          loading: false,
+          txDataLoaded: true,
+          transactions: data.transactions,
+        });
     }
   };
 
@@ -401,40 +413,43 @@ class CryptoDetective extends Component {
       walletColors.push(colours[x]);
       wallets.push(item.wallet);
     });
-    if (coinData.id && this._isMounted) {
-      if (coinData.contract_address) {
-        dispatcher.dispatch({
-          type: DB_GET_ASSETSTATS,
-          payload: {
+    if (coinData) {
+      if (coinData.id && this._isMounted) {
+        if (coinData.contract_address) {
+          dispatcher.dispatch({
+            type: DB_GET_ASSETSTATS,
+            payload: {
+              wallet: wallets,
+              assetCode: coinData.contract_address,
+            },
+          });
+          dispatcher.dispatch({
+            type: DB_GET_ADDRESS_TX,
             wallet: wallets,
-            assetCode: coinData.contract_address,
-          },
-        });
-        dispatcher.dispatch({
-          type: DB_GET_ADDRESS_TX,
-          wallet: wallets,
-          query: coinData.contract_address,
-        });
-      } else if (coinData.symbol === "eth") {
-        dispatcher.dispatch({
-          type: DB_GET_ASSETSTATS,
-          payload: {
+            query: coinData.contract_address,
+          });
+        } else if (coinData.symbol === "eth") {
+          dispatcher.dispatch({
+            type: DB_GET_ASSETSTATS,
+            payload: {
+              wallet: wallets,
+              assetCode: coinData.symbol,
+            },
+          });
+          dispatcher.dispatch({
+            type: DB_GET_ADDRESS_TX,
             wallet: wallets,
-            assetCode: coinData.symbol,
-          },
-        });
-        dispatcher.dispatch({
-          type: DB_GET_ADDRESS_TX,
-          wallet: wallets,
-          query: coinData.symbol,
-        });
+            query: coinData.symbol,
+          });
+        }
       }
     }
-    this._isMounted && this.setState({
-      userWallets: wallets,
-      walletColors: walletColors,
-      walletNicknames: data.walletNicknames,
-    });
+    this._isMounted &&
+      this.setState({
+        userWallets: wallets,
+        walletColors: walletColors,
+        walletNicknames: data.walletNicknames,
+      });
   };
 
   coinlistReturned = (payload) => {
@@ -450,56 +465,70 @@ class CryptoDetective extends Component {
     // else if (account.address) {
     //   userWallets = [account.address];
     // }
-    if (data[0].id) {
-      this._isMounted && dispatcher.dispatch({
-        type: GET_COIN_PRICECHART,
-        content: [
-          data[0].id,
-          this.props.id,
-          this.state.timeFrame,
-          this.state.vs,
-        ],
-      });
-    }
-    if (this._isMounted && userWallets) {
-      if (data[0].contract_address) {
-        dispatcher.dispatch({
-          type: DB_GET_ASSETSTATS,
-          payload: {
-            wallet: userWallets,
-            assetCode: data[0].contract_address,
-          },
-        });
-        dispatcher.dispatch({
-          type: DB_GET_ADDRESS_TX,
-          wallet: userWallets,
-          query: data[0].contract_address,
-        });
-      } else if (data[0].symbol === "eth") {
-        dispatcher.dispatch({
-          type: DB_GET_ASSETSTATS,
-          payload: {
-            wallet: userWallets,
-            assetCode: data[0].symbol,
-          },
-        });
-        dispatcher.dispatch({
-          type: DB_GET_ADDRESS_TX,
-          wallet: userWallets,
-          query: data[0].symbol,
-        });
+    // console.log(data[0]);
+    if (!data[0].error) {
+      if (data[0].id) {
+        this._isMounted &&
+          dispatcher.dispatch({
+            type: GET_COIN_PRICECHART,
+            content: [
+              data[0].id,
+              this.props.id,
+              this.state.timeFrame,
+              this.state.vs,
+            ],
+          });
       }
-    }
+      if (this._isMounted && userWallets) {
+        if (data[0].contract_address) {
+          dispatcher.dispatch({
+            type: DB_GET_ASSETSTATS,
+            payload: {
+              wallet: userWallets,
+              assetCode: data[0].contract_address,
+            },
+          });
+          dispatcher.dispatch({
+            type: DB_GET_ADDRESS_TX,
+            wallet: userWallets,
+            query: data[0].contract_address,
+          });
+        } else if (data[0].symbol === "eth") {
+          dispatcher.dispatch({
+            type: DB_GET_ASSETSTATS,
+            payload: {
+              wallet: userWallets,
+              assetCode: data[0].symbol,
+            },
+          });
+          dispatcher.dispatch({
+            type: DB_GET_ADDRESS_TX,
+            wallet: userWallets,
+            query: data[0].symbol,
+          });
+        }
+      }
 
-    this._isMounted && dispatcher.dispatch({
-      type: DB_GET_TOKEN_LS,
-      tokenID: data[0].id,
-    });
-    this._isMounted && this.setState({
-      coinData: data[0],
-      dataLoaded: true,
-      txDataLoaded: false,
-    });
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: DB_GET_TOKEN_LS,
+          tokenID: data[0].id,
+        });
+      this._isMounted &&
+        this.setState({
+          coinData: data[0],
+          dataLoaded: true,
+          txDataLoaded: false,
+        });
+    }
+    if (data[0].error) {
+      console.log(`gecko says ${data[0].error}`);
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: GET_COIN_DATA,
+          content: "bitcoin",
+        });
+    }
   };
 
   getVsCoin = () => {
@@ -549,23 +578,27 @@ class CryptoDetective extends Component {
 
   graphTimeFrameChanged = (data) => {
     const { coinData, vs } = this.state;
-    this._isMounted && this.setState({ timeFrame: data, loadingPriceChart: true });
+    this._isMounted &&
+      this.setState({ timeFrame: data, loadingPriceChart: true });
 
     if (coinData.id) {
-      this._isMounted && dispatcher.dispatch({
-        type: GET_COIN_PRICECHART,
-        content: [coinData.id, this.props.id, data, vs],
-      });
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: GET_COIN_PRICECHART,
+          content: [coinData.id, this.props.id, data, vs],
+        });
     }
   };
 
   db_GetTokenLSReturned = async (data) => {
-    this._isMounted && dispatcher.dispatch({
-      type: DB_GET_USER_TOKEN_LS,
-      tokenID: this.state.coinData.id,
-    });
+    this._isMounted &&
+      dispatcher.dispatch({
+        type: DB_GET_USER_TOKEN_LS,
+        tokenID: this.state.coinData.id,
+      });
     let results = await this.getVoteResults(data);
-    this._isMounted && this.setState({ tokenLS: data, voteResults: await results });
+    this._isMounted &&
+      this.setState({ tokenLS: data, voteResults: await results });
   };
 
   getVoteResults = async (data) => {
@@ -590,10 +623,16 @@ class CryptoDetective extends Component {
     if (data.length > 0) {
       //TODO CALCULATE REMAINING TIME UNTIL P&D is ready
       // console.log({ message: "user has active LS", data: data[0] });
-      this._isMounted && this.setState({ userTokenLS: data[0], lsEnabled: false, lsLoaded: true });
+      this._isMounted &&
+        this.setState({
+          userTokenLS: data[0],
+          lsEnabled: false,
+          lsLoaded: true,
+        });
     } else {
       // console.log({ message: "user has no LS running", data: data });
-      this._isMounted && this.setState({ userTokenLS: data, lsEnabled: true, lsLoaded: true });
+      this._isMounted &&
+        this.setState({ userTokenLS: data, lsEnabled: true, lsLoaded: true });
     }
   };
 
@@ -617,45 +656,50 @@ class CryptoDetective extends Component {
   db_createLSReturned = (data) => {
     // console.log(data);
 
-    this._isMounted && dispatcher.dispatch({
-      type: DB_GET_TOKEN_LS,
-      tokenID: this.state.coinData.id,
-    });
+    this._isMounted &&
+      dispatcher.dispatch({
+        type: DB_GET_TOKEN_LS,
+        tokenID: this.state.coinData.id,
+      });
     this._isMounted && this.setState({ userTokenLS: data, pdEnabled: false });
   };
 
   db_checkLSResultReturned = (data) => {
     // console.log(data);
-    this._isMounted && dispatcher.dispatch({
-      type: DB_GET_TOKEN_LS,
-      tokenID: this.state.coinData.id,
-    });
+    this._isMounted &&
+      dispatcher.dispatch({
+        type: DB_GET_TOKEN_LS,
+        tokenID: this.state.coinData.id,
+      });
     this._isMounted && this.setState({ modalOpen: true, modalData: data });
 
     //TODO: TRIGGER FUNCTION TO ADD SCREEN DIM AND DIALOG SHOWING RESULT HERE <<<
   };
 
   db_checkLSResult = (data) => {
-    this._isMounted && dispatcher.dispatch({
-      type: DB_CHECK_LS_RESULT,
-      tokenID: this.state.coinData.id,
-    });
+    this._isMounted &&
+      dispatcher.dispatch({
+        type: DB_CHECK_LS_RESULT,
+        tokenID: this.state.coinData.id,
+      });
   };
 
   long = () => {
-    this._isMounted && dispatcher.dispatch({
-      type: DB_CREATE_LS,
-      tokenID: this.state.coinData.id,
-      vote: "long",
-    });
+    this._isMounted &&
+      dispatcher.dispatch({
+        type: DB_CREATE_LS,
+        tokenID: this.state.coinData.id,
+        vote: "long",
+      });
   };
 
   short = () => {
-    this._isMounted && dispatcher.dispatch({
-      type: DB_CREATE_LS,
-      tokenID: this.state.coinData.id,
-      vote: "short",
-    });
+    this._isMounted &&
+      dispatcher.dispatch({
+        type: DB_CREATE_LS,
+        tokenID: this.state.coinData.id,
+        vote: "short",
+      });
   };
 
   db_getAssetStatsReturned = (stats, balance) => {
@@ -712,16 +756,18 @@ class CryptoDetective extends Component {
     portfolioBalances.sort(dynamicSort("-balance"));
 
     if (portfolioStats || portfolioBalances) {
-      this._isMounted && this.setState({
-        portfolioDataLoaded: true,
-        portfolioStats,
-        portfolioBalances,
-      });
+      this._isMounted &&
+        this.setState({
+          portfolioDataLoaded: true,
+          portfolioStats,
+          portfolioBalances,
+        });
     }
   };
 
   priceChartReturned = (data) => {
-    this._isMounted && this.setState({ loadingPriceChart: false, loading: false });
+    this._isMounted &&
+      this.setState({ loadingPriceChart: false, loading: false });
   };
 
   expandPortfolioData = (currentState) => {
@@ -746,10 +792,11 @@ class CryptoDetective extends Component {
     }
     expandContract.style.maxHeight = newState ? expandedHeight : 0;
 
-    this._isMounted && this.setState({
-      portfolioDataExpanded: newState,
-      expandedHeight: expandedHeight,
-    });
+    this._isMounted &&
+      this.setState({
+        portfolioDataExpanded: newState,
+        expandedHeight: expandedHeight,
+      });
   };
 
   drawMarket = (coinData, vs) => {
@@ -1676,11 +1723,13 @@ class CryptoDetective extends Component {
     } = this.state;
 
     const handleClick = (timeFrame) => {
-      this._isMounted && dispatcher.dispatch({
-        type: GET_COIN_PRICECHART,
-        content: [coinData.id, null, timeFrame, vs],
-      });
-      this._isMounted && this.setState({ timeFrame: timeFrame, loadingPriceChart: true });
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: GET_COIN_PRICECHART,
+          content: [coinData.id, null, timeFrame, vs],
+        });
+      this._isMounted &&
+        this.setState({ timeFrame: timeFrame, loadingPriceChart: true });
     };
 
     return (
@@ -2250,7 +2299,10 @@ class CryptoDetective extends Component {
               <Typography variant="h4">Crypto News</Typography>
             </AccordionSummary>
             <AccordionDetails style={{ padding: 0 }}>
-              <CryptoNews toolTimeframe={this.props.toolTimeframe} currency={coinData.symbol} />
+              <CryptoNews
+                toolTimeframe={this.props.toolTimeframe}
+                currency={coinData.symbol}
+              />
             </AccordionDetails>
           </Accordion>
         )}
