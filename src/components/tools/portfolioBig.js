@@ -950,7 +950,9 @@ class PortfolioBig extends Component {
               hover={true}
               key={`${row.id}+${Math.random(0, 99999)}`}
               style={{ cursor: "pointer" }}
-              onClick={() => this.nav("/short/detective/" + row.asset_code)}
+              onClick={() =>
+                this.nav("/short/detective/" + row.asset.asset_code)
+              }
             >
               <TableCell>
                 <div

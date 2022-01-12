@@ -200,6 +200,20 @@ const emitter = new Emitter();
 
 let assetStatsRequest = null;
 
+const cg_servers = [
+  `https://chainguru-db.herokuapp.com`,
+  `https://chainguru-db-dev.herokuapp.com`,
+];
+let current_cgServer = Math.round(Math.random());
+
+function get_cgServer() {
+  const server = cg_servers[current_cgServer];
+  current_cgServer === cg_servers.length - 1
+    ? (current_cgServer = 0)
+    : current_cgServer++;
+  return server;
+}
+
 class Store {
   constructor() {
     this.store = {
@@ -2641,10 +2655,13 @@ ${nonce}`,
     let vsCoin = store.getStore("vsCoin");
     try {
       const portfolioStats = await axios.post(
-        `https://chainguru-db-dev.herokuapp.com/zerion/address/portfolio`,
+        `${cg_servers[0]}/zerion/address/portfolio`,
         {
           addresses: payload.wallet,
           currency: vsCoin,
+        },
+        {
+          timeout: 5000,
         }
       );
       emitter.emit(
@@ -2652,8 +2669,30 @@ ${nonce}`,
         portfolioStats.data.portfolio
       );
     } catch (err) {
-      emitter.emit(ERROR, await err.message);
-      console.log(err.message);
+      if (
+        err.message === "Network Error" ||
+        err.message === "timeout of 5000ms exceeded"
+      ) {
+        try {
+          const portfolioStats = await axios.post(
+            `${cg_servers[1]}/zerion/address/portfolio`,
+            {
+              addresses: payload.wallet,
+              currency: vsCoin,
+            }
+          );
+          emitter.emit(
+            DB_GET_PORTFOLIO_STATS_RETURNED,
+            portfolioStats.data.portfolio
+          );
+        } catch (err) {
+          emitter.emit(ERROR, await err.message);
+          console.log(err.message);
+        }
+      } else {
+        emitter.emit(ERROR, await err.message);
+        console.log(err.message);
+      }
     }
   };
 
@@ -2691,7 +2730,7 @@ ${nonce}`,
         assets.forEach((asset, i) => keys.push(asset.asset.asset_code));
         const portfolioAssetStats = await axios
           .post(
-            `https://chainguru-db.herokuapp.com/zerion/assets/stats`,
+            `${get_cgServer()}/zerion/assets/stats`,
             {
               address: payload.wallet[i],
               currency: vsCoin,
@@ -2747,11 +2786,14 @@ ${nonce}`,
     try {
       if (Array.isArray(payload.wallet)) {
         let charts = await axios.post(
-          `https://chainguru-db-dev.herokuapp.com/zerion/address/chart`,
+          `${cg_servers[0]}/zerion/address/chart`,
           {
             addresses: payload.wallet,
             currency: vsCoin,
             timeframe: payload.timeframe,
+          },
+          {
+            timeout: 5000,
           }
         );
         emitter.emit(
@@ -2760,7 +2802,32 @@ ${nonce}`,
         );
       }
     } catch (err) {
-      console.log(err.message);
+      if (
+        err.message === "Network Error" ||
+        err.message === "timeout of 5000ms exceeded"
+      ) {
+        try {
+          if (Array.isArray(payload.wallet)) {
+            let charts = await axios.post(
+              `${cg_servers[1]}/zerion/address/chart`,
+              {
+                addresses: payload.wallet,
+                currency: vsCoin,
+                timeframe: payload.timeframe,
+              }
+            );
+            emitter.emit(
+              DB_GET_PORTFOLIO_CHART_RETURNED,
+              await charts.data.charts.others
+            );
+          }
+        } catch (err) {
+          console.log(err.message);
+          emitter.emit(ERROR, await err.message);
+        }
+      } else {
+        console.log(err.message);
+      }
     }
   };
 
@@ -2889,18 +2956,44 @@ ${nonce}`,
 
   db_getPortfolioPositions = async (payload) => {
     let vsCoin = store.getStore("vsCoin");
+
     try {
       const portfolioAssets = await axios.post(
-        `https://chainguru-db.herokuapp.com/zerion/address/positions`,
+        `${get_cgServer()}/zerion/address/positions`,
         {
           addresses: payload.wallet,
           currency: vsCoin,
+        },
+        {
+          timeout: 4000,
         }
       );
       emitter.emit(DB_GET_PORTFOLIO_POSITIONS_RETURNED, portfolioAssets.data);
     } catch (err) {
-      emitter.emit(ERROR, await err.message);
-      console.log(err.message);
+      if (
+        err.message === "Network Error" ||
+        err.message === "timeout of 4000ms exceeded"
+      ) {
+        try {
+          const portfolioAssets = await axios.post(
+            `${get_cgServer()}/zerion/address/positions`,
+            {
+              addresses: payload.wallet,
+              currency: vsCoin,
+            }
+          );
+          emitter.emit(
+            DB_GET_PORTFOLIO_POSITIONS_RETURNED,
+            portfolioAssets.data
+          );
+        } catch (err) {
+          console.log(err.message);
+          emitter.emit(ERROR, await err.message);
+        }
+      } else {
+        console.log(err.message);
+        emitter.emit(ERROR, await err.message);
+      }
     }
   };
 }
