@@ -7,6 +7,8 @@ import { formatMoney } from "../helpers";
 import WalletNicknameModal from "../components/walletNicknameModal.js";
 import WalletRemoveModal from "../components/walletRemoveModal.js";
 import PortfolioChart from "../components/PortfolioChart.js";
+import StakingDetailsModal from "../components/stakingDetailsModal.js";
+
 import BackspaceRoundedIcon from "@material-ui/icons/BackspaceRounded";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 import AddCircleRoundedIcon from "@material-ui/icons/AddCircleRounded";
@@ -15,6 +17,7 @@ import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
 import PieChartIcon from "@material-ui/icons/PieChart";
 import LockIcon from "@material-ui/icons/Lock";
 import AddIcon from "@material-ui/icons/Add";
+import SearchIcon from "@material-ui/icons/Search";
 
 import {
   Card,
@@ -185,6 +188,8 @@ class PortfolioBig extends Component {
     this._isMounted = false;
 
     const account = store.getStore("account");
+    const vsCoin = store.getStore("vsCoin");
+
     this.state = {
       account: account,
       loading: false,
@@ -205,6 +210,9 @@ class PortfolioBig extends Component {
       chartDataLoaded: false,
       timeFrame: "w",
       chartVariation: null,
+      stakingDetailsModal: false,
+      stakingDetails: null,
+      vsCoin: vsCoin,
     };
 
     // IF USER IS CONNECTED GET THE PORTFOLIO DATA
@@ -412,8 +420,8 @@ class PortfolioBig extends Component {
       };
     } else if (property === "price") {
       return function (a, b) {
-        const a_stats = a.asset.price ? a.asset.price.value : 0;
-        const b_stats = b.asset.price ? b.asset.price.value : 0;
+        const a_stats = a.asset && a.asset.price ? a.asset.price.value : 0;
+        const b_stats = b.asset && b.asset.price ? b.asset.price.value : 0;
 
         var result = a_stats < b_stats ? -1 : a_stats > b_stats ? 1 : 0;
 
@@ -831,6 +839,7 @@ class PortfolioBig extends Component {
 
   sortedList = (portfolioData) => {
     const { classes } = this.props;
+    const { vsCoin } = this.state;
     const {
       sortBy,
       hideLowBalanceCoins,
@@ -840,9 +849,15 @@ class PortfolioBig extends Component {
       selectedWallet,
     } = this.state;
     let filteredData = [];
-    if (hideLowBalanceCoins) {
+    if (hideLowBalanceCoins && (vsCoin === "usd" || vsCoin === "eur")) {
       portfolioData.forEach((item, i) => {
         if (item.value > 0.01) {
+          filteredData.push(portfolioData[i]);
+        }
+      });
+    } else if (hideLowBalanceCoins) {
+      portfolioData.forEach((item, i) => {
+        if (item.quantity > 0) {
           filteredData.push(portfolioData[i]);
         }
       });
@@ -926,6 +941,7 @@ class PortfolioBig extends Component {
       });
       // console.log(protocolItems);
     });
+
     for (var key in protocolAssetsGrouped) {
       protocolAssetsGrouped[key].items.forEach((item, i) => {
         protocolAssetsGrouped[key].value += item.value;
@@ -1239,7 +1255,7 @@ class PortfolioBig extends Component {
               <TableCell align="right">
                 <div>
                   <Typography variant={"body1"}>
-                    {formatMoney(row.quantityDecimals)}
+                    {row.quantityDecimals}
                   </Typography>
                 </div>
                 <div>
@@ -1253,69 +1269,28 @@ class PortfolioBig extends Component {
                   $ {row.value && formatMoney(row.value)}
                 </Typography>
               </TableCell>
+              <TableCell align="right">
+                {row.items.length > 1 && (
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    size="large"
+                    style={{ display: "flex", minWidth: "max-content" }}
+                    startIcon={<SearchIcon />}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      this.setState({
+                        stakingDetailsModal: true,
+                        stakingDetails: row,
+                      });
+                    }}
+                  >
+                    Show Details
+                  </Button>
+                )}
+              </TableCell>
               <TableCell align="right"></TableCell>
-              <TableCell align="right">
-                {dbStatsData &&
-                  (row.profit_percent && (
-                    <>
-                      <Typography
-                        variant={"body1"}
-                        color={row.profit_percent > 0 ? "primary" : "secondary"}
-                      >
-                        {formatMoney(row.profit_percent)} %
-                      </Typography>
-                      <Typography variant={"body1"}>
-                        ($ {formatMoney(row.stats.avg_buy_price)})
-                      </Typography>
-                    </>
-                  ),
-                  row.profit_percent && (
-                    <>
-                      <Typography
-                        variant={"body1"}
-                        color={row.profit_percent > 0 ? "primary" : "secondary"}
-                      >
-                        {formatMoney(row.profit_percent)} %
-                      </Typography>
-                      <Typography variant={"body1"}>
-                        ($ {formatMoney(row.stats.avg_buy_price)})
-                      </Typography>
-                    </>
-                  ))}
-                {!dbStatsData && (
-                  <>
-                    <CircularProgress />
-                  </>
-                )}
-              </TableCell>
-              <TableCell align="right">
-                {row.stats && row.stats.total_returned && (
-                  <>
-                    <Typography
-                      className={
-                        row.stats.total_returned > 0
-                          ? classes.profit_green
-                          : classes.profit_red
-                      }
-                      variant={"body1"}
-                    >
-                      $ {row.stats.total_returned.toFixed(1)}
-                    </Typography>
-                    {row.stats.total_returned_net && (
-                      <Typography
-                        className={
-                          row.stats.total_returned_net > 0
-                            ? classes.profit_green
-                            : classes.profit_red
-                        }
-                        variant={"body1"}
-                      >
-                        $ {row.stats.total_returned_net.toFixed(1)}
-                      </Typography>
-                    )}
-                  </>
-                )}
-              </TableCell>
+              <TableCell align="right"></TableCell>
             </TableRow>
           )}
         </React.Fragment>
@@ -1634,6 +1609,7 @@ class PortfolioBig extends Component {
       chartDataLoaded,
       timeFrame,
       portfolioStats,
+      stakingDetailsModal,
     } = this.state;
 
     return (
@@ -2280,7 +2256,9 @@ class PortfolioBig extends Component {
             )}
           </Grid>
         </Card>
-        {walletNicknameModal && this.renderModal()}
+        {stakingDetailsModal &&
+          this.renderstakingDetailsModal(this.state.stakingDetails)}
+        {walletNicknameModal && this.renderWalletNicknameModal()}
         {deleteWalletModal && this.renderWalletDeleteModal()}
       </>
     );
@@ -2302,7 +2280,11 @@ class PortfolioBig extends Component {
     this.setState({ deleteWalletModal: false });
   };
 
-  renderModal = (wallet, nickname) => {
+  closeModalDetails = () => {
+    this.setState({ stakingDetailsModal: false });
+  };
+
+  renderWalletNicknameModal = (wallet, nickname) => {
     return (
       <WalletNicknameModal
         closeModal={this.closeModalNick}
@@ -2320,6 +2302,17 @@ class PortfolioBig extends Component {
         modalOpen={this.state.deleteWalletModal}
         wallet={this.state.removeWALLET[0]}
         nickname={this.state.removeWALLET[1]}
+      />
+    );
+  };
+
+  renderstakingDetailsModal = (stakingDetails) => {
+    return (
+      <StakingDetailsModal
+        data={stakingDetails}
+        closeModal={this.closeModalDetails}
+        modalOpen={this.state.stakingDetailsModal}
+        vsCoin={this.state.vsCoin}
       />
     );
   };

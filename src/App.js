@@ -398,7 +398,7 @@ class App extends Component {
         },
         MuiPaper: {
           rounded: {
-            borderRadius: 10,
+            borderRadius: 20,
           },
           root: {
             background: state

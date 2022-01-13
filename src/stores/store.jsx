@@ -49,6 +49,8 @@ import {
   COINGECKO_POPULATE_FAVLIST_RETURNED,
   COINGECKO_POPULATE_TXLIST,
   COINGECKO_POPULATE_TXLIST_RETURNED,
+  GECKO_GET_SPARKLINE_FROM_CONTRACT,
+  GECKO_GET_SPARKLINE_FROM_CONTRACT_RETURNED,
   GET_COIN_LIST,
   COINLIST_RETURNED,
   GET_COIN_DATA,
@@ -205,7 +207,6 @@ const cg_servers = [
   `https://chainguru-db-dev.herokuapp.com`,
 ];
 let current_cgServer = Math.round(Math.random());
-
 function get_cgServer() {
   const server = cg_servers[current_cgServer];
   current_cgServer === cg_servers.length - 1
@@ -495,6 +496,9 @@ class Store {
             break;
           case DB_GET_PORTFOLIO_POSITIONS:
             this.db_getPortfolioPositions(payload);
+            break;
+          case GECKO_GET_SPARKLINE_FROM_CONTRACT:
+            this.geckoGetSparklineChartsFromContract(payload);
             break;
           default: {
             break;
@@ -1519,6 +1523,28 @@ class Store {
         console.log(err);
       }
     }
+  };
+
+  geckoGetSparklineChartsFromContract = async (payload) => {
+    let tokenIDs = [];
+    for (var i = 0; i < payload.assetCodes.length; i++) {
+      try {
+        let response = await axios.get(
+          `https://api.coingecko.com/api/v3/coins/ethereum/contract/${payload.assetCodes[i]}`
+        );
+        tokenIDs.push(response.data.id);
+      } catch (err) {
+        console.log(err);
+      }
+    }
+    let sparklineData = [];
+    for (var i = 0; i < tokenIDs.length; i++) {
+      let response2 = await axios.get(
+        `https://api.coingecko.com/api/v3/coins/${tokenIDs[i]}?tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=true`
+      );
+      sparklineData.push(response2.data.market_data.sparkline_7d);
+    }
+    emitter.emit(GECKO_GET_SPARKLINE_FROM_CONTRACT_RETURNED, sparklineData);
   };
 
   geckoPopulateTxList = async (payload) => {
@@ -2965,14 +2991,14 @@ ${nonce}`,
           currency: vsCoin,
         },
         {
-          timeout: 4000,
+          timeout: 5000,
         }
       );
       emitter.emit(DB_GET_PORTFOLIO_POSITIONS_RETURNED, portfolioAssets.data);
     } catch (err) {
       if (
         err.message === "Network Error" ||
-        err.message === "timeout of 4000ms exceeded"
+        err.message === "timeout of 5000ms exceeded"
       ) {
         try {
           const portfolioAssets = await axios.post(
