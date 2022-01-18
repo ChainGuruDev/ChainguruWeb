@@ -159,6 +159,8 @@ import {
   DB_GET_NFTS_RETURNED,
   DB_GET_NFTS_VALUE,
   DB_GET_NFTS_VALUE_RETURNED,
+  DB_GET_ASSET_FULLDATA,
+  DB_GET_ASSET_FULLDATA_RETURNED,
 } from "../constants";
 
 import {
@@ -499,6 +501,9 @@ class Store {
             break;
           case GECKO_GET_SPARKLINE_FROM_CONTRACT:
             this.geckoGetSparklineChartsFromContract(payload);
+            break;
+          case DB_GET_ASSET_FULLDATA:
+            this.dbGetAssetFulldata(payload);
             break;
           default: {
             break;
@@ -2750,13 +2755,20 @@ ${nonce}`,
         let prices = [];
         keys.length = 0;
         prices.length = 0;
-        assets.forEach((asset, i) =>
+
+        const paginatedAssets = assets.slice(
+          0 + payload.page - 1,
+          25 * payload.page
+        );
+        paginatedAssets.forEach((asset, i) =>
           prices.push(asset.asset.price ? asset.asset.price.value : null)
         );
-        assets.forEach((asset, i) => keys.push(asset.asset.asset_code));
+        paginatedAssets.forEach((asset, i) =>
+          keys.push(asset.asset.asset_code)
+        );
         const portfolioAssetStats = await axios
           .post(
-            `${get_cgServer()}/zerion/assets/stats`,
+            `${get_cgServer(1)}/zerion/assets/stats`,
             {
               address: payload.wallet[i],
               currency: vsCoin,
@@ -3011,6 +3023,52 @@ ${nonce}`,
           emitter.emit(
             DB_GET_PORTFOLIO_POSITIONS_RETURNED,
             portfolioAssets.data
+          );
+        } catch (err) {
+          console.log(err.message);
+          emitter.emit(ERROR, await err.message);
+        }
+      } else {
+        console.log(err.message);
+        emitter.emit(ERROR, await err.message);
+      }
+    }
+  };
+
+  dbGetAssetFulldata = async (payload) => {
+    let vsCoin = store.getStore("vsCoin");
+    console.log(payload);
+    try {
+      const assetFulldata = await axios.post(
+        `${get_cgServer()}/zerion/assets/full_info`,
+        {
+          asset_code: payload.payload,
+          currency: vsCoin,
+        },
+        {
+          timeout: 5000,
+        }
+      );
+      emitter.emit(
+        DB_GET_ASSET_FULLDATA_RETURNED,
+        assetFulldata.data["full-info"]
+      );
+    } catch (err) {
+      if (
+        err.message === "Network Error" ||
+        err.message === "timeout of 5000ms exceeded"
+      ) {
+        try {
+          const assetFulldata = await axios.post(
+            `${get_cgServer()}/zerion/assets/full_info`,
+            {
+              asset_code: payload.payload,
+              currency: vsCoin,
+            }
+          );
+          emitter.emit(
+            DB_GET_ASSET_FULLDATA_RETURNED,
+            assetFulldata.data["full-info"]
           );
         } catch (err) {
           console.log(err.message);

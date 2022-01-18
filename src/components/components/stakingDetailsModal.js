@@ -1,13 +1,15 @@
 import React, { Component } from "react";
 import { withStyles } from "@material-ui/core/styles";
 import {
-  DialogContent,
-  Dialog,
+  Modal,
   Slide,
   Grid,
   Typography,
   Divider,
   IconButton,
+  Box,
+  Backdrop,
+  Fade,
 } from "@material-ui/core";
 
 import SparklineChart from "./SparklineChart.js";
@@ -34,6 +36,8 @@ const styles = (theme) => ({
     height: "auto",
     display: "flex",
     position: "relative",
+    alignItems: "center",
+    justifyContent: "center",
   },
   closeIcon: {
     position: "absolute",
@@ -42,7 +46,13 @@ const styles = (theme) => ({
     cursor: "pointer",
   },
   paper: {
+    backgroundColor: theme.palette.background.paper,
+    boxShadow: theme.shadows[5],
     borderRadius: 20,
+    width: 700,
+    height: "fit-content",
+    position: "absolute",
+    padding: "0px 15px",
   },
 });
 
@@ -97,20 +107,20 @@ class StakingDetailsModal extends Component {
     const fullScreen = window.innerWidth < 450;
 
     return (
-      <Dialog
+      <Modal
         id="stakingDetailsRoot"
         open={modalOpen}
         onClose={closeModal}
-        fullWidth={true}
-        maxWidth={"sm"}
-        TransitionComponent={Transition}
-        fullScreen={fullScreen}
-        style={{
-          overflowY: "clip",
+        className={classes.root}
+        closeAfterTransition
+        BackdropComponent={Backdrop}
+        BackdropProps={{
+          timeout: 500,
         }}
       >
-        <DialogContent style={{ overflowY: "clip" }}>
+        <Fade in={modalOpen}>
           <Grid
+            className={classes.paper}
             id="stakingDetailsGrid"
             container
             direction="row"
@@ -172,18 +182,26 @@ class StakingDetailsModal extends Component {
                       xs={1}
                       style={{ display: "flex", justifyContent: "center" }}
                     >
-                      {item.type !== "reward" && <LockIcon />}
-                      {item.type === "reward" && <AddIcon />}
+                      {item.type !== "reward" && <LockIcon color="disabled" />}
+                      {item.type === "reward" && <AddIcon color="primary" />}
                     </Grid>
                     <Grid item xs={5} style={{ padding: 5, textAlign: "left" }}>
                       <Typography variant={"h4"} color="primary">
-                        {item.asset.name}
-                      </Typography>
-                      <Typography variant={"body1"}>
-                        {item.quantityDecimals.toFixed(2)} {item.asset.symbol}{" "}
+                        {item.asset.name}{" "}
                         <span style={{ color: "gray", fontStyle: "italic" }}>
                           {item.type}
                         </span>
+                      </Typography>
+                      <Typography variant={"body1"}>
+                        {item.quantityDecimals.toFixed(2)} {item.asset.symbol}{" "}
+                        <span style={{ color: "gray" }}>● </span>
+                        {
+                          <span style={{ color: "gray" }}>
+                            {getVsSymbol(vsCoin) +
+                              " " +
+                              formatMoney(item.asset.price.value)}
+                          </span>
+                        }
                       </Typography>
                     </Grid>
                     <Grid
@@ -235,8 +253,8 @@ class StakingDetailsModal extends Component {
               })}
             </Grid>
           </Grid>
-        </DialogContent>
-      </Dialog>
+        </Fade>
+      </Modal>
     );
   }
 }

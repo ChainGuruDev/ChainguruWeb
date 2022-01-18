@@ -8,6 +8,7 @@ import WalletNicknameModal from "../components/walletNicknameModal.js";
 import WalletRemoveModal from "../components/walletRemoveModal.js";
 import PortfolioChart from "../components/PortfolioChart.js";
 import StakingDetailsModal from "../components/stakingDetailsModal.js";
+import UniswapDetailsModal from "../components/uniswapDetailsModal.js";
 
 import BackspaceRoundedIcon from "@material-ui/icons/BackspaceRounded";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
@@ -70,6 +71,8 @@ import {
   DB_DEL_WALLET_RETURNED,
   DB_GET_PORTFOLIO_POSITIONS,
   DB_GET_PORTFOLIO_POSITIONS_RETURNED,
+  DB_GET_ASSET_FULLDATA,
+  DB_GET_ASSET_FULLDATA_RETURNED,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -213,6 +216,9 @@ class PortfolioBig extends Component {
       stakingDetailsModal: false,
       stakingDetails: null,
       vsCoin: vsCoin,
+      uniswapDetailsModal: false,
+      uniswapDetails: null,
+      uniswapDetailsLoading: false,
     };
 
     // IF USER IS CONNECTED GET THE PORTFOLIO DATA
@@ -256,6 +262,7 @@ class PortfolioBig extends Component {
       DB_GET_PORTFOLIO_POSITIONS_RETURNED,
       this.db_getPortfolioPositionsReturned
     );
+    emitter.on(DB_GET_ASSET_FULLDATA_RETURNED, this.uniswapDetailsReturned);
   }
 
   componentWillUnmount() {
@@ -278,6 +285,10 @@ class PortfolioBig extends Component {
     emitter.removeListener(
       DB_UPDATE_PORTFOLIO_RETURNED,
       this.dbGetPortfolioReturned
+    );
+    emitter.removeListener(
+      DB_GET_ASSET_FULLDATA_RETURNED,
+      this.uniswapDetailsReturned
     );
     emitter.removeListener(
       DB_SET_USER_WALLET_NICKNAME_RETURNED,
@@ -440,7 +451,6 @@ class PortfolioBig extends Component {
   dbGetPortfolioReturned = (portfolioData) => {
     let keys = [];
     let assetPrice = [];
-    console.log(portfolioData);
     portfolioData.mainnetAssets.forEach((item, i) => {
       keys.push(item.asset_code);
       assetPrice.push(item.price ? item.price.value : null);
@@ -458,12 +468,12 @@ class PortfolioBig extends Component {
           type: DB_GET_PORTFOLIO_STATS,
           wallet: this.state.userWallets,
         });
-      this._isMounted &&
-        dispatcher.dispatch({
-          type: DB_GET_PORTFOLIO_ASSET_STATS,
-          wallet: this.state.userWallets,
-          portfolioData: mainnetAssets,
-        });
+      // this._isMounted &&
+      //   dispatcher.dispatch({
+      //     type: DB_GET_PORTFOLIO_ASSET_STATS,
+      //     wallet: this.state.userWallets,
+      //     portfolioData: mainnetAssets,
+      //   });
     } else {
       this._isMounted &&
         dispatcher.dispatch({
@@ -476,12 +486,12 @@ class PortfolioBig extends Component {
           type: DB_GET_PORTFOLIO_STATS,
           wallet: [mainnetAssets[0].wallet_address],
         });
-      this._isMounted &&
-        dispatcher.dispatch({
-          type: DB_GET_PORTFOLIO_ASSET_STATS,
-          wallet: [mainnetAssets[0].wallet_address],
-          portfolioData: mainnetAssets,
-        });
+      // this._isMounted &&
+      //   dispatcher.dispatch({
+      //     type: DB_GET_PORTFOLIO_ASSET_STATS,
+      //     wallet: [mainnetAssets[0].wallet_address],
+      //     portfolioData: mainnetAssets,
+      //   });
     }
 
     this.setState({
@@ -495,6 +505,8 @@ class PortfolioBig extends Component {
   };
 
   db_getPortfolioPositionsReturned = (portfolioData) => {
+    const portfolioDataSorted = portfolioData.sort(this.dynamicSort("-value"));
+
     if (this.state.selectedWallet === "all") {
       this._isMounted &&
         dispatcher.dispatch({
@@ -511,7 +523,8 @@ class PortfolioBig extends Component {
         dispatcher.dispatch({
           type: DB_GET_PORTFOLIO_ASSET_STATS,
           wallet: this.state.userWallets,
-          portfolioData: portfolioData,
+          portfolioData: portfolioDataSorted,
+          page: 1,
         });
     } else {
       this._isMounted &&
@@ -529,7 +542,8 @@ class PortfolioBig extends Component {
         dispatcher.dispatch({
           type: DB_GET_PORTFOLIO_ASSET_STATS,
           wallet: [this.state.selectedWallet],
-          portfolioData: portfolioData,
+          portfolioData: portfolioDataSorted,
+          page: 1,
         });
     }
 
@@ -577,12 +591,27 @@ class PortfolioBig extends Component {
 
   dbGetPortfolioAssetStatsReturned = (portfolioStats) => {
     const { portfolioData } = this.state;
-    portfolioData.forEach((item, i) => {
-      if (item.chain === "ethereum") {
-        item.profit_percent = portfolioStats[i].profit_percent;
-        item.stats = portfolioStats[i].stats;
+    console.log(portfolioStats);
+    portfolioStats.forEach((item, i) => {
+      if (item.stats) {
+        const index = portfolioData.findIndex(
+          (x) =>
+            x.asset.asset_code === item.asset_code &&
+            x.wallet === item.wallet_address.toLowerCase()
+        );
+        portfolioData[index].profit_percent = item.profit_percent;
+        portfolioData[index].stats = item.stats;
+        console.log(portfolioData[index]);
       }
     });
+    console.log(portfolioData);
+
+    // portfolioData.forEach((item, i) => {
+    //   if (item.chain === "ethereum") {
+    //     item.profit_percent = portfolioStats[i].profit_percent;
+    //     item.stats = portfolioStats[i].stats;
+    //   }
+    // });
 
     // let winnersLosers;
     // winnersLosers = portfolioData.sort(this.dynamicSort("total_returned"));
@@ -847,6 +876,7 @@ class PortfolioBig extends Component {
       walletNicknames,
       walletColors,
       selectedWallet,
+      uniswapDetailsLoading,
     } = this.state;
     let filteredData = [];
     if (hideLowBalanceCoins && (vsCoin === "usd" || vsCoin === "eur")) {
@@ -867,13 +897,14 @@ class PortfolioBig extends Component {
 
     //separate between assets and non assets (LPs, deposit, staked, rewards)
     var assetsData = filteredData.filter(function (el) {
-      return el.type === "asset"; // Changed this so a home would match
+      return el.type === "asset" && el.asset.type !== "uniswap-v2"; // Changed this so a home would match
     });
     var nonAssetsData = filteredData.filter(function (el) {
-      return el.type !== "asset"; // Changed this so a home would match
+      return el.type !== "asset" && el.type !== "uniswap-v2"; // Changed this so a home would match
     });
-    // console.log(assetsData);
-    // console.log(nonAssetsData);
+    var univ2Assets = filteredData.filter(function (el) {
+      return el.asset.type === "uniswap-v2";
+    });
 
     //separate between different protocols (pancake, alchemist, etc)
     let protocols = [];
@@ -883,72 +914,92 @@ class PortfolioBig extends Component {
         protocols.push(item.protocol);
       }
     });
-    // console.log(protocols);
     protocols.forEach((item, i) => {
       var protocolItems = nonAssetsData.filter(function (el) {
         return el.protocol === item;
       });
-      // console.log(protocolItems);
       protocolItems.forEach((asset, x) => {
         if (!(asset.name in protocolAssetsGrouped)) {
-          protocolAssetsGrouped[asset.name] = {
-            items: [],
-            value: 0,
-            name: asset.name,
-            type: "nonAssetGrouped",
-            quantityDecimals: 1,
-            protocol: asset.protocol,
-            id: asset.name + "_" + Math.random() + "_grouped",
-            wallet: asset.wallet,
-            icon_url: { deposited: [], rewards: [] },
-            symbol: { deposited: [], rewards: [] },
-            chain: asset.chain,
-          };
-          protocolAssetsGrouped[asset.name]["items"].push(asset);
+          protocolAssetsGrouped[asset.name] = {};
+          if (!(asset.wallet in protocolAssetsGrouped[asset.name])) {
+            protocolAssetsGrouped[asset.name][asset.wallet] = {
+              items: [],
+              value: 0,
+              name: asset.name,
+              type: "nonAssetGrouped",
+              quantityDecimals: 1,
+              protocol: asset.protocol,
+              id: asset.name + "_" + Math.random() + "_grouped",
+              wallet: asset.wallet,
+              icon_url: { deposited: [], rewards: [] },
+              symbol: { deposited: [], rewards: [] },
+              chain: asset.chain,
+            };
+          }
+          protocolAssetsGrouped[asset.name][asset.wallet]["items"].push(asset);
           if (asset.type !== "reward") {
-            protocolAssetsGrouped[asset.name]["icon_url"]["deposited"].push(
-              asset.asset.icon_url
-            );
-            protocolAssetsGrouped[asset.name]["symbol"]["deposited"].push(
-              asset.asset.symbol
-            );
+            protocolAssetsGrouped[asset.name][asset.wallet]["icon_url"][
+              "deposited"
+            ].push(asset.asset.icon_url);
+            protocolAssetsGrouped[asset.name][asset.wallet]["symbol"][
+              "deposited"
+            ].push(asset.asset.symbol);
           } else {
-            protocolAssetsGrouped[asset.name]["icon_url"]["rewards"].push(
-              asset.asset.icon_url
-            );
-            protocolAssetsGrouped[asset.name]["symbol"]["rewards"].push(
-              asset.asset.symbol
-            );
+            protocolAssetsGrouped[asset.name][asset.wallet]["icon_url"][
+              "rewards"
+            ].push(asset.asset.icon_url);
+            protocolAssetsGrouped[asset.name][asset.wallet]["symbol"][
+              "rewards"
+            ].push(asset.asset.symbol);
           }
         } else {
-          protocolAssetsGrouped[asset.name]["items"].push(asset);
+          if (!(asset.wallet in protocolAssetsGrouped[asset.name])) {
+            protocolAssetsGrouped[asset.name][asset.wallet] = {
+              items: [],
+              value: 0,
+              name: asset.name,
+              type: "nonAssetGrouped",
+              quantityDecimals: 1,
+              protocol: asset.protocol,
+              id: asset.name + "_" + Math.random() + "_grouped",
+              wallet: asset.wallet,
+              icon_url: { deposited: [], rewards: [] },
+              symbol: { deposited: [], rewards: [] },
+              chain: asset.chain,
+            };
+          }
+          protocolAssetsGrouped[asset.name][asset.wallet]["items"].push(asset);
           if (asset.type !== "reward") {
-            protocolAssetsGrouped[asset.name]["icon_url"]["deposited"].push(
-              asset.asset.icon_url
-            );
-            protocolAssetsGrouped[asset.name]["symbol"]["deposited"].push(
-              asset.asset.symbol
-            );
+            protocolAssetsGrouped[asset.name][asset.wallet]["icon_url"][
+              "deposited"
+            ].push(asset.asset.icon_url);
+            protocolAssetsGrouped[asset.name][asset.wallet]["symbol"][
+              "deposited"
+            ].push(asset.asset.symbol);
           } else {
-            protocolAssetsGrouped[asset.name]["icon_url"]["rewards"].push(
-              asset.asset.icon_url
-            );
-            protocolAssetsGrouped[asset.name]["symbol"]["rewards"].push(
-              asset.asset.symbol
-            );
+            protocolAssetsGrouped[asset.name][asset.wallet]["icon_url"][
+              "rewards"
+            ].push(asset.asset.icon_url);
+            protocolAssetsGrouped[asset.name][asset.wallet]["symbol"][
+              "rewards"
+            ].push(asset.asset.symbol);
           }
         }
       });
-      // console.log(protocolItems);
     });
-
-    for (var key in protocolAssetsGrouped) {
-      protocolAssetsGrouped[key].items.forEach((item, i) => {
-        protocolAssetsGrouped[key].value += item.value;
-      });
-      assetsData.push(protocolAssetsGrouped[key]);
+    for (var protocol in protocolAssetsGrouped) {
+      for (var wallet in protocolAssetsGrouped[protocol]) {
+        protocolAssetsGrouped[protocol][wallet].items.forEach((item, i) => {
+          protocolAssetsGrouped[protocol][wallet].value += item.value;
+        });
+        assetsData.push(protocolAssetsGrouped[protocol][wallet]);
+      }
     }
 
+    for (var i = 0; i < univ2Assets.length; i++) {
+      univ2Assets[i].type = "uniswap-v2";
+      assetsData.push(univ2Assets[i]);
+    }
     //Sort Rows by sortBy State criteria
     let sortedRows;
     if (this.state.sortOrder === "asc") {
@@ -956,12 +1007,11 @@ class PortfolioBig extends Component {
     } else {
       sortedRows = assetsData.sort(this.dynamicSort(`-${sortBy}`));
     }
-
     if (sortedRows.length > 0) {
       let data;
       return sortedRows.map((row) => (
         <React.Fragment key={Math.random() + row.id}>
-          {row.type !== "nonAssetGrouped" && (
+          {row.type !== "nonAssetGrouped" && row.type !== "uniswap-v2" && (
             <TableRow
               hover={true}
               key={`${row.id}+${Math.random(0, 99999)}`}
@@ -1293,6 +1343,222 @@ class PortfolioBig extends Component {
               <TableCell align="right"></TableCell>
             </TableRow>
           )}
+          {row.type === "uniswap-v2" && (
+            <TableRow
+              hover={true}
+              key={`${row.id}+${Math.random(0, 99999)}`}
+              style={{ cursor: "pointer" }}
+              onClick={() =>
+                this.nav("/short/detective/" + row.asset.asset_code)
+              }
+            >
+              <TableCell>
+                <div
+                  style={{
+                    width: "max-content",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  <img
+                    className={classes.tokenLogo}
+                    alt=""
+                    src={row.asset.icon_url}
+                  />
+                  <IconButton
+                    style={{ marginLeft: 10 }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      this.getUniswapDetails(
+                        row.asset.asset_code,
+                        row.quantityDecimals
+                      );
+                    }}
+                  >
+                    {uniswapDetailsLoading && <CircularProgress />}
+                    {!uniswapDetailsLoading && <SearchIcon />}
+                  </IconButton>
+                </div>
+              </TableCell>
+              <TableCell padding="none" align="left">
+                <div>
+                  <Typography variant={"h4"}>{row.asset.name}</Typography>
+                </div>
+                {selectedWallet === "all" && (
+                  <div style={{ display: "flex" }}>
+                    {walletColors[
+                      walletColors
+                        .map((e) => e.wallet)
+                        .indexOf(row.wallet.toLowerCase())
+                    ] && (
+                      <>
+                        {this.drawChainIcon(row.chain)}
+                        <FiberManualRecordIcon
+                          style={{
+                            scale: 0.75,
+                            color:
+                              walletColors[
+                                walletColors
+                                  .map((e) => e.wallet)
+                                  .indexOf(row.wallet.toLowerCase())
+                              ].color,
+                          }}
+                        />
+                        <Typography
+                          style={{
+                            opacity: 0.6,
+                            color:
+                              walletColors[
+                                walletColors
+                                  .map((e) => e.wallet)
+                                  .indexOf(row.wallet.toLowerCase())
+                              ].color,
+                          }}
+                          variant={"subtitle2"}
+                        >
+                          at wallet:{" "}
+                          {(data = walletNicknames.find(
+                            (ele) => ele.wallet === row.wallet
+                          )) &&
+                            data.nickname +
+                              " (" +
+                              row.wallet.substring(0, 6) +
+                              "..." +
+                              row.wallet.substring(
+                                row.wallet.length - 4,
+                                row.wallet.length
+                              ) +
+                              ")"}
+                          {!walletNicknames.some(
+                            (e) => e.wallet === row.wallet
+                          ) &&
+                            row.wallet.substring(0, 6) +
+                              "..." +
+                              row.wallet.substring(
+                                row.wallet.length - 4,
+                                row.wallet.length
+                              )}
+                        </Typography>
+                      </>
+                    )}
+                  </div>
+                )}
+                {selectedWallet !== "all" && (
+                  <div style={{ display: "flex" }}>
+                    {walletColors[
+                      walletColors
+                        .map((e) => e.wallet)
+                        .indexOf(row.wallet.toLowerCase())
+                    ] && <>{this.drawChainIcon(row.chain)}</>}
+                  </div>
+                )}
+              </TableCell>
+              <TableCell align="right">
+                <div>
+                  <Typography variant={"body1"}>
+                    {formatMoney(row.quantityDecimals)}
+                  </Typography>
+                </div>
+                <div>
+                  <Typography style={{ opacity: 0.6 }} variant={"subtitle2"}>
+                    {row.asset.symbol}
+                  </Typography>
+                </div>
+              </TableCell>
+              <TableCell align="right">
+                <Typography variant={"body1"}>
+                  $ {row.value && formatMoney(row.value)}
+                </Typography>
+              </TableCell>
+              <TableCell align="right">
+                {row.asset.price && (
+                  <>
+                    <div>
+                      <Typography variant={"body1"}>
+                        {formatMoney(row.asset.price.value)}
+                      </Typography>
+                    </div>
+                    {row.asset.price.relative_change_24h && (
+                      <div>
+                        <Typography
+                          color={
+                            row.asset.price.relative_change_24h > 0
+                              ? "primary"
+                              : "secondary"
+                          }
+                          variant={"subtitle2"}
+                        >
+                          {row.asset.price.relative_change_24h.toFixed(2)} %
+                        </Typography>
+                      </div>
+                    )}
+                  </>
+                )}
+              </TableCell>
+              <TableCell align="right">
+                {dbStatsData &&
+                  (row.profit_percent && (
+                    <>
+                      <Typography
+                        variant={"body1"}
+                        color={row.profit_percent > 0 ? "primary" : "secondary"}
+                      >
+                        {formatMoney(row.profit_percent)} %
+                      </Typography>
+                      <Typography variant={"body1"}>
+                        ($ {formatMoney(row.stats.avg_buy_price)})
+                      </Typography>
+                    </>
+                  ),
+                  row.profit_percent && (
+                    <>
+                      <Typography
+                        variant={"body1"}
+                        color={row.profit_percent > 0 ? "primary" : "secondary"}
+                      >
+                        {formatMoney(row.profit_percent)} %
+                      </Typography>
+                      <Typography variant={"body1"}>
+                        ($ {formatMoney(row.stats.avg_buy_price)})
+                      </Typography>
+                    </>
+                  ))}
+                {!dbStatsData && (
+                  <>
+                    <CircularProgress />
+                  </>
+                )}
+              </TableCell>
+              <TableCell align="right">
+                {row.stats && row.stats.total_returned && (
+                  <>
+                    <Typography
+                      className={
+                        row.stats.total_returned > 0
+                          ? classes.profit_green
+                          : classes.profit_red
+                      }
+                      variant={"body1"}
+                    >
+                      $ {row.stats.total_returned.toFixed(1)}
+                    </Typography>
+                    {row.stats.total_returned_net && (
+                      <Typography
+                        className={
+                          row.stats.total_returned_net > 0
+                            ? classes.profit_green
+                            : classes.profit_red
+                        }
+                        variant={"body1"}
+                      >
+                        $ {row.stats.total_returned_net.toFixed(1)}
+                      </Typography>
+                    )}
+                  </>
+                )}
+              </TableCell>
+            </TableRow>
+          )}
         </React.Fragment>
       ));
     }
@@ -1342,8 +1608,6 @@ class PortfolioBig extends Component {
 
   //ARREGLAR ACA
   updateWallet = (wallets) => {
-    console.log("updating wallets");
-    console.log(wallets);
     this._isMounted &&
       dispatcher.dispatch({
         type: DB_GET_PORTFOLIO_POSITIONS,
@@ -1367,6 +1631,26 @@ class PortfolioBig extends Component {
         type: DB_GET_PORTFOLIO_POSITIONS,
         wallet: [wallet],
       });
+  };
+
+  getUniswapDetails = (univ2Asset, balance) => {
+    this._isMounted &&
+      dispatcher.dispatch({
+        type: DB_GET_ASSET_FULLDATA,
+        payload: univ2Asset,
+      });
+    this.setState({
+      uniswapDetailsLoading: true,
+      uniswapDetailsBalance: balance,
+    });
+  };
+
+  uniswapDetailsReturned = (uniswapAsset) => {
+    this.setState({
+      uniswapDetailsLoading: false,
+      uniswapDetailsModal: true,
+      uniswapDetails: uniswapAsset,
+    });
   };
 
   userWalletList = (wallets) => {
@@ -1484,9 +1768,19 @@ class PortfolioBig extends Component {
 
   dbWalletReturned = (payload) => {
     let userWallets = [];
+    let walletColors = [];
+
     payload.wallets.forEach((item, i) => {
+      var x = i;
       userWallets.push(item.wallet);
+      x %= Object.keys(colorsGuru).length;
+      let data = {
+        wallet: item.wallet.toLowerCase(),
+        color: colorsGuru[Object.keys(colorsGuru)[x]],
+      };
+      walletColors.push(data);
     });
+
     this._isMounted &&
       dispatcher.dispatch({
         type: DB_GET_PORTFOLIO_POSITIONS,
@@ -1499,6 +1793,7 @@ class PortfolioBig extends Component {
       portfolioStats: null,
       userWallets,
       addWallet: false,
+      walletColors: walletColors,
     });
   };
 
@@ -1610,6 +1905,7 @@ class PortfolioBig extends Component {
       timeFrame,
       portfolioStats,
       stakingDetailsModal,
+      uniswapDetailsModal,
     } = this.state;
 
     return (
@@ -2256,6 +2552,11 @@ class PortfolioBig extends Component {
             )}
           </Grid>
         </Card>
+        {uniswapDetailsModal &&
+          this.renderUniswapDetailsModal(
+            this.state.uniswapDetails,
+            this.state.uniswapDetailsBalance
+          )}
         {stakingDetailsModal &&
           this.renderstakingDetailsModal(this.state.stakingDetails)}
         {walletNicknameModal && this.renderWalletNicknameModal()}
@@ -2280,8 +2581,12 @@ class PortfolioBig extends Component {
     this.setState({ deleteWalletModal: false });
   };
 
-  closeModalDetails = () => {
+  closeModalStakingDetails = () => {
     this.setState({ stakingDetailsModal: false });
+  };
+
+  closeModalUniswapDetails = () => {
+    this.setState({ uniswapDetailsModal: false });
   };
 
   renderWalletNicknameModal = (wallet, nickname) => {
@@ -2306,11 +2611,23 @@ class PortfolioBig extends Component {
     );
   };
 
+  renderUniswapDetailsModal = (uniswapDetails, uniswapDetailsBalance) => {
+    return (
+      <UniswapDetailsModal
+        data={uniswapDetails}
+        closeModalUni={this.closeModalUniswapDetails}
+        modalOpen={this.state.uniswapDetailsModal}
+        vsCoin={this.state.vsCoin}
+        assetBalance={uniswapDetailsBalance}
+      />
+    );
+  };
+
   renderstakingDetailsModal = (stakingDetails) => {
     return (
       <StakingDetailsModal
         data={stakingDetails}
-        closeModal={this.closeModalDetails}
+        closeModal={this.closeModalStakingDetails}
         modalOpen={this.state.stakingDetailsModal}
         vsCoin={this.state.vsCoin}
       />

@@ -96,8 +96,6 @@ class SparklineChart extends Component {
 
   render() {
     const { classes } = this.props;
-    console.log(this.props.id);
-    console.log(this.props.data);
     return (
       <div className={classes.root}>
         <div className="row">
