@@ -2727,7 +2727,7 @@ ${nonce}`,
     }
   };
 
-  db_getPortfolioAssetStats = async (payload) => {
+  db_getPortfolioAllAssetStats = async (payload) => {
     let vsCoin = store.getStore("vsCoin");
     const account = store.getStore("account");
     if (assetStatsRequest) {
@@ -2766,9 +2766,10 @@ ${nonce}`,
         paginatedAssets.forEach((asset, i) =>
           keys.push(asset.asset.asset_code)
         );
+
         const portfolioAssetStats = await axios
           .post(
-            `${get_cgServer(1)}/zerion/assets/stats`,
+            `${get_cgServer()}/zerion/assets/stats`,
             {
               address: payload.wallet[i],
               currency: vsCoin,
@@ -2811,6 +2812,81 @@ ${nonce}`,
           });
         }
       }
+      emitter.emit(DB_GET_PORTFOLIO_ASSET_STATS_RETURNED, finalData);
+    } catch (err) {
+      console.log(err.message);
+      emitter.emit(ERROR, await err.message);
+    }
+  };
+
+  db_getPortfolioAssetStats = async (payload) => {
+    let vsCoin = store.getStore("vsCoin");
+    const account = store.getStore("account");
+    if (assetStatsRequest) {
+      assetStatsRequest.cancel("req. cancelled");
+    }
+    const CancelToken = axios.CancelToken;
+    assetStatsRequest = CancelToken.source();
+    function createData(wallet_address, asset_code, stats, profit_percent) {
+      return {
+        wallet_address,
+        asset_code,
+        stats,
+        profit_percent,
+      };
+    }
+    try {
+      let finalData = [];
+
+      let keys = [];
+      let prices = [];
+      keys.length = 0;
+      prices.length = 0;
+      prices.push(payload.asset.price ? payload.asset.price.value : null);
+      keys.push(payload.asset.asset_code);
+
+      const portfolioAssetStats = await axios
+        .post(
+          `${get_cgServer()}/zerion/assets/stats`,
+          {
+            address: payload.wallet,
+            currency: vsCoin,
+            asset_code: keys,
+          },
+          {
+            cancelToken: assetStatsRequest.token,
+          }
+        )
+        .catch(function (thrown) {
+          if (axios.isCancel(thrown)) {
+            console.log("Request canceled");
+          }
+        });
+      if (portfolioAssetStats) {
+        let profit_percent;
+        if (
+          portfolioAssetStats.data[0].stats &&
+          portfolioAssetStats.data[0].stats.avg_buy_price &&
+          prices[0]
+        ) {
+          profit_percent =
+            ((prices[0] - portfolioAssetStats.data[0].stats.avg_buy_price) /
+              portfolioAssetStats.data[0].stats.avg_buy_price) *
+            100;
+        } else {
+          profit_percent = null;
+        }
+
+        finalData.push(
+          createData(
+            payload.wallet,
+            keys[0],
+            portfolioAssetStats.data[0].stats,
+            profit_percent
+          )
+        );
+      }
+
       emitter.emit(DB_GET_PORTFOLIO_ASSET_STATS_RETURNED, finalData);
     } catch (err) {
       console.log(err.message);

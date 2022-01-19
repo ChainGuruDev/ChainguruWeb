@@ -182,7 +182,7 @@ class Dashboard extends Component {
     });
 
     return (
-      <div style={{ minHeight: "100%", display: "flex" }}>
+      <div style={{ display: "flex" }}>
         <Suspense
           fallback={
             <div style={{ textAlign: "center" }}>

@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { colors, colorsGuru } from "../../theme";
-import { formatMoney } from "../helpers";
+import { formatMoney, getVsSymbol } from "../helpers";
 
 import WalletNicknameModal from "../components/walletNicknameModal.js";
 import WalletRemoveModal from "../components/walletRemoveModal.js";
@@ -19,9 +19,15 @@ import PieChartIcon from "@material-ui/icons/PieChart";
 import LockIcon from "@material-ui/icons/Lock";
 import AddIcon from "@material-ui/icons/Add";
 import SearchIcon from "@material-ui/icons/Search";
+import KeyboardArrowRightRoundedIcon from "@material-ui/icons/KeyboardArrowRightRounded";
+import KeyboardArrowLeftRoundedIcon from "@material-ui/icons/KeyboardArrowLeftRounded";
+import BarChartRoundedIcon from "@material-ui/icons/BarChartRounded";
+import ArrowDropUpRoundedIcon from "@material-ui/icons/ArrowDropUpRounded";
+import ArrowDropDownRoundedIcon from "@material-ui/icons/ArrowDropDownRounded";
 
 import {
   Card,
+  CardActionArea,
   Grid,
   Divider,
   Button,
@@ -45,6 +51,11 @@ import {
   Tooltip,
   Avatar,
   Badge,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Paper,
 } from "@material-ui/core";
 
 import Skeleton from "@material-ui/lab/Skeleton";
@@ -94,9 +105,8 @@ const styles = (theme) => ({
     flex: 1,
   },
   tokenLogo: {
-    maxHeight: 30,
-    minWidth: 30,
-    marginTop: 3,
+    maxHeight: 100,
+    minWidth: 100,
   },
   winLoseGrid: {
     cursor: "pointer",
@@ -113,6 +123,24 @@ const styles = (theme) => ({
     color: colors.cgRed,
   },
   walletGrid: {
+    borderColor: "#777",
+    borderRadius: "10px",
+    borderStyle: "solid",
+    borderWidth: "thin",
+    padding: "10px",
+    background: `#9991`,
+    minHeight: "100%",
+  },
+  assetsGrid: {
+    borderColor: "#777",
+    borderRadius: "10px",
+    borderStyle: "solid",
+    borderWidth: "thin",
+    padding: "10px",
+    background: `#9991`,
+    minHeight: "100%",
+  },
+  nonAssetsGrid: {
     borderColor: "#777",
     borderRadius: "10px",
     borderStyle: "solid",
@@ -183,6 +211,87 @@ const styles = (theme) => ({
       opacity: 0,
     },
   },
+  formControl: {
+    minWidth: 120,
+    marginLeft: 10,
+  },
+  assetGridRoot: {
+    display: "flex",
+    marginBottom: 10,
+  },
+  assetLogoGrid: {
+    right: "4vh",
+    position: "relative",
+    width: "30px",
+    opacity: "25%",
+    transition: "0.3s all",
+  },
+  assetTokenLogo: {
+    width: 125,
+    height: 125,
+  },
+  showPyLBTN: {
+    height: 100,
+    minWidth: 50,
+    width: 50,
+    backgroundColor: "#0004",
+    alignItems: "center",
+    justifyContent: "center",
+    transition: "all 0.2s ease-in-out",
+    display: "flex",
+    cursor: "pointer",
+    "&:hover": {
+      width: 60,
+      backgroundColor: "#0003",
+      scale: "1.2",
+    },
+  },
+  assetCard: {
+    height: 75,
+    background: "#555",
+    width: "100%",
+    alignItems: "center",
+    overflow: "clip",
+    display: "flex",
+    transition: "all 0.25s",
+    boxShadow: "1px 3px 5px -2px rgba(0, 0, 0, 0.5)",
+    "&:hover": {
+      boxShadow: "2px 5px 5px 3px rgba(0, 0, 0, 0.3)",
+      "& $assetLogoGrid": {
+        right: "2vh",
+        transition: "all 0.3s ease-in-out",
+      },
+    },
+    zIndex: 5,
+  },
+
+  "@keyframes slideDown": {
+    "0%": {
+      marginTop: "-50px",
+      opacity: 0,
+    },
+    "100%": {
+      marginTop: "5px",
+      opacity: 1,
+    },
+  },
+
+  assetCardDetails: {
+    paddingTop: 10,
+    display: "flex",
+    justifyContent: "flex-end",
+    borderRadius: "0 0 20px 20px",
+    top: "-10px",
+    height: 75,
+    background: "#444",
+    width: "100%",
+    alignItems: "center",
+    overflow: "clip",
+    transition: "all 0.5s",
+    position: "relative",
+    animation: "slideDown 0.5s",
+    boxShadow: "1px 3px 5px -2px rgba(0, 0, 0, 0.5)",
+  },
 });
 
 class PortfolioBig extends Component {
@@ -219,6 +328,11 @@ class PortfolioBig extends Component {
       uniswapDetailsModal: false,
       uniswapDetails: null,
       uniswapDetailsLoading: false,
+      assetsPage: 1,
+      nonAssetsPage: 1,
+      assetsPerPage: 25,
+      nonAssetsPerPage: 25,
+      loadingStats: false,
     };
 
     // IF USER IS CONNECTED GET THE PORTFOLIO DATA
@@ -507,6 +621,114 @@ class PortfolioBig extends Component {
   db_getPortfolioPositionsReturned = (portfolioData) => {
     const portfolioDataSorted = portfolioData.sort(this.dynamicSort("-value"));
 
+    //separate between assets and non assets (LPs, deposit, staked, rewards)
+    var assetsData = portfolioData.filter(function (el) {
+      return el.type === "asset" && el.asset.type !== "uniswap-v2"; // Changed this so a home would match
+    });
+    var nonAssetsData = portfolioData.filter(function (el) {
+      return el.type !== "asset" && el.type !== "uniswap-v2"; // Changed this so a home would match
+    });
+    var univ2Assets = portfolioData.filter(function (el) {
+      return el.asset.type === "uniswap-v2";
+    });
+
+    //separate between different protocols (pancake, alchemist, etc)
+    let protocols = [];
+    let protocolAssetsGrouped = {};
+    nonAssetsData.forEach((item, i) => {
+      if (protocols.indexOf(item.protocol) === -1) {
+        protocols.push(item.protocol);
+      }
+    });
+    protocols.forEach((item, i) => {
+      var protocolItems = nonAssetsData.filter(function (el) {
+        return el.protocol === item;
+      });
+      protocolItems.forEach((asset, x) => {
+        if (!(asset.name in protocolAssetsGrouped)) {
+          protocolAssetsGrouped[asset.name] = {};
+          if (!(asset.wallet in protocolAssetsGrouped[asset.name])) {
+            protocolAssetsGrouped[asset.name][asset.wallet] = {
+              items: [],
+              value: 0,
+              name: asset.name,
+              type: "nonAssetGrouped",
+              quantityDecimals: 1,
+              protocol: asset.protocol,
+              id: asset.name + "_" + Math.random() + "_grouped",
+              wallet: asset.wallet,
+              icon_url: { deposited: [], rewards: [] },
+              symbol: { deposited: [], rewards: [] },
+              chain: asset.chain,
+            };
+          }
+          protocolAssetsGrouped[asset.name][asset.wallet]["items"].push(asset);
+          if (asset.type !== "reward") {
+            protocolAssetsGrouped[asset.name][asset.wallet]["icon_url"][
+              "deposited"
+            ].push(asset.asset.icon_url);
+            protocolAssetsGrouped[asset.name][asset.wallet]["symbol"][
+              "deposited"
+            ].push(asset.asset.symbol);
+          } else {
+            protocolAssetsGrouped[asset.name][asset.wallet]["icon_url"][
+              "rewards"
+            ].push(asset.asset.icon_url);
+            protocolAssetsGrouped[asset.name][asset.wallet]["symbol"][
+              "rewards"
+            ].push(asset.asset.symbol);
+          }
+        } else {
+          if (!(asset.wallet in protocolAssetsGrouped[asset.name])) {
+            protocolAssetsGrouped[asset.name][asset.wallet] = {
+              items: [],
+              value: 0,
+              name: asset.name,
+              type: "nonAssetGrouped",
+              quantityDecimals: 1,
+              protocol: asset.protocol,
+              id: asset.name + "_" + Math.random() + "_grouped",
+              wallet: asset.wallet,
+              icon_url: { deposited: [], rewards: [] },
+              symbol: { deposited: [], rewards: [] },
+              chain: asset.chain,
+            };
+          }
+          protocolAssetsGrouped[asset.name][asset.wallet]["items"].push(asset);
+          if (asset.type !== "reward") {
+            protocolAssetsGrouped[asset.name][asset.wallet]["icon_url"][
+              "deposited"
+            ].push(asset.asset.icon_url);
+            protocolAssetsGrouped[asset.name][asset.wallet]["symbol"][
+              "deposited"
+            ].push(asset.asset.symbol);
+          } else {
+            protocolAssetsGrouped[asset.name][asset.wallet]["icon_url"][
+              "rewards"
+            ].push(asset.asset.icon_url);
+            protocolAssetsGrouped[asset.name][asset.wallet]["symbol"][
+              "rewards"
+            ].push(asset.asset.symbol);
+          }
+        }
+      });
+    });
+    for (var protocol in protocolAssetsGrouped) {
+      for (var wallet in protocolAssetsGrouped[protocol]) {
+        protocolAssetsGrouped[protocol][wallet].items.forEach((item, i) => {
+          protocolAssetsGrouped[protocol][wallet].value += item.value;
+        });
+      }
+    }
+
+    for (var i = 0; i < univ2Assets.length; i++) {
+      univ2Assets[i].type = "uniswap-v2";
+    }
+
+    // console.log(assetsData);
+    // console.log(nonAssetsData);
+    // console.log(univ2Assets);
+
     if (this.state.selectedWallet === "all") {
       this._isMounted &&
         dispatcher.dispatch({
@@ -519,13 +741,13 @@ class PortfolioBig extends Component {
           type: DB_GET_PORTFOLIO_STATS,
           wallet: this.state.userWallets,
         });
-      this._isMounted &&
-        dispatcher.dispatch({
-          type: DB_GET_PORTFOLIO_ASSET_STATS,
-          wallet: this.state.userWallets,
-          portfolioData: portfolioDataSorted,
-          page: 1,
-        });
+      // this._isMounted &&
+      //   dispatcher.dispatch({
+      //     type: DB_GET_PORTFOLIO_ASSET_STATS,
+      //     wallet: this.state.userWallets,
+      //     portfolioData: portfolioDataSorted,
+      //     page: 1,
+      //   });
     } else {
       this._isMounted &&
         dispatcher.dispatch({
@@ -538,13 +760,13 @@ class PortfolioBig extends Component {
           type: DB_GET_PORTFOLIO_STATS,
           wallet: [this.state.selectedWallet],
         });
-      this._isMounted &&
-        dispatcher.dispatch({
-          type: DB_GET_PORTFOLIO_ASSET_STATS,
-          wallet: [this.state.selectedWallet],
-          portfolioData: portfolioDataSorted,
-          page: 1,
-        });
+      // this._isMounted &&
+      //   dispatcher.dispatch({
+      //     type: DB_GET_PORTFOLIO_ASSET_STATS,
+      //     wallet: [this.state.selectedWallet],
+      //     portfolioData: portfolioDataSorted,
+      //     page: 1,
+      //   });
     }
 
     this.setState({
@@ -552,8 +774,11 @@ class PortfolioBig extends Component {
       loading: false,
       dbDataLoaded: true,
       dbStatsData: false,
-      portfolioData: portfolioData,
+      portfolioData: portfolioDataSorted,
       chartVariation: null,
+      assetsData: assetsData,
+      univ2Assets: univ2Assets,
+      nonAssetsData: nonAssetsData,
     });
   };
 
@@ -591,7 +816,6 @@ class PortfolioBig extends Component {
 
   dbGetPortfolioAssetStatsReturned = (portfolioStats) => {
     const { portfolioData } = this.state;
-    console.log(portfolioStats);
     portfolioStats.forEach((item, i) => {
       if (item.stats) {
         const index = portfolioData.findIndex(
@@ -601,10 +825,9 @@ class PortfolioBig extends Component {
         );
         portfolioData[index].profit_percent = item.profit_percent;
         portfolioData[index].stats = item.stats;
-        console.log(portfolioData[index]);
+        portfolioData[index].hideStats = false;
       }
     });
-    console.log(portfolioData);
 
     // portfolioData.forEach((item, i) => {
     //   if (item.chain === "ethereum") {
@@ -625,6 +848,7 @@ class PortfolioBig extends Component {
       error: false,
       loading: false,
       dbStatsData: true,
+      loadingStats: false,
       portfolioData: portfolioData,
     });
   };
@@ -868,8 +1092,8 @@ class PortfolioBig extends Component {
 
   sortedList = (portfolioData) => {
     const { classes } = this.props;
-    const { vsCoin } = this.state;
     const {
+      vsCoin,
       sortBy,
       hideLowBalanceCoins,
       dbStatsData,
@@ -878,6 +1102,7 @@ class PortfolioBig extends Component {
       selectedWallet,
       uniswapDetailsLoading,
     } = this.state;
+
     let filteredData = [];
     if (hideLowBalanceCoins && (vsCoin === "usd" || vsCoin === "eur")) {
       portfolioData.forEach((item, i) => {
@@ -1564,6 +1789,430 @@ class PortfolioBig extends Component {
     }
   };
 
+  changeAssetsPerPage = (event) => {
+    let wallets = [];
+    let newAssetsPerPage = event.target.value;
+
+    this.setState({ assetsPerPage: newAssetsPerPage, loading: true });
+  };
+
+  changeAssetPage = (action) => {
+    const { assetsPage, assetsPerPage } = this.state;
+
+    let newPage;
+    switch (action) {
+      case "prev":
+        newPage = assetsPage - 1;
+        this.setState({ assetsPage: newPage });
+        break;
+      case "next":
+        newPage = assetsPage + 1;
+        this.setState({ assetsPage: newPage });
+
+        break;
+      default:
+        break;
+    }
+  };
+
+  getAssetDetails = (e, data) => {
+    const { portfolioData } = this.state;
+
+    e.stopPropagation = true;
+    e.preventDefault = true;
+    if (!data.stats || data.hideStats) {
+      this.setState({
+        loadingStats: true,
+      });
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: DB_GET_PORTFOLIO_ASSET_STATS,
+          wallet: data.wallet,
+          asset: data.asset,
+        });
+    } else {
+      if (data.stats && !data.hideStats) {
+        const index = portfolioData.findIndex(
+          (x) =>
+            x.asset.asset_code === data.asset.asset_code &&
+            x.wallet === data.wallet.toLowerCase()
+        );
+        portfolioData[index].hideStats = true;
+        this.setState({
+          portfolioData: portfolioData,
+        });
+      }
+    }
+  };
+
+  drawAssets(assetsData) {
+    const {
+      sortOrder,
+      sortBy,
+      assetsPerPage,
+      assetsPage,
+      selectedWallet,
+      walletColors,
+      walletNicknames,
+      dbStatsData,
+      vsCoin,
+      loadingStats,
+    } = this.state;
+    const { classes } = this.props;
+
+    let sortedAssets = [];
+    if (this.state.sortOrder === "asc") {
+      sortedAssets = assetsData.sort(this.dynamicSort(sortBy));
+    } else {
+      sortedAssets = assetsData.sort(this.dynamicSort(`-${sortBy}`));
+    }
+
+    const assetPage = sortedAssets.slice(
+      (assetsPage - 1) * assetsPerPage,
+      assetsPerPage * assetsPage
+    );
+
+    let data;
+    return assetPage.map((asset) => (
+      <React.Fragment key={Math.random() + asset.id}>
+        <Grid
+          container
+          id={`${
+            asset.id +
+            asset.wallet.substring(2, 5) +
+            asset.wallet.substring(asset.wallet.length - 3, asset.wallet.length)
+          }`}
+          className={classes.assetGridRoot}
+          direction="row"
+          justify="flex-start"
+          alignItems="center"
+          onClick={() => this.nav("/short/detective/" + asset.asset.asset_code)}
+        >
+          <Card
+            className={classes.assetCard}
+            style={{
+              borderRadius:
+                asset.stats && !asset.hideStats ? "20px 20px 0 0" : 20,
+            }}
+          >
+            <CardActionArea
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+              }}
+            >
+              <Grid className={classes.assetLogoGrid}>
+                <div
+                  style={{
+                    width: "max-content",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  <img
+                    className={classes.assetTokenLogo}
+                    style={{ display: asset.asset.icon_url ? "" : "none" }}
+                    alt=""
+                    src={asset.asset.icon_url}
+                  />
+                </div>
+              </Grid>
+              <Grid
+                padding="none"
+                align="left"
+                style={{
+                  zIndex: 1,
+                  width: "30%",
+                  maxWidth: "30%",
+                  minWidth: "30%",
+                  margin: "0 10px 0 0",
+                }}
+              >
+                <div>
+                  <Typography
+                    variant={"h3"}
+                    style={{
+                      overflow: "hidden",
+                      whiteSpace: "nowrap",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {asset.asset.name}
+                  </Typography>
+                </div>
+                {selectedWallet === "all" && (
+                  <div style={{ display: "flex" }}>
+                    {walletColors[
+                      walletColors
+                        .map((e) => e.wallet)
+                        .indexOf(asset.wallet.toLowerCase())
+                    ] && (
+                      <>
+                        {this.drawChainIcon(asset.chain)}
+                        <FiberManualRecordIcon
+                          style={{
+                            scale: 0.75,
+                            color:
+                              walletColors[
+                                walletColors
+                                  .map((e) => e.wallet)
+                                  .indexOf(asset.wallet.toLowerCase())
+                              ].color,
+                          }}
+                        />
+                        <Typography
+                          style={{
+                            opacity: 0.6,
+                            color:
+                              walletColors[
+                                walletColors
+                                  .map((e) => e.wallet)
+                                  .indexOf(asset.wallet.toLowerCase())
+                              ].color,
+                          }}
+                          variant={"subtitle2"}
+                        >
+                          at wallet:{" "}
+                          {(data = walletNicknames.find(
+                            (ele) => ele.wallet === asset.wallet
+                          )) &&
+                            data.nickname +
+                              " (" +
+                              asset.wallet.substring(0, 6) +
+                              "..." +
+                              asset.wallet.substring(
+                                asset.wallet.length - 4,
+                                asset.wallet.length
+                              ) +
+                              ")"}
+                          {!walletNicknames.some(
+                            (e) => e.wallet === asset.wallet
+                          ) &&
+                            asset.wallet.substring(0, 6) +
+                              "..." +
+                              asset.wallet.substring(
+                                asset.wallet.length - 4,
+                                asset.wallet.length
+                              )}
+                        </Typography>
+                      </>
+                    )}
+                  </div>
+                )}
+                {selectedWallet !== "all" && (
+                  <div style={{ display: "flex" }}>
+                    {walletColors[
+                      walletColors
+                        .map((e) => e.wallet)
+                        .indexOf(asset.wallet.toLowerCase())
+                    ] && <>{this.drawChainIcon(asset.chain)}</>}
+                  </div>
+                )}
+              </Grid>
+              <Grid
+                style={{
+                  marginLeft: "auto",
+                  display: "flex",
+                  height: "100%",
+                  alignItems: "center",
+                  width: "100%",
+                }}
+                align="right"
+              >
+                <Grid style={{ minWidth: 120 }}>
+                  <Typography variant={"body1"} style={{ fontSize: 22 }}>
+                    {formatMoney(asset.quantityDecimals)}
+                  </Typography>
+                  <Typography style={{ opacity: 0.7 }} variant={"body1"}>
+                    {asset.asset.symbol}
+                  </Typography>
+                </Grid>
+                <Grid style={{ marginLeft: 10 }} align="right">
+                  {asset.asset.price && (
+                    <>
+                      <Typography style={{ fontSize: 22 }} variant={"body1"}>
+                        {getVsSymbol(vsCoin) +
+                          " " +
+                          formatMoney(asset.asset.price.value)}
+                      </Typography>
+                      {asset.asset.price.relative_change_24h && (
+                        <div style={{ display: "flex", justifyContent: "end" }}>
+                          {asset.asset.price.relative_change_24h > 0 && (
+                            <ArrowDropUpRoundedIcon
+                              color="primary"
+                              size="small"
+                            />
+                          )}
+                          {asset.asset.price.relative_change_24h < 0 && (
+                            <ArrowDropDownRoundedIcon
+                              color="secondary"
+                              size="small"
+                            />
+                          )}
+                          <Typography
+                            color={
+                              asset.asset.price.relative_change_24h > 0
+                                ? "primary"
+                                : "secondary"
+                            }
+                            variant={"subtitle2"}
+                          >
+                            {asset.asset.price.relative_change_24h.toFixed(2)} %
+                          </Typography>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </Grid>
+                <Grid
+                  style={{ marginLeft: "auto", marginRight: 10 }}
+                  align="right"
+                >
+                  <Typography variant={"h2"} color="primary">
+                    $ {asset.value && formatMoney(asset.value)}
+                  </Typography>
+                </Grid>
+                <Grid
+                  className={classes.showPyLBTN}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    this.getAssetDetails(e, asset);
+                  }}
+                >
+                  {loadingStats && <CircularProgress />}
+                  {!loadingStats && !asset.stats && <BarChartRoundedIcon />}
+                  {!loadingStats && asset.stats && <ArrowDropUpRoundedIcon />}
+                </Grid>
+              </Grid>
+            </CardActionArea>
+          </Card>
+          {asset.stats && !asset.hideStats && (
+            <Card className={classes.assetCardDetails}>
+              <Grid align="right">
+                {asset.stats && asset.profit_percent && (
+                  <>
+                    <Typography
+                      variant={"body1"}
+                      color={asset.profit_percent > 0 ? "primary" : "secondary"}
+                    >
+                      current profit: {formatMoney(asset.profit_percent)} %
+                    </Typography>
+                    <Typography
+                      variant={"body1"}
+                      color={asset.profit_percent > 0 ? "primary" : "secondary"}
+                    >
+                      avg. buy Price: {getVsSymbol(vsCoin)}
+                      {formatMoney(asset.stats.avg_buy_price)}
+                    </Typography>
+                  </>
+                )}
+              </Grid>
+              <Grid align="right" style={{ marginLeft: 10, marginRight: 10 }}>
+                {asset.stats && asset.stats.total_returned && (
+                  <>
+                    <Typography
+                      className={
+                        asset.stats.total_returned > 0
+                          ? classes.profit_green
+                          : classes.profit_red
+                      }
+                      variant={"body1"}
+                    >
+                      Total returned {getVsSymbol(vsCoin)}{" "}
+                      {asset.stats.total_returned.toFixed(1)}
+                    </Typography>
+                    {asset.stats.total_returned_net && (
+                      <Typography
+                        className={
+                          asset.stats.total_returned_net > 0
+                            ? classes.profit_green
+                            : classes.profit_red
+                        }
+                        variant={"body1"}
+                      >
+                        Returned - Fees: {getVsSymbol(vsCoin)}
+                        {asset.stats.total_returned_net.toFixed(1)}
+                      </Typography>
+                    )}
+                  </>
+                )}
+              </Grid>
+            </Card>
+          )}
+        </Grid>
+      </React.Fragment>
+    ));
+  }
+
+  changeNonAssetsPerPage = (event) => {
+    let wallets = [];
+    let newAssetsPerPage = event.target.value;
+
+    this.setState({ nonAssetsPerPage: newAssetsPerPage });
+  };
+
+  changeNonAssetPage = (action) => {
+    const { nonAssetsPage, nonAssetsPerPage } = this.state;
+
+    let newPage;
+    switch (action) {
+      case "prev":
+        newPage = nonAssetsPage - 1;
+        this.setState({ nonAssetsPage: newPage });
+        break;
+      case "next":
+        newPage = nonAssetsPage + 1;
+        this.setState({ nonAssetsPage: newPage });
+
+        break;
+      default:
+        break;
+    }
+  };
+
+  drawNonAssets(nonAssetsData, univ2Assets) {
+    const { sortOrder, sortBy, nonAssetsPerPage, nonAssetsPage } = this.state;
+    const { classes } = this.props;
+
+    let allNonAssets = nonAssetsData;
+    for (var i = 0; i < univ2Assets.length; i++) {
+      allNonAssets.push(univ2Assets[i]);
+    }
+
+    let sortedAssets = [];
+    if (this.state.sortOrder === "asc") {
+      sortedAssets = allNonAssets.sort(this.dynamicSort(sortBy));
+    } else {
+      sortedAssets = allNonAssets.sort(this.dynamicSort(`-${sortBy}`));
+    }
+
+    const assetPage = sortedAssets.slice(
+      (nonAssetsPage - 1) * nonAssetsPerPage,
+      nonAssetsPerPage * nonAssetsPage
+    );
+
+    return assetPage.map((asset) => (
+      <React.Fragment key={Math.random() + asset.id}>
+        <div
+          style={{
+            width: "max-content",
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          <img
+            className={classes.tokenLogo}
+            alt=""
+            src={asset.asset.icon_url}
+          />
+        </div>
+        <div>
+          <Typography variant={"h4"}>{asset.asset.name}</Typography>
+        </div>
+      </React.Fragment>
+    ));
+  }
+
   sortBy(_sortBy) {
     let _prevSortBy = this.state.sortBy;
     if (_prevSortBy === _sortBy) {
@@ -1906,17 +2555,19 @@ class PortfolioBig extends Component {
       portfolioStats,
       stakingDetailsModal,
       uniswapDetailsModal,
+      assetsData,
+      nonAssetsData,
+      univ2Assets,
+      assetsPage,
+      assetsPerPage,
+      nonAssetsPage,
+      nonAssetsPerPage,
     } = this.state;
 
     return (
       <>
         <Card className={classes.favCard} elevation={3}>
-          <Grid
-            container
-            direction="row"
-            justify="flex-start"
-            alignItems="stretch"
-          >
+          <Grid container direction="row" justify="flex-start">
             {error && (
               <Grid
                 item
@@ -1958,12 +2609,7 @@ class PortfolioBig extends Component {
               </Grid>
             )}
             {dbDataLoaded && (
-              <Grid
-                container
-                direction="column"
-                justify="flex-start"
-                alignItems="stretch"
-              >
+              <Grid container direction="column" justify="flex-start">
                 <Grid
                   id="topUI"
                   container
@@ -1987,7 +2633,9 @@ class PortfolioBig extends Component {
                         alignItems="center"
                         xs={12}
                       >
-                        <Typography variant={"h4"}>Wallets</Typography>
+                        <Typography variant={"h4"} color={"primary"}>
+                          Wallets
+                        </Typography>
                         {!addWallet && (
                           <Button
                             startIcon={<AddCircleRoundedIcon />}
@@ -2439,114 +3087,193 @@ class PortfolioBig extends Component {
                   </Grid>
                 </Grid>
                 <Grid
+                  id="BottomUI"
                   container
-                  direction="column"
-                  justify="flex-start"
-                  alignItems="stretch"
-                  style={{ marginTop: 10 }}
+                  direction="row"
+                  justify="space-between"
+                  alignItems="flex-start"
+                  style={{ marginTop: 8 }}
+                  spacing={1}
                 >
-                  <TableContainer
-                    style={{
-                      maxHeight: "875px",
-                      scrollbarWidth: "thin",
-                      scrollbarColor: `${colors.cgGreen} #30303080`,
-                    }}
-                    size="small"
-                  >
-                    <Table
-                      stickyHeader
-                      className={classes.table}
-                      aria-label="assetList"
+                  {assetsData && (
+                    <Grid item sm={12} md={6} style={{ display: "grid" }}>
+                      <div className={classes.assetsGrid}>
+                        <Grid item xs={12}>
+                          <Typography color="primary" variant={"h4"}>
+                            Assets
+                          </Typography>
+                          {portfolioStats && (
+                            <Typography color="primary" variant={"h3"}>
+                              {formatMoney(
+                                portfolioStats.total_value -
+                                  (portfolioStats.deposited_value +
+                                    portfolioStats.locked_value +
+                                    portfolioStats.staked_value)
+                              )}
+                            </Typography>
+                          )}
+                        </Grid>
+                        <Divider variant="middle" />
+                        <Grid
+                          item
+                          xs={12}
+                          style={{
+                            maxHeight: 500,
+                            height: "100%",
+                            overflowY: "auto",
+                            marginTop: 10,
+                            scrollbarColor:
+                              "rgb(121, 216, 162) rgba(48, 48, 48, 0.5)",
+                            paddingRight: 10,
+                            scrollbarWidth: "thin",
+                          }}
+                        >
+                          {this.drawAssets(assetsData, assetsPage)}
+                        </Grid>
+                        <Divider variant="middle" />
+                        <Grid
+                          container
+                          direction="row"
+                          justify="flex-end"
+                          alignItems="center"
+                          style={{ marginTop: 10 }}
+                        >
+                          <IconButton
+                            disabled={assetsPage === 1}
+                            onClick={() => this.changeAssetPage("prev")}
+                          >
+                            <KeyboardArrowLeftRoundedIcon />
+                          </IconButton>
+                          <div className={classes.pageCounter}>
+                            {assetsPage}
+                          </div>
+                          <IconButton
+                            onClick={() => this.changeAssetPage("next")}
+                          >
+                            <KeyboardArrowRightRoundedIcon />
+                          </IconButton>
+                          <FormControl
+                            variant="outlined"
+                            className={classes.formControl}
+                          >
+                            <InputLabel id="demo-simple-select-outlined-label">
+                              per page
+                            </InputLabel>
+                            <Select
+                              labelId="assetsPerPage-Select-label"
+                              id="assetsPerPage-Select-outlined"
+                              value={assetsPerPage}
+                              onChange={this.changeAssetsPerPage}
+                              label="assetsPerPage"
+                            >
+                              <MenuItem key={"10"} value={10}>
+                                10
+                              </MenuItem>
+                              <MenuItem key={"25"} value={25}>
+                                25
+                              </MenuItem>
+                              <MenuItem key={"50"} value={50}>
+                                50
+                              </MenuItem>
+                            </Select>
+                          </FormControl>
+                        </Grid>
+                      </div>
+                    </Grid>
+                  )}
+                  {(nonAssetsData || univ2Assets) && (
+                    <Grid
+                      item
+                      xs={6}
+                      style={{ display: "grid", minHeight: "100%" }}
                     >
-                      <TableHead className={classes.header}>
-                        <TableRow>
-                          <TableCell
-                            style={{
-                              width: "30px",
-                              height: "30px",
-                              zIndex: 10,
-                            }}
-                          ></TableCell>
-                          <TableCell align="left" padding="none">
-                            <TableSortLabel
-                              active={sortBy === "name"}
-                              direction={sortOrder}
-                              onClick={() => this.sortBy("name")}
-                            >
-                              Name
-                            </TableSortLabel>
-                          </TableCell>
-                          <TableCell align="right">
-                            <TableSortLabel
-                              active={sortBy === "quantityDecimals"}
-                              direction={sortOrder}
-                              onClick={() => this.sortBy("quantityDecimals")}
-                            >
-                              Balance
-                            </TableSortLabel>
-                          </TableCell>
-                          <TableCell
-                            align="right"
-                            onClick={() => this.sortBy("value")}
+                      <div className={classes.nonAssetsGrid}>
+                        <Grid item xs={12}>
+                          <Typography color="primary" variant={"h4"}>
+                            Staked Assets
+                          </Typography>
+                          {portfolioStats && (
+                            <Typography color="primary" variant={"h3"}>
+                              {formatMoney(
+                                portfolioStats.deposited_value +
+                                  portfolioStats.locked_value +
+                                  portfolioStats.staked_value
+                              )}
+                            </Typography>
+                          )}
+                        </Grid>
+                        <Divider variant="middle" />
+                        <Grid
+                          item
+                          xs={12}
+                          style={{
+                            height: "100%",
+                            maxHeight: 500,
+                            overflowY: "auto",
+                            marginTop: 10,
+                            scrollbarColor:
+                              "rgb(121, 216, 162) rgba(48, 48, 48, 0.5)",
+                            paddingRight: 10,
+                            scrollbarWidth: "thin",
+                          }}
+                        >
+                          {this.drawNonAssets(
+                            nonAssetsData,
+                            univ2Assets,
+                            nonAssetsPage
+                          )}
+                        </Grid>
+                        <Divider variant="middle" />
+                        <Grid
+                          container
+                          direction="row"
+                          justify="flex-end"
+                          alignItems="center"
+                          style={{ marginTop: 10 }}
+                        >
+                          <IconButton
+                            disabled={nonAssetsPage === 1}
+                            onClick={() => this.changeNonAssetPage("prev")}
                           >
-                            <TableSortLabel
-                              active={sortBy === "value"}
-                              direction={sortOrder}
-                              onClick={() => this.sortBy("value")}
-                            >
-                              Value
-                            </TableSortLabel>
-                          </TableCell>
-                          <TableCell
-                            align="right"
-                            onClick={() => this.sortBy("price")}
+                            <KeyboardArrowLeftRoundedIcon />
+                          </IconButton>
+                          <div className={classes.pageCounter}>
+                            {nonAssetsPage}
+                          </div>
+                          <IconButton
+                            onClick={() => this.changeNonAssetPage("next")}
                           >
-                            <TableSortLabel
-                              active={sortBy === "price"}
-                              direction={sortOrder}
-                              onClick={() => this.sortBy("price")}
-                            >
-                              <Grid>
-                                <Grid item>Price</Grid>
-                                <Grid item>(% 24hs)</Grid>
-                              </Grid>
-                            </TableSortLabel>
-                          </TableCell>
-                          <TableCell
-                            align="right"
-                            onClick={() => this.sortBy("profit_percent")}
+                            <KeyboardArrowRightRoundedIcon />
+                          </IconButton>
+                          <FormControl
+                            variant="outlined"
+                            className={classes.formControl}
                           >
-                            <TableSortLabel
-                              active={sortBy === "profit_percent"}
-                              direction={sortOrder}
-                              onClick={() => this.sortBy("profit_percent")}
+                            <InputLabel id="demo-simple-select-outlined-label">
+                              per page
+                            </InputLabel>
+                            <Select
+                              labelId="assetsPerPage-Select-label"
+                              id="assetsPerPage-Select-outlined"
+                              value={nonAssetsPerPage}
+                              onChange={this.changeNonAssetsPerPage}
+                              label="assetsPerPage"
                             >
-                              <Grid>
-                                <Grid item>Profit/Loss %</Grid>
-                                <Grid item>(Avg. Buy Price)</Grid>
-                              </Grid>
-                            </TableSortLabel>
-                          </TableCell>
-                          <TableCell
-                            align="right"
-                            onClick={() => this.sortBy("total_returned")}
-                          >
-                            <TableSortLabel
-                              active={sortBy === "total_returned"}
-                              direction={sortOrder}
-                              onClick={() => this.sortBy("total_returned")}
-                            >
-                              <Grid>
-                                <Grid item>Profit</Grid>
-                                <Grid item>Net Profit (- gas fees)</Grid>
-                              </Grid>
-                            </TableSortLabel>
-                          </TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>{this.sortedList(portfolioData)}</TableBody>
-                    </Table>
-                  </TableContainer>
+                              <MenuItem key={"10"} value={10}>
+                                10
+                              </MenuItem>
+                              <MenuItem key={"25"} value={25}>
+                                25
+                              </MenuItem>
+                              <MenuItem key={"50"} value={50}>
+                                50
+                              </MenuItem>
+                            </Select>
+                          </FormControl>
+                        </Grid>
+                      </div>
+                    </Grid>
+                  )}
                 </Grid>
               </Grid>
             )}
