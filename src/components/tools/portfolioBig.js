@@ -9,6 +9,7 @@ import WalletRemoveModal from "../components/walletRemoveModal.js";
 import PortfolioChart from "../components/PortfolioChart.js";
 import StakingDetailsModal from "../components/stakingDetailsModal.js";
 import UniswapDetailsModal from "../components/uniswapDetailsModal.js";
+import SparklineChart from "../components/SparklineChart.js";
 
 import BackspaceRoundedIcon from "@material-ui/icons/BackspaceRounded";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
@@ -84,6 +85,8 @@ import {
   DB_GET_PORTFOLIO_POSITIONS_RETURNED,
   DB_GET_ASSET_FULLDATA,
   DB_GET_ASSET_FULLDATA_RETURNED,
+  GECKO_GET_SPARKLINE_FROM_CONTRACT,
+  GECKO_GET_SPARKLINE_FROM_CONTRACT_RETURNED,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -374,6 +377,10 @@ class PortfolioBig extends Component {
       this.db_getPortfolioPositionsReturned
     );
     emitter.on(DB_GET_ASSET_FULLDATA_RETURNED, this.uniswapDetailsReturned);
+    emitter.on(
+      GECKO_GET_SPARKLINE_FROM_CONTRACT_RETURNED,
+      this.sparklineDataReturned
+    );
   }
 
   componentWillUnmount() {
@@ -384,7 +391,6 @@ class PortfolioBig extends Component {
       this.connectionDisconnected
     );
     emitter.removeListener(DB_USERDATA_RETURNED, this.dbUserDataReturned);
-
     emitter.removeListener(
       DB_GET_PORTFOLIO_ASSET_STATS_RETURNED,
       this.dbGetPortfolioAssetStatsReturned
@@ -419,6 +425,10 @@ class PortfolioBig extends Component {
     emitter.removeListener(
       DB_GET_PORTFOLIO_POSITIONS_RETURNED,
       this.db_getPortfolioPositionsReturned
+    );
+    emitter.removeListener(
+      GECKO_GET_SPARKLINE_FROM_CONTRACT_RETURNED,
+      this.sparklineDataReturned
     );
 
     this._isMounted = false;
@@ -1812,6 +1822,31 @@ class PortfolioBig extends Component {
     }
   };
 
+  sparklineDataReturned = (payload) => {
+    const { portfolioData } = this.state;
+    console.log(payload);
+    console.log(portfolioData);
+
+    for (var i = 0; i < portfolioData.length; i++) {
+      if (portfolioData[i].asset.asset_code === payload[0].asset_code) {
+        portfolioData[i].sparklineData = payload[0].price;
+      }
+    }
+    // const index = portfolioData.findIndex(
+    //   (x) => x.asset.asset_code === payload[0].asset_code
+    // );
+    // console.log(index);
+    //
+    // portfolioData[index].sparklineData = payload[0].price;
+    this.setState({
+      portfolioData: portfolioData,
+    });
+
+    // this.setState({
+    //   sparklineData: payload,
+    // });
+  };
+
   getAssetDetails = (e, data) => {
     const { portfolioData } = this.state;
 
@@ -1821,12 +1856,21 @@ class PortfolioBig extends Component {
       this.setState({
         loadingStats: true,
       });
+      console.log(data);
       this._isMounted &&
         dispatcher.dispatch({
           type: DB_GET_PORTFOLIO_ASSET_STATS,
           wallet: data.wallet,
           asset: data.asset,
         });
+      if (data.chain === "ethereum") {
+        const vsCoin = store.getStore("vsCoin");
+        dispatcher.dispatch({
+          type: GECKO_GET_SPARKLINE_FROM_CONTRACT,
+          assetCodes: [data.asset.asset_code],
+          vsCoin: vsCoin,
+        });
+      }
     } else {
       if (data.stats && !data.hideStats) {
         const index = portfolioData.findIndex(
@@ -2138,6 +2182,21 @@ class PortfolioBig extends Component {
                   </>
                 )}
               </Grid>
+              {asset.chain === "ethereum" && (
+                <Grid align="left">
+                  {asset.sparklineData && (
+                    <SparklineChart id={asset.id} data={asset.sparklineData} />
+                  )}
+                  {!asset.sparklineData && (
+                    <Skeleton
+                      variant="rect"
+                      width={"200px"}
+                      height={"60px"}
+                      style={{ borderRadius: 5 }}
+                    />
+                  )}
+                </Grid>
+              )}
             </Card>
           )}
         </Grid>

@@ -1539,15 +1539,22 @@ class Store {
         );
         tokenIDs.push(response.data.id);
       } catch (err) {
-        console.log(err);
+        if (payload.assetCodes[i] === "eth") {
+          tokenIDs[i] = "ethereum";
+        } else {
+          console.log(err);
+        }
       }
     }
     let sparklineData = [];
     for (var i = 0; i < tokenIDs.length; i++) {
+      console.log(tokenIDs[i]);
       let response2 = await axios.get(
         `https://api.coingecko.com/api/v3/coins/${tokenIDs[i]}?tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=true`
       );
       sparklineData.push(response2.data.market_data.sparkline_7d);
+      sparklineData[i].tokenID = tokenIDs[i];
+      sparklineData[i].asset_code = payload.assetCodes[i];
     }
     emitter.emit(GECKO_GET_SPARKLINE_FROM_CONTRACT_RETURNED, sparklineData);
   };
