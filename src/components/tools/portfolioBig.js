@@ -248,7 +248,7 @@ const styles = (theme) => ({
   },
   assetCard: {
     height: 75,
-    background: "#555",
+    background: "#5553",
     width: "100%",
     alignItems: "center",
     overflow: "clip",
@@ -277,18 +277,15 @@ const styles = (theme) => ({
   },
 
   assetCardDetails: {
-    paddingTop: 10,
     display: "flex",
-    justifyContent: "flex-end",
+    justifyContent: "space-evenly",
     borderRadius: "0 0 20px 20px",
-    top: "-10px",
     height: 75,
-    background: "#444",
+    background: "#2227",
     width: "100%",
     alignItems: "center",
     overflow: "clip",
     transition: "all 0.5s",
-    position: "relative",
     animation: "slideDown 0.5s",
     boxShadow: "1px 3px 5px -2px rgba(0, 0, 0, 0.5)",
   },
@@ -2079,16 +2076,20 @@ class PortfolioBig extends Component {
                     this.getAssetDetails(e, asset);
                   }}
                 >
-                  {loadingStats && <CircularProgress />}
-                  {!loadingStats && !asset.stats && <BarChartRoundedIcon />}
-                  {!loadingStats && asset.stats && <ArrowDropUpRoundedIcon />}
+                  {loadingStats && <CircularProgress size={25} />}
+                  {!loadingStats && (asset.hideStats || !asset.stats) && (
+                    <BarChartRoundedIcon />
+                  )}
+                  {!loadingStats && !asset.hideStats && asset.stats && (
+                    <ArrowDropUpRoundedIcon />
+                  )}
                 </Grid>
               </Grid>
             </CardActionArea>
           </Card>
           {asset.stats && !asset.hideStats && (
             <Card className={classes.assetCardDetails}>
-              <Grid align="right">
+              <Grid align="left">
                 {asset.stats && asset.profit_percent && (
                   <>
                     <Typography
@@ -2107,7 +2108,7 @@ class PortfolioBig extends Component {
                   </>
                 )}
               </Grid>
-              <Grid align="right" style={{ marginLeft: 10, marginRight: 10 }}>
+              <Grid align="left">
                 {asset.stats && asset.stats.total_returned && (
                   <>
                     <Typography
