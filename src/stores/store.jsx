@@ -1532,29 +1532,87 @@ class Store {
 
   geckoGetSparklineChartsFromContract = async (payload) => {
     let tokenIDs = [];
-    for (var i = 0; i < payload.assetCodes.length; i++) {
-      try {
-        let response = await axios.get(
-          `https://api.coingecko.com/api/v3/coins/ethereum/contract/${payload.assetCodes[i]}`
-        );
-        tokenIDs.push(response.data.id);
-      } catch (err) {
-        if (payload.assetCodes[i] === "eth") {
-          tokenIDs[i] = "ethereum";
+    if (!payload.chain) {
+      for (var i = 0; i < payload.assetCodes.length; i++) {
+        try {
+          let response = await axios.get(
+            `https://api.coingecko.com/api/v3/coins/ethereum/contract/${payload.assetCodes[i]}`
+          );
+          tokenIDs.push(response.data.id);
+        } catch (err) {
+          if (payload.assetCodes[i] === "eth") {
+            tokenIDs[i] = "ethereum";
+          } else {
+            console.log(err);
+          }
+        }
+      }
+    } else {
+      for (var i = 0; i < payload.assetCodes.length; i++) {
+        if (payload.assetCodes[i] === null) {
+          switch (payload.chain[i]) {
+            case "avalanche":
+              tokenIDs.push("avalanche-2");
+              break;
+            case "binance-smart-chain":
+              tokenIDs.push("binancecoin");
+              break;
+            case "xdai":
+              tokenIDs.push("dai");
+              break;
+            case "optimism":
+              tokenIDs.push("ethereum");
+              break;
+            case "arbitrum":
+              tokenIDs.push("ethereum");
+            default:
+          }
         } else {
-          console.log(err);
+          if (payload.chain[i] === "optimism") {
+            payload.chain[i] = "optimistic-ethereum";
+          }
+          if (payload.chain[i] === "arbitrum") {
+            payload.chain[i] = "arbitrum-one";
+          }
+          try {
+            let response = await axios.get(
+              `https://api.coingecko.com/api/v3/coins/${payload.chain[i]}/contract/${payload.assetCodes[i]}`
+            );
+            tokenIDs.push(response.data.id);
+          } catch (err) {
+            if (payload.assetCodes[i] === "eth") {
+              tokenIDs[i] = "ethereum";
+            } else {
+              console.log(err);
+            }
+          }
         }
       }
     }
+
     let sparklineData = [];
-    for (var i = 0; i < tokenIDs.length; i++) {
-      console.log(tokenIDs[i]);
-      let response2 = await axios.get(
-        `https://api.coingecko.com/api/v3/coins/${tokenIDs[i]}?tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=true`
-      );
-      sparklineData.push(response2.data.market_data.sparkline_7d);
-      sparklineData[i].tokenID = tokenIDs[i];
-      sparklineData[i].asset_code = payload.assetCodes[i];
+    if (!payload.chain) {
+      for (var i = 0; i < tokenIDs.length; i++) {
+        let response2 = await axios.get(
+          `https://api.coingecko.com/api/v3/coins/${tokenIDs[i]}?tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=true`
+        );
+        sparklineData.push(response2.data.market_data.sparkline_7d);
+        sparklineData[i].tokenID = tokenIDs[i];
+        sparklineData[i].asset_code = payload.assetCodes[i];
+      }
+    } else {
+      for (var i = 0; i < tokenIDs.length; i++) {
+        console.log(tokenIDs[i]);
+        let response2 = await axios.get(
+          `https://api.coingecko.com/api/v3/coins/${tokenIDs[i]}?tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=true`
+        );
+        sparklineData.push(response2.data.market_data.sparkline_7d);
+        sparklineData[i].tokenID = tokenIDs[i];
+        sparklineData[i].asset_code = payload.assetCodes[i];
+        sparklineData[i].symbol = payload.tokenSymbol[i];
+        sparklineData[i].wallet = payload.wallet[i];
+        sparklineData[i].chain = payload.chain[i];
+      }
     }
     emitter.emit(GECKO_GET_SPARKLINE_FROM_CONTRACT_RETURNED, sparklineData);
   };
@@ -2893,7 +2951,6 @@ ${nonce}`,
           )
         );
       }
-
       emitter.emit(DB_GET_PORTFOLIO_ASSET_STATS_RETURNED, finalData);
     } catch (err) {
       console.log(err.message);

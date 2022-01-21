@@ -823,6 +823,7 @@ class PortfolioBig extends Component {
 
   dbGetPortfolioAssetStatsReturned = (portfolioStats) => {
     const { portfolioData } = this.state;
+    console.log(portfolioStats);
     portfolioStats.forEach((item, i) => {
       if (item.stats) {
         const index = portfolioData.findIndex(
@@ -1828,51 +1829,52 @@ class PortfolioBig extends Component {
     console.log(portfolioData);
 
     for (var i = 0; i < portfolioData.length; i++) {
-      if (portfolioData[i].asset.asset_code === payload[0].asset_code) {
+      if (
+        portfolioData[i].asset.asset_code === payload[0].asset_code ||
+        portfolioData[i].asset.symbol === payload[0].symbol
+      ) {
         portfolioData[i].sparklineData = payload[0].price;
+        if (
+          portfolioData[i].wallet === payload[0].wallet &&
+          portfolioData[i].chain === payload[0].chain
+        )
+          portfolioData[i].hideStats = false;
       }
     }
-    // const index = portfolioData.findIndex(
-    //   (x) => x.asset.asset_code === payload[0].asset_code
-    // );
-    // console.log(index);
-    //
-    // portfolioData[index].sparklineData = payload[0].price;
+
     this.setState({
+      loadingStats: false,
       portfolioData: portfolioData,
     });
-
-    // this.setState({
-    //   sparklineData: payload,
-    // });
   };
 
   getAssetDetails = (e, data) => {
     const { portfolioData } = this.state;
-
+    const vsCoin = store.getStore("vsCoin");
     e.stopPropagation = true;
     e.preventDefault = true;
-    if (!data.stats || data.hideStats) {
+    if (data.hideStats === undefined || data.hideStats === true) {
+      console.log("getting details data");
       this.setState({
         loadingStats: true,
       });
-      console.log(data);
-      this._isMounted &&
-        dispatcher.dispatch({
-          type: DB_GET_PORTFOLIO_ASSET_STATS,
-          wallet: data.wallet,
-          asset: data.asset,
-        });
       if (data.chain === "ethereum") {
-        const vsCoin = store.getStore("vsCoin");
-        dispatcher.dispatch({
-          type: GECKO_GET_SPARKLINE_FROM_CONTRACT,
-          assetCodes: [data.asset.asset_code],
-          vsCoin: vsCoin,
-        });
-      }
-    } else {
-      if (data.stats && !data.hideStats) {
+        this._isMounted &&
+          dispatcher.dispatch({
+            type: DB_GET_PORTFOLIO_ASSET_STATS,
+            wallet: data.wallet,
+            asset: data.asset,
+          });
+        this._isMounted &&
+          dispatcher.dispatch({
+            type: GECKO_GET_SPARKLINE_FROM_CONTRACT,
+            assetCodes: [data.asset.asset_code],
+            vsCoin: vsCoin,
+            wallet: [data.wallet],
+          });
+      } else if (data.stats && !data.hideStats) {
+        console.log(data);
+        console.log("here");
         const index = portfolioData.findIndex(
           (x) =>
             x.asset.asset_code === data.asset.asset_code &&
@@ -1882,7 +1884,31 @@ class PortfolioBig extends Component {
         this.setState({
           portfolioData: portfolioData,
         });
+      } else {
+        this._isMounted &&
+          dispatcher.dispatch({
+            type: GECKO_GET_SPARKLINE_FROM_CONTRACT,
+            assetCodes: [data.asset.implementations[data.chain].address],
+            vsCoin: vsCoin,
+            chain: [data.chain],
+            tokenSymbol: [data.asset.symbol],
+            wallet: [data.wallet],
+          });
       }
+    } else {
+      console.log("close details window");
+      console.log(data);
+      const index = portfolioData.findIndex(
+        (x) =>
+          x.asset.asset_code === data.asset.asset_code &&
+          x.wallet === data.wallet.toLowerCase() &&
+          x.chain === data.chain
+      );
+      portfolioData[index].hideStats = true;
+      console.log(portfolioData[index]);
+      this.setState({
+        portfolioData: portfolioData,
+      });
     }
   };
 
@@ -1932,8 +1958,7 @@ class PortfolioBig extends Component {
           <Card
             className={classes.assetCard}
             style={{
-              borderRadius:
-                asset.stats && !asset.hideStats ? "20px 20px 0 0" : 20,
+              borderRadius: asset.hideStats === false ? "20px 20px 0 0" : 20,
             }}
           >
             <CardActionArea
@@ -2121,82 +2146,100 @@ class PortfolioBig extends Component {
                   }}
                 >
                   {loadingStats && <CircularProgress size={25} />}
-                  {!loadingStats && (asset.hideStats || !asset.stats) && (
-                    <BarChartRoundedIcon />
-                  )}
-                  {!loadingStats && !asset.hideStats && asset.stats && (
+                  {!loadingStats &&
+                    (asset.hideStats === undefined ||
+                      asset.hideStats === true) && <BarChartRoundedIcon />}
+                  {!loadingStats && asset.hideStats === false && (
                     <ArrowDropUpRoundedIcon />
                   )}
                 </Grid>
               </Grid>
             </CardActionArea>
           </Card>
-          {asset.stats && !asset.hideStats && (
+          {asset.hideStats === false && (
             <Card className={classes.assetCardDetails}>
-              <Grid align="left">
-                {asset.stats && asset.profit_percent && (
-                  <>
-                    <Typography
-                      variant={"body1"}
-                      color={asset.profit_percent > 0 ? "primary" : "secondary"}
-                    >
-                      current profit: {formatMoney(asset.profit_percent)} %
-                    </Typography>
-                    <Typography
-                      variant={"body1"}
-                      color={asset.profit_percent > 0 ? "primary" : "secondary"}
-                    >
-                      avg. buy Price: {getVsSymbol(vsCoin)}
-                      {formatMoney(asset.stats.avg_buy_price)}
-                    </Typography>
-                  </>
-                )}
-              </Grid>
-              <Grid align="left">
-                {asset.stats && asset.stats.total_returned && (
-                  <>
-                    <Typography
-                      className={
-                        asset.stats.total_returned > 0
-                          ? classes.profit_green
-                          : classes.profit_red
-                      }
-                      variant={"body1"}
-                    >
-                      Total returned {getVsSymbol(vsCoin)}{" "}
-                      {asset.stats.total_returned.toFixed(1)}
-                    </Typography>
-                    {asset.stats.total_returned_net && (
-                      <Typography
-                        className={
-                          asset.stats.total_returned_net > 0
-                            ? classes.profit_green
-                            : classes.profit_red
-                        }
-                        variant={"body1"}
-                      >
-                        Returned - Fees: {getVsSymbol(vsCoin)}
-                        {asset.stats.total_returned_net.toFixed(1)}
-                      </Typography>
-                    )}
-                  </>
-                )}
-              </Grid>
-              {asset.chain === "ethereum" && (
-                <Grid align="left">
-                  {asset.sparklineData && (
-                    <SparklineChart id={asset.id} data={asset.sparklineData} />
+              {asset.stats && (
+                <>
+                  {asset.profit_percent && (
+                    <Grid align="left">
+                      <>
+                        <Typography
+                          variant={"body1"}
+                          color={
+                            asset.profit_percent > 0 ? "primary" : "secondary"
+                          }
+                        >
+                          current profit: {formatMoney(asset.profit_percent)} %
+                        </Typography>
+                        <Typography
+                          variant={"body1"}
+                          color={
+                            asset.profit_percent > 0 ? "primary" : "secondary"
+                          }
+                        >
+                          avg. buy Price: {getVsSymbol(vsCoin)}
+                          {formatMoney(asset.stats.avg_buy_price)}
+                        </Typography>
+                      </>
+                    </Grid>
                   )}
-                  {!asset.sparklineData && (
+                  {asset.stats.total_returned && (
+                    <Grid align="left">
+                      <>
+                        <Typography
+                          className={
+                            asset.stats.total_returned > 0
+                              ? classes.profit_green
+                              : classes.profit_red
+                          }
+                          variant={"body1"}
+                        >
+                          Total returned {getVsSymbol(vsCoin)}{" "}
+                          {asset.stats.total_returned.toFixed(1)}
+                        </Typography>
+                        {asset.stats.total_returned_net && (
+                          <Typography
+                            className={
+                              asset.stats.total_returned_net > 0
+                                ? classes.profit_green
+                                : classes.profit_red
+                            }
+                            variant={"body1"}
+                          >
+                            Returned - Fees: {getVsSymbol(vsCoin)}
+                            {asset.stats.total_returned_net.toFixed(1)}
+                          </Typography>
+                        )}
+                      </>
+                    </Grid>
+                  )}
+                </>
+              )}
+              {!asset.stats && (
+                <Grid align="left" style={{ width: "60%" }}>
+                  {asset.chain === "ethereum" && (
                     <Skeleton
                       variant="rect"
-                      width={"200px"}
+                      width="60%"
                       height={"60px"}
                       style={{ borderRadius: 5 }}
                     />
                   )}
                 </Grid>
               )}
+              <Grid align="left">
+                {asset.sparklineData && (
+                  <SparklineChart id={asset.id} data={asset.sparklineData} />
+                )}
+                {!asset.sparklineData && (
+                  <Skeleton
+                    variant="rect"
+                    width={"200px"}
+                    height={"60px"}
+                    style={{ borderRadius: 5 }}
+                  />
+                )}
+              </Grid>
             </Card>
           )}
         </Grid>
