@@ -823,7 +823,6 @@ class PortfolioBig extends Component {
 
   dbGetPortfolioAssetStatsReturned = (portfolioStats) => {
     const { portfolioData } = this.state;
-    console.log(portfolioStats);
     portfolioStats.forEach((item, i) => {
       if (item.stats) {
         const index = portfolioData.findIndex(
@@ -1825,9 +1824,9 @@ class PortfolioBig extends Component {
 
   sparklineDataReturned = (payload) => {
     const { portfolioData } = this.state;
-    console.log(payload);
-    console.log(portfolioData);
-
+    if (payload[0].chain === "optimistic-ethereum") {
+      payload[0].chain = "optimism";
+    }
     for (var i = 0; i < portfolioData.length; i++) {
       if (
         portfolioData[i].asset.asset_code === payload[0].asset_code ||
@@ -1854,7 +1853,6 @@ class PortfolioBig extends Component {
     e.stopPropagation = true;
     e.preventDefault = true;
     if (data.hideStats === undefined || data.hideStats === true) {
-      console.log("getting details data");
       this.setState({
         loadingStats: true,
       });
@@ -1873,8 +1871,6 @@ class PortfolioBig extends Component {
             wallet: [data.wallet],
           });
       } else if (data.stats && !data.hideStats) {
-        console.log(data);
-        console.log("here");
         const index = portfolioData.findIndex(
           (x) =>
             x.asset.asset_code === data.asset.asset_code &&
@@ -1896,8 +1892,6 @@ class PortfolioBig extends Component {
           });
       }
     } else {
-      console.log("close details window");
-      console.log(data);
       const index = portfolioData.findIndex(
         (x) =>
           x.asset.asset_code === data.asset.asset_code &&
@@ -2225,6 +2219,18 @@ class PortfolioBig extends Component {
                       style={{ borderRadius: 5 }}
                     />
                   )}
+                  {asset.chain !== "ethereum" && (
+                    <Grid align="left">
+                      <>
+                        <Typography variant={"body1"}>
+                          Profit & Loss Stats for other networks
+                        </Typography>
+                        <Typography variant={"body1"}>
+                          Coming Soon...
+                        </Typography>
+                      </>
+                    </Grid>
+                  )}
                 </Grid>
               )}
               <Grid align="left">
@@ -2274,13 +2280,122 @@ class PortfolioBig extends Component {
   };
 
   drawNonAssets(nonAssetsData, univ2Assets) {
-    const { sortOrder, sortBy, nonAssetsPerPage, nonAssetsPage } = this.state;
+    const {
+      sortOrder,
+      sortBy,
+      nonAssetsPerPage,
+      nonAssetsPage,
+      walletNicknames,
+      walletColors,
+      selectedWallet,
+      uniswapDetailsLoading,
+      dbStatsData,
+    } = this.state;
     const { classes } = this.props;
 
-    let allNonAssets = nonAssetsData;
-    for (var i = 0; i < univ2Assets.length; i++) {
-      allNonAssets.push(univ2Assets[i]);
+    var nonAssets = nonAssetsData.filter(function (el) {
+      return el.quantity > 0;
+    });
+
+    let allNonAssets = [];
+
+    let protocols = [];
+    let protocolAssetsGrouped = {};
+    nonAssets.forEach((item, i) => {
+      if (protocols.indexOf(item.protocol) === -1) {
+        protocols.push(item.protocol);
+      }
+    });
+
+    protocols.forEach((item, i) => {
+      var protocolItems = nonAssets.filter(function (el) {
+        return el.protocol === item;
+      });
+      protocolItems.forEach((asset, x) => {
+        if (!(asset.name in protocolAssetsGrouped)) {
+          protocolAssetsGrouped[asset.name] = {};
+          if (!(asset.wallet in protocolAssetsGrouped[asset.name])) {
+            protocolAssetsGrouped[asset.name][asset.wallet] = {
+              items: [],
+              value: 0,
+              name: asset.name,
+              type: "nonAssetGrouped",
+              quantityDecimals: 1,
+              protocol: asset.protocol,
+              id: asset.name + "_" + Math.random() + "_grouped",
+              wallet: asset.wallet,
+              icon_url: { deposited: [], rewards: [] },
+              symbol: { deposited: [], rewards: [] },
+              chain: asset.chain,
+            };
+          }
+          protocolAssetsGrouped[asset.name][asset.wallet]["items"].push(asset);
+          if (asset.type !== "reward") {
+            protocolAssetsGrouped[asset.name][asset.wallet]["icon_url"][
+              "deposited"
+            ].push(asset.asset.icon_url);
+            protocolAssetsGrouped[asset.name][asset.wallet]["symbol"][
+              "deposited"
+            ].push(asset.asset.symbol);
+          } else {
+            protocolAssetsGrouped[asset.name][asset.wallet]["icon_url"][
+              "rewards"
+            ].push(asset.asset.icon_url);
+            protocolAssetsGrouped[asset.name][asset.wallet]["symbol"][
+              "rewards"
+            ].push(asset.asset.symbol);
+          }
+        } else {
+          if (!(asset.wallet in protocolAssetsGrouped[asset.name])) {
+            protocolAssetsGrouped[asset.name][asset.wallet] = {
+              items: [],
+              value: 0,
+              name: asset.name,
+              type: "nonAssetGrouped",
+              quantityDecimals: 1,
+              protocol: asset.protocol,
+              id: asset.name + "_" + Math.random() + "_grouped",
+              wallet: asset.wallet,
+              icon_url: { deposited: [], rewards: [] },
+              symbol: { deposited: [], rewards: [] },
+              chain: asset.chain,
+            };
+          }
+          protocolAssetsGrouped[asset.name][asset.wallet]["items"].push(asset);
+          if (asset.type !== "reward") {
+            protocolAssetsGrouped[asset.name][asset.wallet]["icon_url"][
+              "deposited"
+            ].push(asset.asset.icon_url);
+            protocolAssetsGrouped[asset.name][asset.wallet]["symbol"][
+              "deposited"
+            ].push(asset.asset.symbol);
+          } else {
+            protocolAssetsGrouped[asset.name][asset.wallet]["icon_url"][
+              "rewards"
+            ].push(asset.asset.icon_url);
+            protocolAssetsGrouped[asset.name][asset.wallet]["symbol"][
+              "rewards"
+            ].push(asset.asset.symbol);
+          }
+        }
+      });
+    });
+    for (var protocol in protocolAssetsGrouped) {
+      for (var wallet in protocolAssetsGrouped[protocol]) {
+        protocolAssetsGrouped[protocol][wallet].items.forEach((item, i) => {
+          protocolAssetsGrouped[protocol][wallet].value += item.value;
+        });
+        allNonAssets.push(protocolAssetsGrouped[protocol][wallet]);
+      }
     }
+
+    for (var i = 0; i < univ2Assets.length; i++) {
+      if (univ2Assets[i].quantity > 0) {
+        allNonAssets.push(univ2Assets[i]);
+      }
+    }
+
+    console.log(allNonAssets);
 
     let sortedAssets = [];
     if (this.state.sortOrder === "asc") {
@@ -2294,24 +2409,352 @@ class PortfolioBig extends Component {
       nonAssetsPerPage * nonAssetsPage
     );
 
-    return assetPage.map((asset) => (
-      <React.Fragment key={Math.random() + asset.id}>
-        <div
-          style={{
-            width: "max-content",
-            display: "flex",
-            alignItems: "center",
-          }}
-        >
-          <img
-            className={classes.tokenLogo}
-            alt=""
-            src={asset.asset.icon_url}
-          />
-        </div>
-        <div>
-          <Typography variant={"h4"}>{asset.asset.name}</Typography>
-        </div>
+    let data;
+    return assetPage.map((row) => (
+      <React.Fragment key={Math.random() + row.id}>
+        {row.type === "nonAssetGrouped" && (
+          <TableRow
+            hover={true}
+            key={`${row.id}+${Math.random(0, 99999)}`}
+            style={{ cursor: "pointer" }}
+            onClick={() =>
+              this.nav(
+                "/short/detective/" +
+                  row.items[row.items.length - 1].asset.asset_code
+              )
+            }
+          >
+            <TableCell>
+              {this.drawMultipleAssetIcons(row.icon_url, row.symbol)}
+            </TableCell>
+            <TableCell padding="none" align="left">
+              <div>
+                <Typography variant={"h4"}>{row.name}</Typography>
+              </div>
+              {selectedWallet === "all" && (
+                <div style={{ display: "flex" }}>
+                  {walletColors[
+                    walletColors
+                      .map((e) => e.wallet)
+                      .indexOf(row.wallet.toLowerCase())
+                  ] && (
+                    <>
+                      {this.drawChainIcon(row.chain)}
+                      <FiberManualRecordIcon
+                        style={{
+                          scale: 0.75,
+                          color:
+                            walletColors[
+                              walletColors
+                                .map((e) => e.wallet)
+                                .indexOf(row.wallet.toLowerCase())
+                            ].color,
+                        }}
+                      />
+                      <Typography
+                        style={{
+                          opacity: 0.6,
+                          color:
+                            walletColors[
+                              walletColors
+                                .map((e) => e.wallet)
+                                .indexOf(row.wallet.toLowerCase())
+                            ].color,
+                        }}
+                        variant={"subtitle2"}
+                      >
+                        at wallet:{" "}
+                        {(data = walletNicknames.find(
+                          (ele) => ele.wallet === row.wallet
+                        )) &&
+                          data.nickname +
+                            " (" +
+                            row.wallet.substring(0, 6) +
+                            "..." +
+                            row.wallet.substring(
+                              row.wallet.length - 4,
+                              row.wallet.length
+                            ) +
+                            ")"}
+                        {!walletNicknames.some(
+                          (e) => e.wallet === row.wallet
+                        ) &&
+                          row.wallet.substring(0, 6) +
+                            "..." +
+                            row.wallet.substring(
+                              row.wallet.length - 4,
+                              row.wallet.length
+                            )}
+                      </Typography>
+                    </>
+                  )}
+                </div>
+              )}
+              {selectedWallet !== "all" && (
+                <div style={{ display: "flex" }}>
+                  {walletColors[
+                    walletColors
+                      .map((e) => e.wallet)
+                      .indexOf(row.wallet.toLowerCase())
+                  ] && <>{this.drawChainIcon(row.chain)}</>}
+                </div>
+              )}
+            </TableCell>
+            <TableCell align="right">
+              <div>
+                <Typography variant={"body1"}>
+                  {row.quantityDecimals}
+                </Typography>
+              </div>
+              <div>
+                <Typography style={{ opacity: 0.6 }} variant={"subtitle2"}>
+                  {row.symbol.deposited[0]}
+                </Typography>
+              </div>
+            </TableCell>
+            <TableCell align="right">
+              <Typography variant={"body1"}>
+                $ {row.value && formatMoney(row.value)}
+              </Typography>
+            </TableCell>
+            <TableCell align="right">
+              {row.items.length > 1 && (
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  size="large"
+                  style={{ display: "flex", minWidth: "max-content" }}
+                  startIcon={<SearchIcon />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    this.setState({
+                      stakingDetailsModal: true,
+                      stakingDetails: row,
+                    });
+                  }}
+                >
+                  Show Details
+                </Button>
+              )}
+            </TableCell>
+            <TableCell align="right"></TableCell>
+            <TableCell align="right"></TableCell>
+          </TableRow>
+        )}
+        {row.type === "uniswap-v2" && (
+          <TableRow
+            hover={true}
+            key={`${row.id}+${Math.random(0, 99999)}`}
+            style={{ cursor: "pointer" }}
+            onClick={() => this.nav("/short/detective/" + row.asset.asset_code)}
+          >
+            <TableCell>
+              <div
+                style={{
+                  width: "max-content",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <img
+                  className={classes.tokenLogo}
+                  alt=""
+                  src={row.asset.icon_url}
+                />
+                <IconButton
+                  style={{ marginLeft: 10 }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    this.getUniswapDetails(
+                      row.asset.asset_code,
+                      row.quantityDecimals
+                    );
+                  }}
+                >
+                  {uniswapDetailsLoading && <CircularProgress />}
+                  {!uniswapDetailsLoading && <SearchIcon />}
+                </IconButton>
+              </div>
+            </TableCell>
+            <TableCell padding="none" align="left">
+              <div>
+                <Typography variant={"h4"}>{row.asset.name}</Typography>
+              </div>
+              {selectedWallet === "all" && (
+                <div style={{ display: "flex" }}>
+                  {walletColors[
+                    walletColors
+                      .map((e) => e.wallet)
+                      .indexOf(row.wallet.toLowerCase())
+                  ] && (
+                    <>
+                      {this.drawChainIcon(row.chain)}
+                      <FiberManualRecordIcon
+                        style={{
+                          scale: 0.75,
+                          color:
+                            walletColors[
+                              walletColors
+                                .map((e) => e.wallet)
+                                .indexOf(row.wallet.toLowerCase())
+                            ].color,
+                        }}
+                      />
+                      <Typography
+                        style={{
+                          opacity: 0.6,
+                          color:
+                            walletColors[
+                              walletColors
+                                .map((e) => e.wallet)
+                                .indexOf(row.wallet.toLowerCase())
+                            ].color,
+                        }}
+                        variant={"subtitle2"}
+                      >
+                        at wallet:{" "}
+                        {(data = walletNicknames.find(
+                          (ele) => ele.wallet === row.wallet
+                        )) &&
+                          data.nickname +
+                            " (" +
+                            row.wallet.substring(0, 6) +
+                            "..." +
+                            row.wallet.substring(
+                              row.wallet.length - 4,
+                              row.wallet.length
+                            ) +
+                            ")"}
+                        {!walletNicknames.some(
+                          (e) => e.wallet === row.wallet
+                        ) &&
+                          row.wallet.substring(0, 6) +
+                            "..." +
+                            row.wallet.substring(
+                              row.wallet.length - 4,
+                              row.wallet.length
+                            )}
+                      </Typography>
+                    </>
+                  )}
+                </div>
+              )}
+              {selectedWallet !== "all" && (
+                <div style={{ display: "flex" }}>
+                  {walletColors[
+                    walletColors
+                      .map((e) => e.wallet)
+                      .indexOf(row.wallet.toLowerCase())
+                  ] && <>{this.drawChainIcon(row.chain)}</>}
+                </div>
+              )}
+            </TableCell>
+            <TableCell align="right">
+              <div>
+                <Typography variant={"body1"}>
+                  {formatMoney(row.quantityDecimals)}
+                </Typography>
+              </div>
+              <div>
+                <Typography style={{ opacity: 0.6 }} variant={"subtitle2"}>
+                  {row.asset.symbol}
+                </Typography>
+              </div>
+            </TableCell>
+            <TableCell align="right">
+              <Typography variant={"body1"}>
+                $ {row.value && formatMoney(row.value)}
+              </Typography>
+            </TableCell>
+            <TableCell align="right">
+              {row.asset.price && (
+                <>
+                  <div>
+                    <Typography variant={"body1"}>
+                      {formatMoney(row.asset.price.value)}
+                    </Typography>
+                  </div>
+                  {row.asset.price.relative_change_24h && (
+                    <div>
+                      <Typography
+                        color={
+                          row.asset.price.relative_change_24h > 0
+                            ? "primary"
+                            : "secondary"
+                        }
+                        variant={"subtitle2"}
+                      >
+                        {row.asset.price.relative_change_24h.toFixed(2)} %
+                      </Typography>
+                    </div>
+                  )}
+                </>
+              )}
+            </TableCell>
+            <TableCell align="right">
+              {dbStatsData &&
+                (row.profit_percent && (
+                  <>
+                    <Typography
+                      variant={"body1"}
+                      color={row.profit_percent > 0 ? "primary" : "secondary"}
+                    >
+                      {formatMoney(row.profit_percent)} %
+                    </Typography>
+                    <Typography variant={"body1"}>
+                      ($ {formatMoney(row.stats.avg_buy_price)})
+                    </Typography>
+                  </>
+                ),
+                row.profit_percent && (
+                  <>
+                    <Typography
+                      variant={"body1"}
+                      color={row.profit_percent > 0 ? "primary" : "secondary"}
+                    >
+                      {formatMoney(row.profit_percent)} %
+                    </Typography>
+                    <Typography variant={"body1"}>
+                      ($ {formatMoney(row.stats.avg_buy_price)})
+                    </Typography>
+                  </>
+                ))}
+              {!dbStatsData && (
+                <>
+                  <CircularProgress />
+                </>
+              )}
+            </TableCell>
+            <TableCell align="right">
+              {row.stats && row.stats.total_returned && (
+                <>
+                  <Typography
+                    className={
+                      row.stats.total_returned > 0
+                        ? classes.profit_green
+                        : classes.profit_red
+                    }
+                    variant={"body1"}
+                  >
+                    $ {row.stats.total_returned.toFixed(1)}
+                  </Typography>
+                  {row.stats.total_returned_net && (
+                    <Typography
+                      className={
+                        row.stats.total_returned_net > 0
+                          ? classes.profit_green
+                          : classes.profit_red
+                      }
+                      variant={"body1"}
+                    >
+                      $ {row.stats.total_returned_net.toFixed(1)}
+                    </Typography>
+                  )}
+                </>
+              )}
+            </TableCell>
+          </TableRow>
+        )}
       </React.Fragment>
     ));
   }
