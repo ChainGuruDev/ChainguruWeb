@@ -948,71 +948,22 @@ class PortfolioBig extends Component {
 
     //TODO, draw in a cool way multiple assets for multiple staking/rewards obj
     return (
-      <div
-        style={{
-          width: "max-content",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
+      <>
         {symbols.rewards.length === 0 && (
           <AvatarGroup>
             {icons.deposited.map((icon, i) => (
-              <Tooltip
-                key={`staking_deposited_${i}`}
-                arrow
-                title={symbols.deposited[i]}
+              <Avatar
+                className={classes.assetTokenLogo}
+                key={`staking ${symbols.deposited[i]}`}
+                alt={symbols.deposited[i]}
+                src={icon}
+                style={{
+                  border: `solid 4px ${colors.cgRed}`,
+                  marginRight: -50,
+                }}
               >
-                <Badge
-                  style={{ border: "none" }}
-                  anchorOrigin={{
-                    vertical: "top",
-                    horizontal: "left",
-                  }}
-                  badgeContent={
-                    <Avatar
-                      key={`staking_avatar_${Math.random()}`}
-                      style={{
-                        width: 22,
-                        height: 22,
-                        backgroundColor: colors.cgRed,
-                      }}
-                    >
-                      <LockIcon fontSize="small" />
-                    </Avatar>
-                  }
-                >
-                  <Badge
-                    style={{ border: "none" }}
-                    anchorOrigin={{
-                      vertical: "bottom",
-                      horizontal: "right",
-                    }}
-                    badgeContent={
-                      <Avatar
-                        key={`rewards_avatar_${Math.random()}`}
-                        className={classes.rewardBadge}
-                        style={{
-                          width: 22,
-                          height: 22,
-                          backgroundColor: colors.cgGreen,
-                        }}
-                      >
-                        <AddIcon style={{ color: "black" }} fontSize="small" />
-                      </Avatar>
-                    }
-                  >
-                    <Avatar
-                      key={`staking ${symbols.deposited[i]}`}
-                      alt={symbols.deposited[i]}
-                      src={icon}
-                    >
-                      {!icon && symbols.deposited[i]}
-                    </Avatar>
-                  </Badge>
-                </Badge>
-              </Tooltip>
+                {!icon && symbols.deposited[i]}
+              </Avatar>
             ))}
           </AvatarGroup>
         )}
@@ -1020,80 +971,37 @@ class PortfolioBig extends Component {
           <>
             <AvatarGroup>
               {icons.deposited.map((icon, i) => (
-                <Tooltip
-                  key={`deposited_tooltip_${i}`}
-                  arrow
-                  title={symbols.deposited[i]}
+                <Avatar
+                  className={classes.assetTokenLogo}
+                  key={`deposited ${symbols.deposited[i]}`}
+                  alt={symbols.deposited[i]}
+                  src={icon}
+                  style={{
+                    border: `solid 4px ${colors.cgRed}`,
+                    marginRight: -50,
+                  }}
                 >
-                  <Badge
-                    style={{ border: "none" }}
-                    anchorOrigin={{
-                      vertical: "top",
-                      horizontal: "right",
-                    }}
-                    badgeContent={
-                      <Avatar
-                        style={{
-                          width: 22,
-                          height: 22,
-                          backgroundColor: colors.cgRed,
-                        }}
-                      >
-                        <LockIcon fontSize="small" />
-                      </Avatar>
-                    }
-                  >
-                    <Avatar
-                      key={`deposited ${symbols.deposited[i]}`}
-                      alt={symbols.deposited[i]}
-                      src={icon}
-                    >
-                      {!icon && symbols.deposited[i]}
-                    </Avatar>
-                  </Badge>
-                </Tooltip>
+                  {!icon && symbols.deposited[i]}
+                </Avatar>
               ))}
-            </AvatarGroup>
-            <AvatarGroup style={{ marginTop: 5 }}>
               {icons.rewards.map((icon, i) => (
-                <Tooltip
-                  key={`rewards_tooltip_${i}`}
-                  arrow
-                  title={symbols.rewards[i]}
+                <Avatar
+                  className={classes.assetTokenLogo}
+                  key={`rewards ${symbols.rewards[i]}`}
+                  alt={symbols.rewards[i]}
+                  src={icon}
+                  style={{
+                    border: `solid 4px ${colors.cgGreen}`,
+                    marginRight: -50,
+                  }}
                 >
-                  <Badge
-                    style={{ border: "none" }}
-                    anchorOrigin={{
-                      vertical: "bottom",
-                      horizontal: "right",
-                    }}
-                    badgeContent={
-                      <Avatar
-                        className={classes.rewardBadge}
-                        style={{
-                          width: 22,
-                          height: 22,
-                          backgroundColor: colors.cgGreen,
-                        }}
-                      >
-                        <AddIcon style={{ color: "black" }} fontSize="small" />
-                      </Avatar>
-                    }
-                  >
-                    <Avatar
-                      key={`rewards ${symbols.rewards[i]}`}
-                      alt={symbols.rewards[i]}
-                      src={icon}
-                    >
-                      {!icon && symbols.rewards[i]}
-                    </Avatar>
-                  </Badge>
-                </Tooltip>
+                  {!icon && symbols.rewards[i]}
+                </Avatar>
               ))}
             </AvatarGroup>
           </>
         )}
-      </div>
+      </>
     );
   };
 
@@ -1824,23 +1732,24 @@ class PortfolioBig extends Component {
 
   sparklineDataReturned = (payload) => {
     const { portfolioData } = this.state;
-    if (payload[0].chain === "optimistic-ethereum") {
+    if (payload[0] && payload[0].chain === "optimistic-ethereum") {
       payload[0].chain = "optimism";
     }
-    for (var i = 0; i < portfolioData.length; i++) {
-      if (
-        portfolioData[i].asset.asset_code === payload[0].asset_code ||
-        portfolioData[i].asset.symbol === payload[0].symbol
-      ) {
-        portfolioData[i].sparklineData = payload[0].price;
+    if (payload[0]) {
+      for (var i = 0; i < portfolioData.length; i++) {
         if (
-          portfolioData[i].wallet === payload[0].wallet &&
-          portfolioData[i].chain === payload[0].chain
-        )
-          portfolioData[i].hideStats = false;
+          portfolioData[i].asset.asset_code === payload[0].asset_code ||
+          portfolioData[i].asset.symbol === payload[0].symbol
+        ) {
+          portfolioData[i].sparklineData = payload[0].price;
+          if (
+            portfolioData[i].wallet === payload[0].wallet &&
+            portfolioData[i].chain === payload[0].chain
+          )
+            portfolioData[i].hideStats = false;
+        }
       }
     }
-
     this.setState({
       loadingStats: false,
       portfolioData: portfolioData,
@@ -2290,6 +2199,8 @@ class PortfolioBig extends Component {
       selectedWallet,
       uniswapDetailsLoading,
       dbStatsData,
+      vsCoin,
+      loadingStats,
     } = this.state;
     const { classes } = this.props;
 
@@ -2395,8 +2306,6 @@ class PortfolioBig extends Component {
       }
     }
 
-    console.log(allNonAssets);
-
     let sortedAssets = [];
     if (this.state.sortOrder === "asc") {
       sortedAssets = allNonAssets.sort(this.dynamicSort(sortBy));
@@ -2408,352 +2317,400 @@ class PortfolioBig extends Component {
       (nonAssetsPage - 1) * nonAssetsPerPage,
       nonAssetsPerPage * nonAssetsPage
     );
-
     let data;
     return assetPage.map((row) => (
       <React.Fragment key={Math.random() + row.id}>
         {row.type === "nonAssetGrouped" && (
-          <TableRow
-            hover={true}
-            key={`${row.id}+${Math.random(0, 99999)}`}
-            style={{ cursor: "pointer" }}
-            onClick={() =>
-              this.nav(
-                "/short/detective/" +
-                  row.items[row.items.length - 1].asset.asset_code
-              )
-            }
-          >
-            <TableCell>
-              {this.drawMultipleAssetIcons(row.icon_url, row.symbol)}
-            </TableCell>
-            <TableCell padding="none" align="left">
-              <div>
-                <Typography variant={"h4"}>{row.name}</Typography>
-              </div>
-              {selectedWallet === "all" && (
-                <div style={{ display: "flex" }}>
-                  {walletColors[
-                    walletColors
-                      .map((e) => e.wallet)
-                      .indexOf(row.wallet.toLowerCase())
-                  ] && (
-                    <>
-                      {this.drawChainIcon(row.chain)}
-                      <FiberManualRecordIcon
-                        style={{
-                          scale: 0.75,
-                          color:
-                            walletColors[
-                              walletColors
-                                .map((e) => e.wallet)
-                                .indexOf(row.wallet.toLowerCase())
-                            ].color,
-                        }}
-                      />
-                      <Typography
-                        style={{
-                          opacity: 0.6,
-                          color:
-                            walletColors[
-                              walletColors
-                                .map((e) => e.wallet)
-                                .indexOf(row.wallet.toLowerCase())
-                            ].color,
-                        }}
-                        variant={"subtitle2"}
-                      >
-                        at wallet:{" "}
-                        {(data = walletNicknames.find(
-                          (ele) => ele.wallet === row.wallet
-                        )) &&
-                          data.nickname +
-                            " (" +
-                            row.wallet.substring(0, 6) +
-                            "..." +
-                            row.wallet.substring(
-                              row.wallet.length - 4,
-                              row.wallet.length
-                            ) +
-                            ")"}
-                        {!walletNicknames.some(
-                          (e) => e.wallet === row.wallet
-                        ) &&
-                          row.wallet.substring(0, 6) +
-                            "..." +
-                            row.wallet.substring(
-                              row.wallet.length - 4,
-                              row.wallet.length
-                            )}
-                      </Typography>
-                    </>
-                  )}
-                </div>
-              )}
-              {selectedWallet !== "all" && (
-                <div style={{ display: "flex" }}>
-                  {walletColors[
-                    walletColors
-                      .map((e) => e.wallet)
-                      .indexOf(row.wallet.toLowerCase())
-                  ] && <>{this.drawChainIcon(row.chain)}</>}
-                </div>
-              )}
-            </TableCell>
-            <TableCell align="right">
-              <div>
-                <Typography variant={"body1"}>
-                  {row.quantityDecimals}
-                </Typography>
-              </div>
-              <div>
-                <Typography style={{ opacity: 0.6 }} variant={"subtitle2"}>
-                  {row.symbol.deposited[0]}
-                </Typography>
-              </div>
-            </TableCell>
-            <TableCell align="right">
-              <Typography variant={"body1"}>
-                $ {row.value && formatMoney(row.value)}
-              </Typography>
-            </TableCell>
-            <TableCell align="right">
-              {row.items.length > 1 && (
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  size="large"
-                  style={{ display: "flex", minWidth: "max-content" }}
-                  startIcon={<SearchIcon />}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    this.setState({
-                      stakingDetailsModal: true,
-                      stakingDetails: row,
-                    });
-                  }}
-                >
-                  Show Details
-                </Button>
-              )}
-            </TableCell>
-            <TableCell align="right"></TableCell>
-            <TableCell align="right"></TableCell>
-          </TableRow>
-        )}
-        {row.type === "uniswap-v2" && (
-          <TableRow
-            hover={true}
-            key={`${row.id}+${Math.random(0, 99999)}`}
-            style={{ cursor: "pointer" }}
+          <Grid
+            container
+            id={`${row.id + row.wallet.substring(2, 5) + "nonAsset"}`}
+            className={classes.assetGridRoot}
+            direction="row"
+            justify="flex-start"
+            alignItems="center"
             onClick={() => this.nav("/short/detective/" + row.asset.asset_code)}
           >
-            <TableCell>
-              <div
+            <Card
+              className={classes.assetCard}
+              style={{
+                borderRadius: row.hideStats === false ? "20px 20px 0 0" : 20,
+              }}
+            >
+              <CardActionArea
                 style={{
-                  width: "max-content",
                   display: "flex",
-                  alignItems: "center",
+                  justifyContent: "space-between",
                 }}
               >
-                <img
-                  className={classes.tokenLogo}
-                  alt=""
-                  src={row.asset.icon_url}
-                />
-                <IconButton
-                  style={{ marginLeft: 10 }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    this.getUniswapDetails(
-                      row.asset.asset_code,
-                      row.quantityDecimals
-                    );
+                <Grid className={classes.assetLogoGrid}>
+                  <div
+                    style={{
+                      width: "max-content",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
+                    {this.drawMultipleAssetIcons(row.icon_url, row.symbol)}
+                  </div>
+                </Grid>
+                <Grid
+                  padding="none"
+                  align="left"
+                  style={{
+                    zIndex: 1,
+                    width: "30%",
+                    maxWidth: "30%",
+                    minWidth: "30%",
+                    margin: "0 10px 0 0",
                   }}
                 >
-                  {uniswapDetailsLoading && <CircularProgress />}
-                  {!uniswapDetailsLoading && <SearchIcon />}
-                </IconButton>
-              </div>
-            </TableCell>
-            <TableCell padding="none" align="left">
-              <div>
-                <Typography variant={"h4"}>{row.asset.name}</Typography>
-              </div>
-              {selectedWallet === "all" && (
-                <div style={{ display: "flex" }}>
-                  {walletColors[
-                    walletColors
-                      .map((e) => e.wallet)
-                      .indexOf(row.wallet.toLowerCase())
-                  ] && (
-                    <>
-                      {this.drawChainIcon(row.chain)}
-                      <FiberManualRecordIcon
-                        style={{
-                          scale: 0.75,
-                          color:
-                            walletColors[
-                              walletColors
-                                .map((e) => e.wallet)
-                                .indexOf(row.wallet.toLowerCase())
-                            ].color,
-                        }}
-                      />
-                      <Typography
-                        style={{
-                          opacity: 0.6,
-                          color:
-                            walletColors[
-                              walletColors
-                                .map((e) => e.wallet)
-                                .indexOf(row.wallet.toLowerCase())
-                            ].color,
-                        }}
-                        variant={"subtitle2"}
-                      >
-                        at wallet:{" "}
-                        {(data = walletNicknames.find(
-                          (ele) => ele.wallet === row.wallet
-                        )) &&
-                          data.nickname +
-                            " (" +
-                            row.wallet.substring(0, 6) +
-                            "..." +
-                            row.wallet.substring(
-                              row.wallet.length - 4,
-                              row.wallet.length
-                            ) +
-                            ")"}
-                        {!walletNicknames.some(
-                          (e) => e.wallet === row.wallet
-                        ) &&
-                          row.wallet.substring(0, 6) +
-                            "..." +
-                            row.wallet.substring(
-                              row.wallet.length - 4,
-                              row.wallet.length
-                            )}
-                      </Typography>
-                    </>
-                  )}
-                </div>
-              )}
-              {selectedWallet !== "all" && (
-                <div style={{ display: "flex" }}>
-                  {walletColors[
-                    walletColors
-                      .map((e) => e.wallet)
-                      .indexOf(row.wallet.toLowerCase())
-                  ] && <>{this.drawChainIcon(row.chain)}</>}
-                </div>
-              )}
-            </TableCell>
-            <TableCell align="right">
-              <div>
-                <Typography variant={"body1"}>
-                  {formatMoney(row.quantityDecimals)}
-                </Typography>
-              </div>
-              <div>
-                <Typography style={{ opacity: 0.6 }} variant={"subtitle2"}>
-                  {row.asset.symbol}
-                </Typography>
-              </div>
-            </TableCell>
-            <TableCell align="right">
-              <Typography variant={"body1"}>
-                $ {row.value && formatMoney(row.value)}
-              </Typography>
-            </TableCell>
-            <TableCell align="right">
-              {row.asset.price && (
-                <>
                   <div>
-                    <Typography variant={"body1"}>
-                      {formatMoney(row.asset.price.value)}
-                    </Typography>
+                    <Typography variant={"h4"}>{row.name}</Typography>
                   </div>
-                  {row.asset.price.relative_change_24h && (
-                    <div>
-                      <Typography
-                        color={
-                          row.asset.price.relative_change_24h > 0
-                            ? "primary"
-                            : "secondary"
-                        }
-                        variant={"subtitle2"}
-                      >
-                        {row.asset.price.relative_change_24h.toFixed(2)} %
-                      </Typography>
+                  {selectedWallet === "all" && (
+                    <div style={{ display: "flex" }}>
+                      {walletColors[
+                        walletColors
+                          .map((e) => e.wallet)
+                          .indexOf(row.wallet.toLowerCase())
+                      ] && (
+                        <>
+                          {this.drawChainIcon(row.chain)}
+                          <FiberManualRecordIcon
+                            style={{
+                              scale: 0.75,
+                              color:
+                                walletColors[
+                                  walletColors
+                                    .map((e) => e.wallet)
+                                    .indexOf(row.wallet.toLowerCase())
+                                ].color,
+                            }}
+                          />
+                          <Typography
+                            style={{
+                              opacity: 0.6,
+                              color:
+                                walletColors[
+                                  walletColors
+                                    .map((e) => e.wallet)
+                                    .indexOf(row.wallet.toLowerCase())
+                                ].color,
+                            }}
+                            variant={"subtitle2"}
+                          >
+                            at wallet:{" "}
+                            {(data = walletNicknames.find(
+                              (ele) => ele.wallet === row.wallet
+                            )) &&
+                              data.nickname +
+                                " (" +
+                                row.wallet.substring(0, 6) +
+                                "..." +
+                                row.wallet.substring(
+                                  row.wallet.length - 4,
+                                  row.wallet.length
+                                ) +
+                                ")"}
+                            {!walletNicknames.some(
+                              (e) => e.wallet === row.wallet
+                            ) &&
+                              row.wallet.substring(0, 6) +
+                                "..." +
+                                row.wallet.substring(
+                                  row.wallet.length - 4,
+                                  row.wallet.length
+                                )}
+                          </Typography>
+                        </>
+                      )}
                     </div>
                   )}
-                </>
-              )}
-            </TableCell>
-            <TableCell align="right">
-              {dbStatsData &&
-                (row.profit_percent && (
-                  <>
-                    <Typography
-                      variant={"body1"}
-                      color={row.profit_percent > 0 ? "primary" : "secondary"}
-                    >
-                      {formatMoney(row.profit_percent)} %
-                    </Typography>
-                    <Typography variant={"body1"}>
-                      ($ {formatMoney(row.stats.avg_buy_price)})
-                    </Typography>
-                  </>
-                ),
-                row.profit_percent && (
-                  <>
-                    <Typography
-                      variant={"body1"}
-                      color={row.profit_percent > 0 ? "primary" : "secondary"}
-                    >
-                      {formatMoney(row.profit_percent)} %
-                    </Typography>
-                    <Typography variant={"body1"}>
-                      ($ {formatMoney(row.stats.avg_buy_price)})
-                    </Typography>
-                  </>
-                ))}
-              {!dbStatsData && (
-                <>
-                  <CircularProgress />
-                </>
-              )}
-            </TableCell>
-            <TableCell align="right">
-              {row.stats && row.stats.total_returned && (
-                <>
-                  <Typography
-                    className={
-                      row.stats.total_returned > 0
-                        ? classes.profit_green
-                        : classes.profit_red
-                    }
-                    variant={"body1"}
-                  >
-                    $ {row.stats.total_returned.toFixed(1)}
-                  </Typography>
-                  {row.stats.total_returned_net && (
-                    <Typography
-                      className={
-                        row.stats.total_returned_net > 0
-                          ? classes.profit_green
-                          : classes.profit_red
-                      }
-                      variant={"body1"}
-                    >
-                      $ {row.stats.total_returned_net.toFixed(1)}
-                    </Typography>
+                  {selectedWallet !== "all" && (
+                    <div style={{ display: "flex" }}>
+                      {walletColors[
+                        walletColors
+                          .map((e) => e.wallet)
+                          .indexOf(row.wallet.toLowerCase())
+                      ] && <>{this.drawChainIcon(row.chain)}</>}
+                    </div>
                   )}
-                </>
-              )}
-            </TableCell>
-          </TableRow>
+                </Grid>
+                <Grid
+                  style={{
+                    marginLeft: "auto",
+                    display: "flex",
+                    height: "100%",
+                    alignItems: "center",
+                    width: "100%",
+                  }}
+                  align="right"
+                >
+                  {row.items.map((item, i) => (
+                    <>
+                      <Divider
+                        orientation="vertical"
+                        flexItem
+                        style={{
+                          marginRight: 5,
+                          display: i === 0 ? "none" : "",
+                        }}
+                      />
+                      <Grid
+                        style={{
+                          marginRight: 5,
+                          zIndex: 2,
+                          textAlign: "left",
+                        }}
+                      >
+                        <Typography variant={"body1"} style={{ fontSize: 22 }}>
+                          {formatMoney(item.quantityDecimals)}
+                        </Typography>
+                        <Typography style={{ opacity: 0.7 }} variant={"body1"}>
+                          {item.asset.symbol}
+                        </Typography>
+                      </Grid>
+                    </>
+                  ))}
+                  <Grid
+                    style={{ marginLeft: "auto", marginRight: 10 }}
+                    align="right"
+                  >
+                    <Typography variant={"h2"} color="primary">
+                      {row.value &&
+                        getVsSymbol(vsCoin) + " " + formatMoney(row.value)}
+                    </Typography>
+                  </Grid>
+                  {row.items && (
+                    <Grid
+                      className={classes.showPyLBTN}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        this.setState({
+                          stakingDetailsModal: true,
+                          stakingDetails: row,
+                        });
+                      }}
+                    >
+                      {loadingStats && <CircularProgress size={25} />}
+                      {!loadingStats &&
+                        (row.hideStats === undefined ||
+                          row.hideStats === true) && <SearchIcon />}
+                      {!loadingStats && row.hideStats === false && (
+                        <ArrowDropUpRoundedIcon />
+                      )}
+                    </Grid>
+                  )}
+                </Grid>
+              </CardActionArea>
+            </Card>
+          </Grid>
+        )}
+        {row.type === "uniswap-v2" && (
+          <Grid
+            container
+            id={`${row.id + row.wallet.substring(2, 5) + "univ2"}`}
+            className={classes.assetGridRoot}
+            direction="row"
+            justify="flex-start"
+            alignItems="center"
+            onClick={() => this.nav("/short/detective/" + row.asset.asset_code)}
+          >
+            <Card
+              className={classes.assetCard}
+              style={{
+                borderRadius: row.hideStats === false ? "20px 20px 0 0" : 20,
+              }}
+            >
+              <CardActionArea
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Grid className={classes.assetLogoGrid}>
+                  <div
+                    style={{
+                      width: "max-content",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
+                    <img
+                      className={classes.assetTokenLogo}
+                      alt=""
+                      src={row.asset.icon_url}
+                    />
+                  </div>
+                </Grid>
+                <Grid
+                  padding="none"
+                  align="left"
+                  style={{
+                    zIndex: 1,
+                    width: "30%",
+                    maxWidth: "30%",
+                    minWidth: "30%",
+                    margin: "0 10px 0 0",
+                  }}
+                >
+                  <div>
+                    <Typography variant={"h4"}>{row.asset.name}</Typography>
+                  </div>
+                  {selectedWallet === "all" && (
+                    <div style={{ display: "flex" }}>
+                      {walletColors[
+                        walletColors
+                          .map((e) => e.wallet)
+                          .indexOf(row.wallet.toLowerCase())
+                      ] && (
+                        <>
+                          {this.drawChainIcon(row.chain)}
+                          <FiberManualRecordIcon
+                            style={{
+                              scale: 0.75,
+                              color:
+                                walletColors[
+                                  walletColors
+                                    .map((e) => e.wallet)
+                                    .indexOf(row.wallet.toLowerCase())
+                                ].color,
+                            }}
+                          />
+                          <Typography
+                            style={{
+                              opacity: 0.6,
+                              color:
+                                walletColors[
+                                  walletColors
+                                    .map((e) => e.wallet)
+                                    .indexOf(row.wallet.toLowerCase())
+                                ].color,
+                            }}
+                            variant={"subtitle2"}
+                          >
+                            at wallet:{" "}
+                            {(data = walletNicknames.find(
+                              (ele) => ele.wallet === row.wallet
+                            )) &&
+                              data.nickname +
+                                " (" +
+                                row.wallet.substring(0, 6) +
+                                "..." +
+                                row.wallet.substring(
+                                  row.wallet.length - 4,
+                                  row.wallet.length
+                                ) +
+                                ")"}
+                            {!walletNicknames.some(
+                              (e) => e.wallet === row.wallet
+                            ) &&
+                              row.wallet.substring(0, 6) +
+                                "..." +
+                                row.wallet.substring(
+                                  row.wallet.length - 4,
+                                  row.wallet.length
+                                )}
+                          </Typography>
+                        </>
+                      )}
+                    </div>
+                  )}
+                  {selectedWallet !== "all" && (
+                    <div style={{ display: "flex" }}>
+                      {walletColors[
+                        walletColors
+                          .map((e) => e.wallet)
+                          .indexOf(row.wallet.toLowerCase())
+                      ] && <>{this.drawChainIcon(row.chain)}</>}
+                    </div>
+                  )}
+                </Grid>
+                <Grid
+                  style={{
+                    marginLeft: "auto",
+                    display: "flex",
+                    height: "100%",
+                    alignItems: "center",
+                    width: "100%",
+                  }}
+                  align="right"
+                >
+                  <Grid style={{ textAlign: "left" }}>
+                    <Typography variant={"body1"} style={{ fontSize: 22 }}>
+                      {formatMoney(row.quantityDecimals)}
+                    </Typography>
+                    <Typography style={{ opacity: 0.7 }} variant={"body1"}>
+                      {row.asset.symbol}
+                    </Typography>
+                  </Grid>
+                  <Grid
+                    style={{ marginLeft: 10, textAlign: "left" }}
+                    align="right"
+                  >
+                    {row.asset.price && (
+                      <>
+                        <Typography style={{ fontSize: 22 }} variant={"body1"}>
+                          {getVsSymbol(vsCoin) +
+                            " " +
+                            formatMoney(row.asset.price.value)}
+                        </Typography>
+                        {row.asset.price.relative_change_24h && (
+                          <div
+                            style={{ display: "flex", justifyContent: "end" }}
+                          >
+                            {row.asset.price.relative_change_24h > 0 && (
+                              <ArrowDropUpRoundedIcon
+                                color="primary"
+                                size="small"
+                              />
+                            )}
+                            {row.asset.price.relative_change_24h < 0 && (
+                              <ArrowDropDownRoundedIcon
+                                color="secondary"
+                                size="small"
+                              />
+                            )}
+                            <Typography
+                              color={
+                                row.asset.price.relative_change_24h > 0
+                                  ? "primary"
+                                  : "secondary"
+                              }
+                              variant={"subtitle2"}
+                            >
+                              {row.asset.price.relative_change_24h.toFixed(2)} %
+                            </Typography>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </Grid>
+                  <Grid
+                    style={{ marginLeft: "auto", marginRight: 10 }}
+                    align="right"
+                  >
+                    <Typography variant={"h2"} color="primary">
+                      $ {row.value && formatMoney(row.value)}
+                    </Typography>
+                  </Grid>
+                  <Grid
+                    className={classes.showPyLBTN}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      this.getUniswapDetails(
+                        row.asset.asset_code,
+                        row.quantityDecimals
+                      );
+                    }}
+                  >
+                    {uniswapDetailsLoading && <CircularProgress size={25} />}
+                    {!uniswapDetailsLoading && <SearchIcon />}
+                  </Grid>
+                </Grid>
+              </CardActionArea>
+            </Card>
+          </Grid>
         )}
       </React.Fragment>
     ));
@@ -3642,7 +3599,13 @@ class PortfolioBig extends Component {
                   spacing={1}
                 >
                   {assetsData && (
-                    <Grid item sm={12} md={6} style={{ display: "grid" }}>
+                    <Grid
+                      key="assetsGridRoot"
+                      item
+                      sm={12}
+                      md={6}
+                      style={{ display: "grid" }}
+                    >
                       <div className={classes.assetsGrid}>
                         <Grid item xs={12}>
                           <Typography color="primary" variant={"h4"}>
@@ -3731,6 +3694,7 @@ class PortfolioBig extends Component {
                     <Grid
                       item
                       xs={6}
+                      key="StakingsGridRoot"
                       style={{ display: "grid", minHeight: "100%" }}
                     >
                       <div className={classes.nonAssetsGrid}>

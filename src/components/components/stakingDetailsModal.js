@@ -210,7 +210,7 @@ class StakingDetailsModal extends Component {
                       container
                       direction="row"
                       alignItems="center"
-                      justify="end"
+                      justify="flex-end"
                     >
                       <div
                         style={{
@@ -218,7 +218,7 @@ class StakingDetailsModal extends Component {
                           flexGrow: 1,
                           flexDirection: "column",
                           marginRight: sparklineData ? 10 : 0,
-                          justifyContent: "end",
+                          justifyContent: "flex-end",
                         }}
                       >
                         <Typography

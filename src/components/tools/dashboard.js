@@ -15,11 +15,14 @@ import {
   CONNECTION_CONNECTED,
   CONNECTION_DISCONNECTED,
   ERROR,
+  DB_GET_USERDATA,
+  LOGIN_RETURNED,
 } from "../../constants";
 
 import Store from "../../stores";
 const emitter = Store.emitter;
 const store = Store.store;
+const dispatcher = Store.dispatcher;
 
 // Import requiredTools
 // It will be modular in the future
@@ -56,7 +59,10 @@ class Dashboard extends Component {
   constructor() {
     super();
     const account = store.getStore("account");
+    const userAuth = store.getStore("userAuth");
+
     this.state = {
+      userAuth: userAuth,
       account: account,
       loading: false,
       tools: {
@@ -67,8 +73,11 @@ class Dashboard extends Component {
       },
     };
 
-    if (account && account.address) {
-      //IF USER IS LOGGED IN DO SOMETHING
+    if (userAuth && account && account.address) {
+      dispatcher.dispatch({
+        type: DB_GET_USERDATA,
+        address: account.address,
+      });
     }
   }
 
@@ -76,12 +85,14 @@ class Dashboard extends Component {
     emitter.on(CONNECTION_CONNECTED, this.connected);
     emitter.on(CONNECTION_DISCONNECTED, this.disconnected);
     emitter.on(ERROR, this.errorReturned);
+    emitter.on(LOGIN_RETURNED, this.loginReturned);
   }
 
   componentWillUnmount() {
     emitter.removeListener(CONNECTION_CONNECTED, this.connected);
     emitter.removeListener(CONNECTION_DISCONNECTED, this.disconnected);
     emitter.removeListener(ERROR, this.errorReturned);
+    emitter.removeListener(LOGIN_RETURNED, this.loginReturned);
   }
 
   connected = () => {
@@ -98,6 +109,17 @@ class Dashboard extends Component {
     });
   };
 
+  loginReturned = () => {
+    const account = store.getStore("account");
+    const userAuth = store.getStore("userAuth");
+    if (userAuth && account && account.address) {
+      dispatcher.dispatch({
+        type: DB_GET_USERDATA,
+        address: account.address,
+      });
+    }
+  };
+
   render() {
     const { classes } = this.props;
     const { account, tools, snackbarMessage } = this.state;
@@ -106,18 +128,20 @@ class Dashboard extends Component {
       <div className={classes.root}>
         {!account.address && <div>CONNECT WALLET</div>}
         {account.address && (
-          <Grid container spacing={2}>
-            <Grid id="bigTools" item xs={9}>
+          <Grid container spacing={2} justify="center" align="center">
+            <Grid id="bigTools" item xs={12}>
               {this.renderBig(tools)}
             </Grid>
-            <Grid
-              className={classes.miniUI}
-              item
-              xs={3}
-              style={{ height: "max-content" }}
-            >
-              {this.renderMini(tools)}
-            </Grid>
+            {
+              // <Grid
+              //   className={classes.miniUI}
+              //   item
+              //   xs={3}
+              //   style={{ height: "max-content" }}
+              // >
+              //   {this.renderMini(tools)}
+              // </Grid>
+            }
           </Grid>
         )}
         {snackbarMessage && this.renderSnackbar()}
@@ -182,7 +206,7 @@ class Dashboard extends Component {
     });
 
     return (
-      <div style={{ display: "flex" }}>
+      <div key="rootDashboard" style={{ display: "flex" }}>
         <Suspense
           fallback={
             <div style={{ textAlign: "center" }}>
@@ -192,7 +216,7 @@ class Dashboard extends Component {
             </div>
           }
         >
-          {activeTools.portfolio_BIG && <PortfolioBig />}
+          {activeTools.portfolio_BIG && <PortfolioBig key="portfolioBigRoot" />}
         </Suspense>
       </div>
     );

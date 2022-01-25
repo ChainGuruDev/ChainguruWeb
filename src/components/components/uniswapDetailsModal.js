@@ -149,11 +149,7 @@ class UniswapDetailsModal extends Component {
               </Typography>
             </Grid>
             <Divider variant="middle" style={{ width: "100%" }} />
-            <Grid
-              item
-              xs={6}
-              style={{ padding: 5, textAlign: "left", alignSelf: "start" }}
-            >
+            <Grid item xs={6} style={{ textAlign: "left", alignSelf: "start" }}>
               <Grid item xs={12}>
                 <Typography variant={"h4"}>{data.asset.name}</Typography>
                 {assetBalance.toFixed(2)} {data.asset.symbol}{" "}
