@@ -3706,7 +3706,8 @@ class PortfolioBig extends Component {
                   {(nonAssetsData || univ2Assets) && (
                     <Grid
                       item
-                      xs={6}
+                      sm={12}
+                      md={6}
                       key="StakingsGridRoot"
                       style={{ display: "grid", minHeight: "100%" }}
                     >
