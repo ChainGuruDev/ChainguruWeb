@@ -1808,7 +1808,6 @@ class PortfolioBig extends Component {
           x.chain === data.chain
       );
       portfolioData[index].hideStats = true;
-      console.log(portfolioData[index]);
       this.setState({
         portfolioData: portfolioData,
       });
@@ -2447,7 +2446,7 @@ class PortfolioBig extends Component {
                   align="right"
                 >
                   {row.items.map((item, i) => (
-                    <>
+                    <div key={i + item.asset.symbol}>
                       <Divider
                         orientation="vertical"
                         flexItem
@@ -2470,7 +2469,7 @@ class PortfolioBig extends Component {
                           {item.asset.symbol}
                         </Typography>
                       </Grid>
-                    </>
+                    </div>
                   ))}
                   <Grid
                     style={{ marginLeft: "auto", marginRight: 10 }}
@@ -3353,13 +3352,21 @@ class PortfolioBig extends Component {
                             <Grid
                               item
                               xs={12}
-                              style={{ textAlign: "center", marginBottom: 5 }}
+                              style={{
+                                textAlign: "center",
+                                marginBottom: 5,
+                                marginTop: 5,
+                              }}
                               direction="row"
                               container
-                              justify="center"
+                              justify="flex-start"
                               alignItems="center"
                             >
-                              <Typography variant={"h3"}>
+                              <Typography
+                                variant={"h3"}
+                                style={{ marginLeft: 12 }}
+                                color={"primary"}
+                              >
                                 Balance: ${" "}
                                 {formatMoney(
                                   this.state.portfolioStats.total_value
@@ -3607,8 +3614,14 @@ class PortfolioBig extends Component {
                       style={{ display: "grid" }}
                     >
                       <div className={classes.assetsGrid}>
-                        <Grid item xs={12}>
-                          <Typography color="primary" variant={"h4"}>
+                        <Grid
+                          item
+                          xs={12}
+                          container
+                          direction="row"
+                          justify="space-between"
+                        >
+                          <Typography color="primary" variant={"h3"}>
                             Assets
                           </Typography>
                           {portfolioStats && (
@@ -3698,8 +3711,14 @@ class PortfolioBig extends Component {
                       style={{ display: "grid", minHeight: "100%" }}
                     >
                       <div className={classes.nonAssetsGrid}>
-                        <Grid item xs={12}>
-                          <Typography color="primary" variant={"h4"}>
+                        <Grid
+                          item
+                          xs={12}
+                          container
+                          direction="row"
+                          justify="space-between"
+                        >
+                          <Typography color="primary" variant={"h3"}>
                             Staked Assets
                           </Typography>
                           {portfolioStats && (

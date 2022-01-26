@@ -1602,7 +1602,6 @@ class Store {
       }
     } else {
       for (var i = 0; i < tokenIDs.length; i++) {
-        console.log(tokenIDs[i]);
         let response2 = await axios.get(
           `https://api.coingecko.com/api/v3/coins/${tokenIDs[i]}?tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=true`
         );
@@ -2964,14 +2963,14 @@ ${nonce}`,
     try {
       if (Array.isArray(payload.wallet)) {
         let charts = await axios.post(
-          `${cg_servers[0]}/zerion/address/chart`,
+          `${cg_servers[1]}/zerion/address/chart`,
           {
             addresses: payload.wallet,
             currency: vsCoin,
             timeframe: payload.timeframe,
           },
           {
-            timeout: 5000,
+            timeout: 20000,
           }
         );
         emitter.emit(
@@ -2982,12 +2981,12 @@ ${nonce}`,
     } catch (err) {
       if (
         err.message === "Network Error" ||
-        err.message === "timeout of 5000ms exceeded"
+        err.message === "timeout of 20000ms exceeded"
       ) {
         try {
           if (Array.isArray(payload.wallet)) {
             let charts = await axios.post(
-              `${cg_servers[1]}/zerion/address/chart`,
+              `${cg_servers[0]}/zerion/address/chart`,
               {
                 addresses: payload.wallet,
                 currency: vsCoin,
@@ -3141,16 +3140,13 @@ ${nonce}`,
         {
           addresses: payload.wallet,
           currency: vsCoin,
-        },
-        {
-          timeout: 5000,
         }
       );
       emitter.emit(DB_GET_PORTFOLIO_POSITIONS_RETURNED, portfolioAssets.data);
     } catch (err) {
       if (
         err.message === "Network Error" ||
-        err.message === "timeout of 5000ms exceeded"
+        err.message === "timeout of 20000ms exceeded"
       ) {
         try {
           const portfolioAssets = await axios.post(
@@ -3177,7 +3173,6 @@ ${nonce}`,
 
   dbGetAssetFulldata = async (payload) => {
     let vsCoin = store.getStore("vsCoin");
-    console.log(payload);
     try {
       const assetFulldata = await axios.post(
         `${get_cgServer()}/zerion/assets/full_info`,

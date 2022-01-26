@@ -116,12 +116,13 @@ class Unlock extends Component {
   // }
 
   error = (err) => {
-    this.setState({
-      loading: false,
-      error: err,
-      metamaskLoading: false,
-      ledgerLoading: false,
-    });
+    this._isMounted &&
+      this.setState({
+        loading: false,
+        error: err,
+        metamaskLoading: false,
+        ledgerLoading: false,
+      });
   };
 
   connectionConnected = () => {
@@ -137,25 +138,25 @@ class Unlock extends Component {
   };
 
   metamaskUnlocked = () => {
-    this.setState({ metamaskLoading: false });
+    this.props._isMounted && this.setState({ metamaskLoading: false });
     if (this.props.closeModal != null) {
       this.props.closeModal();
     }
   };
 
   ledgerUnlocked = () => {
-    this.setState({ ledgerLoading: false });
+    this.props._isMounted && this.setState({ ledgerLoading: false });
     if (this.props.closeModal != null) {
       this.props.closeModal();
     }
   };
 
   cancelLedger = () => {
-    this.setState({ ledgerLoading: false });
+    this.props._isMounted && this.setState({ ledgerLoading: false });
   };
 
   cancelMetamask = () => {
-    this.setState({ metamaskLoading: false });
+    this.props._isMounted && this.setState({ metamaskLoading: false });
   };
 
   render() {
@@ -194,7 +195,7 @@ function onConnectionClicked(
 }
 
 function onDeactivateClicked(deactivate, connector) {
-  console.log(deactivate, connector);
+  // console.log(deactivate, connector);
   if (deactivate) {
     deactivate();
   }
@@ -235,7 +236,8 @@ function MyComponent(props) {
 
   React.useEffect(() => {
     if (account && active && library) {
-      store.setStore({ account: { address: account }, web3context: context });
+      this.props._isMounted &&
+        store.setStore({ account: { address: account }, web3context: context });
       emitter.emit(CONNECTION_CONNECTED);
     }
   }, [account, active, closeModal, context, library]);
