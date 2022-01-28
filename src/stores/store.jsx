@@ -203,6 +203,7 @@ const dispatcher = new Dispatcher();
 const emitter = new Emitter();
 
 let assetStatsRequest = null;
+let portfolioChartRequest = null;
 
 const cg_servers = [
   `https://chainguru-db.herokuapp.com`,
@@ -2960,19 +2961,33 @@ ${nonce}`,
   db_getPortfolioChart = async (payload) => {
     let vsCoin = store.getStore("vsCoin");
     //TODO WAIT FOR MULTIPLE ADDRESS ENDPOINT
+    if (portfolioChartRequest) {
+      portfolioChartRequest.cancel("req. cancelled");
+    }
+    const CancelToken = axios.CancelToken;
+    portfolioChartRequest = CancelToken.source();
+
     try {
       if (Array.isArray(payload.wallet)) {
-        let charts = await axios.post(
-          `${cg_servers[1]}/zerion/address/chart`,
-          {
-            addresses: payload.wallet,
-            currency: vsCoin,
-            timeframe: payload.timeframe,
-          },
-          {
-            timeout: 20000,
-          }
-        );
+        const charts = await axios
+          .post(
+            `${get_cgServer()}/zerion/address/chart`,
+            {
+              addresses: payload.wallet,
+              currency: vsCoin,
+              timeframe: payload.timeframe,
+            },
+            {
+              timeout: 5000,
+              cancelToken: portfolioChartRequest.token,
+            }
+          )
+          .catch(function (thrown) {
+            if (axios.isCancel(thrown)) {
+              console.log("Request canceled");
+            }
+          });
+        console.log(await charts);
         emitter.emit(
           DB_GET_PORTFOLIO_CHART_RETURNED,
           await charts.data.charts.others
@@ -2981,16 +2996,28 @@ ${nonce}`,
     } catch (err) {
       if (
         err.message === "Network Error" ||
-        err.message === "timeout of 20000ms exceeded"
+        err.message === "timeout of 5000ms exceeded" ||
+        err.message === "charts is undefined"
       ) {
         try {
+          console.log("getting charts again");
+          if (portfolioChartRequest) {
+            portfolioChartRequest.cancel("req. cancelled");
+          }
+          const CancelToken = axios.CancelToken;
+          portfolioChartRequest = CancelToken.source();
+
           if (Array.isArray(payload.wallet)) {
-            let charts = await axios.post(
-              `${cg_servers[0]}/zerion/address/chart`,
+            const charts = await axios.post(
+              `${get_cgServer()}/zerion/address/chart`,
               {
                 addresses: payload.wallet,
                 currency: vsCoin,
                 timeframe: payload.timeframe,
+              },
+              {
+                timeout: 10000,
+                cancelToken: portfolioChartRequest.token,
               }
             );
             emitter.emit(

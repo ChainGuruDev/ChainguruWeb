@@ -64,6 +64,7 @@ import AvatarGroup from "@material-ui/lab/AvatarGroup";
 
 import {
   ERROR,
+  LOGIN_RETURNED,
   CONNECTION_CONNECTED,
   CONNECTION_DISCONNECTED,
   DB_USERDATA_RETURNED,
@@ -381,6 +382,7 @@ class PortfolioBig extends Component {
       GECKO_GET_SPARKLINE_FROM_CONTRACT_RETURNED,
       this.sparklineDataReturned
     );
+    emitter.on(LOGIN_RETURNED, this.loginReturned);
   }
 
   componentWillUnmount() {
@@ -430,6 +432,7 @@ class PortfolioBig extends Component {
       GECKO_GET_SPARKLINE_FROM_CONTRACT_RETURNED,
       this.sparklineDataReturned
     );
+    emitter.removeListener(LOGIN_RETURNED, this.loginReturned);
 
     this._isMounted = false;
   }
@@ -441,6 +444,17 @@ class PortfolioBig extends Component {
 
   connectionDisconnected = () => {
     this.setState({ account: store.getStore("account") });
+  };
+
+  loginReturned = () => {
+    const account = store.getStore("account");
+    const userAuth = store.getStore("userAuth");
+    if (userAuth && account && account.address) {
+      this.setState({
+        error: false,
+        dbDataLoaded: false,
+      });
+    }
   };
 
   dbUserDataReturned = (data) => {
@@ -2741,6 +2755,7 @@ class PortfolioBig extends Component {
         dbDataLoaded: false,
         chartDataLoaded: false,
         portfolioStats: null,
+        error: false,
       });
     } else {
       this._isMounted &&
@@ -2753,6 +2768,7 @@ class PortfolioBig extends Component {
         dbDataLoaded: false,
         chartDataLoaded: false,
         portfolioStats: null,
+        error: false,
       });
     }
   };
@@ -3118,12 +3134,12 @@ class PortfolioBig extends Component {
                   direction="row"
                   justify="space-between"
                   alignItems="flex-start"
-                  style={{ maxHeight: "400px" }}
+                  style={{ maxHeight: "500px", height: "500px" }}
                   spacing={1}
                 >
                   <Grid
                     item
-                    xs={6}
+                    xs={4}
                     style={{ display: "grid", minHeight: "100%" }}
                   >
                     <div className={classes.walletGrid}>
@@ -3238,7 +3254,7 @@ class PortfolioBig extends Component {
                   </Grid>
                   <Grid
                     item
-                    xs={6}
+                    xs={8}
                     style={{ height: "100%", maxHeight: "100%" }}
                   >
                     <div className={classes.graphGrid}>
@@ -3463,7 +3479,12 @@ class PortfolioBig extends Component {
                             </Grid>
                           </Grid>
                         )}
-                      <Grid item container justify="flex-end" align="flex-end">
+                      <Grid
+                        item
+                        container
+                        justify="flex-end"
+                        align="space-between"
+                      >
                         {!this.state.portfolioStats && (
                           <Skeleton
                             variant="rect"
@@ -3482,14 +3503,14 @@ class PortfolioBig extends Component {
                         )}
                         {chartDataLoaded ? (
                           <PortfolioChart
-                            height="250px"
+                            height="375px"
                             data={portfolioChartData}
                           />
                         ) : (
                           <Skeleton
                             variant="rect"
                             width={"100%"}
-                            height={"250px"}
+                            height={"375px"}
                             style={{ borderRadius: 10 }}
                           />
                         )}
@@ -3542,6 +3563,8 @@ class PortfolioBig extends Component {
                         style={{
                           backgroundColor: "rgba(125,125,125,0.2)",
                           textAlign: "center",
+                          height: "fit-content",
+                          alignSelf: "end",
                         }}
                       >
                         <Grid
