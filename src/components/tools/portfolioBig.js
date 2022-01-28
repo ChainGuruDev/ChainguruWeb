@@ -25,6 +25,7 @@ import KeyboardArrowLeftRoundedIcon from "@material-ui/icons/KeyboardArrowLeftRo
 import BarChartRoundedIcon from "@material-ui/icons/BarChartRounded";
 import ArrowDropUpRoundedIcon from "@material-ui/icons/ArrowDropUpRounded";
 import ArrowDropDownRoundedIcon from "@material-ui/icons/ArrowDropDownRounded";
+import ReplayIcon from "@material-ui/icons/Replay";
 
 import {
   Card,
@@ -637,6 +638,52 @@ class PortfolioBig extends Component {
       portfolioData: portfolioData,
       chartVariation: null,
     });
+  };
+
+  db_getPortfolioChart = () => {
+    this.setState({
+      error: false,
+      chartVariation: null,
+      portfolioChartData: null,
+      chartDataLoaded: false,
+    });
+
+    if (this.state.selectedWallet === "all") {
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: DB_GET_PORTFOLIO_CHART,
+          wallet: this.state.userWallets,
+          timeframe: "w",
+        });
+    } else {
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: DB_GET_PORTFOLIO_CHART,
+          wallet: [this.state.selectedWallet],
+          timeframe: "w",
+        });
+    }
+  };
+
+  db_getPortfolioStats = () => {
+    this.setState({
+      error: false,
+      dbStatsData: false,
+    });
+
+    if (this.state.selectedWallet === "all") {
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: DB_GET_PORTFOLIO_STATS,
+          wallet: this.state.userWallets,
+        });
+    } else {
+      this._isMounted &&
+        dispatcher.dispatch({
+          type: DB_GET_PORTFOLIO_STATS,
+          wallet: [this.state.selectedWallet],
+        });
+    }
   };
 
   db_getPortfolioPositionsReturned = (portfolioData) => {
@@ -3086,23 +3133,6 @@ class PortfolioBig extends Component {
       <>
         <Card className={classes.favCard} elevation={3}>
           <Grid container direction="row" justify="flex-start">
-            {error && (
-              <Grid
-                item
-                style={{
-                  textAlign: "center",
-                  minWidth: "100%",
-                  paddingBottom: "10px",
-                }}
-              >
-                <Typography variant={"h4"}>
-                  Portfolio dashboard in development
-                </Typography>
-                <Typography variant={"h4"}>
-                  Please try again later. Sorry!
-                </Typography>
-              </Grid>
-            )}
             {!error && !dbDataLoaded && (
               <Grid
                 item
@@ -3485,7 +3515,8 @@ class PortfolioBig extends Component {
                         justify="flex-end"
                         align="space-between"
                       >
-                        {!this.state.portfolioStats && (
+                        {}
+                        {!error && !this.state.portfolioStats && (
                           <Skeleton
                             variant="rect"
                             width={"100%"}
@@ -3493,7 +3524,22 @@ class PortfolioBig extends Component {
                             style={{ borderRadius: 5 }}
                           />
                         )}
-                        {!this.state.chartVariation && (
+                        {error && !this.state.portfolioStats && (
+                          <Grid
+                            style={{
+                              borderRadius: 10,
+                              width: "100%",
+                              height: "60px",
+                              background: "#5555",
+                            }}
+                            onClick={() => this.db_getPortfolioStats()}
+                          >
+                            <IconButton>
+                              <ReplayIcon />
+                            </IconButton>
+                          </Grid>
+                        )}
+                        {!error && !this.state.chartVariation && (
                           <Skeleton
                             variant="rect"
                             width={"100%"}
@@ -3501,18 +3547,34 @@ class PortfolioBig extends Component {
                             style={{ borderRadius: 5 }}
                           />
                         )}
-                        {chartDataLoaded ? (
+                        {!error && chartDataLoaded && (
                           <PortfolioChart
                             height="375px"
                             data={portfolioChartData}
                           />
-                        ) : (
+                        )}
+                        {!error && !chartDataLoaded && (
                           <Skeleton
                             variant="rect"
                             width={"100%"}
                             height={"375px"}
                             style={{ borderRadius: 10 }}
                           />
+                        )}
+                        {error && !chartDataLoaded && (
+                          <Grid
+                            style={{
+                              borderRadius: 10,
+                              width: "100%",
+                              height: "375px",
+                              background: "#5555",
+                            }}
+                            onClick={() => this.db_getPortfolioChart()}
+                          >
+                            <IconButton>
+                              <ReplayIcon />
+                            </IconButton>
+                          </Grid>
                         )}
                         {
                           // <Typography variant={"h4"}>

@@ -2496,6 +2496,7 @@ ${nonce}`,
     let wallets = data.payload.wallet;
     let assetData = null;
     try {
+      console.log(data);
       //IF multiple wallets check which ones have the asset
       if (data.payload.wallet.length > 1) {
         wallets = [];
@@ -2987,7 +2988,6 @@ ${nonce}`,
               console.log("Request canceled");
             }
           });
-        console.log(await charts);
         emitter.emit(
           DB_GET_PORTFOLIO_CHART_RETURNED,
           await charts.data.charts.others
@@ -3027,7 +3027,7 @@ ${nonce}`,
           }
         } catch (err) {
           console.log(err.message);
-          emitter.emit(ERROR, await err.message);
+          emitter.emit(ERROR, "there's some problem with our graph data");
         }
       } else {
         console.log(err.message);
