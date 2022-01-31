@@ -183,7 +183,7 @@ class Long extends Component {
   }
 
   tool2toolID = (tool) => {
-    let toolID = 0;
+    let toolID = 2;
     switch (tool) {
       case "bluechips":
         toolID = 0;
@@ -333,29 +333,68 @@ class Long extends Component {
             centered={!isMobile}
             textColor="secondary"
           >
-            <LongTab
-              label="BlueChips"
-              icon={<CheckCircleIcon />}
-              {...a11yProps(0)}
-            />
-            <LongTab
-              label="Dollar Cost Average"
-              icon={<ShowChartIcon />}
-              {...a11yProps(1)}
-            />
+            <div
+              style={{ filter: "blur(3px)", cursor: "default" }}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            >
+              <LongTab
+                label="BlueChips"
+                icon={<CheckCircleIcon />}
+                {...a11yProps(0)}
+                style={{ cursor: "inherit" }}
+              />
+            </div>
+            <div
+              style={{ filter: "blur(2px)", cursor: "default" }}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            >
+              <LongTab
+                label="Dollar Cost Average"
+                icon={<ShowChartIcon />}
+                {...a11yProps(1)}
+                style={{ cursor: "inherit" }}
+              />
+            </div>
             <LongTab label="Coins" icon={<LensIcon />} {...a11yProps(2)} />
-            <LongTab
-              label="CryptoDetective"
-              icon={<SearchIcon />}
-              {...a11yProps(3)}
-            />
-
-            <LongTab label="Swap" icon={<SwapHorizIcon />} {...a11yProps(4)} />
-            <Tab
-              label="News"
-              icon={<MenuBookRoundedIcon />}
-              {...a11yProps(5)}
-            />
+            <div
+              style={{
+                filter: valueTab === 3 ? "none" : "blur(2px)",
+                cursor: valueTab === 3 ? "" : "default",
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            >
+              <LongTab
+                label="CryptoDetective"
+                icon={<SearchIcon />}
+                {...a11yProps(3)}
+                style={{ cursor: "inherit" }}
+              />
+            </div>
+            <div
+              style={{ filter: "blur(2px)", cursor: "default" }}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            >
+              <LongTab
+                label="Swap"
+                icon={<SwapHorizIcon />}
+                {...a11yProps(4)}
+                style={{ cursor: "inherit" }}
+              />
+              <Tab
+                label="News"
+                icon={<MenuBookRoundedIcon />}
+                {...a11yProps(5)}
+                style={{ cursor: "inherit" }}
+              />
+            </div>
           </LongTabs>
         </AppBar>
         <div

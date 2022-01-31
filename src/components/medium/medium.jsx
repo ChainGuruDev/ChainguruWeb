@@ -168,7 +168,7 @@ class Medium extends Component {
   }
 
   tool2toolID = (tool) => {
-    let toolID = 0;
+    let toolID = 1;
     switch (tool) {
       case "compare":
         toolID = 0;
@@ -343,24 +343,48 @@ class Medium extends Component {
             textColor="primary"
             centered={!isMobile}
           >
-            <Tab
-              label="Crypto Compare"
-              icon={<CompareArrowsIcon />}
-              {...a11yProps(0)}
-            />
+            <div
+              style={{ filter: "blur(3px)", cursor: "default" }}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            >
+              <Tab
+                label="Crypto Compare"
+                icon={<CompareArrowsIcon />}
+                {...a11yProps(0)}
+              />
+            </div>
             <Tab label="Favorites" icon={<FlashOnIcon />} {...a11yProps(1)} />
-            <Tab
-              label="Crypto Detective"
-              icon={<SearchIcon />}
-              {...a11yProps(2)}
-            />
-            <Tab label="Coins" icon={<LensIcon />} {...a11yProps(3)} />
-            <Tab label="Swap" icon={<SwapHorizIcon />} {...a11yProps(4)} />
-            <Tab
-              label="News"
-              icon={<MenuBookRoundedIcon />}
-              {...a11yProps(5)}
-            />
+            <div
+              style={{
+                filter: valueTab === 2 ? "none" : "blur(3px)",
+                cursor: valueTab === 2 ? "" : "default",
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            >
+              <Tab
+                label="Crypto Detective"
+                icon={<SearchIcon />}
+                {...a11yProps(2)}
+              />
+            </div>
+            <div
+              style={{ filter: "blur(3px)", cursor: "default" }}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            >
+              <Tab label="Coins" icon={<LensIcon />} {...a11yProps(3)} />
+              <Tab label="Swap" icon={<SwapHorizIcon />} {...a11yProps(4)} />
+              <Tab
+                label="News"
+                icon={<MenuBookRoundedIcon />}
+                {...a11yProps(5)}
+              />
+            </div>
           </Tabs>
         </AppBar>
         <div

@@ -2496,7 +2496,6 @@ ${nonce}`,
     let wallets = data.payload.wallet;
     let assetData = null;
     try {
-      console.log(data);
       //IF multiple wallets check which ones have the asset
       if (data.payload.wallet.length > 1) {
         wallets = [];

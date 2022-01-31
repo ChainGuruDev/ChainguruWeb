@@ -10,9 +10,9 @@
 
   "Footer.Home": "home",
 
-  "Home.short": "Short Term",
-  "Home.medium": "Medium Term",
-  "Home.long": "Long Term",
+  "Home.short": "Short & Long",
+  "Home.medium": "Favorites",
+  "Home.long": "Coins",
   "Home.market": "NFT Market",
   "Home.portfolio": "Portfolio",
 

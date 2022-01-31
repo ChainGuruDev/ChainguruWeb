@@ -1,0 +1,4 @@
+[ZoneTransfer]
+ZoneId=3
+ReferrerUrl=https://etherscan.io/
+HostUrl=https://api.etherscan.io/api?module=contract&action=getabi&address=0x06fe76b2f432fdfecaef1a7d4f6c3d41b5861672

@@ -16,6 +16,9 @@ import { ReactComponent as MediumIcon } from "../../assets/medium.svg";
 import { ReactComponent as LongIcon } from "../../assets/long.svg";
 // import { ReactComponent as MarketIcon } from "../../assets/market.svg";
 import { ReactComponent as WalletIcon } from "../../assets/wallet.svg";
+import TrendingUpIcon from "@material-ui/icons/TrendingUp";
+import FlashOnIcon from "@material-ui/icons/FlashOn";
+import LensIcon from "@material-ui/icons/Lens";
 
 const styles = (theme) => ({
   root: {
@@ -349,56 +352,6 @@ class Home extends Component {
       return (
         <div className={classes.root}>
           <Card
-            className={`${classes.card} ${classes.short}`}
-            onClick={() => {
-              this.nav("/short/compare/bitcoin/ethereum");
-            }}
-          >
-            <FastIcon fill={colors.white} className={`${classes.icon} icon`} />
-            <Typography variant={"h3"} className={`${classes.title} title`}>
-              {t("Home.short")}
-            </Typography>
-            <Typography variant={"h3"} className={`${classes.title} title`}>
-              Strategy
-            </Typography>
-          </Card>
-
-          <Card
-            className={`${classes.card} ${classes.mid}`}
-            onClick={() => {
-              this.nav("/medium/compare/bitcoin/ethereum");
-            }}
-          >
-            <MediumIcon
-              fill={colors.white}
-              className={`${classes.icon} icon`}
-            />
-            <Typography variant={"h3"} className={`${classes.title} title`}>
-              {t("Home.medium")}
-            </Typography>
-            <Typography variant={"h3"} className={`${classes.title} title`}>
-              Strategy
-            </Typography>
-          </Card>
-          <Card
-            className={`${classes.card} ${classes.long}`}
-            onClick={() => {
-              this.nav("/long");
-            }}
-          >
-            <LongIcon
-              stroke={colors.white}
-              className={`${classes.icon} icon`}
-            />
-            <Typography variant={"h3"} className={`${classes.title} title`}>
-              {t("Home.long")}
-            </Typography>
-            <Typography variant={"h3"} className={`${classes.title} title`}>
-              Strategy
-            </Typography>
-          </Card>
-
-          <Card
             className={`${classes.card} ${classes.market}`}
             onClick={() => {
               this.nav("/portfolio");
@@ -410,6 +363,48 @@ class Home extends Component {
             />
             <Typography variant={"h3"} className={`${classes.title} title`}>
               {t("Home.portfolio")}
+            </Typography>
+          </Card>
+          <Card
+            className={`${classes.card} ${classes.short}`}
+            onClick={() => {
+              this.nav("/short/shortLong");
+            }}
+          >
+            <TrendingUpIcon
+              fill={colors.white}
+              className={`${classes.icon} icon`}
+            />
+            <Typography variant={"h3"} className={`${classes.title} title`}>
+              Short & Long
+            </Typography>
+          </Card>
+          <Card
+            className={`${classes.card} ${classes.mid}`}
+            onClick={() => {
+              this.nav("/medium/favorites");
+            }}
+          >
+            <FlashOnIcon
+              fill={colors.white}
+              className={`${classes.icon} icon`}
+            />
+            <Typography variant={"h3"} className={`${classes.title} title`}>
+              Favorites
+            </Typography>
+          </Card>
+          <Card
+            className={`${classes.card} ${classes.long}`}
+            onClick={() => {
+              this.nav("/long/coins");
+            }}
+          >
+            <LensIcon
+              stroke={colors.white}
+              className={`${classes.icon} icon`}
+            />
+            <Typography variant={"h3"} className={`${classes.title} title`}>
+              Coins
             </Typography>
           </Card>
         </div>

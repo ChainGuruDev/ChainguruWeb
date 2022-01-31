@@ -489,7 +489,6 @@ class Header extends Component {
               {this.renderLink("medium")}
               {this.renderLink("long")}
               {this.renderLink("portfolio")}
-              {this.renderLink("market")}
             </div>
             <div
               className={classes.vsCoinDIV}
@@ -665,22 +664,24 @@ class Header extends Component {
           >
             {t("Home." + screen)}
           </Typography>
-          {(screen === "short" || screen === "medium" || screen === "long") && (
-            <Typography
-              variant={"body2"}
-              style={
-                currentSection === screen
-                  ? {
-                      textTransform: "uppercase",
-                      color: this.state.cgLogoColor,
-                      textAlign: "center",
-                    }
-                  : { textTransform: "uppercase", textAlign: "center" }
-              }
-            >
-              strategy
-            </Typography>
-          )}
+          {
+            // {(screen === "short" || screen === "medium" || screen === "long") && (
+            //           <Typography
+            //             variant={"body2"}
+            //             style={
+            //               currentSection === screen
+            //                 ? {
+            //                     textTransform: "uppercase",
+            //                     color: this.state.cgLogoColor,
+            //                     textAlign: "center",
+            //                   }
+            //                 : { textTransform: "uppercase", textAlign: "center" }
+            //             }
+            //           >
+            //             strategy
+            //           </Typography>
+            //         )}
+          }
         </span>
       </div>
     );

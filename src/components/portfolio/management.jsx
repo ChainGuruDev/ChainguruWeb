@@ -315,36 +315,43 @@ class PortfolioManagement extends Component {
               icon={<DashboardIcon />}
               {...a11yProps(0)}
             />
-            <PortfolioTab
-              label="Transactions"
-              icon={<ReceiptIcon />}
-              {...a11yProps(1)}
-            />
-            <PortfolioTab
-              label="HeatMap"
-              icon={<ViewQuiltIcon />}
-              {...a11yProps(2)}
-            />
-            <PortfolioTab
-              label="CryptoConverter"
-              icon={<ShuffleIcon />}
-              {...a11yProps(3)}
-            />
-            <PortfolioTab
-              label="Portfolio Radar"
-              icon={<TrackChangesRoundedIcon />}
-              {...a11yProps(4)}
-            />
-            <PortfolioTab
-              label="Swap"
-              icon={<SwapHorizIcon />}
-              {...a11yProps(5)}
-            />
-            <Tab
-              label="News"
-              icon={<MenuBookRoundedIcon />}
-              {...a11yProps(6)}
-            />
+            <div
+              style={{ filter: "blur(3px)", cursor: "default" }}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            >
+              <PortfolioTab
+                label="Transactions"
+                icon={<ReceiptIcon />}
+                {...a11yProps(1)}
+              />
+              <PortfolioTab
+                label="HeatMap"
+                icon={<ViewQuiltIcon />}
+                {...a11yProps(2)}
+              />
+              <PortfolioTab
+                label="CryptoConverter"
+                icon={<ShuffleIcon />}
+                {...a11yProps(3)}
+              />
+              <PortfolioTab
+                label="Portfolio Radar"
+                icon={<TrackChangesRoundedIcon />}
+                {...a11yProps(4)}
+              />
+              <PortfolioTab
+                label="Swap"
+                icon={<SwapHorizIcon />}
+                {...a11yProps(5)}
+              />
+              <Tab
+                label="News"
+                icon={<MenuBookRoundedIcon />}
+                {...a11yProps(6)}
+              />
+            </div>
           </PortfolioTabs>
         </AppBar>
         <div
