@@ -45,6 +45,8 @@ const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
 const store = Store.store;
 
+require("dotenv/config");
+
 //LOAD TOOLS ReactLazy
 const CryptoDetective = React.lazy(() => import("../tools/cryptoDetective.js"));
 const CryptoCompare = React.lazy(() => import("../tools/cryptoCompare.js"));
@@ -338,62 +340,33 @@ class Short extends Component {
     return (
       <div className={classes.rootTabs} id="rootShort">
         <AppBar position="static" color="default" style={{ height: "72px" }}>
-          <Tabs
-            value={valueTab}
-            onChange={handleChangeTabs}
-            aria-label="tool tabs"
-            variant={isMobile ? "scrollable" : "standard"}
-            scrollButtons="auto"
-            indicatorColor="secondary"
-            textColor="secondary"
-            centered={!isMobile}
-          >
-            <div
-              style={{ filter: "blur(3px)", cursor: "default" }}
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
+          {process.env.REACT_APP_CHAINGURU_VERSION === "beta" ? (
+            <Tabs
+              value={valueTab}
+              onChange={handleChangeTabs}
+              aria-label="tool tabs"
+              variant={isMobile ? "scrollable" : "standard"}
+              scrollButtons="auto"
+              indicatorColor="secondary"
+              textColor="secondary"
+              centered={!isMobile}
             >
               <Tab
                 label="Crypto Compare"
                 icon={<CompareArrowsIcon />}
                 {...a11yProps(0)}
               />
-            </div>
-            <div
-              style={{ filter: "blur(3px)", cursor: "default" }}
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-            >
               <Tab label="Favorites" icon={<FlashOnIcon />} {...a11yProps(1)} />
-            </div>
-            <div
-              style={{
-                filter: valueTab === 2 ? "none" : "blur(3px)",
-                cursor: valueTab === 2 ? "" : "default",
-              }}
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-            >
               <Tab
                 label="Crypto Detective"
                 icon={<SearchIcon />}
                 {...a11yProps(2)}
               />
-            </div>
-            <Tab
-              label="Short & Long"
-              icon={<TrendingUpIcon />}
-              {...a11yProps(3)}
-            />
-            <div
-              style={{ filter: "blur(3px)", cursor: "default" }}
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-            >
+              <Tab
+                label="Short & Long"
+                icon={<TrendingUpIcon />}
+                {...a11yProps(3)}
+              />
               <Tab label="Coins" icon={<LensIcon />} {...a11yProps(4)} />
               <Tab label="Swap" icon={<SwapHorizIcon />} {...a11yProps(5)} />
               <Tab
@@ -401,8 +374,78 @@ class Short extends Component {
                 icon={<MenuBookRoundedIcon />}
                 {...a11yProps(6)}
               />
-            </div>
-          </Tabs>
+            </Tabs>
+          ) : (
+            <Tabs
+              value={valueTab}
+              onChange={handleChangeTabs}
+              aria-label="tool tabs"
+              variant={isMobile ? "scrollable" : "standard"}
+              scrollButtons="auto"
+              indicatorColor="secondary"
+              textColor="secondary"
+              centered={!isMobile}
+            >
+              <div
+                style={{ filter: "blur(3px)", cursor: "default" }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+              >
+                <Tab
+                  label="Crypto Compare"
+                  icon={<CompareArrowsIcon />}
+                  {...a11yProps(0)}
+                />
+              </div>
+              <div
+                style={{ filter: "blur(3px)", cursor: "default" }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+              >
+                <Tab
+                  label="Favorites"
+                  icon={<FlashOnIcon />}
+                  {...a11yProps(1)}
+                />
+              </div>
+              <div
+                style={{
+                  filter: valueTab === 2 ? "none" : "blur(3px)",
+                  cursor: valueTab === 2 ? "" : "default",
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+              >
+                <Tab
+                  label="Crypto Detective"
+                  icon={<SearchIcon />}
+                  {...a11yProps(2)}
+                />
+              </div>
+              <Tab
+                label="Short & Long"
+                icon={<TrendingUpIcon />}
+                {...a11yProps(3)}
+              />
+              <div
+                style={{ filter: "blur(3px)", cursor: "default" }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+              >
+                <Tab label="Coins" icon={<LensIcon />} {...a11yProps(4)} />
+                <Tab label="Swap" icon={<SwapHorizIcon />} {...a11yProps(5)} />
+                <Tab
+                  label="News"
+                  icon={<MenuBookRoundedIcon />}
+                  {...a11yProps(6)}
+                />
+              </div>
+            </Tabs>
+          )}
         </AppBar>
         <div
           style={{
