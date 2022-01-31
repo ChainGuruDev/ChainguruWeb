@@ -42,6 +42,8 @@ import Store from "../../stores";
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
 
+require("dotenv/config");
+
 const Swap = React.lazy(() => import("../tools/swap.js"));
 const CoinList = React.lazy(() => import("../tools/coins"));
 
@@ -324,20 +326,15 @@ class Long extends Component {
     return (
       <Grid className={classes.rootTabs}>
         <AppBar position="static" color="default">
-          <LongTabs
-            value={valueTab}
-            onChange={handleChangeTabs}
-            aria-label="tool tabs"
-            variant={isMobile ? "scrollable" : "standard"}
-            scrollButtons="auto"
-            centered={!isMobile}
-            textColor="secondary"
-          >
-            <div
-              style={{ filter: "blur(3px)", cursor: "default" }}
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
+          {process.env.REACT_APP_CHAINGURU_VERSION === "beta" ? (
+            <LongTabs
+              value={valueTab}
+              onChange={handleChangeTabs}
+              aria-label="tool tabs"
+              variant={isMobile ? "scrollable" : "standard"}
+              scrollButtons="auto"
+              centered={!isMobile}
+              textColor="secondary"
             >
               <LongTab
                 label="BlueChips"
@@ -345,43 +342,19 @@ class Long extends Component {
                 {...a11yProps(0)}
                 style={{ cursor: "inherit" }}
               />
-            </div>
-            <div
-              style={{ filter: "blur(2px)", cursor: "default" }}
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-            >
               <LongTab
                 label="Dollar Cost Average"
                 icon={<ShowChartIcon />}
                 {...a11yProps(1)}
                 style={{ cursor: "inherit" }}
               />
-            </div>
-            <LongTab label="Coins" icon={<LensIcon />} {...a11yProps(2)} />
-            <div
-              style={{
-                filter: valueTab === 3 ? "none" : "blur(2px)",
-                cursor: valueTab === 3 ? "" : "default",
-              }}
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-            >
+              <LongTab label="Coins" icon={<LensIcon />} {...a11yProps(2)} />
               <LongTab
                 label="CryptoDetective"
                 icon={<SearchIcon />}
                 {...a11yProps(3)}
                 style={{ cursor: "inherit" }}
               />
-            </div>
-            <div
-              style={{ filter: "blur(2px)", cursor: "default" }}
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-            >
               <LongTab
                 label="Swap"
                 icon={<SwapHorizIcon />}
@@ -394,8 +367,81 @@ class Long extends Component {
                 {...a11yProps(5)}
                 style={{ cursor: "inherit" }}
               />
-            </div>
-          </LongTabs>
+            </LongTabs>
+          ) : (
+            <LongTabs
+              value={valueTab}
+              onChange={handleChangeTabs}
+              aria-label="tool tabs"
+              variant={isMobile ? "scrollable" : "standard"}
+              scrollButtons="auto"
+              centered={!isMobile}
+              textColor="secondary"
+            >
+              <div
+                style={{ filter: "blur(3px)", cursor: "default" }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+              >
+                <LongTab
+                  label="BlueChips"
+                  icon={<CheckCircleIcon />}
+                  {...a11yProps(0)}
+                  style={{ cursor: "inherit" }}
+                />
+              </div>
+              <div
+                style={{ filter: "blur(2px)", cursor: "default" }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+              >
+                <LongTab
+                  label="Dollar Cost Average"
+                  icon={<ShowChartIcon />}
+                  {...a11yProps(1)}
+                  style={{ cursor: "inherit" }}
+                />
+              </div>
+              <LongTab label="Coins" icon={<LensIcon />} {...a11yProps(2)} />
+              <div
+                style={{
+                  filter: valueTab === 3 ? "none" : "blur(2px)",
+                  cursor: valueTab === 3 ? "" : "default",
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+              >
+                <LongTab
+                  label="CryptoDetective"
+                  icon={<SearchIcon />}
+                  {...a11yProps(3)}
+                  style={{ cursor: "inherit" }}
+                />
+              </div>
+              <div
+                style={{ filter: "blur(2px)", cursor: "default" }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+              >
+                <LongTab
+                  label="Swap"
+                  icon={<SwapHorizIcon />}
+                  {...a11yProps(4)}
+                  style={{ cursor: "inherit" }}
+                />
+                <Tab
+                  label="News"
+                  icon={<MenuBookRoundedIcon />}
+                  {...a11yProps(5)}
+                  style={{ cursor: "inherit" }}
+                />
+              </div>
+            </LongTabs>
+          )}
         </AppBar>
         <div
           style={{
