@@ -16,6 +16,7 @@ import { ReactComponent as MediumIcon } from "../../assets/medium.svg";
 import { ReactComponent as LongIcon } from "../../assets/long.svg";
 // import { ReactComponent as MarketIcon } from "../../assets/market.svg";
 import { ReactComponent as WalletIcon } from "../../assets/wallet.svg";
+import AccountBalanceWalletRoundedIcon from "@material-ui/icons/AccountBalanceWalletRounded";
 import TrendingUpIcon from "@material-ui/icons/TrendingUp";
 import FlashOnIcon from "@material-ui/icons/FlashOn";
 import LensIcon from "@material-ui/icons/Lens";
@@ -333,7 +334,7 @@ class Home extends Component {
                   this.nav("/portfolio");
                 }}
               >
-                <WalletIcon
+                <AccountBalanceWalletRoundedIcon
                   fill={colors.white}
                   className={`${classes.iconMobile} icon`}
                 />

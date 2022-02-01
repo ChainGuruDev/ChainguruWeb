@@ -161,6 +161,8 @@ import {
   DB_GET_NFTS_VALUE_RETURNED,
   DB_GET_ASSET_FULLDATA,
   DB_GET_ASSET_FULLDATA_RETURNED,
+  CHECK_BETA_ACCESS,
+  CHECK_BETA_ACCESS_RETURNED,
 } from "../constants";
 
 import {
@@ -506,6 +508,9 @@ class Store {
           case DB_GET_ASSET_FULLDATA:
             this.dbGetAssetFulldata(payload);
             break;
+          case CHECK_BETA_ACCESS:
+            this.web3CheckBetaAccess();
+            break;
           default: {
             break;
           }
@@ -560,6 +565,39 @@ class Store {
       timeLeft * 1000
     );
     emitter.emit(LOGIN_RETURNED, true);
+  };
+
+  web3CheckBetaAccess = async (payload) => {
+    const web3 = new Web3(store.getStore("web3context").library.provider);
+    const account = store.getStore("account");
+
+    let umiNftContract = new web3.eth.Contract(
+      config.umiDigitalABI,
+      config.umiDigitalContract
+    );
+    let betaAccessEditions = config.ChainguruEditionsUmi;
+
+    let balanceAddressArray = [];
+    console.log("checking for access");
+    try {
+      if (account.address) {
+        console.log("account found");
+        for (var i = 0; i < betaAccessEditions.length; i++) {
+          balanceAddressArray.push(account.address);
+        }
+        console.log(umiNftContract);
+        console.log(balanceAddressArray, betaAccessEditions);
+        let hasBetaAccess = await umiNftContract.methods
+          .balanceOfBatch(balanceAddressArray, betaAccessEditions)
+          .call()
+          .then((a) => {
+            console.log(a.includes("1"));
+          });
+      }
+    } catch (e) {
+      console.log(e.message);
+      return emitter.emit(ERROR, "NO BETA FOR YOU");
+    }
   };
 
   giftEdition = async (payload) => {

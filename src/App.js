@@ -28,11 +28,17 @@ import Profile from "./components/profile";
 import { colors } from "./theme";
 
 import { injected } from "./stores/connectors";
-import { CONNECTION_CONNECTED, DARKMODE_SWITCH_RETURN } from "./constants";
+import {
+  CONNECTION_CONNECTED,
+  DARKMODE_SWITCH_RETURN,
+  CHECK_BETA_ACCESS,
+  CHECK_BETA_ACCESS_RETURNED,
+} from "./constants";
 
 import Store from "./stores";
 const emitter = Store.emitter;
 const store = Store.store;
+const dispatcher = Store.dispatcher;
 
 class App extends Component {
   state = {
@@ -60,6 +66,11 @@ class App extends Component {
               chainId: a.provider.chainId,
             });
             emitter.emit(CONNECTION_CONNECTED);
+          })
+          .then((a) => {
+            dispatcher.dispatch({
+              type: CHECK_BETA_ACCESS,
+            });
           })
           .catch((e) => {
             console.log(e);
