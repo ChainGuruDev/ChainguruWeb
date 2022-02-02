@@ -425,10 +425,8 @@ class CryptoDetective extends Component {
       walletColors.push(colours[x]);
       wallets.push(item.wallet);
     });
-    console.log(coinData);
     if (coinData) {
       if (coinData.id && this._isMounted) {
-        console.log("ready to dispatch");
         if (coinData.contract_address) {
           dispatcherZerion.dispatch({
             type: ZERION_GET_ASSETSTATS,
@@ -444,7 +442,7 @@ class CryptoDetective extends Component {
           dispatcherZerion.dispatch({
             type: ZERION_GET_ASSETSTATS,
             wallet: wallets,
-            asset: coinData.symbol,
+            asset: { asset_code: coinData.symbol },
           });
           dispatcher.dispatch({
             type: DB_GET_ADDRESS_TX,
@@ -490,12 +488,11 @@ class CryptoDetective extends Component {
           });
       }
       if (this._isMounted && userWallets) {
-        console.log("getting data");
         if (data[0].contract_address) {
           dispatcherZerion.dispatch({
             type: ZERION_GET_ASSETSTATS,
             wallet: userWallets,
-            asset: data[0].contract_address,
+            asset: { asset_code: data[0].contract_address },
           });
           dispatcher.dispatch({
             type: DB_GET_ADDRESS_TX,
@@ -506,7 +503,7 @@ class CryptoDetective extends Component {
           dispatcherZerion.dispatch({
             type: ZERION_GET_ASSETSTATS,
             wallet: userWallets,
-            asset: data[0].symbol,
+            asset: { asset_code: data[0].symbol },
           });
           dispatcher.dispatch({
             type: DB_GET_ADDRESS_TX,
@@ -564,13 +561,13 @@ class CryptoDetective extends Component {
           dispatcherZerion.dispatch({
             type: ZERION_GET_ASSETSTATS,
             wallet: userWallets,
-            asset: coinData.contract_address,
+            asset: { asset_code: coinData.contract_address },
           });
         } else if (coinData.symbol === "eth") {
           dispatcherZerion.dispatch({
             type: ZERION_GET_ASSETSTATS,
             wallet: userWallets,
-            asset: coinData.symbol,
+            asset: { asset_code: coinData.symbol },
           });
         }
       }

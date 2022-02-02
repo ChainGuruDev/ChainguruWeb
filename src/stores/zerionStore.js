@@ -105,11 +105,11 @@ class Zerion_Store {
           unsubscribe();
           resolve(data.payload);
         } else {
-          console.log("failed verify");
-          console.log("error in expectected response");
-          console.log("-----------------------------");
-          console.log(requestBody);
-          console.log(data);
+          // console.log("failed verify");
+          // console.log("error in expectected response");
+          // console.log("-----------------------------");
+          // console.log(requestBody);
+          // console.log(data);
         }
       }
 
@@ -200,11 +200,96 @@ class Zerion_Store {
     }
   };
 
+  getAddressAssets = async (payload) => {
+    const { address, addresses, asset_codes, currency } = payload;
+
+    function createData(
+      wallet_address,
+      asset_code,
+      name,
+      symbol,
+      decimals,
+      type,
+      icon_url,
+      price,
+      is_displayable,
+      is_verified,
+      quantity,
+      stats,
+      profit_percent
+    ) {
+      return {
+        wallet_address,
+        asset_code,
+        name,
+        symbol,
+        decimals,
+        type,
+        icon_url,
+        price,
+        is_displayable,
+        is_verified,
+        quantity,
+        stats,
+        profit_percent,
+      };
+    }
+
+    try {
+      if (!addresses) {
+        // res.json("no address");
+      }
+      if (!currency) {
+        // res.json("no currency");
+      }
+      let assetCodesLowerCase = [];
+      if (asset_codes) {
+        asset_codes.forEach((item, i) => {
+          assetCodesLowerCase.push(item.toLowerCase());
+        });
+      }
+      let formattedData = [];
+
+      for (var i = 0; i < addresses.length; i++) {
+        const addressLowerCase = addresses[i].toLowerCase();
+        const data = await this.get(addressSocket, {
+          scope: ["assets"],
+          payload: {
+            address: addresses[i].toLowerCase(),
+            currency: currency,
+            asset_codes: assetCodesLowerCase,
+          },
+        });
+        Object.entries(data.assets).forEach(([key, value]) => {
+          formattedData.push(
+            createData(
+              addresses[i].toLowerCase(),
+              value.asset.asset_code,
+              value.asset.name,
+              value.asset.symbol,
+              value.asset.decimals,
+              value.asset.type,
+              value.asset.icon_url,
+              value.asset.price,
+              value.asset.is_displayable,
+              value.asset.is_verified,
+              value.quantity,
+              null,
+              null
+            )
+          );
+        });
+      }
+      return await formattedData;
+    } catch (err) {
+      console.log(err.message);
+      // res.json(err.message);
+    }
+  };
+
   getAssetStats = async (payload) => {
     let vsCoin = storeRoot.getStore("vsCoin");
     const { wallet, asset } = payload;
-    console.log("getting stats");
-    console.log(payload);
     function createData(wallet_address, asset_code, stats, profit_percent) {
       return {
         wallet_address,
@@ -221,35 +306,55 @@ class Zerion_Store {
       keys.length = 0;
       prices.length = 0;
       prices.push(asset.price ? asset.price.value : null);
-      keys.push(asset.asset_code);
+      keys.push(asset.asset_code.toLowerCase());
 
       let addressesLowerCase = [];
       if (Array.isArray(wallet)) {
         wallet.forEach((item, i) => {
           addressesLowerCase.push(item.toLowerCase());
         });
+      } else {
+        addressesLowerCase.push(wallet.toLowerCase());
       }
-
+      let assetData = null;
       let allStats = [];
       if (Array.isArray(keys)) {
         for (var i = 0; i < keys.length; i++) {
           let data;
+          let wallets = [];
           if (Array.isArray(wallet)) {
+            let queryData = {
+              addresses: addressesLowerCase,
+              asset_codes: [asset.asset_code],
+              currency: vsCoin,
+            };
+            assetData = await this.getAddressAssets(queryData);
+            for (var i = 0; i < (await assetData.length); i++) {
+              wallets.push(assetData[i].wallet_address);
+            }
+
             data = await this.get(assetsSocket, {
               scope: ["stats"],
               payload: {
-                addresses: addressesLowerCase,
+                addresses: wallets,
                 currency: vsCoin,
-                asset_code: asset.asset_code.toLowerCase(),
+                asset_code: keys[0],
               },
             });
           } else {
+            let queryData = {
+              addresses: addressesLowerCase,
+              asset_codes: [asset.asset_code],
+              currency: vsCoin,
+            };
+
+            assetData = this.getAddressAssets(queryData);
             data = await this.get(assetsSocket, {
               scope: ["stats"],
               payload: {
                 address: wallet.toLowerCase(),
                 currency: vsCoin,
-                asset_code: asset.asset_code.toLowerCase(),
+                asset_code: keys[0],
               },
             });
           }
@@ -274,7 +379,11 @@ class Zerion_Store {
           createData(payload.wallet, keys[0], allStats[0].stats, profit_percent)
         );
       }
-      emitter.emit(ZERION_ASSETSTATS_RETURNED, finalData);
+      emitter.emit(
+        ZERION_ASSETSTATS_RETURNED,
+        await finalData,
+        await assetData
+      );
     } catch (err) {
       console.log(err.message);
       emitter.emit(ERROR_ZERION, await err.message);

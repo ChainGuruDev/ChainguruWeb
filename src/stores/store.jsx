@@ -2533,7 +2533,6 @@ ${nonce}`,
     let vsCoin = store.getStore("vsCoin");
     let wallets = data.payload.wallet;
     let assetData = null;
-    console.log(data.payload.assetCode);
     try {
       //IF multiple wallets check which ones have the asset
       if (data.payload.wallet.length > 1) {
