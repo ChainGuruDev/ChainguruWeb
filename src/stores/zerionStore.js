@@ -5,6 +5,8 @@ import {
   ZERION_ADDRESS_CHART_RETURNED,
   ZERION_ADDRESS_PORTFOLIO_RETURNED,
   ZERION_GET_ADDRESS_PORTFOLIO,
+  ZERION_GET_ASSETSTATS,
+  ZERION_ASSETSTATS_RETURNED,
 } from "../constants/zerion.js";
 
 import Store from "./store.jsx";
@@ -75,6 +77,9 @@ class Zerion_Store {
             break;
           case ZERION_GET_ADDRESS_PORTFOLIO:
             this.getAddressPortfolio(payload);
+            break;
+          case ZERION_GET_ASSETSTATS:
+            this.getAssetStats(payload);
             break;
           default:
             break;
@@ -192,6 +197,87 @@ class Zerion_Store {
     } catch (err) {
       console.log(err.message);
       emitter.emit(ERROR_ZERION, err.message);
+    }
+  };
+
+  getAssetStats = async (payload) => {
+    let vsCoin = storeRoot.getStore("vsCoin");
+    const { wallet, asset } = payload;
+
+    function createData(wallet_address, asset_code, stats, profit_percent) {
+      return {
+        wallet_address,
+        asset_code,
+        stats,
+        profit_percent,
+      };
+    }
+
+    try {
+      let finalData = [];
+      let keys = [];
+      let prices = [];
+      keys.length = 0;
+      prices.length = 0;
+      prices.push(asset.price ? asset.price.value : null);
+      keys.push(asset.asset_code);
+
+      let addressesLowerCase = [];
+      if (Array.isArray(wallet)) {
+        wallet.forEach((item, i) => {
+          addressesLowerCase.push(item.toLowerCasev());
+        });
+      }
+
+      let allStats = [];
+
+      if (Array.isArray(keys)) {
+        for (var i = 0; i < keys.length; i++) {
+          let data;
+          if (Array.isArray(wallet)) {
+            data = await this.get(assetsSocket, {
+              scope: ["stats"],
+              payload: {
+                addresses: addressesLowerCase,
+                currency: vsCoin,
+                asset_code: asset.asset_code.toLowerCase(),
+              },
+            });
+          } else {
+            data = await this.get(assetsSocket, {
+              scope: ["stats"],
+              payload: {
+                address: wallet.toLowerCase(),
+                currency: vsCoin,
+                asset_code: asset.asset_code.toLowerCase(),
+              },
+            });
+          }
+          data.asset_code = asset.asset_code;
+          data.wallet = wallet;
+          allStats.push(data);
+        }
+      }
+
+      if (allStats.length > 0) {
+        let profit_percent;
+        if (allStats[0].stats && allStats[0].stats.avg_buy_price && prices[0]) {
+          profit_percent =
+            ((prices[0] - allStats[0].stats.avg_buy_price) /
+              allStats[0].stats.avg_buy_price) *
+            100;
+        } else {
+          profit_percent = null;
+        }
+
+        finalData.push(
+          createData(payload.wallet, keys[0], allStats[0].stats, profit_percent)
+        );
+      }
+      emitter.emit(ZERION_ASSETSTATS_RETURNED, finalData);
+    } catch (err) {
+      console.log(err.message);
+      emitter.emit(ERROR_ZERION, await err.message);
     }
   };
 }

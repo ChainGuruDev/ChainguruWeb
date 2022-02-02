@@ -97,6 +97,8 @@ import {
   ZERION_ADDRESS_CHART_RETURNED,
   ZERION_GET_ADDRESS_PORTFOLIO,
   ZERION_ADDRESS_PORTFOLIO_RETURNED,
+  ZERION_GET_ASSETSTATS,
+  ZERION_ASSETSTATS_RETURNED,
 } from "../../constants/zerion.js";
 
 import Store from "../../stores";
@@ -369,10 +371,7 @@ class PortfolioBig extends Component {
     emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
     emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
-    emitter.on(
-      DB_GET_PORTFOLIO_ASSET_STATS_RETURNED,
-      this.dbGetPortfolioAssetStatsReturned
-    );
+
     emitter.on(DB_UPDATE_PORTFOLIO_RETURNED, this.dbGetPortfolioReturned);
     emitter.on(DB_SET_USER_WALLET_NICKNAME_RETURNED, this.setNicknameReturned);
     emitter.on(
@@ -400,6 +399,10 @@ class PortfolioBig extends Component {
       ZERION_ADDRESS_PORTFOLIO_RETURNED,
       this.dbGetPortfolioStatsReturned
     );
+    emitterZerion.on(
+      ZERION_ASSETSTATS_RETURNED,
+      this.dbGetPortfolioAssetStatsReturned
+    );
   }
 
   componentWillUnmount() {
@@ -410,8 +413,8 @@ class PortfolioBig extends Component {
       this.connectionDisconnected
     );
     emitter.removeListener(DB_USERDATA_RETURNED, this.dbUserDataReturned);
-    emitter.removeListener(
-      DB_GET_PORTFOLIO_ASSET_STATS_RETURNED,
+    emitterZerion.removeListener(
+      ZERION_ASSETSTATS_RETURNED,
       this.dbGetPortfolioAssetStatsReturned
     );
     emitter.removeListener(
@@ -1866,8 +1869,8 @@ class PortfolioBig extends Component {
       });
       if (data.chain === "ethereum") {
         this._isMounted &&
-          dispatcher.dispatch({
-            type: DB_GET_PORTFOLIO_ASSET_STATS,
+          dispatcherZerion.dispatch({
+            type: ZERION_GET_ASSETSTATS,
             wallet: data.wallet,
             asset: data.asset,
           });
@@ -2112,7 +2115,7 @@ class PortfolioBig extends Component {
                   <Typography variant={"h3"} color="primary">
                     $ {asset.value && formatMoney(asset.value)}
                   </Typography>
-                  {asset.asset.price.relative_change_24h && (
+                  {asset.asset.price && asset.asset.price.relative_change_24h && (
                     <div style={{ display: "flex", justifyContent: "end" }}>
                       {asset.asset.price.relative_change_24h > 0 && (
                         <ArrowDropUpRoundedIcon color="primary" size="small" />
