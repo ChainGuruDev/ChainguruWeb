@@ -203,7 +203,8 @@ class Zerion_Store {
   getAssetStats = async (payload) => {
     let vsCoin = storeRoot.getStore("vsCoin");
     const { wallet, asset } = payload;
-
+    console.log("getting stats");
+    console.log(payload);
     function createData(wallet_address, asset_code, stats, profit_percent) {
       return {
         wallet_address,
@@ -225,12 +226,11 @@ class Zerion_Store {
       let addressesLowerCase = [];
       if (Array.isArray(wallet)) {
         wallet.forEach((item, i) => {
-          addressesLowerCase.push(item.toLowerCasev());
+          addressesLowerCase.push(item.toLowerCase());
         });
       }
 
       let allStats = [];
-
       if (Array.isArray(keys)) {
         for (var i = 0; i < keys.length; i++) {
           let data;

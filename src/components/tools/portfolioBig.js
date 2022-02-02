@@ -1858,11 +1858,9 @@ class PortfolioBig extends Component {
     });
   };
 
-  getAssetDetails = (e, data) => {
+  getAssetDetails = (data) => {
     const { portfolioData } = this.state;
     const vsCoin = store.getStore("vsCoin");
-    e.stopPropagation = true;
-    e.preventDefault = true;
     if (data.hideStats === undefined || data.hideStats === true) {
       this.setState({
         loadingStats: true,
@@ -2153,7 +2151,7 @@ class PortfolioBig extends Component {
                 className={classes.showPyLBTN}
                 onClick={(e) => {
                   e.stopPropagation();
-                  this.getAssetDetails(e, asset);
+                  this.getAssetDetails(asset);
                 }}
               >
                 {loadingStats && <CircularProgress size={25} />}

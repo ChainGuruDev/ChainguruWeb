@@ -93,10 +93,22 @@ import {
   LOGIN_RETURNED,
 } from "../../constants";
 
+import {
+  ERROR_ZERION,
+  ZERION_GET_ASSETSTATS,
+  ZERION_ASSETSTATS_RETURNED,
+} from "../../constants/zerion.js";
+
 import Store from "../../stores";
+import Zerion_Store from "../../stores/zerionStore.js";
+
 const emitter = Store.emitter;
 const store = Store.store;
 const dispatcher = Store.dispatcher;
+
+const emitterZerion = Zerion_Store.emitter;
+const storeZerion = Zerion_Store.store;
+const dispatcherZerion = Zerion_Store.dispatcher;
 
 const CryptoNews = React.lazy(() => import("../tools/news.js"));
 
@@ -262,10 +274,11 @@ class CryptoDetective extends Component {
     emitter.on(DB_CREATE_LS_RETURNED, this.db_createLSReturned);
     emitter.on(DB_CHECK_LS_RESULT_RETURNED, this.db_checkLSResultReturned);
     emitter.on(COIN_PRICECHART_RETURNED, this.priceChartReturned);
-    emitter.on(DB_GET_ASSETSTATS_RETURNED, this.db_getAssetStatsReturned);
     emitter.on(GETTING_NEW_CHART_DATA, this.newSearch);
     emitter.on(DB_GET_ADDRESS_TX_RETURNED, this.txReturned);
     emitter.on(LOGIN_RETURNED, this.loginReturned);
+
+    emitterZerion.on(ZERION_ASSETSTATS_RETURNED, this.db_getAssetStatsReturned);
 
     if (userAuth && account && account.address) {
       this._isMounted &&
@@ -311,8 +324,8 @@ class CryptoDetective extends Component {
       DB_CHECK_LS_RESULT_RETURNED,
       this.db_checkLSResultReturned
     );
-    emitter.removeListener(
-      DB_GET_ASSETSTATS_RETURNED,
+    emitterZerion.removeListener(
+      ZERION_ASSETSTATS_RETURNED,
       this.db_getAssetStatsReturned
     );
     emitter.removeListener(COIN_PRICECHART_RETURNED, this.priceChartReturned);
@@ -327,7 +340,6 @@ class CryptoDetective extends Component {
   componentDidUpdate(prevProps) {
     if (prevProps.match.params.coinID !== this.props.match.params.coinID) {
       if (this.props.match.params.coinID) {
-        console.log("newSearch");
         this._isMounted &&
           this.setState({
             loading: true,
@@ -413,15 +425,15 @@ class CryptoDetective extends Component {
       walletColors.push(colours[x]);
       wallets.push(item.wallet);
     });
+    console.log(coinData);
     if (coinData) {
       if (coinData.id && this._isMounted) {
+        console.log("ready to dispatch");
         if (coinData.contract_address) {
-          dispatcher.dispatch({
-            type: DB_GET_ASSETSTATS,
-            payload: {
-              wallet: wallets,
-              assetCode: coinData.contract_address,
-            },
+          dispatcherZerion.dispatch({
+            type: ZERION_GET_ASSETSTATS,
+            wallet: wallets,
+            asset: { asset_code: coinData.contract_address },
           });
           dispatcher.dispatch({
             type: DB_GET_ADDRESS_TX,
@@ -429,12 +441,10 @@ class CryptoDetective extends Component {
             query: coinData.contract_address,
           });
         } else if (coinData.symbol === "eth") {
-          dispatcher.dispatch({
-            type: DB_GET_ASSETSTATS,
-            payload: {
-              wallet: wallets,
-              assetCode: coinData.symbol,
-            },
+          dispatcherZerion.dispatch({
+            type: ZERION_GET_ASSETSTATS,
+            wallet: wallets,
+            asset: coinData.symbol,
           });
           dispatcher.dispatch({
             type: DB_GET_ADDRESS_TX,
@@ -480,13 +490,12 @@ class CryptoDetective extends Component {
           });
       }
       if (this._isMounted && userWallets) {
+        console.log("getting data");
         if (data[0].contract_address) {
-          dispatcher.dispatch({
-            type: DB_GET_ASSETSTATS,
-            payload: {
-              wallet: userWallets,
-              assetCode: data[0].contract_address,
-            },
+          dispatcherZerion.dispatch({
+            type: ZERION_GET_ASSETSTATS,
+            wallet: userWallets,
+            asset: data[0].contract_address,
           });
           dispatcher.dispatch({
             type: DB_GET_ADDRESS_TX,
@@ -494,12 +503,10 @@ class CryptoDetective extends Component {
             query: data[0].contract_address,
           });
         } else if (data[0].symbol === "eth") {
-          dispatcher.dispatch({
-            type: DB_GET_ASSETSTATS,
-            payload: {
-              wallet: userWallets,
-              assetCode: data[0].symbol,
-            },
+          dispatcherZerion.dispatch({
+            type: ZERION_GET_ASSETSTATS,
+            wallet: userWallets,
+            asset: data[0].symbol,
           });
           dispatcher.dispatch({
             type: DB_GET_ADDRESS_TX,
@@ -554,20 +561,16 @@ class CryptoDetective extends Component {
       });
       if (userWallets) {
         if (coinData.contract_address) {
-          dispatcher.dispatch({
-            type: DB_GET_ASSETSTATS,
-            payload: {
-              wallet: userWallets,
-              assetCode: coinData.contract_address,
-            },
+          dispatcherZerion.dispatch({
+            type: ZERION_GET_ASSETSTATS,
+            wallet: userWallets,
+            asset: coinData.contract_address,
           });
         } else if (coinData.symbol === "eth") {
-          dispatcher.dispatch({
-            type: DB_GET_ASSETSTATS,
-            payload: {
-              wallet: userWallets,
-              assetCode: coinData.symbol,
-            },
+          dispatcherZerion.dispatch({
+            type: ZERION_GET_ASSETSTATS,
+            wallet: userWallets,
+            asset: coinData.symbol,
           });
         }
       }
