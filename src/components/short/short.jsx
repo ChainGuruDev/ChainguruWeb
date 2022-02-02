@@ -332,6 +332,7 @@ class Short extends Component {
   render() {
     const { classes } = this.props;
     const { valueTab, coinID, darkMode, snackbarMessage } = this.state;
+    const hasBetaAccess = store.getStore("hasBetaAccess");
     const handleChangeTabs = (event, newValueTab) => {
       this.setState({ valueTab: newValueTab });
       let newScreen = this.toolID2tool(newValueTab);
@@ -340,7 +341,8 @@ class Short extends Component {
     return (
       <div className={classes.rootTabs} id="rootShort">
         <AppBar position="static" color="default" style={{ height: "72px" }}>
-          {process.env.REACT_APP_CHAINGURU_VERSION === "beta" ? (
+          {process.env.REACT_APP_CHAINGURU_VERSION === "beta" &&
+          hasBetaAccess ? (
             <Tabs
               value={valueTab}
               onChange={handleChangeTabs}

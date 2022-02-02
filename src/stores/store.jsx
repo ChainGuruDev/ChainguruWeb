@@ -257,6 +257,7 @@ class Store {
       authTokenExp: null,
       userWallets: null,
       userNickname: null,
+      hasBetaAccess: false,
     };
 
     dispatcher.register(
@@ -578,20 +579,19 @@ class Store {
     let betaAccessEditions = config.ChainguruEditionsUmi;
 
     let balanceAddressArray = [];
-    console.log("checking for access");
     try {
       if (account.address) {
-        console.log("account found");
         for (var i = 0; i < betaAccessEditions.length; i++) {
           balanceAddressArray.push(account.address);
         }
-        console.log(umiNftContract);
-        console.log(balanceAddressArray, betaAccessEditions);
         let hasBetaAccess = await umiNftContract.methods
           .balanceOfBatch(balanceAddressArray, betaAccessEditions)
           .call()
           .then((a) => {
-            console.log(a.includes("1"));
+            const access = a.includes("1");
+            this.setStore({
+              hasBetaAccess: access,
+            });
           });
       }
     } catch (e) {
@@ -2533,6 +2533,7 @@ ${nonce}`,
     let vsCoin = store.getStore("vsCoin");
     let wallets = data.payload.wallet;
     let assetData = null;
+    console.log(data.payload.assetCode);
     try {
       //IF multiple wallets check which ones have the asset
       if (data.payload.wallet.length > 1) {
@@ -2543,7 +2544,7 @@ ${nonce}`,
           {
             addresses: data.payload.wallet,
             currency: vsCoin,
-            asset_codes: [data.payload.assetCode],
+            asset_code: [data.payload.assetCode],
           }
         );
         for (var i = 0; i < (await assetData.data.length); i++) {
@@ -2555,7 +2556,7 @@ ${nonce}`,
           {
             addresses: wallets,
             currency: vsCoin,
-            asset_codes: [data.payload.assetCode],
+            asset_code: [data.payload.assetCode],
           }
         );
       }
@@ -2925,11 +2926,14 @@ ${nonce}`,
   db_getPortfolioAssetStats = async (payload) => {
     let vsCoin = store.getStore("vsCoin");
     const account = store.getStore("account");
+    console.log(payload);
+
     if (assetStatsRequest) {
       assetStatsRequest.cancel("req. cancelled");
     }
-    const CancelToken = axios.CancelToken;
-    assetStatsRequest = CancelToken.source();
+    const CancelToken = await axios.CancelToken;
+    assetStatsRequest = await CancelToken.source();
+
     function createData(wallet_address, asset_code, stats, profit_percent) {
       return {
         wallet_address,
@@ -2938,9 +2942,9 @@ ${nonce}`,
         profit_percent,
       };
     }
+
     try {
       let finalData = [];
-
       let keys = [];
       let prices = [];
       keys.length = 0;
@@ -2957,7 +2961,7 @@ ${nonce}`,
             asset_code: keys,
           },
           {
-            cancelToken: assetStatsRequest.token,
+            cancelToken: await assetStatsRequest.token,
           }
         )
         .catch(function (thrown) {
@@ -2965,7 +2969,7 @@ ${nonce}`,
             console.log("Request canceled");
           }
         });
-      if (portfolioAssetStats) {
+      if (await portfolioAssetStats) {
         let profit_percent;
         if (
           portfolioAssetStats.data[0].stats &&

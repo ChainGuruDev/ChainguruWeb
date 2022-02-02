@@ -292,6 +292,7 @@ class PortfolioManagement extends Component {
   render() {
     const { classes } = this.props;
     const { valueTab, darkMode } = this.state;
+    const hasBetaAccess = store.getStore("hasBetaAccess");
 
     const handleChangeTabs = (event, newValueTab) => {
       this.setState({ valueTab: newValueTab });
@@ -302,7 +303,8 @@ class PortfolioManagement extends Component {
     return (
       <Grid className={classes.rootTabs}>
         <AppBar position="static" color="default">
-          {process.env.REACT_APP_CHAINGURU_VERSION === "beta" ? (
+          {process.env.REACT_APP_CHAINGURU_VERSION === "beta" &&
+          hasBetaAccess ? (
             <PortfolioTabs
               value={valueTab}
               onChange={handleChangeTabs}

@@ -91,10 +91,24 @@ import {
   GECKO_GET_SPARKLINE_FROM_CONTRACT_RETURNED,
 } from "../../constants";
 
+import {
+  ERROR_ZERION,
+  ZERION_GET_ADDRESS_CHART,
+  ZERION_ADDRESS_CHART_RETURNED,
+  ZERION_GET_ADDRESS_PORTFOLIO,
+  ZERION_ADDRESS_PORTFOLIO_RETURNED,
+} from "../../constants/zerion.js";
+
 import Store from "../../stores";
+import Zerion_Store from "../../stores/zerionStore.js";
+
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
 const store = Store.store;
+
+const storeZerion = Zerion_Store.store;
+const emitterZerion = Zerion_Store.emitter;
+const dispatcherZerion = Zerion_Store.dispatcher;
 
 const styles = (theme) => ({
   root: {
@@ -226,10 +240,12 @@ const styles = (theme) => ({
   },
   assetLogoGrid: {
     right: "4vh",
+    top: "-3vh",
     position: "relative",
     width: "30px",
     opacity: "25%",
     transition: "0.3s all",
+    height: "inherit",
   },
   assetTokenLogo: {
     width: 125,
@@ -354,16 +370,8 @@ class PortfolioBig extends Component {
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
     emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
     emitter.on(
-      DB_GET_PORTFOLIO_CHART_RETURNED,
-      this.db_getPortfolioChartReturned
-    );
-    emitter.on(
       DB_GET_PORTFOLIO_ASSET_STATS_RETURNED,
       this.dbGetPortfolioAssetStatsReturned
-    );
-    emitter.on(
-      DB_GET_PORTFOLIO_STATS_RETURNED,
-      this.dbGetPortfolioStatsReturned
     );
     emitter.on(DB_UPDATE_PORTFOLIO_RETURNED, this.dbGetPortfolioReturned);
     emitter.on(DB_SET_USER_WALLET_NICKNAME_RETURNED, this.setNicknameReturned);
@@ -384,6 +392,14 @@ class PortfolioBig extends Component {
       this.sparklineDataReturned
     );
     emitter.on(LOGIN_RETURNED, this.loginReturned);
+    emitterZerion.on(
+      ZERION_ADDRESS_CHART_RETURNED,
+      this.db_getPortfolioChartReturned
+    );
+    emitterZerion.on(
+      ZERION_ADDRESS_PORTFOLIO_RETURNED,
+      this.dbGetPortfolioStatsReturned
+    );
   }
 
   componentWillUnmount() {
@@ -397,10 +413,6 @@ class PortfolioBig extends Component {
     emitter.removeListener(
       DB_GET_PORTFOLIO_ASSET_STATS_RETURNED,
       this.dbGetPortfolioAssetStatsReturned
-    );
-    emitter.removeListener(
-      DB_GET_PORTFOLIO_CHART_RETURNED,
-      this.db_getPortfolioChartReturned
     );
     emitter.removeListener(
       DB_UPDATE_PORTFOLIO_RETURNED,
@@ -418,10 +430,6 @@ class PortfolioBig extends Component {
       DB_REMOVE_USER_WALLET_NICKNAME_RETURNED,
       this.setNicknameReturned
     );
-    emitter.removeListener(
-      DB_GET_PORTFOLIO_STATS_RETURNED,
-      this.dbGetPortfolioStatsReturned
-    );
     emitter.removeListener(CHECK_ACCOUNT_RETURNED, this.checkAccountReturned);
     emitter.removeListener(DB_ADD_WALLET_RETURNED, this.dbWalletReturned);
     emitter.removeListener(DB_DEL_WALLET_RETURNED, this.dbWalletReturned);
@@ -434,7 +442,14 @@ class PortfolioBig extends Component {
       this.sparklineDataReturned
     );
     emitter.removeListener(LOGIN_RETURNED, this.loginReturned);
-
+    emitterZerion.removeListener(
+      ZERION_ADDRESS_CHART_RETURNED,
+      this.db_getPortfolioChartReturned
+    );
+    emitterZerion.removeListener(
+      ZERION_ADDRESS_PORTFOLIO_RETURNED,
+      this.dbGetPortfolioStatsReturned
+    );
     this._isMounted = false;
   }
 
@@ -594,15 +609,15 @@ class PortfolioBig extends Component {
     const mainnetAssets = portfolioData.mainnetAssets;
     if (this.state.selectedWallet === "all") {
       this._isMounted &&
-        dispatcher.dispatch({
-          type: DB_GET_PORTFOLIO_CHART,
+        dispatcherZerion.dispatch({
+          type: ZERION_GET_ADDRESS_CHART,
           wallet: this.state.userWallets,
           timeframe: "w",
         });
       this._isMounted &&
-        dispatcher.dispatch({
-          type: DB_GET_PORTFOLIO_STATS,
-          wallet: this.state.userWallets,
+        dispatcherZerion.dispatch({
+          type: ZERION_GET_ADDRESS_PORTFOLIO,
+          addresses: this.state.userWallets,
         });
       // this._isMounted &&
       //   dispatcher.dispatch({
@@ -612,15 +627,15 @@ class PortfolioBig extends Component {
       //   });
     } else {
       this._isMounted &&
-        dispatcher.dispatch({
-          type: DB_GET_PORTFOLIO_CHART,
+        dispatcherZerion.dispatch({
+          type: ZERION_GET_ADDRESS_CHART,
           wallet: [mainnetAssets[0].wallet_address],
           timeframe: "w",
         });
       this._isMounted &&
-        dispatcher.dispatch({
-          type: DB_GET_PORTFOLIO_STATS,
-          wallet: [mainnetAssets[0].wallet_address],
+        dispatcherZerion.dispatch({
+          type: ZERION_GET_ADDRESS_PORTFOLIO,
+          address: [this.state.selectedWallet],
         });
       // this._isMounted &&
       //   dispatcher.dispatch({
@@ -648,17 +663,33 @@ class PortfolioBig extends Component {
       chartDataLoaded: false,
     });
 
+    // if (this.state.selectedWallet === "all") {
+    //   this._isMounted &&
+    //     dispatcher.dispatch({
+    //       type: DB_GET_PORTFOLIO_CHART,
+    //       wallet: this.state.userWallets,
+    //       timeframe: "w",
+    //     });
+    // } else {
+    //   this._isMounted &&
+    //     dispatcher.dispatch({
+    //       type: DB_GET_PORTFOLIO_CHART,
+    //       wallet: [this.state.selectedWallet],
+    //       timeframe: "w",
+    //     });
+    // }
+
     if (this.state.selectedWallet === "all") {
       this._isMounted &&
-        dispatcher.dispatch({
-          type: DB_GET_PORTFOLIO_CHART,
+        dispatcherZerion.dispatch({
+          type: ZERION_GET_ADDRESS_CHART,
           wallet: this.state.userWallets,
           timeframe: "w",
         });
     } else {
       this._isMounted &&
-        dispatcher.dispatch({
-          type: DB_GET_PORTFOLIO_CHART,
+        dispatcherZerion.dispatch({
+          type: ZERION_GET_ADDRESS_CHART,
           wallet: [this.state.selectedWallet],
           timeframe: "w",
         });
@@ -673,15 +704,15 @@ class PortfolioBig extends Component {
 
     if (this.state.selectedWallet === "all") {
       this._isMounted &&
-        dispatcher.dispatch({
-          type: DB_GET_PORTFOLIO_STATS,
-          wallet: this.state.userWallets,
+        dispatcherZerion.dispatch({
+          type: ZERION_GET_ADDRESS_PORTFOLIO,
+          addresses: this.state.userWallets,
         });
     } else {
       this._isMounted &&
-        dispatcher.dispatch({
-          type: DB_GET_PORTFOLIO_STATS,
-          wallet: [this.state.selectedWallet],
+        dispatcherZerion.dispatch({
+          type: ZERION_GET_ADDRESS_PORTFOLIO,
+          address: [this.state.selectedWallet],
         });
     }
   };
@@ -799,15 +830,15 @@ class PortfolioBig extends Component {
 
     if (this.state.selectedWallet === "all") {
       this._isMounted &&
-        dispatcher.dispatch({
-          type: DB_GET_PORTFOLIO_CHART,
+        dispatcherZerion.dispatch({
+          type: ZERION_GET_ADDRESS_CHART,
           wallet: this.state.userWallets,
           timeframe: "w",
         });
       this._isMounted &&
-        dispatcher.dispatch({
-          type: DB_GET_PORTFOLIO_STATS,
-          wallet: this.state.userWallets,
+        dispatcherZerion.dispatch({
+          type: ZERION_GET_ADDRESS_PORTFOLIO,
+          addresses: this.state.userWallets,
         });
       // this._isMounted &&
       //   dispatcher.dispatch({
@@ -818,15 +849,15 @@ class PortfolioBig extends Component {
       //   });
     } else {
       this._isMounted &&
-        dispatcher.dispatch({
-          type: DB_GET_PORTFOLIO_CHART,
+        dispatcherZerion.dispatch({
+          type: ZERION_GET_ADDRESS_CHART,
           wallet: [this.state.selectedWallet],
           timeframe: "w",
         });
       this._isMounted &&
-        dispatcher.dispatch({
-          type: DB_GET_PORTFOLIO_STATS,
-          wallet: [this.state.selectedWallet],
+        dispatcherZerion.dispatch({
+          type: ZERION_GET_ADDRESS_PORTFOLIO,
+          address: [this.state.selectedWallet],
         });
       // this._isMounted &&
       //   dispatcher.dispatch({
@@ -1689,7 +1720,14 @@ class PortfolioBig extends Component {
                           }
                           variant={"subtitle2"}
                         >
-                          {row.asset.price.relative_change_24h.toFixed(2)} %
+                          {row.asset.price.relative_change_24h.toFixed(2)} % (${" "}
+                          {(
+                            ((row.asset.price.relative_change_24h *
+                              row.asset.price.value) /
+                              100) *
+                            row.quantityDecimals
+                          ).toFixed(2)}
+                          )
                         </Typography>
                       </div>
                     )}
@@ -1926,6 +1964,7 @@ class PortfolioBig extends Component {
           >
             <CardActionArea
               style={{
+                height: "inherit",
                 display: "flex",
                 justifyContent: "space-between",
               }}
@@ -2039,12 +2078,11 @@ class PortfolioBig extends Component {
                 )}
               </Grid>
               <Grid
+                container
+                direction={"row"}
+                alignItems={"center"}
                 style={{
                   marginLeft: "auto",
-                  display: "flex",
-                  height: "100%",
-                  alignItems: "center",
-                  width: "100%",
                 }}
                 align="right"
               >
@@ -2052,70 +2090,76 @@ class PortfolioBig extends Component {
                   <Typography variant={"body1"} style={{ fontSize: 22 }}>
                     {formatMoney(asset.quantityDecimals)}
                   </Typography>
-                  <Typography style={{ opacity: 0.7 }} variant={"body1"}>
-                    {asset.asset.symbol}
-                  </Typography>
-                </Grid>
-                <Grid style={{ marginLeft: 10 }} align="right">
-                  {asset.asset.price && (
-                    <>
-                      <Typography style={{ fontSize: 22 }} variant={"body1"}>
+                  <Grid style={{ marginLeft: 10 }} align="right">
+                    {asset.asset.price && (
+                      <Typography variant={"subtitle2"}>
                         {getVsSymbol(vsCoin) +
                           " " +
                           formatMoney(asset.asset.price.value)}
                       </Typography>
-                      {asset.asset.price.relative_change_24h && (
-                        <div style={{ display: "flex", justifyContent: "end" }}>
-                          {asset.asset.price.relative_change_24h > 0 && (
-                            <ArrowDropUpRoundedIcon
-                              color="primary"
-                              size="small"
-                            />
-                          )}
-                          {asset.asset.price.relative_change_24h < 0 && (
-                            <ArrowDropDownRoundedIcon
-                              color="secondary"
-                              size="small"
-                            />
-                          )}
-                          <Typography
-                            color={
-                              asset.asset.price.relative_change_24h > 0
-                                ? "primary"
-                                : "secondary"
-                            }
-                            variant={"subtitle2"}
-                          >
-                            {asset.asset.price.relative_change_24h.toFixed(2)} %
-                          </Typography>
-                        </div>
-                      )}
-                    </>
-                  )}
+                    )}
+                  </Grid>
+                </Grid>
+                <Grid style={{ margin: "6px 0px auto 5px" }}>
+                  <Typography style={{ opacity: 0.7 }} variant={"body1"}>
+                    {asset.asset.symbol}
+                  </Typography>
                 </Grid>
                 <Grid
                   style={{ marginLeft: "auto", marginRight: 10 }}
                   align="right"
                 >
-                  <Typography variant={"h2"} color="primary">
+                  <Typography variant={"h3"} color="primary">
                     $ {asset.value && formatMoney(asset.value)}
                   </Typography>
-                </Grid>
-                <Grid
-                  className={classes.showPyLBTN}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    this.getAssetDetails(e, asset);
-                  }}
-                >
-                  {loadingStats && <CircularProgress size={25} />}
-                  {!loadingStats &&
-                    (asset.hideStats === undefined ||
-                      asset.hideStats === true) && <BarChartRoundedIcon />}
-                  {!loadingStats && asset.hideStats === false && (
-                    <ArrowDropUpRoundedIcon />
+                  {asset.asset.price.relative_change_24h && (
+                    <div style={{ display: "flex", justifyContent: "end" }}>
+                      {asset.asset.price.relative_change_24h > 0 && (
+                        <ArrowDropUpRoundedIcon color="primary" size="small" />
+                      )}
+                      {asset.asset.price.relative_change_24h < 0 && (
+                        <ArrowDropDownRoundedIcon
+                          color="secondary"
+                          size="small"
+                        />
+                      )}
+                      <Typography
+                        color={
+                          asset.asset.price.relative_change_24h > 0
+                            ? "primary"
+                            : "secondary"
+                        }
+                        variant={"subtitle2"}
+                      >
+                        {asset.asset.price.relative_change_24h.toFixed(2)} % (
+                        {getVsSymbol(vsCoin) +
+                          " " +
+                          (
+                            ((asset.asset.price.relative_change_24h *
+                              asset.asset.price.value) /
+                              100) *
+                            asset.quantityDecimals
+                          ).toFixed(2)}
+                        )
+                      </Typography>
+                    </div>
                   )}
                 </Grid>
+              </Grid>
+              <Grid
+                className={classes.showPyLBTN}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  this.getAssetDetails(e, asset);
+                }}
+              >
+                {loadingStats && <CircularProgress size={25} />}
+                {!loadingStats &&
+                  (asset.hideStats === undefined ||
+                    asset.hideStats === true) && <BarChartRoundedIcon />}
+                {!loadingStats && asset.hideStats === false && (
+                  <ArrowDropUpRoundedIcon />
+                )}
               </Grid>
             </CardActionArea>
           </Card>
@@ -3084,15 +3128,15 @@ class PortfolioBig extends Component {
   timeframeBTNClicked = (newTimeframe) => {
     if (this.state.selectedWallet === "all") {
       this._isMounted &&
-        dispatcher.dispatch({
-          type: DB_GET_PORTFOLIO_CHART,
+        dispatcherZerion.dispatch({
+          type: ZERION_GET_ADDRESS_CHART,
           wallet: this.state.userWallets,
           timeframe: newTimeframe,
         });
     } else {
       this._isMounted &&
-        dispatcher.dispatch({
-          type: DB_GET_PORTFOLIO_CHART,
+        dispatcherZerion.dispatch({
+          type: ZERION_GET_ADDRESS_CHART,
           wallet: [this.state.selectedWallet],
           timeframe: newTimeframe,
         });

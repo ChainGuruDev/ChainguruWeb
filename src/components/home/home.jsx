@@ -358,7 +358,7 @@ class Home extends Component {
               this.nav("/portfolio");
             }}
           >
-            <WalletIcon
+            <AccountBalanceWalletRoundedIcon
               fill={colors.white}
               className={`${classes.icon} icon`}
             />

@@ -39,6 +39,7 @@ import {
 } from "../../constants";
 
 import Store from "../../stores";
+const store = Store.store;
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
 
@@ -316,7 +317,7 @@ class Long extends Component {
   render() {
     const { classes } = this.props;
     const { snackbarMessage, valueTab, darkMode, coinID } = this.state;
-
+    const hasBetaAccess = store.getStore("hasBetaAccess");
     const handleChangeTabs = (event, newValueTab) => {
       this.setState({ valueTab: newValueTab });
       let newScreen = this.toolID2tool(newValueTab);
@@ -326,7 +327,8 @@ class Long extends Component {
     return (
       <Grid className={classes.rootTabs}>
         <AppBar position="static" color="default">
-          {process.env.REACT_APP_CHAINGURU_VERSION === "beta" ? (
+          {process.env.REACT_APP_CHAINGURU_VERSION === "beta" &&
+          hasBetaAccess ? (
             <LongTabs
               value={valueTab}
               onChange={handleChangeTabs}
