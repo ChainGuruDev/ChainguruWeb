@@ -190,6 +190,30 @@ function getVsSymbol(vsCoin) {
   }
 }
 
+const LEVEL_MOD = 0.05;
+
+function convertXpToLevel(xp) {
+  return Math.floor(LEVEL_MOD * Math.sqrt(xp));
+}
+
+function convertLevelToXp(level) {
+  return Math.pow(level / LEVEL_MOD, 2);
+}
+
+function getLevel(xp) {
+  return convertXpToLevel(xp);
+}
+
+function getLevelProgress(xp) {
+  const currentLevelXP = convertLevelToXp(getLevel(xp));
+  const nextLevelXP = convertLevelToXp(getLevel(xp) + 1);
+
+  const neededXP = nextLevelXP - currentLevelXP;
+  const earnedXP = nextLevelXP - xp;
+
+  return 100 - Math.ceil((earnedXP / neededXP) * 100);
+}
+
 export {
   formatMoney,
   formatMoneyMCAP,
@@ -201,4 +225,6 @@ export {
   percentage,
   dynamicSort,
   getVsSymbol,
+  getLevel,
+  getLevelProgress,
 };

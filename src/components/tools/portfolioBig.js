@@ -11,6 +11,8 @@ import StakingDetailsModal from "../components/stakingDetailsModal.js";
 import UniswapDetailsModal from "../components/uniswapDetailsModal.js";
 import SparklineChart from "../components/SparklineChart.js";
 
+import ProfileMini from "../profile/profileMini.js";
+
 import BackspaceRoundedIcon from "@material-ui/icons/BackspaceRounded";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 import AddCircleRoundedIcon from "@material-ui/icons/AddCircleRounded";
@@ -150,7 +152,16 @@ const styles = (theme) => ({
     borderWidth: "thin",
     padding: "10px",
     background: `#9991`,
-    minHeight: "100%",
+  },
+  profileGrid: {
+    borderColor: "#777",
+    borderRadius: "10px",
+    borderStyle: "solid",
+    borderWidth: "thin",
+    padding: "10px",
+    background: `#9991`,
+    marginBottom: 10,
+    height: "fit-content",
   },
   assetsGrid: {
     borderColor: "#777",
@@ -239,6 +250,10 @@ const styles = (theme) => ({
   assetGridRoot: {
     display: "flex",
     marginBottom: 10,
+  },
+  largeProfile: {
+    width: "75px",
+    height: "75px",
   },
   assetLogoGrid: {
     right: "4vh",
@@ -3215,8 +3230,13 @@ class PortfolioBig extends Component {
                   <Grid
                     item
                     xs={4}
-                    style={{ display: "grid", minHeight: "100%" }}
+                    style={{
+                      display: "grid",
+                      minHeight: "100%",
+                      alignContent: "baseline",
+                    }}
                   >
+                    <ProfileMini />
                     <div className={classes.walletGrid}>
                       <Grid
                         item
@@ -3952,7 +3972,6 @@ class PortfolioBig extends Component {
     );
   }
 
-  //
   //
   //
 

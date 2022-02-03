@@ -589,6 +589,8 @@ class Store {
           .call()
           .then((a) => {
             const access = a.includes("1");
+            console.log(access);
+
             this.setStore({
               hasBetaAccess: access,
             });
@@ -596,7 +598,9 @@ class Store {
       }
     } catch (e) {
       console.log(e.message);
-      return emitter.emit(ERROR, "NO BETA FOR YOU");
+      if (process.env.REACT_APP_CHAINGURU_VERSION === "beta") {
+        return emitter.emit(ERROR, "NO BETA FOR YOU");
+      }
     }
   };
 

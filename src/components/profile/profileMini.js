@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { colors } from "../../theme";
+import { getLevel, getLevelProgress } from "../helpers";
 
 import {
   Card,
@@ -9,6 +10,7 @@ import {
   Button,
   CircularProgress,
   Avatar,
+  Badge,
   Typography,
 } from "@material-ui/core";
 
@@ -35,7 +37,7 @@ const styles = (theme) => ({
   },
   favCard: {
     padding: 10,
-    margin: "10px 0px",
+    marginBottom: "10px",
     display: "flex",
     flex: 1,
     direction: "row",
@@ -44,6 +46,14 @@ const styles = (theme) => ({
   largeProfile: {
     width: "75px",
     height: "75px",
+    zIndex: 1,
+    boxShadow: "0px 0px 4px -2px black",
+  },
+  levelProgress: {
+    position: "absolute",
+    top: "-5px",
+    right: "-5px",
+    zIndex: 0,
   },
 });
 
@@ -105,6 +115,9 @@ class ProfileMini extends Component {
   };
 
   dbUserDataReturned = (data) => {
+    const userLevel = getLevel(data.experiencePoints);
+    const levelProgress = getLevelProgress(data.experiencePoints);
+
     if (data.avatar) {
       let avatar = this.getAvatarType({ avatar: data.avatar });
 
@@ -112,11 +125,15 @@ class ProfileMini extends Component {
         loading: false,
         userData: data,
         avatar: avatar,
+        userLevel,
+        levelProgress,
       });
     } else {
       this.setState({
         loading: false,
         userData: data,
+        userLevel,
+        levelProgress,
       });
     }
   };
@@ -195,12 +212,29 @@ class ProfileMini extends Component {
             }}
             alignItems="center"
           >
-            <Avatar
-              alt="avatar"
-              src={avatar}
-              className={classes.largeProfile}
-              onClick={() => this.setState({ avatarModalOpen: true })}
-            />
+            <Badge
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "right",
+              }}
+              overlap="circle"
+              badgeContent={this.state.userLevel}
+              color="secondary"
+              max={99999}
+            >
+              <Avatar
+                alt="avatar"
+                src={avatar}
+                className={classes.largeProfile}
+                onClick={() => this.setState({ avatarModalOpen: true })}
+              />
+              <CircularProgress
+                size={85}
+                variant="determinate"
+                value={this.state.levelProgress}
+                className={classes.levelProgress}
+              />
+            </Badge>
           </Grid>
           {this.state.userData.nickname && (
             <Grid
