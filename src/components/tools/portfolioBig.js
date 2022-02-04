@@ -123,7 +123,6 @@ const styles = (theme) => ({
   },
   favCard: {
     padding: 10,
-    margin: "10px 0px",
     display: "flex",
     flex: 1,
   },
@@ -494,6 +493,7 @@ class PortfolioBig extends Component {
   dbUserDataReturned = (data) => {
     let wallets = [];
     let walletColors = [];
+
     data.wallets.forEach((item, i) => {
       wallets.push(item.wallet);
       var x = i;
@@ -505,30 +505,31 @@ class PortfolioBig extends Component {
 
       walletColors.push(data);
     });
-    if (!this.state.loading) {
+    if (!this.state.dbDataLoaded) {
+      console.log("getting portfolio");
       this._isMounted &&
         dispatcher.dispatch({
           type: DB_GET_PORTFOLIO_POSITIONS,
           wallet: wallets,
         });
-    }
 
-    if (wallets.length > 0) {
-      this.setState({
-        loading: true,
-        selectedWallet: "all",
-        userWallets: wallets,
-        walletColors: walletColors,
-        walletNicknames: data.walletNicknames,
-      });
-    } else {
-      this.setState({
-        loading: true,
-        selectedWallet: wallets[0],
-        walletColors: walletColors,
-        userWallets: wallets,
-        walletNicknames: data.walletNicknames,
-      });
+      if (wallets.length > 0) {
+        this.setState({
+          loading: true,
+          selectedWallet: "all",
+          userWallets: wallets,
+          walletColors: walletColors,
+          walletNicknames: data.walletNicknames,
+        });
+      } else {
+        this.setState({
+          loading: true,
+          selectedWallet: wallets[0],
+          walletColors: walletColors,
+          userWallets: wallets,
+          walletNicknames: data.walletNicknames,
+        });
+      }
     }
   };
 
@@ -3236,7 +3237,6 @@ class PortfolioBig extends Component {
                       alignContent: "baseline",
                     }}
                   >
-                    <ProfileMini />
                     <div className={classes.walletGrid}>
                       <Grid
                         item
@@ -3759,8 +3759,7 @@ class PortfolioBig extends Component {
                     <Grid
                       key="assetsGridRoot"
                       item
-                      sm={12}
-                      md={6}
+                      xs={12}
                       style={{ display: "grid" }}
                     >
                       <div className={classes.assetsGrid}>
@@ -3856,8 +3855,7 @@ class PortfolioBig extends Component {
                   {(nonAssetsData || univ2Assets) && (
                     <Grid
                       item
-                      sm={12}
-                      md={6}
+                      xs={12}
                       key="StakingsGridRoot"
                       style={{ display: "grid", minHeight: "100%" }}
                     >

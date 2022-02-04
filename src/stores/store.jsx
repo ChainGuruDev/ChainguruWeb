@@ -1841,6 +1841,13 @@ ${nonce}`,
   );
 
   db_getUserData = async (payload) => {
+    //CHECK FOR PREVIOUS STORED DATA
+    const storedUser = store.getStore("userData");
+    if (payload.address === storedUser.user) {
+      //IF DATA IS FOUND AND FOR THE SAME USER RETURN
+      emitter.emit(DB_USERDATA_RETURNED, await storedUser);
+    }
+    //CHECK FOR UPDATES IN USER DATA
     try {
       let _user = await axios.post(
         `https://chainguru-db.herokuapp.com/users/data`,
@@ -1857,14 +1864,20 @@ ${nonce}`,
       _user.data.wallets.forEach((item, i) => {
         wallets.push(item.wallet);
       });
-
-      store.setStore({
-        userNickname: _user.data.nickname,
-        userFavorites: _user.data.favorites.tokenIDs,
-        userWallets: wallets,
-      });
-      if (await _user) {
-        emitter.emit(DB_USERDATA_RETURNED, _user.data);
+      //COMPARE NEW DATA WITH PREVIOUS DATA
+      if (
+        JSON.stringify(await _user.data) !== JSON.stringify(await storedUser)
+      ) {
+        //IF NEW DATA IS FOUND UPDATE STORES AND EMIT RETURN UPDATED DATA
+        store.setStore({
+          userData: _user.data,
+          userNickname: _user.data.nickname,
+          userFavorites: _user.data.favorites.tokenIDs,
+          userWallets: wallets,
+        });
+        if (await _user) {
+          emitter.emit(DB_USERDATA_RETURNED, _user.data);
+        }
       }
     } catch (err) {
       console.log(err.message);

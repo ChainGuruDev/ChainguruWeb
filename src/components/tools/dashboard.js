@@ -68,8 +68,6 @@ class Dashboard extends Component {
       tools: {
         portfolio_BIG: true,
         profile_MINI: true,
-        longShort_MINI: true,
-        leaderboard_MINI: true,
       },
     };
 
@@ -128,20 +126,18 @@ class Dashboard extends Component {
       <div className={classes.root}>
         {!account.address && <div>CONNECT WALLET</div>}
         {account.address && (
-          <Grid container spacing={2} justify="center" align="center">
-            <Grid id="bigTools" item xs={12}>
+          <Grid container spacing={2} justify="flex-end" align="center">
+            <Grid id="bigTools" item xs={7}>
               {this.renderBig(tools)}
             </Grid>
-            {
-              // <Grid
-              //   className={classes.miniUI}
-              //   item
-              //   xs={3}
-              //   style={{ height: "max-content" }}
-              // >
-              //   {this.renderMini(tools)}
-              // </Grid>
-            }
+            <Grid
+              className={classes.miniUI}
+              item
+              xs={3}
+              style={{ height: "max-content" }}
+            >
+              {this.renderMini(tools)}
+            </Grid>
           </Grid>
         )}
         {snackbarMessage && this.renderSnackbar()}
