@@ -8,7 +8,7 @@ import { withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
 
 import { Grid, CircularProgress, Card } from "@material-ui/core";
-import ProfileMini from "../profile/profileMini.js";
+import ProfileBig from "../profile/profileBig.js";
 import Snackbar from "../snackbar";
 
 import {
@@ -126,17 +126,9 @@ class Dashboard extends Component {
       <div className={classes.root}>
         {!account.address && <div>CONNECT WALLET</div>}
         {account.address && (
-          <Grid container spacing={2} justify="flex-end" align="center">
-            <Grid id="bigTools" item xs={7}>
+          <Grid container spacing={2} justify="center" align="center">
+            <Grid id="bigTools" item xs={8}>
               {this.renderBig(tools)}
-            </Grid>
-            <Grid
-              className={classes.miniUI}
-              item
-              xs={3}
-              style={{ height: "max-content" }}
-            >
-              {this.renderMini(tools)}
             </Grid>
           </Grid>
         )}
@@ -174,7 +166,9 @@ class Dashboard extends Component {
             </div>
           }
         >
-          <ProfileMini />
+          {
+            //<ProfileMini />
+          }
           {activeTools.longShort_MINI && <LongShortMini />}
           {activeTools.leaderboard_MINI && <LeaderboardMini />}
         </Suspense>
@@ -202,7 +196,7 @@ class Dashboard extends Component {
     });
 
     return (
-      <div key="rootDashboard" style={{ display: "flex" }}>
+      <Grid>
         <Suspense
           fallback={
             <div style={{ textAlign: "center" }}>
@@ -212,9 +206,10 @@ class Dashboard extends Component {
             </div>
           }
         >
+          <ProfileBig />
           {activeTools.portfolio_BIG && <PortfolioBig key="portfolioBigRoot" />}
         </Suspense>
-      </div>
+      </Grid>
     );
   };
 

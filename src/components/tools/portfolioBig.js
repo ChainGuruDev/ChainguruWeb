@@ -28,6 +28,7 @@ import BarChartRoundedIcon from "@material-ui/icons/BarChartRounded";
 import ArrowDropUpRoundedIcon from "@material-ui/icons/ArrowDropUpRounded";
 import ArrowDropDownRoundedIcon from "@material-ui/icons/ArrowDropDownRounded";
 import ReplayIcon from "@material-ui/icons/Replay";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 
 import {
   Card,
@@ -326,6 +327,21 @@ const styles = (theme) => ({
     animation: "slideDown 0.5s",
     boxShadow: "1px 3px 5px -2px rgba(0, 0, 0, 0.5)",
   },
+
+  expandIcon: {
+    webkitTransition: "all 0.5s cubic-bezier(.22,.61,.36,1)",
+    mozTransition: "all 0.5s cubic-bezier(.22,.61,.36,1)",
+    oTransition: "all 0.5s cubic-bezier(.22,.61,.36,1)",
+    transition: "all 0.5s cubic-bezier(.22,.61,.36,1)",
+    transform: "rotate(180deg)",
+  },
+  unexpandIcon: {
+    webkitTransition: "all 0.5s cubic-bezier(.22,.61,.36,1)",
+    mozTransition: "all 0.5s cubic-bezier(.22,.61,.36,1)",
+    oTransition: "all 0.5s cubic-bezier(.22,.61,.36,1)",
+    transition: "all 0.5s cubic-bezier(.22,.61,.36,1)",
+    transform: "rotate(0deg)",
+  },
 });
 
 class PortfolioBig extends Component {
@@ -367,6 +383,7 @@ class PortfolioBig extends Component {
       assetsPerPage: 25,
       nonAssetsPerPage: 25,
       loadingStats: false,
+      stakedAssetsExpanded: false,
     };
 
     // IF USER IS CONNECTED GET THE PORTFOLIO DATA
@@ -2110,7 +2127,7 @@ class PortfolioBig extends Component {
                   <Grid style={{ marginLeft: 10 }} align="right">
                     {asset.asset.price && (
                       <Typography variant={"subtitle2"}>
-                        {getVsSymbol(vsCoin) +
+                        {getVsSymbol(this.state.vsCoin) +
                           " " +
                           formatMoney(asset.asset.price.value)}
                       </Typography>
@@ -2881,6 +2898,35 @@ class PortfolioBig extends Component {
     }
   };
 
+  expandStaked = (currentState) => {
+    let newState = !currentState;
+    // var rotated = currentState;
+    //
+    // var expandContract = document.getElementById("expandContract");
+    // var expandedContainer = document.getElementById("expandedItemsContainer");
+    //
+    // if (!this.state.expandedHeight) {
+    //   if (expandedContainer) {
+    //     var expandedHeight = expandedContainer.clientHeight + 10 + "px";
+    //   }
+    // } else {
+    //   var expandedHeight = this.state.expandedHeight;
+    // }
+    // if (expandedContainer) {
+    //   expandedContainer.style.transform = newState
+    //     ? "translateY(0%)"
+    //     : `translateY(-${expandedHeight})`;
+    //   // expandContract.style.opacity = newState ? 1 : 0;
+    // }
+    // expandContract.style.maxHeight = newState ? expandedHeight : 0;
+    // expandedHeight: expandedHeight,
+
+    this._isMounted &&
+      this.setState({
+        stakedAssetsExpanded: newState,
+      });
+  };
+
   //ARREGLAR ACA
   updateWallet = (wallets) => {
     this._isMounted &&
@@ -3188,6 +3234,7 @@ class PortfolioBig extends Component {
       assetsPerPage,
       nonAssetsPage,
       nonAssetsPerPage,
+      stakedAssetsExpanded,
     } = this.state;
 
     return (
@@ -3218,7 +3265,12 @@ class PortfolioBig extends Component {
               </Grid>
             )}
             {dbDataLoaded && (
-              <Grid container direction="column" justify="flex-start">
+              <Grid
+                container
+                direction="column"
+                justify="flex-start"
+                style={{ height: "fit-content" }}
+              >
                 <Grid
                   id="topUI"
                   container
@@ -3230,126 +3282,7 @@ class PortfolioBig extends Component {
                 >
                   <Grid
                     item
-                    xs={4}
-                    style={{
-                      display: "grid",
-                      minHeight: "100%",
-                      alignContent: "baseline",
-                    }}
-                  >
-                    <div className={classes.walletGrid}>
-                      <Grid
-                        item
-                        container
-                        direction="row"
-                        justify="space-between"
-                        alignItems="center"
-                        xs={12}
-                      >
-                        <Typography variant={"h4"} color={"primary"}>
-                          Wallets
-                        </Typography>
-                        {!addWallet && (
-                          <Button
-                            startIcon={<AddCircleRoundedIcon />}
-                            variant="outlined"
-                            size="small"
-                            color="primary"
-                            onClick={this.toggleAddWallet}
-                          >
-                            New
-                          </Button>
-                        )}
-                        {addWallet && (
-                          <Button
-                            startIcon={<ArrowBackIosRoundedIcon />}
-                            variant="contained"
-                            size="small"
-                            color="secondary"
-                            onClick={this.toggleAddWallet}
-                          >
-                            Back
-                          </Button>
-                        )}
-                      </Grid>
-                      {addWallet && (
-                        <>
-                          <Divider style={{ marginTop: 10 }} />
-                          <Grid
-                            item
-                            container
-                            direction="row"
-                            justify="space-between"
-                            alignItems="center"
-                            xs={12}
-                          >
-                            <Grid item xs={9}>
-                              <TextField
-                                className={classes.walletInput}
-                                id="walletAdd"
-                                label="Wallet Address"
-                                onChange={this.handleChange}
-                                helperText={this.state.errMsgWallet}
-                                error={this.state.errorWallet}
-                              />
-                            </Grid>
-                            <Grid item style={{ textAlign: "end" }} xs={3}>
-                              <Button
-                                variant="outlined"
-                                size="small"
-                                color="primary"
-                                className={classes.button}
-                                startIcon={<AddCircleRoundedIcon />}
-                                onClick={() => {
-                                  this.addWallet(newWallet);
-                                }}
-                                disabled={this.state.errorWallet}
-                              >
-                                Add
-                              </Button>
-                            </Grid>
-                          </Grid>
-                        </>
-                      )}
-                      <List
-                        className={classes.walletList}
-                        component="nav"
-                        aria-label="user wallet list"
-                      >
-                        <div key={"allWallets"}>
-                          <Divider />
-                          <ListItem
-                            key={"allWallets"}
-                            button
-                            selected={this.state.selectedWallet === "all"}
-                            onClick={() =>
-                              this.walletClicked(this.state.userWallets)
-                            }
-                            className={classes.list}
-                          >
-                            <ListItemText
-                              primary={
-                                <React.Fragment>
-                                  <Typography
-                                    display="inline"
-                                    noWrap={true}
-                                    className={classes.inline}
-                                    color="textPrimary"
-                                  >
-                                    All
-                                  </Typography>
-                                </React.Fragment>
-                              }
-                            />
-                          </ListItem>
-                        </div>
-                        {this.userWalletList(userWallets)}
-                      </List>
-                    </div>
-                  </Grid>
-                  <Grid
-                    item
-                    xs={8}
+                    xs={12}
                     style={{ height: "100%", maxHeight: "100%" }}
                   >
                     <div className={classes.graphGrid}>
@@ -3775,12 +3708,14 @@ class PortfolioBig extends Component {
                           </Typography>
                           {portfolioStats && (
                             <Typography color="primary" variant={"h3"}>
-                              {formatMoney(
-                                portfolioStats.total_value -
-                                  (portfolioStats.deposited_value +
-                                    portfolioStats.locked_value +
-                                    portfolioStats.staked_value)
-                              )}
+                              {getVsSymbol(this.state.vsCoin) +
+                                " " +
+                                formatMoney(
+                                  portfolioStats.total_value -
+                                    (portfolioStats.deposited_value +
+                                      portfolioStats.locked_value +
+                                      portfolioStats.staked_value)
+                                )}
                             </Typography>
                           )}
                         </Grid>
@@ -3870,15 +3805,44 @@ class PortfolioBig extends Component {
                           <Typography color="primary" variant={"h3"}>
                             Staked Assets
                           </Typography>
-                          {portfolioStats && (
-                            <Typography color="primary" variant={"h3"}>
-                              {formatMoney(
-                                portfolioStats.deposited_value +
-                                  portfolioStats.locked_value +
-                                  portfolioStats.staked_value
-                              )}
-                            </Typography>
-                          )}
+                          <Grid
+                            item
+                            container
+                            direction="row"
+                            style={{ width: "auto" }}
+                          >
+                            {portfolioStats && (
+                              <Typography color="primary" variant={"h3"}>
+                                {getVsSymbol(this.state.vsCoin) +
+                                  " " +
+                                  formatMoney(
+                                    portfolioStats.deposited_value +
+                                      portfolioStats.locked_value +
+                                      portfolioStats.staked_value
+                                  )}
+                              </Typography>
+                            )}
+
+                            <IconButton
+                              color="primary"
+                              aria-label="Show Portfolio Data"
+                              size="small"
+                              onClick={() =>
+                                this.expandStaked(stakedAssetsExpanded)
+                              }
+                            >
+                              {
+                                <ExpandMoreIcon
+                                  className={
+                                    stakedAssetsExpanded
+                                      ? classes.expandIcon
+                                      : classes.unexpandIcon
+                                  }
+                                  id="expandIcon"
+                                />
+                              }
+                            </IconButton>
+                          </Grid>
                         </Grid>
                         <Divider variant="middle" />
                         <Grid
