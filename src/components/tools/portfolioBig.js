@@ -342,6 +342,15 @@ const styles = (theme) => ({
     transition: "all 0.5s cubic-bezier(.22,.61,.36,1)",
     transform: "rotate(0deg)",
   },
+  expand: {
+    opacity: 1,
+    transition: "all .5s cubic-bezier(.65,.05,.36,1)",
+  },
+  contract: {
+    opacity: 0,
+    maxHeight: "0px",
+    transition: "all .5s cubic-bezier(.65,.05,.36,1)",
+  },
 });
 
 class PortfolioBig extends Component {
@@ -384,6 +393,7 @@ class PortfolioBig extends Component {
       nonAssetsPerPage: 25,
       loadingStats: false,
       stakedAssetsExpanded: false,
+      assetsExpanded: true,
     };
 
     // IF USER IS CONNECTED GET THE PORTFOLIO DATA
@@ -2898,33 +2908,64 @@ class PortfolioBig extends Component {
     }
   };
 
-  expandStaked = (currentState) => {
-    let newState = !currentState;
-    // var rotated = currentState;
-    //
-    // var expandContract = document.getElementById("expandContract");
-    // var expandedContainer = document.getElementById("expandedItemsContainer");
-    //
-    // if (!this.state.expandedHeight) {
-    //   if (expandedContainer) {
-    //     var expandedHeight = expandedContainer.clientHeight + 10 + "px";
-    //   }
-    // } else {
-    //   var expandedHeight = this.state.expandedHeight;
-    // }
-    // if (expandedContainer) {
-    //   expandedContainer.style.transform = newState
-    //     ? "translateY(0%)"
-    //     : `translateY(-${expandedHeight})`;
-    //   // expandContract.style.opacity = newState ? 1 : 0;
-    // }
-    // expandContract.style.maxHeight = newState ? expandedHeight : 0;
-    // expandedHeight: expandedHeight,
+  expandContract = (currentState, section) => {
+    if (section === "staked") {
+      let newState = !currentState;
+      var rotated = currentState;
 
-    this._isMounted &&
-      this.setState({
-        stakedAssetsExpanded: newState,
-      });
+      var expandContract = document.getElementById("expandContractStaked");
+      var expandedContainer = document.getElementById(
+        "expandedStakedItemsContainer"
+      );
+
+      if (!this.state.expandedHeight) {
+        if (expandedContainer) {
+          var expandedHeight = expandedContainer.clientHeight + 10 + "px";
+        }
+      } else {
+        var expandedHeight = this.state.expandedHeight;
+      }
+      if (expandedContainer) {
+        expandedContainer.style.transform = newState
+          ? "translateY(0%)"
+          : `translateY(-${expandedHeight})`;
+        expandContract.style.opacity = newState ? 1 : 0;
+      }
+      expandContract.style.maxHeight = newState ? expandedHeight : 0;
+
+      this._isMounted &&
+        this.setState({
+          stakedAssetsExpanded: newState,
+        });
+    } else if (section === "assets") {
+      let newState = !currentState;
+      var rotated = currentState;
+
+      var expandContract = document.getElementById("expandContractAssets");
+      var expandedContainer = document.getElementById(
+        "expandedAssetsItemsContainer"
+      );
+
+      if (!this.state.expandedHeight) {
+        if (expandedContainer) {
+          var expandedHeight = expandedContainer.clientHeight + 10 + "px";
+        }
+      } else {
+        var expandedHeight = this.state.expandedHeight;
+      }
+      if (expandedContainer) {
+        expandedContainer.style.transform = newState
+          ? "translateY(0%)"
+          : `translateY(-${expandedHeight})`;
+        expandContract.style.opacity = newState ? 1 : 0;
+      }
+      expandContract.style.maxHeight = newState ? expandedHeight : 0;
+
+      this._isMounted &&
+        this.setState({
+          assetsExpanded: newState,
+        });
+    }
   };
 
   //ARREGLAR ACA
@@ -3235,6 +3276,7 @@ class PortfolioBig extends Component {
       nonAssetsPage,
       nonAssetsPerPage,
       stakedAssetsExpanded,
+      assetsExpanded,
     } = this.state;
 
     return (
@@ -3706,83 +3748,128 @@ class PortfolioBig extends Component {
                           <Typography color="primary" variant={"h3"}>
                             Assets
                           </Typography>
-                          {portfolioStats && (
-                            <Typography color="primary" variant={"h3"}>
-                              {getVsSymbol(this.state.vsCoin) +
-                                " " +
-                                formatMoney(
-                                  portfolioStats.total_value -
-                                    (portfolioStats.deposited_value +
-                                      portfolioStats.locked_value +
-                                      portfolioStats.staked_value)
-                                )}
-                            </Typography>
-                          )}
-                        </Grid>
-                        <Divider variant="middle" />
-                        <Grid
-                          item
-                          xs={12}
-                          style={{
-                            maxHeight: 500,
-                            height: "100%",
-                            overflowY: "auto",
-                            marginTop: 10,
-                            scrollbarColor:
-                              "rgb(121, 216, 162) rgba(48, 48, 48, 0.5)",
-                            paddingRight: 10,
-                            scrollbarWidth: "thin",
-                          }}
-                        >
-                          {this.drawAssets(assetsData, assetsPage)}
-                        </Grid>
-                        <Divider variant="middle" />
-                        <Grid
-                          container
-                          direction="row"
-                          justify="flex-end"
-                          alignItems="center"
-                          style={{ marginTop: 10 }}
-                        >
-                          <IconButton
-                            disabled={assetsPage === 1}
-                            onClick={() => this.changeAssetPage("prev")}
+                          <Grid
+                            item
+                            container
+                            direction="row"
+                            style={{ width: "auto" }}
                           >
-                            <KeyboardArrowLeftRoundedIcon />
-                          </IconButton>
-                          <div className={classes.pageCounter}>
-                            {assetsPage}
-                          </div>
-                          <IconButton
-                            onClick={() => this.changeAssetPage("next")}
-                          >
-                            <KeyboardArrowRightRoundedIcon />
-                          </IconButton>
-                          <FormControl
-                            variant="outlined"
-                            className={classes.formControl}
-                          >
-                            <InputLabel id="demo-simple-select-outlined-label">
-                              per page
-                            </InputLabel>
-                            <Select
-                              labelId="assetsPerPage-Select-label"
-                              id="assetsPerPage-Select-outlined"
-                              value={assetsPerPage}
-                              onChange={this.changeAssetsPerPage}
-                              label="assetsPerPage"
+                            {portfolioStats && (
+                              <Typography
+                                color="primary"
+                                variant={"h3"}
+                                style={{ marginRight: 5 }}
+                              >
+                                {getVsSymbol(this.state.vsCoin) +
+                                  " " +
+                                  formatMoney(
+                                    portfolioStats.total_value -
+                                      (portfolioStats.deposited_value +
+                                        portfolioStats.locked_value +
+                                        portfolioStats.staked_value)
+                                  )}
+                              </Typography>
+                            )}
+                            <IconButton
+                              color="primary"
+                              aria-label="Show Portfolio Data"
+                              size="small"
+                              onClick={() =>
+                                this.expandContract(assetsExpanded, "assets")
+                              }
                             >
-                              <MenuItem key={"10"} value={10}>
-                                10
-                              </MenuItem>
-                              <MenuItem key={"25"} value={25}>
-                                25
-                              </MenuItem>
-                              <MenuItem key={"50"} value={50}>
-                                50
-                              </MenuItem>
-                            </Select>
-                          </FormControl>
+                              {
+                                <ExpandMoreIcon
+                                  className={
+                                    stakedAssetsExpanded
+                                      ? classes.expandIcon
+                                      : classes.unexpandIcon
+                                  }
+                                  id="expandIcon"
+                                />
+                              }
+                            </IconButton>
+                          </Grid>
+                        </Grid>
+                        <Grid style={{ overflow: "hidden", padding: "1px" }}>
+                          <Grid
+                            className={
+                              assetsExpanded ? classes.expand : classes.contract
+                            }
+                            id="expandContractAssets"
+                            style={{ transition: "all 0.7s ease-in-out" }}
+                          >
+                            <div
+                              id="expandedAssetsItemsContainer"
+                              className={classes.itemContainer}
+                            >
+                              <Divider variant="middle" />
+                              <Grid
+                                item
+                                xs={12}
+                                style={{
+                                  maxHeight: 500,
+                                  height: "100%",
+                                  overflowY: "auto",
+                                  marginTop: 10,
+                                  scrollbarColor:
+                                    "rgb(121, 216, 162) rgba(48, 48, 48, 0.5)",
+                                  paddingRight: 10,
+                                  scrollbarWidth: "thin",
+                                }}
+                              >
+                                {this.drawAssets(assetsData, assetsPage)}
+                              </Grid>
+                              <Divider variant="middle" />
+                              <Grid
+                                container
+                                direction="row"
+                                justify="flex-end"
+                                alignItems="center"
+                                style={{ marginTop: 10 }}
+                              >
+                                <IconButton
+                                  disabled={assetsPage === 1}
+                                  onClick={() => this.changeAssetPage("prev")}
+                                >
+                                  <KeyboardArrowLeftRoundedIcon />
+                                </IconButton>
+                                <div className={classes.pageCounter}>
+                                  {assetsPage}
+                                </div>
+                                <IconButton
+                                  onClick={() => this.changeAssetPage("next")}
+                                >
+                                  <KeyboardArrowRightRoundedIcon />
+                                </IconButton>
+                                <FormControl
+                                  variant="outlined"
+                                  className={classes.formControl}
+                                >
+                                  <InputLabel id="demo-simple-select-outlined-label">
+                                    per page
+                                  </InputLabel>
+                                  <Select
+                                    labelId="assetsPerPage-Select-label"
+                                    id="assetsPerPage-Select-outlined"
+                                    value={assetsPerPage}
+                                    onChange={this.changeAssetsPerPage}
+                                    label="assetsPerPage"
+                                  >
+                                    <MenuItem key={"10"} value={10}>
+                                      10
+                                    </MenuItem>
+                                    <MenuItem key={"25"} value={25}>
+                                      25
+                                    </MenuItem>
+                                    <MenuItem key={"50"} value={50}>
+                                      50
+                                    </MenuItem>
+                                  </Select>
+                                </FormControl>
+                              </Grid>
+                            </div>
+                          </Grid>
                         </Grid>
                       </div>
                     </Grid>
@@ -3812,7 +3899,11 @@ class PortfolioBig extends Component {
                             style={{ width: "auto" }}
                           >
                             {portfolioStats && (
-                              <Typography color="primary" variant={"h3"}>
+                              <Typography
+                                color="primary"
+                                variant={"h3"}
+                                style={{ marginRight: 5 }}
+                              >
                                 {getVsSymbol(this.state.vsCoin) +
                                   " " +
                                   formatMoney(
@@ -3828,7 +3919,10 @@ class PortfolioBig extends Component {
                               aria-label="Show Portfolio Data"
                               size="small"
                               onClick={() =>
-                                this.expandStaked(stakedAssetsExpanded)
+                                this.expandContract(
+                                  stakedAssetsExpanded,
+                                  "staked"
+                                )
                               }
                             >
                               {
@@ -3844,74 +3938,95 @@ class PortfolioBig extends Component {
                             </IconButton>
                           </Grid>
                         </Grid>
-                        <Divider variant="middle" />
-                        <Grid
-                          item
-                          xs={12}
-                          style={{
-                            height: "100%",
-                            maxHeight: 500,
-                            overflowY: "auto",
-                            marginTop: 10,
-                            scrollbarColor:
-                              "rgb(121, 216, 162) rgba(48, 48, 48, 0.5)",
-                            paddingRight: 10,
-                            scrollbarWidth: "thin",
-                          }}
-                        >
-                          {this.drawNonAssets(
-                            nonAssetsData,
-                            univ2Assets,
-                            nonAssetsPage
-                          )}
-                        </Grid>
-                        <Divider variant="middle" />
-                        <Grid
-                          container
-                          direction="row"
-                          justify="flex-end"
-                          alignItems="center"
-                          style={{ marginTop: 10 }}
-                        >
-                          <IconButton
-                            disabled={nonAssetsPage === 1}
-                            onClick={() => this.changeNonAssetPage("prev")}
+                        <Grid style={{ overflow: "hidden", padding: "1px" }}>
+                          <Grid
+                            className={
+                              stakedAssetsExpanded
+                                ? classes.expand
+                                : classes.contract
+                            }
+                            id="expandContractStaked"
+                            style={{ transition: "all 0.7s ease-in-out" }}
                           >
-                            <KeyboardArrowLeftRoundedIcon />
-                          </IconButton>
-                          <div className={classes.pageCounter}>
-                            {nonAssetsPage}
-                          </div>
-                          <IconButton
-                            onClick={() => this.changeNonAssetPage("next")}
-                          >
-                            <KeyboardArrowRightRoundedIcon />
-                          </IconButton>
-                          <FormControl
-                            variant="outlined"
-                            className={classes.formControl}
-                          >
-                            <InputLabel id="demo-simple-select-outlined-label">
-                              per page
-                            </InputLabel>
-                            <Select
-                              labelId="assetsPerPage-Select-label"
-                              id="assetsPerPage-Select-outlined"
-                              value={nonAssetsPerPage}
-                              onChange={this.changeNonAssetsPerPage}
-                              label="assetsPerPage"
+                            <div
+                              id="expandedStakedItemsContainer"
+                              className={classes.itemContainer}
                             >
-                              <MenuItem key={"10"} value={10}>
-                                10
-                              </MenuItem>
-                              <MenuItem key={"25"} value={25}>
-                                25
-                              </MenuItem>
-                              <MenuItem key={"50"} value={50}>
-                                50
-                              </MenuItem>
-                            </Select>
-                          </FormControl>
+                              <Divider variant="middle" />
+                              <Grid
+                                item
+                                xs={12}
+                                style={{
+                                  height: "100%",
+                                  maxHeight: 500,
+                                  overflowY: "auto",
+                                  marginTop: 10,
+                                  scrollbarColor:
+                                    "rgb(121, 216, 162) rgba(48, 48, 48, 0.5)",
+                                  paddingRight: 10,
+                                  scrollbarWidth: "thin",
+                                }}
+                              >
+                                {this.drawNonAssets(
+                                  nonAssetsData,
+                                  univ2Assets,
+                                  nonAssetsPage
+                                )}
+                              </Grid>
+                              <Divider variant="middle" />
+                              <Grid
+                                container
+                                direction="row"
+                                justify="flex-end"
+                                alignItems="center"
+                                style={{ marginTop: 10 }}
+                              >
+                                <IconButton
+                                  disabled={nonAssetsPage === 1}
+                                  onClick={() =>
+                                    this.changeNonAssetPage("prev")
+                                  }
+                                >
+                                  <KeyboardArrowLeftRoundedIcon />
+                                </IconButton>
+                                <div className={classes.pageCounter}>
+                                  {nonAssetsPage}
+                                </div>
+                                <IconButton
+                                  onClick={() =>
+                                    this.changeNonAssetPage("next")
+                                  }
+                                >
+                                  <KeyboardArrowRightRoundedIcon />
+                                </IconButton>
+                                <FormControl
+                                  variant="outlined"
+                                  className={classes.formControl}
+                                >
+                                  <InputLabel id="demo-simple-select-outlined-label">
+                                    per page
+                                  </InputLabel>
+                                  <Select
+                                    labelId="assetsPerPage-Select-label"
+                                    id="assetsPerPage-Select-outlined"
+                                    value={nonAssetsPerPage}
+                                    onChange={this.changeNonAssetsPerPage}
+                                    label="assetsPerPage"
+                                  >
+                                    <MenuItem key={"10"} value={10}>
+                                      10
+                                    </MenuItem>
+                                    <MenuItem key={"25"} value={25}>
+                                      25
+                                    </MenuItem>
+                                    <MenuItem key={"50"} value={50}>
+                                      50
+                                    </MenuItem>
+                                  </Select>
+                                </FormControl>
+                              </Grid>
+                            </div>
+                          </Grid>
                         </Grid>
                       </div>
                     </Grid>

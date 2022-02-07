@@ -196,7 +196,7 @@ class ProfileBig extends Component {
     return currentAvatar;
   };
 
-  renderMiniProfile = () => {
+  renderProfile = () => {
     const { classes } = this.props;
     const { avatar } = this.state;
 
@@ -233,6 +233,7 @@ class ProfileBig extends Component {
                 variant="determinate"
                 value={this.state.levelProgress}
                 className={classes.levelProgress}
+                style={{ transform: "rotate(-90deg)" }}
               />
             </Badge>
           </Grid>
@@ -290,7 +291,7 @@ class ProfileBig extends Component {
               <CircularProgress />
             </Grid>
           )}
-          {!loading && this.renderMiniProfile()}
+          {!loading && this.renderProfile()}
         </Grid>
       </Card>
     );
