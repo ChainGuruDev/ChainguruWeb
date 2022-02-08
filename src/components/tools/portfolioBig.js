@@ -13,6 +13,7 @@ import SparklineChart from "../components/SparklineChart.js";
 
 import ProfileMini from "../profile/profileMini.js";
 
+import AccountBalanceWalletRoundedIcon from "@material-ui/icons/AccountBalanceWalletRounded";
 import BackspaceRoundedIcon from "@material-ui/icons/BackspaceRounded";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 import AddCircleRoundedIcon from "@material-ui/icons/AddCircleRounded";
@@ -59,6 +60,7 @@ import {
   FormControl,
   InputLabel,
   Select,
+  Menu,
   MenuItem,
   Paper,
 } from "@material-ui/core";
@@ -394,6 +396,8 @@ class PortfolioBig extends Component {
       loadingStats: false,
       stakedAssetsExpanded: false,
       assetsExpanded: true,
+      walletMenuOpen: false,
+      anchorWalletElement: null,
     };
 
     // IF USER IS CONNECTED GET THE PORTFOLIO DATA
@@ -519,6 +523,7 @@ class PortfolioBig extends Component {
 
   dbUserDataReturned = (data) => {
     let wallets = [];
+    let watchlistWallets = [];
     let walletColors = [];
 
     data.wallets.forEach((item, i) => {
@@ -529,9 +534,13 @@ class PortfolioBig extends Component {
         wallet: item.wallet.toLowerCase(),
         color: colorsGuru[Object.keys(colorsGuru)[x]],
       };
-
       walletColors.push(data);
     });
+
+    data.watchlistWallets.forEach((item, i) => {
+      watchlistWallets.push(item.wallet);
+    });
+
     if (!this.state.dbDataLoaded) {
       console.log("getting portfolio");
       this._isMounted &&
@@ -545,6 +554,7 @@ class PortfolioBig extends Component {
           loading: true,
           selectedWallet: "all",
           userWallets: wallets,
+          watchlistWallets: watchlistWallets,
           walletColors: walletColors,
           walletNicknames: data.walletNicknames,
         });
@@ -554,6 +564,7 @@ class PortfolioBig extends Component {
           selectedWallet: wallets[0],
           walletColors: walletColors,
           userWallets: wallets,
+          watchlistWallets: watchlistWallets,
           walletNicknames: data.walletNicknames,
         });
       }
@@ -2891,6 +2902,7 @@ class PortfolioBig extends Component {
         chartDataLoaded: false,
         portfolioStats: null,
         error: false,
+        anchorWalletElement: null,
       });
     } else {
       this._isMounted &&
@@ -2904,6 +2916,7 @@ class PortfolioBig extends Component {
         chartDataLoaded: false,
         portfolioStats: null,
         error: false,
+        anchorWalletElement: null,
       });
     }
   };
@@ -2966,6 +2979,14 @@ class PortfolioBig extends Component {
           assetsExpanded: newState,
         });
     }
+  };
+
+  handleClickWalletMenu = (event) => {
+    this.setState({ anchorWalletElement: event.currentTarget });
+  };
+
+  handleCloseWalletMenu = () => {
+    this.setState({ anchorWalletElement: null });
   };
 
   //ARREGLAR ACA
@@ -3258,6 +3279,7 @@ class PortfolioBig extends Component {
       sortBy,
       sortOrder,
       userWallets,
+      watchlistWallets,
       walletNicknameModal,
       deleteWalletModal,
       error,
@@ -3277,7 +3299,11 @@ class PortfolioBig extends Component {
       nonAssetsPerPage,
       stakedAssetsExpanded,
       assetsExpanded,
+      walletMenuOpen,
+      anchorWalletElement,
     } = this.state;
+
+    const openWalletMenu = Boolean(anchorWalletElement);
 
     return (
       <>
@@ -3328,144 +3354,282 @@ class PortfolioBig extends Component {
                     style={{ height: "100%", maxHeight: "100%" }}
                   >
                     <div className={classes.graphGrid}>
-                      {this.state.portfolioStats && (
-                        <Grid container item justify="space-around">
-                          <Tooltip
-                            arrow
-                            title={
-                              <React.Fragment>
-                                {portfolioStats.assets_value > 0 && (
-                                  <Typography color="inherit">
-                                    Mainnet:{" "}
-                                    {formatMoney(
-                                      portfolioStats.assets_value -
-                                        (portfolioStats.arbitrum_assets_value +
-                                          portfolioStats.bsc_assets_value +
-                                          portfolioStats.polygon_assets_value +
-                                          portfolioStats.optimism_assets_value)
-                                    )}
-                                  </Typography>
-                                )}
-                                {portfolioStats.arbitrum_assets_value > 0 && (
-                                  <div
-                                    style={{ display: "flex", marginBottom: 5 }}
-                                  >
-                                    <img
-                                      src="/chainIcons/arbitrum.png"
-                                      style={{ maxWidth: 25, marginRight: 10 }}
-                                    />
-                                    <Typography color="inherit">
-                                      Arbitrum:{" "}
-                                      {formatMoney(
-                                        portfolioStats.arbitrum_assets_value
-                                      )}
-                                    </Typography>
-                                  </div>
-                                )}
-                                {portfolioStats.bsc_assets_value > 0 && (
-                                  <div
-                                    style={{ display: "flex", marginBottom: 5 }}
-                                  >
-                                    <img
-                                      src="/chainIcons/bsc.png"
-                                      style={{ maxWidth: 25, marginRight: 10 }}
-                                    />
-                                    <Typography color="inherit">
-                                      BSC:{" "}
-                                      {formatMoney(
-                                        portfolioStats.bsc_assets_value
-                                      )}
-                                    </Typography>
-                                  </div>
-                                )}
-                                {portfolioStats.optimism_assets_value > 0 && (
-                                  <div
-                                    style={{ display: "flex", marginBottom: 5 }}
-                                  >
-                                    <img
-                                      src="/chainIcons/optimism.png"
-                                      style={{ maxWidth: 25, marginRight: 10 }}
-                                    />
-
-                                    <Typography color="inherit">
-                                      Optimism:{" "}
-                                      {formatMoney(
-                                        portfolioStats.optimism_assets_value
-                                      )}
-                                    </Typography>
-                                  </div>
-                                )}
-                                {portfolioStats.polygon_assets_value > 0 && (
-                                  <div
-                                    style={{ display: "flex", marginBottom: 5 }}
-                                  >
-                                    <img
-                                      src="/chainIcons/polygon.png"
-                                      style={{ maxWidth: 25, marginRight: 10 }}
-                                    />
-
-                                    <Typography color="inherit">
-                                      Polygon:{" "}
-                                      {formatMoney(
-                                        portfolioStats.polygon_assets_value
-                                      )}
-                                    </Typography>
-                                  </div>
-                                )}
-                                {portfolioStats.deposited_value > 0 && (
-                                  <Typography color="inherit">
-                                    Deposited:{" "}
-                                    {formatMoney(
-                                      portfolioStats.deposited_value
-                                    )}
-                                  </Typography>
-                                )}
-                                {portfolioStats.locked_value > 0 && (
-                                  <Typography color="inherit">
-                                    Locked:{" "}
-                                    {formatMoney(portfolioStats.locked_value)}
-                                  </Typography>
-                                )}
-                                {portfolioStats.staked_value > 0 && (
-                                  <Typography color="inherit">
-                                    Staked:{" "}
-                                    {formatMoney(portfolioStats.staked_value)}
-                                  </Typography>
-                                )}
-                              </React.Fragment>
-                            }
+                      <Grid
+                        container
+                        item
+                        justify="space-around"
+                        alignItems="center"
+                      >
+                        {this.state.portfolioStats ? (
+                          <Grid
+                            item
+                            xs={6}
+                            style={{
+                              textAlign: "center",
+                              marginBottom: 5,
+                              marginTop: 5,
+                            }}
+                            direction="row"
+                            container
+                            justify="flex-start"
+                            alignItems="center"
                           >
-                            <Grid
-                              item
-                              xs={12}
-                              style={{
-                                textAlign: "center",
-                                marginBottom: 5,
-                                marginTop: 5,
-                              }}
-                              direction="row"
-                              container
-                              justify="flex-start"
-                              alignItems="center"
+                            <Typography
+                              variant={"h3"}
+                              style={{ marginLeft: 12 }}
+                              color={"primary"}
                             >
-                              <Typography
-                                variant={"h3"}
-                                style={{ marginLeft: 12 }}
-                                color={"primary"}
-                              >
-                                Balance: ${" "}
-                                {formatMoney(
-                                  this.state.portfolioStats.total_value
-                                )}
-                              </Typography>
+                              Balance: ${" "}
+                              {formatMoney(
+                                this.state.portfolioStats.total_value
+                              )}
+                            </Typography>
+                            <Tooltip
+                              arrow
+                              title={
+                                <React.Fragment>
+                                  {portfolioStats.assets_value > 0 && (
+                                    <Typography color="inherit">
+                                      Mainnet:{" "}
+                                      {formatMoney(
+                                        portfolioStats.assets_value -
+                                          (portfolioStats.arbitrum_assets_value +
+                                            portfolioStats.bsc_assets_value +
+                                            portfolioStats.polygon_assets_value +
+                                            portfolioStats.optimism_assets_value)
+                                      )}
+                                    </Typography>
+                                  )}
+                                  {portfolioStats.arbitrum_assets_value > 0 && (
+                                    <div
+                                      style={{
+                                        display: "flex",
+                                        marginBottom: 5,
+                                      }}
+                                    >
+                                      <img
+                                        src="/chainIcons/arbitrum.png"
+                                        style={{
+                                          maxWidth: 25,
+                                          marginRight: 10,
+                                        }}
+                                      />
+                                      <Typography color="inherit">
+                                        Arbitrum:{" "}
+                                        {formatMoney(
+                                          portfolioStats.arbitrum_assets_value
+                                        )}
+                                      </Typography>
+                                    </div>
+                                  )}
+                                  {portfolioStats.bsc_assets_value > 0 && (
+                                    <div
+                                      style={{
+                                        display: "flex",
+                                        marginBottom: 5,
+                                      }}
+                                    >
+                                      <img
+                                        src="/chainIcons/bsc.png"
+                                        style={{
+                                          maxWidth: 25,
+                                          marginRight: 10,
+                                        }}
+                                      />
+                                      <Typography color="inherit">
+                                        BSC:{" "}
+                                        {formatMoney(
+                                          portfolioStats.bsc_assets_value
+                                        )}
+                                      </Typography>
+                                    </div>
+                                  )}
+                                  {portfolioStats.optimism_assets_value > 0 && (
+                                    <div
+                                      style={{
+                                        display: "flex",
+                                        marginBottom: 5,
+                                      }}
+                                    >
+                                      <img
+                                        src="/chainIcons/optimism.png"
+                                        style={{
+                                          maxWidth: 25,
+                                          marginRight: 10,
+                                        }}
+                                      />
+
+                                      <Typography color="inherit">
+                                        Optimism:{" "}
+                                        {formatMoney(
+                                          portfolioStats.optimism_assets_value
+                                        )}
+                                      </Typography>
+                                    </div>
+                                  )}
+                                  {portfolioStats.polygon_assets_value > 0 && (
+                                    <div
+                                      style={{
+                                        display: "flex",
+                                        marginBottom: 5,
+                                      }}
+                                    >
+                                      <img
+                                        src="/chainIcons/polygon.png"
+                                        style={{
+                                          maxWidth: 25,
+                                          marginRight: 10,
+                                        }}
+                                      />
+
+                                      <Typography color="inherit">
+                                        Polygon:{" "}
+                                        {formatMoney(
+                                          portfolioStats.polygon_assets_value
+                                        )}
+                                      </Typography>
+                                    </div>
+                                  )}
+                                  {portfolioStats.deposited_value > 0 && (
+                                    <Typography color="inherit">
+                                      Deposited:{" "}
+                                      {formatMoney(
+                                        portfolioStats.deposited_value
+                                      )}
+                                    </Typography>
+                                  )}
+                                  {portfolioStats.locked_value > 0 && (
+                                    <Typography color="inherit">
+                                      Locked:{" "}
+                                      {formatMoney(portfolioStats.locked_value)}
+                                    </Typography>
+                                  )}
+                                  {portfolioStats.staked_value > 0 && (
+                                    <Typography color="inherit">
+                                      Staked:{" "}
+                                      {formatMoney(portfolioStats.staked_value)}
+                                    </Typography>
+                                  )}
+                                </React.Fragment>
+                              }
+                            >
                               <PieChartIcon style={{ marginLeft: 10 }} />
-                            </Grid>
-                          </Tooltip>
+                            </Tooltip>
+                          </Grid>
+                        ) : !error ? (
+                          <Skeleton
+                            variant="rect"
+                            width={"50%"}
+                            height={"40px"}
+                            style={{ borderRadius: 5 }}
+                          />
+                        ) : (
+                          <Grid
+                            style={{
+                              borderRadius: 10,
+                              width: "100%",
+                              height: "60px",
+                              background: "#5555",
+                            }}
+                            onClick={() => this.db_getPortfolioStats()}
+                          >
+                            <IconButton>
+                              <ReplayIcon />
+                            </IconButton>
+                          </Grid>
+                        )}
+                        <Grid
+                          item
+                          xs={6}
+                          style={{
+                            textAlign: "center",
+                            marginBottom: 5,
+                            marginTop: 5,
+                          }}
+                          direction="row"
+                          container
+                          justify="flex-end"
+                          alignItems="center"
+                        >
+                          <Button
+                            variant="outlined"
+                            color="primary"
+                            size="small"
+                            startIcon={<AccountBalanceWalletRoundedIcon />}
+                            endIcon={
+                              walletMenuOpen ? (
+                                <ArrowDropUpRoundedIcon />
+                              ) : (
+                                <ArrowDropDownRoundedIcon />
+                              )
+                            }
+                            style={{ marginLeft: 10, marginRight: 12 }}
+                            aria-label="user wallets"
+                            aria-controls="long-menu"
+                            aria-haspopup="true"
+                            onClick={this.handleClickWalletMenu}
+                          >
+                            {this.state.selectedWallet === "all"
+                              ? "Portfolio"
+                              : this.state.selectedWallet.substring(0, 6) +
+                                "..." +
+                                this.state.selectedWallet.substring(
+                                  this.state.selectedWallet.length - 4,
+                                  this.state.selectedWallet.length
+                                )}
+                          </Button>
+                          <Menu
+                            id="wallet-menu"
+                            anchorEl={anchorWalletElement}
+                            keepMounted
+                            open={openWalletMenu}
+                            onClose={this.handleCloseWalletMenu}
+                            PaperProps={{
+                              style: {
+                                maxHeight: "400px",
+                              },
+                            }}
+                          >
+                            <Typography
+                              color="primary"
+                              style={{
+                                paddingLeft: 12,
+                                backgroundColor: "rgba(252, 201, 139, 0.25)",
+                              }}
+                            >
+                              My Wallets
+                            </Typography>
+                            <MenuItem
+                              key={"all"}
+                              selected={"all" === this.state.selectedWallet}
+                              onClick={() => this.walletClicked(userWallets)}
+                            >
+                              Portfolio
+                            </MenuItem>
+                            {userWallets.map((wallet) => (
+                              <MenuItem
+                                key={wallet}
+                                selected={wallet === this.state.selectedWallet}
+                                onClick={() => this.walletClicked(wallet)}
+                              >
+                                {wallet.substring(0, 6) +
+                                  "..." +
+                                  wallet.substring(
+                                    wallet.length - 4,
+                                    wallet.length
+                                  )}
+                              </MenuItem>
+                            ))}
+                          </Menu>
+                        </Grid>
+                        {this.state.portfolioStats && (
                           <Grid
                             item
                             container
                             justify="space-around"
-                            style={{ backgroundColor: "rgba(125,125,125,0.2)" }}
+                            style={{
+                              backgroundColor: "rgba(125,125,125,0.2)",
+                            }}
                           >
                             <Grid item>24Hs Change</Grid>
                             <Grid
@@ -3499,8 +3663,8 @@ class PortfolioBig extends Component {
                               %
                             </Grid>
                           </Grid>
-                        </Grid>
-                      )}
+                        )}
+                      </Grid>
                       {this.state.chartDataLoaded &&
                         this.state.chartVariation &&
                         this.state.timeFrame !== "d" && (
@@ -3555,35 +3719,11 @@ class PortfolioBig extends Component {
                         justify="flex-end"
                         align="space-between"
                       >
-                        {}
-                        {!error && !this.state.portfolioStats && (
-                          <Skeleton
-                            variant="rect"
-                            width={"100%"}
-                            height={"60px"}
-                            style={{ borderRadius: 5 }}
-                          />
-                        )}
-                        {error && !this.state.portfolioStats && (
-                          <Grid
-                            style={{
-                              borderRadius: 10,
-                              width: "100%",
-                              height: "60px",
-                              background: "#5555",
-                            }}
-                            onClick={() => this.db_getPortfolioStats()}
-                          >
-                            <IconButton>
-                              <ReplayIcon />
-                            </IconButton>
-                          </Grid>
-                        )}
                         {!error && !this.state.chartVariation && (
                           <Skeleton
                             variant="rect"
                             width={"100%"}
-                            height={"25px"}
+                            height={"20x"}
                             style={{ borderRadius: 5 }}
                           />
                         )}
