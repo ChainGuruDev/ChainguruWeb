@@ -485,10 +485,10 @@ class Header extends Component {
               />
             </div>
             <div className={classes.links}>
+              {this.renderLink("portfolio")}
               {this.renderLink("short")}
               {this.renderLink("medium")}
               {this.renderLink("long")}
-              {this.renderLink("portfolio")}
             </div>
             <div
               className={classes.vsCoinDIV}

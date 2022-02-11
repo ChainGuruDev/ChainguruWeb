@@ -11,7 +11,12 @@ import {
   Divider,
 } from "@material-ui/core";
 
-import { ERROR, DB_DEL_WALLET, DB_DEL_WALLET_RETURNED } from "../../constants";
+import {
+  ERROR,
+  DB_DEL_WALLET,
+  DB_DEL_WALLET_WATCHLIST,
+  DB_DEL_WALLET_RETURNED,
+} from "../../constants";
 
 import Store from "../../stores";
 const emitter = Store.emitter;

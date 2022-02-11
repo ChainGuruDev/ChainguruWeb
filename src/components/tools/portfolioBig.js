@@ -6,6 +6,7 @@ import { formatMoney, getVsSymbol } from "../helpers";
 
 import WalletNicknameModal from "../components/walletNicknameModal.js";
 import WalletRemoveModal from "../components/walletRemoveModal.js";
+import WalletAddModal from "../components/walletAddModal.js";
 import PortfolioChart from "../components/PortfolioChart.js";
 import StakingDetailsModal from "../components/stakingDetailsModal.js";
 import UniswapDetailsModal from "../components/uniswapDetailsModal.js";
@@ -30,6 +31,7 @@ import ArrowDropUpRoundedIcon from "@material-ui/icons/ArrowDropUpRounded";
 import ArrowDropDownRoundedIcon from "@material-ui/icons/ArrowDropDownRounded";
 import ReplayIcon from "@material-ui/icons/Replay";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import LabelIcon from "@material-ui/icons/Label";
 
 import {
   Card,
@@ -63,6 +65,8 @@ import {
   Menu,
   MenuItem,
   Paper,
+  Grow,
+  Popper,
 } from "@material-ui/core";
 
 import Skeleton from "@material-ui/lab/Skeleton";
@@ -86,7 +90,9 @@ import {
   CHECK_ACCOUNT,
   CHECK_ACCOUNT_RETURNED,
   DB_ADD_WALLET,
+  DB_ADD_WALLET_WATCHLIST,
   DB_ADD_WALLET_RETURNED,
+  DB_DEL_WALLET_WATCHLIST,
   DB_DEL_WALLET_RETURNED,
   DB_GET_PORTFOLIO_POSITIONS,
   DB_GET_PORTFOLIO_POSITIONS_RETURNED,
@@ -398,6 +404,7 @@ class PortfolioBig extends Component {
       assetsExpanded: true,
       walletMenuOpen: false,
       anchorWalletElement: null,
+      addWalletType: null,
     };
 
     // IF USER IS CONNECTED GET THE PORTFOLIO DATA
@@ -542,7 +549,6 @@ class PortfolioBig extends Component {
     });
 
     if (!this.state.dbDataLoaded) {
-      console.log("getting portfolio");
       this._isMounted &&
         dispatcher.dispatch({
           type: DB_GET_PORTFOLIO_POSITIONS,
@@ -571,7 +577,10 @@ class PortfolioBig extends Component {
     }
   };
 
-  removeWALLET = (wallet) => {
+  removeWALLET = (e, wallet, type) => {
+    e.stopPropagation();
+    e.preventDefault();
+
     const walletNick = this.state.walletNicknames.find(
       (ele) => ele.wallet === wallet
     );
@@ -579,11 +588,39 @@ class PortfolioBig extends Component {
       this.setState({
         deleteWalletModal: true,
         removeWALLET: [wallet, walletNick.nickname],
+        anchorWalletElement: null,
+        deleteType: type,
       });
     } else {
       this.setState({
         deleteWalletModal: true,
         removeWALLET: [wallet],
+        anchorWalletElement: null,
+        deleteType: type,
+      });
+    }
+  };
+
+  removeWatchlistWALLET = (e, wallet, type) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    const walletNick = this.state.walletNicknames.find(
+      (ele) => ele.wallet === wallet
+    );
+    if (walletNick) {
+      this.setState({
+        deleteWalletModal: true,
+        removeWALLET: [wallet, walletNick.nickname],
+        anchorWalletElement: null,
+        deleteType: type,
+      });
+    } else {
+      this.setState({
+        deleteWalletModal: true,
+        removeWALLET: [wallet],
+        anchorWalletElement: null,
+        deleteType: type,
       });
     }
   };
@@ -2982,6 +3019,7 @@ class PortfolioBig extends Component {
   };
 
   handleClickWalletMenu = (event) => {
+    event.currentTarget.focus();
     this.setState({ anchorWalletElement: event.currentTarget });
   };
 
@@ -2999,21 +3037,23 @@ class PortfolioBig extends Component {
     this.setState({ dbDataLoaded: false });
   };
 
-  renameWallet = (wallet) => {
+  renameWallet = (ev, wallet) => {
+    ev.stopPropagation();
+    ev.preventDefault();
     const data = this.state.walletNicknames.find(
       (ele) => ele.wallet === wallet
     );
     this.setState({
       walletNicknameModal: true,
-      selectedWallet: wallet,
+      renamingWallet: wallet,
       oldNickname: data ? data.nickname : "",
-      dbDataLoaded: false,
+      anchorWalletElement: null,
     });
-    this._isMounted &&
-      dispatcher.dispatch({
-        type: DB_GET_PORTFOLIO_POSITIONS,
-        wallet: [wallet],
-      });
+    // this._isMounted &&
+    //   dispatcher.dispatch({
+    //     type: DB_GET_PORTFOLIO_POSITIONS,
+    //     wallet: [wallet],
+    //   });
   };
 
   getUniswapDetails = (univ2Asset, balance) => {
@@ -3091,7 +3131,7 @@ class PortfolioBig extends Component {
               {this.state.account.address !== wallet && (
                 <IconButton
                   aria-label="remove"
-                  onClick={() => this.removeWALLET(wallet)}
+                  onClick={(e) => this.removeWALLET(e, wallet)}
                 >
                   <BackspaceRoundedIcon />
                 </IconButton>
@@ -3103,12 +3143,13 @@ class PortfolioBig extends Component {
     }
   };
 
-  toggleAddWallet = () => {
+  toggleAddWallet = (type) => {
     let _addingWallet = this.state.addWallet;
     this.setState({
       addWallet: !_addingWallet,
+      addWalletType: type,
       newWallet: "",
-      errorWallet: true,
+      anchorWalletElement: null,
     });
   };
 
@@ -3134,7 +3175,7 @@ class PortfolioBig extends Component {
         wallet: wallet,
       });
     } else {
-      this.setState({ errorWallet: true });
+      this.setState({ errorWallet: true, anchorWalletElement: null });
     }
   };
 
@@ -3152,6 +3193,7 @@ class PortfolioBig extends Component {
   dbWalletReturned = (payload) => {
     let userWallets = [];
     let walletColors = [];
+    let watchlistWallets = [];
 
     payload.wallets.forEach((item, i) => {
       var x = i;
@@ -3164,17 +3206,23 @@ class PortfolioBig extends Component {
       walletColors.push(data);
     });
 
+    payload.watchlistWallets.forEach((item, i) => {
+      watchlistWallets.push(item.wallet);
+    });
+
     this._isMounted &&
       dispatcher.dispatch({
         type: DB_GET_PORTFOLIO_POSITIONS,
         wallet: userWallets,
       });
+
     this.setState({
       selectedWallet: "all",
       dbDataLoaded: false,
       chartDataLoaded: false,
       portfolioStats: null,
       userWallets,
+      watchlistWallets,
       addWallet: false,
       walletColors: walletColors,
     });
@@ -3300,11 +3348,12 @@ class PortfolioBig extends Component {
       stakedAssetsExpanded,
       assetsExpanded,
       walletMenuOpen,
+      walletNicknames,
       anchorWalletElement,
     } = this.state;
 
     const openWalletMenu = Boolean(anchorWalletElement);
-
+    let data;
     return (
       <>
         <Card className={classes.favCard} elevation={3}>
@@ -3569,9 +3618,26 @@ class PortfolioBig extends Component {
                             aria-haspopup="true"
                             onClick={this.handleClickWalletMenu}
                           >
-                            {this.state.selectedWallet === "all"
-                              ? "Portfolio"
-                              : this.state.selectedWallet.substring(0, 6) +
+                            {this.state.selectedWallet === "all" && "Portfolio"}
+                            {this.state.selectedWallet !== "all" &&
+                              (data = walletNicknames.find(
+                                (ele) =>
+                                  ele.wallet === this.state.selectedWallet
+                              )) &&
+                              data.nickname +
+                                " (" +
+                                this.state.selectedWallet.substring(0, 6) +
+                                "..." +
+                                this.state.selectedWallet.substring(
+                                  this.state.selectedWallet.length - 4,
+                                  this.state.selectedWallet.length
+                                ) +
+                                ")"}
+                            {this.state.selectedWallet !== "all" &&
+                              !walletNicknames.some(
+                                (e) => e.wallet === this.state.selectedWallet
+                              ) &&
+                              this.state.selectedWallet.substring(0, 6) +
                                 "..." +
                                 this.state.selectedWallet.substring(
                                   this.state.selectedWallet.length - 4,
@@ -3594,10 +3660,38 @@ class PortfolioBig extends Component {
                               color="primary"
                               style={{
                                 paddingLeft: 12,
-                                backgroundColor: "rgba(252, 201, 139, 0.25)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
                               }}
                             >
-                              My Wallets
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <LabelIcon
+                                  color="primary"
+                                  fontSize="small"
+                                  style={{ marginRight: 5 }}
+                                />
+                                My Wallets
+                              </div>
+                              <div>
+                                <Button
+                                  startIcon={<AddCircleRoundedIcon />}
+                                  variant="outlined"
+                                  size="small"
+                                  color="primary"
+                                  onClick={() =>
+                                    this.toggleAddWallet("portfolio")
+                                  }
+                                  style={{ marginRight: 12, marginBottom: 5 }}
+                                >
+                                  New
+                                </Button>
+                              </div>
                             </Typography>
                             <MenuItem
                               key={"all"}
@@ -3611,15 +3705,162 @@ class PortfolioBig extends Component {
                                 key={wallet}
                                 selected={wallet === this.state.selectedWallet}
                                 onClick={() => this.walletClicked(wallet)}
+                                style={{ justifyContent: "space-between" }}
                               >
-                                {wallet.substring(0, 6) +
-                                  "..." +
-                                  wallet.substring(
-                                    wallet.length - 4,
-                                    wallet.length
+                                {(data = walletNicknames.find(
+                                  (ele) => ele.wallet === wallet
+                                )) &&
+                                  data.nickname +
+                                    " (" +
+                                    wallet.substring(0, 6) +
+                                    "..." +
+                                    wallet.substring(
+                                      wallet.length - 4,
+                                      wallet.length
+                                    ) +
+                                    ")"}
+                                {!walletNicknames.some(
+                                  (e) => e.wallet === wallet
+                                ) &&
+                                  wallet.substring(0, 6) +
+                                    "..." +
+                                    wallet.substring(
+                                      wallet.length - 4,
+                                      wallet.length
+                                    )}
+                                <div>
+                                  <IconButton
+                                    aria-label="rename"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      this.renameWallet(e, wallet);
+                                    }}
+                                  >
+                                    <MoreHorizIcon />
+                                  </IconButton>
+                                  {this.state.account.address !== wallet && (
+                                    <IconButton
+                                      aria-label="remove"
+                                      onClick={(ev) => {
+                                        ev.stopPropagation();
+                                        this.removeWALLET(
+                                          ev,
+                                          wallet,
+                                          "portfolio"
+                                        );
+                                      }}
+                                    >
+                                      <BackspaceRoundedIcon />
+                                    </IconButton>
                                   )}
+                                </div>
                               </MenuItem>
                             ))}
+                            <Typography
+                              color="primary"
+                              style={{
+                                paddingLeft: 12,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <LabelIcon
+                                  color="primary"
+                                  fontSize="small"
+                                  style={{ marginRight: 5 }}
+                                />
+                                Watchlist
+                              </div>
+                              <div>
+                                <Button
+                                  startIcon={<AddCircleRoundedIcon />}
+                                  variant="outlined"
+                                  size="small"
+                                  color="primary"
+                                  onClick={() =>
+                                    this.toggleAddWallet("watchlist")
+                                  }
+                                  style={{ marginRight: 12, marginBottom: 5 }}
+                                >
+                                  New
+                                </Button>
+                              </div>
+                            </Typography>
+                            {watchlistWallets.map((wallet) => (
+                              <MenuItem
+                                key={wallet}
+                                selected={wallet === this.state.selectedWallet}
+                                onClick={() => this.walletClicked(wallet)}
+                                style={{ justifyContent: "space-between" }}
+                              >
+                                {(data = walletNicknames.find(
+                                  (ele) => ele.wallet === wallet
+                                )) &&
+                                  data.nickname +
+                                    " (" +
+                                    wallet.substring(0, 6) +
+                                    "..." +
+                                    wallet.substring(
+                                      wallet.length - 4,
+                                      wallet.length
+                                    ) +
+                                    ")"}
+                                {!walletNicknames.some(
+                                  (e) => e.wallet === wallet
+                                ) &&
+                                  wallet.substring(0, 6) +
+                                    "..." +
+                                    wallet.substring(
+                                      wallet.length - 4,
+                                      wallet.length
+                                    )}
+                                <div>
+                                  <IconButton
+                                    aria-label="rename"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      this.renameWallet(e, wallet);
+                                    }}
+                                  >
+                                    <MoreHorizIcon />
+                                  </IconButton>
+                                  {this.state.account.address !== wallet && (
+                                    <IconButton
+                                      aria-label="remove"
+                                      onClick={(ev) => {
+                                        ev.stopPropagation();
+                                        this.removeWatchlistWALLET(
+                                          ev,
+                                          wallet,
+                                          "watchlist"
+                                        );
+                                      }}
+                                    >
+                                      <BackspaceRoundedIcon />
+                                    </IconButton>
+                                  )}
+                                </div>
+                              </MenuItem>
+                            ))}
+                            <MenuItem
+                              key="addNew"
+                              onClick={() => this.toggleAddWallet("watchlist")}
+                            >
+                              <AddCircleRoundedIcon
+                                style={{ marginRight: 5 }}
+                                color="primary"
+                              />
+                              <Typography color="primary">
+                                Add new Wallet
+                              </Typography>
+                            </MenuItem>
                           </Menu>
                         </Grid>
                         {this.state.portfolioStats && (
@@ -4184,7 +4425,12 @@ class PortfolioBig extends Component {
         {stakingDetailsModal &&
           this.renderstakingDetailsModal(this.state.stakingDetails)}
         {walletNicknameModal && this.renderWalletNicknameModal()}
-        {deleteWalletModal && this.renderWalletDeleteModal()}
+        {deleteWalletModal &&
+          this.renderWalletDeleteModal(
+            this.state.removeWALLET[0],
+            this.state.deleteType
+          )}
+        {addWallet && this.renderWalletAddModal(this.state.addWalletType)}
       </>
     );
   }
@@ -4204,6 +4450,10 @@ class PortfolioBig extends Component {
     this.setState({ deleteWalletModal: false });
   };
 
+  closeModalAdd = () => {
+    this.setState({ addWallet: false });
+  };
+
   closeModalStakingDetails = () => {
     this.setState({ stakingDetailsModal: false });
   };
@@ -4217,7 +4467,7 @@ class PortfolioBig extends Component {
       <WalletNicknameModal
         closeModal={this.closeModalNick}
         modalOpen={this.state.walletNicknameModal}
-        wallet={this.state.selectedWallet}
+        wallet={this.state.renamingWallet}
         nickname={this.state.oldNickname}
       />
     );
@@ -4230,6 +4480,16 @@ class PortfolioBig extends Component {
         modalOpen={this.state.deleteWalletModal}
         wallet={this.state.removeWALLET[0]}
         nickname={this.state.removeWALLET[1]}
+      />
+    );
+  };
+
+  renderWalletAddModal = (wallet) => {
+    return (
+      <WalletAddModal
+        closeModal={this.closeModalAdd}
+        modalOpen={this.state.addWallet}
+        type={this.state.addWalletType}
       />
     );
   };

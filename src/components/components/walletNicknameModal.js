@@ -96,6 +96,7 @@ class WalletNicknameModal extends Component {
   };
 
   setNewNickname = (newNick, wallet) => {
+    console.log(newNick, wallet);
     if (newNick) {
       dispatcher.dispatch({
         type: DB_SET_USER_WALLET_NICKNAME,
