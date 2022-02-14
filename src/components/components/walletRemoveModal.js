@@ -44,6 +44,7 @@ class WalletRemoveModal extends Component {
       loading: false,
       wallet: props.wallet,
       nick: props.nickname,
+      deleteType: props.type,
     };
   }
 
@@ -69,11 +70,15 @@ class WalletRemoveModal extends Component {
     this.props.closeModal();
   };
 
-  deleteWallet = (wallet) => {
+  deleteWallet = (wallet, type) => {
     dispatcher.dispatch({
       type: DB_DEL_WALLET,
-      wallet: wallet,
+      payload: {
+        wallet: wallet,
+        type: type,
+      },
     });
+
     this.setState({ loading: true });
   };
 
@@ -121,7 +126,9 @@ class WalletRemoveModal extends Component {
                   style={{ marginLeft: "10px" }}
                   variant="outlined"
                   color="primary"
-                  onClick={() => this.deleteWallet(wallet)}
+                  onClick={() =>
+                    this.deleteWallet(wallet, this.state.deleteType)
+                  }
                 >
                   Confirm
                 </Button>

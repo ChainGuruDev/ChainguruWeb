@@ -2019,7 +2019,6 @@ ${nonce}`,
           console.error(reason);
         });
     }
-
     let _dbAddWallet = await axios.put(
       `${cg_servers[1]}/wallets/${account.address}`,
       { address: address },
@@ -2062,19 +2061,32 @@ ${nonce}`,
     emitter.emit(DB_ADD_WALLET_RETURNED, await _dbAddWallet.data);
   };
 
-  db_delWallet = async (payload) => {
+  db_delWallet = async (data) => {
     const account = store.getStore("account");
+    if (data.payload.type === "portfolio") {
+      let _dbDelWallet = await axios.delete(
+        `${cg_servers[1]}/wallets/${account.address}`,
+        {
+          headers: {
+            Authorization: `Bearer ${store.getStore("authToken")}`,
+          },
+          data: { address: data.payload.wallet },
+        }
+      );
+      emitter.emit(DB_DEL_WALLET_RETURNED, await _dbDelWallet.data);
+    } else {
+      let _dbDelWallet = await axios.delete(
+        `${cg_servers[1]}/wallets/watchlist/${account.address}`,
+        {
+          headers: {
+            Authorization: `Bearer ${store.getStore("authToken")}`,
+          },
+          data: { address: data.payload.wallet },
+        }
+      );
 
-    let _dbDelWallet = await axios.delete(
-      `${cg_servers[1]}/wallets/${account.address}`,
-      {
-        headers: {
-          Authorization: `Bearer ${store.getStore("authToken")}`,
-        },
-        data: { address: payload.wallet },
-      }
-    );
-    emitter.emit(DB_DEL_WALLET_RETURNED, await _dbDelWallet.data);
+      emitter.emit(DB_DEL_WALLET_RETURNED, await _dbDelWallet.data);
+    }
   };
 
   db_updateWallet = async (payload) => {

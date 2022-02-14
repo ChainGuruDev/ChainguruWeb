@@ -601,30 +601,6 @@ class PortfolioBig extends Component {
     }
   };
 
-  removeWatchlistWALLET = (e, wallet, type) => {
-    e.stopPropagation();
-    e.preventDefault();
-
-    const walletNick = this.state.walletNicknames.find(
-      (ele) => ele.wallet === wallet
-    );
-    if (walletNick) {
-      this.setState({
-        deleteWalletModal: true,
-        removeWALLET: [wallet, walletNick.nickname],
-        anchorWalletElement: null,
-        deleteType: type,
-      });
-    } else {
-      this.setState({
-        deleteWalletModal: true,
-        removeWALLET: [wallet],
-        anchorWalletElement: null,
-        deleteType: type,
-      });
-    }
-  };
-
   setNicknameReturned = (data) => {
     this.setState({
       walletNicknames: data,
@@ -3076,73 +3052,6 @@ class PortfolioBig extends Component {
     });
   };
 
-  userWalletList = (wallets) => {
-    const { walletNicknames, walletColors } = this.state;
-    const { classes } = this.props;
-
-    if (wallets.length > 0) {
-      let data;
-      return wallets.map((wallet, i) => (
-        <div key={wallet + "_id"}>
-          <Divider />
-          <ListItem
-            key={wallet + "_id"}
-            button
-            selected={this.state.selectedWallet === wallet}
-            onClick={() => this.walletClicked(wallet)}
-            className={classes.list}
-          >
-            <ListItemIcon>
-              <FiberManualRecordIcon style={{ color: walletColors[i].color }} />
-            </ListItemIcon>
-            <ListItemText
-              primary={
-                <React.Fragment>
-                  <Typography
-                    display="inline"
-                    noWrap={true}
-                    className={classes.inline}
-                    color="textPrimary"
-                  >
-                    {(data = walletNicknames.find(
-                      (ele) => ele.wallet === wallet
-                    )) &&
-                      data.nickname +
-                        " (" +
-                        wallet.substring(0, 6) +
-                        "..." +
-                        wallet.substring(wallet.length - 4, wallet.length) +
-                        ")"}
-                    {!walletNicknames.some((e) => e.wallet === wallet) &&
-                      wallet.substring(0, 6) +
-                        "..." +
-                        wallet.substring(wallet.length - 4, wallet.length)}
-                  </Typography>
-                </React.Fragment>
-              }
-            />
-            <ListItemSecondaryAction>
-              <IconButton
-                aria-label="rename"
-                onClick={() => this.renameWallet(wallet)}
-              >
-                <MoreHorizIcon />
-              </IconButton>
-              {this.state.account.address !== wallet && (
-                <IconButton
-                  aria-label="remove"
-                  onClick={(e) => this.removeWALLET(e, wallet)}
-                >
-                  <BackspaceRoundedIcon />
-                </IconButton>
-              )}
-            </ListItemSecondaryAction>
-          </ListItem>
-        </div>
-      ));
-    }
-  };
-
   toggleAddWallet = (type) => {
     let _addingWallet = this.state.addWallet;
     this.setState({
@@ -3836,7 +3745,7 @@ class PortfolioBig extends Component {
                                       aria-label="remove"
                                       onClick={(ev) => {
                                         ev.stopPropagation();
-                                        this.removeWatchlistWALLET(
+                                        this.removeWALLET(
                                           ev,
                                           wallet,
                                           "watchlist"
@@ -4473,13 +4382,14 @@ class PortfolioBig extends Component {
     );
   };
 
-  renderWalletDeleteModal = (wallet) => {
+  renderWalletDeleteModal = (wallet, walletType) => {
     return (
       <WalletRemoveModal
         closeModal={this.closeModalDelete}
         modalOpen={this.state.deleteWalletModal}
-        wallet={this.state.removeWALLET[0]}
+        wallet={wallet}
         nickname={this.state.removeWALLET[1]}
+        type={walletType}
       />
     );
   };

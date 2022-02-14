@@ -220,7 +220,7 @@ class WalletAddModal extends Component {
                   className={classes.button}
                   startIcon={<AddCircleRoundedIcon />}
                   onClick={() => {
-                    this.addWallet(newWallet);
+                    this.addWallet(newWallet, type);
                   }}
                   disabled={this.state.errorWallet}
                 >
