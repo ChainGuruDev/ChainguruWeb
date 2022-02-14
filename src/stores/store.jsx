@@ -214,7 +214,6 @@ let portfolioChartRequest = null;
 const cg_servers = [
   `https://chainguru-db.herokuapp.com`,
   `https://chainguru-db-dev.herokuapp.com`,
-  `http://localhost:3001`,
 ];
 let current_cgServer = Math.round(Math.random());
 function get_cgServer() {
