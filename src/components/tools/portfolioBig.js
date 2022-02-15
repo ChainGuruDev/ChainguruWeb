@@ -397,23 +397,18 @@ class PortfolioBig extends Component {
       uniswapDetailsLoading: false,
       assetsPage: 1,
       nonAssetsPage: 1,
+      uniV2AssetsPage: 1,
+      uniV2AssetsPerPage: 3,
       assetsPerPage: 25,
-      nonAssetsPerPage: 25,
+      nonAssetsPerPage: 10,
       loadingStats: false,
       stakedAssetsExpanded: false,
       assetsExpanded: true,
+      univ2AssetsExpanded: false,
       walletMenuOpen: false,
       anchorWalletElement: null,
       addWalletType: null,
     };
-
-    // IF USER IS CONNECTED GET THE PORTFOLIO DATA
-    // if(account && account.address) {
-    //   dispatcher.dispatch({
-    //     type: DB_GET_USERPORTFOLIO,
-    //     address: account.address,
-    //   })
-    // }
   }
 
   componentDidMount() {
@@ -895,7 +890,6 @@ class PortfolioBig extends Component {
     }
 
     // console.log(assetsData);
-    // console.log(nonAssetsData);
     // console.log(univ2Assets);
 
     if (this.state.selectedWallet === "all") {
@@ -2360,7 +2354,40 @@ class PortfolioBig extends Component {
     }
   };
 
-  drawNonAssets(nonAssetsData, univ2Assets) {
+  changeUniV2AssetsPerPage = (event) => {
+    let wallets = [];
+    let newAssetsPerPage = event.target.value;
+
+    this.setState({ uniV2AssetsPerPage: newAssetsPerPage });
+  };
+
+  changeUniV2AssetPage = (action) => {
+    const { uniV2AssetsPage, uniV2AssetsPerPage, univ2Assets } = this.state;
+    let uniAssets = [];
+
+    for (var i = 0; i < univ2Assets.length; i++) {
+      if (univ2Assets[i].value > 0.01) {
+        uniAssets.push(univ2Assets[i]);
+      }
+    }
+
+    let newPage;
+    switch (action) {
+      case "prev":
+        newPage = uniV2AssetsPage - 1;
+        this.setState({ uniV2AssetsPage: newPage });
+        break;
+      case "next":
+        newPage = uniV2AssetsPage + 1;
+        this.setState({ uniV2AssetsPage: newPage });
+
+        break;
+      default:
+        break;
+    }
+  };
+
+  drawNonAssets(nonAssetsData) {
     const {
       sortOrder,
       sortBy,
@@ -2472,12 +2499,6 @@ class PortfolioBig extends Component {
       }
     }
 
-    for (var i = 0; i < univ2Assets.length; i++) {
-      if (univ2Assets[i].quantity > 0) {
-        allNonAssets.push(univ2Assets[i]);
-      }
-    }
-
     let sortedAssets = [];
     if (this.state.sortOrder === "asc") {
       sortedAssets = allNonAssets.sort(this.dynamicSort(sortBy));
@@ -2500,7 +2521,9 @@ class PortfolioBig extends Component {
             direction="row"
             justify="flex-start"
             alignItems="center"
-            onClick={() => this.nav("/short/detective/" + row.asset.asset_code)}
+            onClick={() =>
+              this.nav("/short/detective/" + row.items[0].asset.asset_code)
+            }
           >
             <Card
               className={classes.assetCard}
@@ -2678,6 +2701,48 @@ class PortfolioBig extends Component {
             </Card>
           </Grid>
         )}
+      </React.Fragment>
+    ));
+  }
+
+  drawUniV2Assets(univ2Assets) {
+    const {
+      sortOrder,
+      sortBy,
+      uniV2AssetsPerPage,
+      uniV2AssetsPage,
+      walletNicknames,
+      walletColors,
+      selectedWallet,
+      uniswapDetailsLoading,
+      dbStatsData,
+      vsCoin,
+      loadingStats,
+    } = this.state;
+    const { classes } = this.props;
+
+    let allNonAssets = [];
+
+    for (var i = 0; i < univ2Assets.length; i++) {
+      if (univ2Assets[i].value > 0.01) {
+        allNonAssets.push(univ2Assets[i]);
+      }
+    }
+
+    let sortedAssets = [];
+    if (this.state.sortOrder === "asc") {
+      sortedAssets = allNonAssets.sort(this.dynamicSort(sortBy));
+    } else {
+      sortedAssets = allNonAssets.sort(this.dynamicSort(`-${sortBy}`));
+    }
+
+    const assetPage = sortedAssets.slice(
+      (uniV2AssetsPage - 1) * uniV2AssetsPerPage,
+      uniV2AssetsPerPage * uniV2AssetsPage
+    );
+    let data;
+    return assetPage.map((row) => (
+      <React.Fragment key={Math.random() + row.id}>
         {row.type === "uniswap-v2" && (
           <Grid
             container
@@ -2686,7 +2751,12 @@ class PortfolioBig extends Component {
             direction="row"
             justify="flex-start"
             alignItems="center"
-            onClick={() => this.nav("/short/detective/" + row.asset.asset_code)}
+            onClick={(e) => {
+              this.getUniswapDetails(
+                row.asset.asset_code,
+                row.quantityDecimals
+              );
+            }}
           >
             <Card
               className={classes.assetCard}
@@ -2866,16 +2936,7 @@ class PortfolioBig extends Component {
                       $ {row.value && formatMoney(row.value)}
                     </Typography>
                   </Grid>
-                  <Grid
-                    className={classes.showPyLBTN}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      this.getUniswapDetails(
-                        row.asset.asset_code,
-                        row.quantityDecimals
-                      );
-                    }}
-                  >
+                  <Grid className={classes.showPyLBTN}>
                     {uniswapDetailsLoading && <CircularProgress size={25} />}
                     {!uniswapDetailsLoading && <SearchIcon />}
                   </Grid>
@@ -2990,6 +3051,34 @@ class PortfolioBig extends Component {
       this._isMounted &&
         this.setState({
           assetsExpanded: newState,
+        });
+    } else if (section === "univ2") {
+      let newState = !currentState;
+      var rotated = currentState;
+
+      var expandContract = document.getElementById("expandContractUniV2");
+      var expandedContainer = document.getElementById(
+        "expandedUniV2ItemsContainer"
+      );
+
+      if (!this.state.expandedHeight) {
+        if (expandedContainer) {
+          var expandedHeight = expandedContainer.clientHeight + 10 + "px";
+        }
+      } else {
+        var expandedHeight = this.state.expandedHeight;
+      }
+      if (expandedContainer) {
+        expandedContainer.style.transform = newState
+          ? "translateY(0%)"
+          : `translateY(-${expandedHeight})`;
+        expandContract.style.opacity = newState ? 1 : 0;
+      }
+      expandContract.style.maxHeight = newState ? expandedHeight : 0;
+
+      this._isMounted &&
+        this.setState({
+          univ2AssetsExpanded: newState,
         });
     }
   };
@@ -3227,6 +3316,21 @@ class PortfolioBig extends Component {
     this.setState({ timeFrame: newTimeframe, chartDataLoaded: false });
   };
 
+  drawTotalValue = (assets) => {
+    const onlyAssetsWithValue = assets.filter(function (el) {
+      return el.value > 0; // Changed this so a home would match
+    });
+    const totalValue = onlyAssetsWithValue
+      .map((item) => item.value)
+      .reduce((prev, curr) => prev + curr, 0);
+
+    return (
+      <Typography color="primary" variant={"h3"} style={{ marginRight: 5 }}>
+        {getVsSymbol(this.state.vsCoin) + " " + formatMoney(totalValue)}
+      </Typography>
+    );
+  };
+
   render() {
     const { classes } = this.props;
     const {
@@ -3254,8 +3358,11 @@ class PortfolioBig extends Component {
       assetsPerPage,
       nonAssetsPage,
       nonAssetsPerPage,
+      uniV2AssetsPage,
+      uniV2AssetsPerPage,
       stakedAssetsExpanded,
       assetsExpanded,
+      univ2AssetsExpanded,
       walletMenuOpen,
       walletNicknames,
       anchorWalletElement,
@@ -4071,7 +4178,7 @@ class PortfolioBig extends Component {
                               {
                                 <ExpandMoreIcon
                                   className={
-                                    stakedAssetsExpanded
+                                    assetsExpanded
                                       ? classes.expandIcon
                                       : classes.unexpandIcon
                                   }
@@ -4164,7 +4271,7 @@ class PortfolioBig extends Component {
                       </div>
                     </Grid>
                   )}
-                  {(nonAssetsData || univ2Assets) && (
+                  {nonAssetsData && (
                     <Grid
                       item
                       xs={12}
@@ -4257,11 +4364,7 @@ class PortfolioBig extends Component {
                                   scrollbarWidth: "thin",
                                 }}
                               >
-                                {this.drawNonAssets(
-                                  nonAssetsData,
-                                  univ2Assets,
-                                  nonAssetsPage
-                                )}
+                                {this.drawNonAssets(nonAssetsData)}
                               </Grid>
                               <Divider variant="middle" />
                               <Grid
@@ -4301,6 +4404,145 @@ class PortfolioBig extends Component {
                                     id="assetsPerPage-Select-outlined"
                                     value={nonAssetsPerPage}
                                     onChange={this.changeNonAssetsPerPage}
+                                    label="assetsPerPage"
+                                  >
+                                    <MenuItem key={"10"} value={10}>
+                                      10
+                                    </MenuItem>
+                                    <MenuItem key={"25"} value={25}>
+                                      25
+                                    </MenuItem>
+                                    <MenuItem key={"50"} value={50}>
+                                      50
+                                    </MenuItem>
+                                  </Select>
+                                </FormControl>
+                              </Grid>
+                            </div>
+                          </Grid>
+                        </Grid>
+                      </div>
+                    </Grid>
+                  )}
+                  {univ2Assets && (
+                    <Grid
+                      item
+                      xs={12}
+                      key="Univ2GridRoot"
+                      style={{ display: "grid", minHeight: "100%" }}
+                    >
+                      <div className={classes.nonAssetsGrid}>
+                        <Grid
+                          item
+                          xs={12}
+                          container
+                          direction="row"
+                          justify="space-between"
+                        >
+                          <Typography color="primary" variant={"h3"}>
+                            Uniswap LP Assets
+                          </Typography>
+                          <Grid
+                            item
+                            container
+                            direction="row"
+                            style={{ width: "auto" }}
+                          >
+                            {this.drawTotalValue(univ2Assets)}
+
+                            <IconButton
+                              color="primary"
+                              aria-label="Show Portfolio Data"
+                              size="small"
+                              onClick={() =>
+                                this.expandContract(
+                                  univ2AssetsExpanded,
+                                  "univ2"
+                                )
+                              }
+                            >
+                              {
+                                <ExpandMoreIcon
+                                  className={
+                                    univ2AssetsExpanded
+                                      ? classes.expandIcon
+                                      : classes.unexpandIcon
+                                  }
+                                  id="expandIcon"
+                                />
+                              }
+                            </IconButton>
+                          </Grid>
+                        </Grid>
+                        <Grid style={{ overflow: "hidden", padding: "1px" }}>
+                          <Grid
+                            className={
+                              univ2AssetsExpanded
+                                ? classes.expand
+                                : classes.contract
+                            }
+                            id="expandContractUniV2"
+                            style={{ transition: "all 0.7s ease-in-out" }}
+                          >
+                            <div
+                              id="expandedUniV2ItemsContainer"
+                              className={classes.itemContainer}
+                            >
+                              <Divider variant="middle" />
+                              <Grid
+                                item
+                                xs={12}
+                                style={{
+                                  height: "100%",
+                                  maxHeight: 500,
+                                  overflowY: "auto",
+                                  marginTop: 10,
+                                  scrollbarColor:
+                                    "rgb(121, 216, 162) rgba(48, 48, 48, 0.5)",
+                                  paddingRight: 10,
+                                  scrollbarWidth: "thin",
+                                }}
+                              >
+                                {this.drawUniV2Assets(univ2Assets)}
+                              </Grid>
+                              <Divider variant="middle" />
+                              <Grid
+                                container
+                                direction="row"
+                                justify="flex-end"
+                                alignItems="center"
+                                style={{ marginTop: 10 }}
+                              >
+                                <IconButton
+                                  disabled={uniV2AssetsPage === 1}
+                                  onClick={() =>
+                                    this.changeUniV2AssetPage("prev")
+                                  }
+                                >
+                                  <KeyboardArrowLeftRoundedIcon />
+                                </IconButton>
+                                <div className={classes.pageCounter}>
+                                  {uniV2AssetsPage}
+                                </div>
+                                <IconButton
+                                  onClick={() =>
+                                    this.changeUniV2AssetPage("next")
+                                  }
+                                >
+                                  <KeyboardArrowRightRoundedIcon />
+                                </IconButton>
+                                <FormControl
+                                  variant="outlined"
+                                  className={classes.formControl}
+                                >
+                                  <InputLabel id="select-outlined-label">
+                                    per page
+                                  </InputLabel>
+                                  <Select
+                                    labelId="univ2assetsPerPage-Select-label"
+                                    id="univ2assetsPerPage-Select-outlined"
+                                    value={uniV2AssetsPerPage}
+                                    onChange={this.changeUniV2AssetsPerPage}
                                     label="assetsPerPage"
                                   >
                                     <MenuItem key={"10"} value={10}>

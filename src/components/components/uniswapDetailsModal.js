@@ -21,6 +21,8 @@ import {
 import LockIcon from "@material-ui/icons/Lock";
 
 import CloseIcon from "@material-ui/icons/Close";
+import LaunchRoundedIcon from "@material-ui/icons/LaunchRounded";
+
 import { formatMoney, getVsSymbol } from "../helpers";
 import { colors } from "../../theme";
 
@@ -66,33 +68,44 @@ class UniswapDetailsModal extends Component {
   componentDidMount() {
     const assetCodes = [];
 
-    // this.props.data.items.forEach((item, i) => {
-    //   if (item.chain === "ethereum") {
-    //     assetCodes.push(item.asset.asset_code);
-    //   }
-    // });
-    // dispatcher.dispatch({
-    //   type: GECKO_GET_SPARKLINE_FROM_CONTRACT,
-    //   assetCodes,
-    //   vsCoin: this.props.vsCoin,
-    // });
-    // emitter.on(
-    //   GECKO_GET_SPARKLINE_FROM_CONTRACT_RETURNED,
-    //   this.sparklineDataReturned
-    // );
+    Object.entries(this.props.data.components).forEach(([key, value]) => {
+      assetCodes.push(key);
+    });
+
+    dispatcher.dispatch({
+      type: GECKO_GET_SPARKLINE_FROM_CONTRACT,
+      assetCodes,
+      vsCoin: this.props.vsCoin,
+    });
+    emitter.on(
+      GECKO_GET_SPARKLINE_FROM_CONTRACT_RETURNED,
+      this.sparklineDataReturned
+    );
   }
 
   componentWillUnmount() {
-    // emitter.removeListener(
-    //   GECKO_GET_SPARKLINE_FROM_CONTRACT_RETURNED,
-    //   this.sparklineDataReturned
-    // );
+    emitter.removeListener(
+      GECKO_GET_SPARKLINE_FROM_CONTRACT_RETURNED,
+      this.sparklineDataReturned
+    );
   }
 
   sparklineDataReturned = (payload) => {
     this.setState({
       sparklineData: payload,
     });
+  };
+
+  goToPoolPage = (data) => {
+    console.log(data);
+    let redirectRoute = data.relevant_resources[1].url;
+    if (data.asset.type === "uniswap-v2") {
+      redirectRoute = data.relevant_resources[1].url.replace(
+        "https://uniswap.info",
+        "https://v2.uniswap.info"
+      );
+    }
+    window.open(redirectRoute, "_blank").focus();
   };
 
   render() {
@@ -140,6 +153,12 @@ class UniswapDetailsModal extends Component {
               <CloseIcon />
             </IconButton>
             <Grid item xs={12}>
+              <IconButton
+                aria-label="go to pool page"
+                onClick={() => this.goToPoolPage(data)}
+              >
+                <LaunchRoundedIcon />
+              </IconButton>
               <Typography
                 variant={"h2"}
                 color="primary"
@@ -199,7 +218,7 @@ class UniswapDetailsModal extends Component {
                     xs={6}
                     container
                     direction="row"
-                    alignItems="flex-start"
+                    alignItems="center"
                   >
                     <Grid
                       item
@@ -220,7 +239,7 @@ class UniswapDetailsModal extends Component {
                           {item.asset.name}
                         </Typography>
                       </Grid>
-                      <Grid item xs={6}>
+                      <Grid item xs={12}>
                         <Typography variant={"body1"}>
                           {(item.quantity * assetBalance).toFixed(2)}{" "}
                           {item.asset.symbol}{" "}
@@ -234,47 +253,35 @@ class UniswapDetailsModal extends Component {
                           }
                         </Typography>
                       </Grid>
-                      <Grid item xs={6}>
-                        <div
-                          style={{
-                            display: "flex",
-                            flexGrow: 1,
-                            flexDirection: "column",
-                            justifyContent: "end",
-                          }}
+                      <Grid item xs={12}>
+                        <Typography variant={"h3"} color={"primary"}>
+                          {getVsSymbol(vsCoin) +
+                            " " +
+                            formatMoney(
+                              item.asset.price.value *
+                                (item.quantity * assetBalance)
+                            )}
+                        </Typography>
+                        <Typography
+                          variant={"subtitle1"}
+                          color={
+                            item.asset.price.relative_change_24h > 0
+                              ? "primary"
+                              : "secondary"
+                          }
                         >
-                          <Typography
-                            variant={"h3"}
-                            color={"primary"}
-                            style={{ textAlign: "right" }}
-                          >
-                            {getVsSymbol(vsCoin) +
-                              " " +
-                              formatMoney(
-                                item.asset.price.value *
-                                  (item.quantity * assetBalance)
-                              )}
-                          </Typography>
-                          <Typography
-                            variant={"subtitle1"}
-                            color={
-                              item.asset.price.relative_change_24h > 0
-                                ? "primary"
-                                : "secondary"
-                            }
-                            style={{ textAlign: "right" }}
-                          >
-                            {formatMoney(item.asset.price.relative_change_24h) +
-                              " % (last 24hs)"}
-                          </Typography>
-                        </div>
+                          {formatMoney(item.asset.price.relative_change_24h) +
+                            " % (last 24hs)"}
+                        </Typography>
                       </Grid>
-                      {sparklineData && (
-                        <SparklineChart
-                          id={item.id}
-                          data={sparklineData[i].price}
-                        />
-                      )}
+                      <Grid item>
+                        {sparklineData && (
+                          <SparklineChart
+                            id={item.id}
+                            data={sparklineData[i].price}
+                          />
+                        )}
+                      </Grid>
                     </Grid>
                   </Grid>
                 );
