@@ -398,7 +398,7 @@ class PortfolioBig extends Component {
       assetsPage: 1,
       nonAssetsPage: 1,
       uniV2AssetsPage: 1,
-      uniV2AssetsPerPage: 3,
+      uniV2AssetsPerPage: 10,
       assetsPerPage: 25,
       nonAssetsPerPage: 10,
       loadingStats: false,
@@ -408,6 +408,9 @@ class PortfolioBig extends Component {
       walletMenuOpen: false,
       anchorWalletElement: null,
       addWalletType: null,
+      maxPagesUniV2: 0,
+      maxPagesAssets: 0,
+      maxPagesStaked: 0,
     };
   }
 
@@ -2002,6 +2005,13 @@ class PortfolioBig extends Component {
       assetsPerPage * assetsPage
     );
 
+    const newMaxPages = Math.ceil(sortedAssets.length / assetsPerPage);
+    if (newMaxPages !== this.state.maxPagesAssets) {
+      this.setState({
+        maxPagesAssets: newMaxPages,
+      });
+    }
+
     let data;
     return assetPage.map((asset) => (
       <React.Fragment key={Math.random() + asset.id}>
@@ -2510,6 +2520,13 @@ class PortfolioBig extends Component {
       (nonAssetsPage - 1) * nonAssetsPerPage,
       nonAssetsPerPage * nonAssetsPage
     );
+
+    const newMaxPages = Math.ceil(sortedAssets.length / nonAssetsPerPage);
+    if (this.state.maxPagesStaked !== newMaxPages) {
+      this.setState({
+        maxPagesStaked: newMaxPages,
+      });
+    }
     let data;
     return assetPage.map((row) => (
       <React.Fragment key={Math.random() + row.id}>
@@ -2734,6 +2751,13 @@ class PortfolioBig extends Component {
       sortedAssets = allNonAssets.sort(this.dynamicSort(sortBy));
     } else {
       sortedAssets = allNonAssets.sort(this.dynamicSort(`-${sortBy}`));
+    }
+
+    const newMaxPages = Math.ceil(sortedAssets.length / uniV2AssetsPerPage);
+    if (this.state.maxPagesUniV2 !== newMaxPages) {
+      this.setState({
+        maxPagesUniV2: newMaxPages,
+      });
     }
 
     const assetPage = sortedAssets.slice(
@@ -3365,6 +3389,9 @@ class PortfolioBig extends Component {
       univ2AssetsExpanded,
       walletMenuOpen,
       walletNicknames,
+      maxPagesUniV2,
+      maxPagesAssets,
+      maxPagesStaked,
       anchorWalletElement,
     } = this.state;
 
@@ -4235,6 +4262,7 @@ class PortfolioBig extends Component {
                                   {assetsPage}
                                 </div>
                                 <IconButton
+                                  disabled={assetsPage === maxPagesAssets}
                                   onClick={() => this.changeAssetPage("next")}
                                 >
                                   <KeyboardArrowRightRoundedIcon />
@@ -4386,6 +4414,7 @@ class PortfolioBig extends Component {
                                   {nonAssetsPage}
                                 </div>
                                 <IconButton
+                                  disabled={nonAssetsPage === maxPagesStaked}
                                   onClick={() =>
                                     this.changeNonAssetPage("next")
                                   }
@@ -4525,6 +4554,7 @@ class PortfolioBig extends Component {
                                   {uniV2AssetsPage}
                                 </div>
                                 <IconButton
+                                  disabled={uniV2AssetsPage === maxPagesUniV2}
                                   onClick={() =>
                                     this.changeUniV2AssetPage("next")
                                   }
