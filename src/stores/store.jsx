@@ -215,6 +215,7 @@ const cg_servers = [
   `https://chainguru-db.herokuapp.com`,
   `https://chainguru-db-dev.herokuapp.com`,
 ];
+const localBackend = [`http://localhost:3001`];
 let current_cgServer = Math.round(Math.random());
 function get_cgServer() {
   const server = cg_servers[current_cgServer];
@@ -2440,6 +2441,7 @@ ${nonce}`,
           },
         }
       );
+      console.log(await data.data);
       emitter.emit(DB_CHECK_LS_RESULT_RETURNED, await data.data);
     } catch (err) {
       if (err) {

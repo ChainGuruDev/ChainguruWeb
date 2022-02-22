@@ -80,7 +80,7 @@ class LeaderboardMini extends Component {
       this.setState({
         loading: false,
         leaderboard: data.leaderboard,
-        currentUser: data.currentUser[0],
+        currentUser: data.currentUser,
       });
   };
 

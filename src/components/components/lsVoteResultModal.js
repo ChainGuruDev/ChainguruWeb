@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import ReactCanvasConfetti from "react-canvas-confetti";
+import { formatMoney } from "../helpers";
 
 import {
   DialogContent,

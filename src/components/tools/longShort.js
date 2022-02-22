@@ -264,8 +264,8 @@ class LongShort extends Component {
 
   dbUserDataReturned = (data) => {
     this.setState({
-      longCombo: data.minigames.longShortStrike.long,
-      shortCombo: data.minigames.longShortStrike.short,
+      longCombo: data.minigames.longShort.longShortStrike.long,
+      shortCombo: data.minigames.longShort.longShortStrike.short,
     });
   };
 
