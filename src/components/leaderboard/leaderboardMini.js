@@ -90,17 +90,21 @@ class LeaderboardMini extends Component {
     let userHasPlayed = false;
     let userInTop10 = false;
     let currentUserIndex = null;
+
     if (currentUser) {
-      userHasPlayed = true;
       var userIndex = data.findIndex(
         (x) => x.nickname === currentUser.nickname
       );
-      if (userIndex < 10) {
-        userInTop10 = true;
+      if (data[userIndex]) {
+        userHasPlayed = true;
+
+        if (userIndex < 10) {
+          userInTop10 = true;
+        }
+        data[userIndex].user = true;
+        currentUser.user = true;
+        currentUser.position = userIndex + 1;
       }
-      data[userIndex].user = true;
-      currentUser.user = true;
-      currentUser.position = userIndex + 1;
     }
 
     if (data.length > 0) {

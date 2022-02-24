@@ -115,6 +115,9 @@ class ProfileMini extends Component {
   };
 
   dbUserDataReturned = (data) => {
+    if (!data.experiencePoints) {
+      data.experiencePoints = 0;
+    }
     const userLevel = getLevel(data.experiencePoints);
     const levelProgress = getLevelProgress(data.experiencePoints);
 
@@ -233,6 +236,7 @@ class ProfileMini extends Component {
                 variant="determinate"
                 value={this.state.levelProgress}
                 className={classes.levelProgress}
+                style={{ transform: "rotate(-90deg)" }}
               />
             </Badge>
           </Grid>

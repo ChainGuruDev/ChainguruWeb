@@ -33,6 +33,10 @@ import ReplayIcon from "@material-ui/icons/Replay";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import LabelIcon from "@material-ui/icons/Label";
 
+import StarRoundedIcon from "@material-ui/icons/StarRounded";
+import StarHalfRoundedIcon from "@material-ui/icons/StarHalfRounded";
+import StarBorderRoundedIcon from "@material-ui/icons/StarBorderRounded";
+
 import {
   Card,
   CardActionArea,
@@ -267,7 +271,7 @@ const styles = (theme) => ({
     right: "4vh",
     top: "-3vh",
     position: "relative",
-    width: "30px",
+    width: "10px",
     opacity: "25%",
     transition: "0.3s all",
     height: "inherit",
@@ -712,7 +716,6 @@ class PortfolioBig extends Component {
       //     portfolioData: mainnetAssets,
       //   });
     }
-
     this.setState({
       error: false,
       loading: false,
@@ -892,7 +895,7 @@ class PortfolioBig extends Component {
       univ2Assets[i].type = "uniswap-v2";
     }
 
-    // console.log(assetsData);
+    // item.asset.name === favorites
     // console.log(univ2Assets);
 
     if (this.state.selectedWallet === "all") {
@@ -2012,7 +2015,13 @@ class PortfolioBig extends Component {
       });
     }
 
+    const isFavorite = (token) => {
+      const userFavorites = store.getStore("userFavorites");
+      return userFavorites.includes(token.toLowerCase());
+    };
+
     let data;
+    console.log("Draw");
     return assetPage.map((asset) => (
       <React.Fragment key={Math.random() + asset.id}>
         <Grid
@@ -2057,6 +2066,14 @@ class PortfolioBig extends Component {
                   />
                 </div>
               </Grid>
+              <Grid
+                padding="none"
+                align="left"
+                style={{
+                  zIndex: 1,
+                  margin: "0 10px 0 0",
+                }}
+              ></Grid>
               <Grid
                 padding="none"
                 align="left"

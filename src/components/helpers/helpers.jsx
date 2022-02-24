@@ -193,7 +193,12 @@ function getVsSymbol(vsCoin) {
 const LEVEL_MOD = 0.05;
 
 function convertXpToLevel(xp) {
-  return Math.floor(LEVEL_MOD * Math.sqrt(xp));
+  let level = Math.floor(LEVEL_MOD * Math.sqrt(xp));
+  if (!isNaN(level)) {
+    return Math.floor(LEVEL_MOD * Math.sqrt(xp));
+  } else {
+    return 0;
+  }
 }
 
 function convertLevelToXp(level) {

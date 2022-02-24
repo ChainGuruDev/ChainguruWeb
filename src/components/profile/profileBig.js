@@ -115,6 +115,10 @@ class ProfileBig extends Component {
   };
 
   dbUserDataReturned = (data) => {
+    if (!data.experiencePoints) {
+      data.experiencePoints = 0;
+    }
+
     const userLevel = getLevel(data.experiencePoints);
     const levelProgress = getLevelProgress(data.experiencePoints);
 

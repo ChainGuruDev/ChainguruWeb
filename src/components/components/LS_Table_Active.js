@@ -390,6 +390,7 @@ class LSTableActive extends Component {
                 <CircularProgress
                   variant="determinate"
                   value={row.percentComplete}
+                  style={{ transform: "rotate(-90deg)" }}
                 />
               </>
             )}

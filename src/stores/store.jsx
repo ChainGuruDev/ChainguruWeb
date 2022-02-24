@@ -1654,7 +1654,6 @@ class Store {
         }
       }
     }
-
     let sparklineData = [];
     if (!payload.chain) {
       for (var i = 0; i < tokenIDs.length; i++) {
@@ -1940,6 +1939,8 @@ ${nonce}`,
 
   db_addFavorite = async (payload) => {
     const account = store.getStore("account");
+
+    console.log(payload.content);
 
     let _dbAddFav = await axios.put(
       `${cg_servers[1]}/favorites/${account.address}`,
