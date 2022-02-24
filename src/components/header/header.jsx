@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { withStyles } from "@material-ui/core/styles";
 import { Typography } from "@material-ui/core";
 import FormGroup from "@material-ui/core/FormGroup";
-import { Paper, Grid, IconButton } from "@material-ui/core";
+import { Paper, Grid, IconButton, Button, Link } from "@material-ui/core";
 
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Checkbox from "@material-ui/core/Checkbox";
@@ -35,6 +35,7 @@ import Brightness2RoundedIcon from "@material-ui/icons/Brightness2Rounded";
 import EvStationIcon from "@material-ui/icons/EvStation";
 
 import SettingsIcon from "@material-ui/icons/Settings";
+import FeedbackRoundedIcon from "@material-ui/icons/FeedbackRounded";
 
 import UnlockModal from "../unlock/unlockModal.jsx";
 
@@ -607,6 +608,21 @@ class Header extends Component {
               >
                 <SettingsIcon />
               </IconButton>
+              <Link target="_blank" href={"https://t.me/+uCorS6SOw1U4Zjg0"}>
+                <Button
+                  variant="outlined"
+                  color={"primary"}
+                  size="small"
+                  startIcon={<FeedbackRoundedIcon />}
+                  style={{
+                    marginLeft: 10,
+                    color: this.state.cgLogoColor,
+                    borderColor: this.state.cgLogoColor,
+                  }}
+                >
+                  Feedback
+                </Button>
+              </Link>
             </div>
           </div>
         </Grid>

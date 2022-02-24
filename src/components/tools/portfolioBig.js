@@ -1981,6 +1981,16 @@ class PortfolioBig extends Component {
     }
   };
 
+  modifyUserFavorites = (type, tokenData) => {
+    if (type === "add") {
+      console.log("adding");
+      console.log(tokenData);
+    } else {
+      console.log("removing");
+      console.log(tokenData);
+    }
+  };
+
   drawAssets(assetsData) {
     const {
       sortOrder,
@@ -2021,7 +2031,6 @@ class PortfolioBig extends Component {
     };
 
     let data;
-    console.log("Draw");
     return assetPage.map((asset) => (
       <React.Fragment key={Math.random() + asset.id}>
         <Grid
@@ -3716,8 +3725,7 @@ class PortfolioBig extends Component {
                               },
                             }}
                           >
-                            <Typography
-                              color="primary"
+                            <div
                               style={{
                                 paddingLeft: 12,
                                 display: "flex",
@@ -3736,7 +3744,17 @@ class PortfolioBig extends Component {
                                   fontSize="small"
                                   style={{ marginRight: 5 }}
                                 />
-                                My Wallets
+                                <Typography
+                                  color="primary"
+                                  style={{
+                                    paddingLeft: 12,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                  }}
+                                >
+                                  My Wallets
+                                </Typography>
                               </div>
                               <div>
                                 <Button
@@ -3752,7 +3770,7 @@ class PortfolioBig extends Component {
                                   New
                                 </Button>
                               </div>
-                            </Typography>
+                            </div>
                             <MenuItem
                               key={"all"}
                               selected={"all" === this.state.selectedWallet}
@@ -3816,8 +3834,7 @@ class PortfolioBig extends Component {
                                 </div>
                               </MenuItem>
                             ))}
-                            <Typography
-                              color="primary"
+                            <div
                               style={{
                                 paddingLeft: 12,
                                 display: "flex",
@@ -3836,7 +3853,17 @@ class PortfolioBig extends Component {
                                   fontSize="small"
                                   style={{ marginRight: 5 }}
                                 />
-                                Watchlist
+                                <Typography
+                                  color="primary"
+                                  style={{
+                                    paddingLeft: 12,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                  }}
+                                >
+                                  Watchlist
+                                </Typography>
                               </div>
                               <div>
                                 <Button
@@ -3852,7 +3879,7 @@ class PortfolioBig extends Component {
                                   New
                                 </Button>
                               </div>
-                            </Typography>
+                            </div>
                             {watchlistWallets.map((wallet) => (
                               <MenuItem
                                 key={wallet}
