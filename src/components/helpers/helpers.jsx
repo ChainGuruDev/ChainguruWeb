@@ -181,7 +181,7 @@ function getVsSymbol(vsCoin) {
         return "₿";
         break;
       case "eth":
-        return "eth";
+        return "⧫";
         break;
       default:
         return "$";

@@ -93,6 +93,7 @@ import {
   CHECK_GASPRICE,
   GASPRICE_RETURNED,
   SWITCH_VS_COIN,
+  SWITCH_VS_COIN_RETURNED,
   DB_UPDATE_ONE_MOV,
   DB_UPDATE_ONE_MOV_RETURNED,
   DB_GET_COIN_CATEGORIES,
@@ -1544,17 +1545,14 @@ class Store {
       case "eur":
         newVsCoin = "btc";
         store.setStore({ vsCoin: "btc" });
-
         break;
       case "btc":
         newVsCoin = "eth";
         store.setStore({ vsCoin: "eth" });
-
         break;
       case "eth":
         newVsCoin = "usd";
         store.setStore({ vsCoin: "usd" });
-
         break;
       default:
     }
@@ -1941,20 +1939,92 @@ ${nonce}`,
     const account = store.getStore("account");
 
     console.log(payload.content);
+    if (payload.contractToken) {
+      console.log(payload);
 
-    let _dbAddFav = await axios.put(
-      `${cg_servers[1]}/favorites/${account.address}`,
-      // `http://localhost:3001/favorites/${account.address}`,
-      { tokenID: payload.content },
-      {
-        headers: {
-          Authorization: `Bearer ${store.getStore("authToken")}`,
-        },
+      let tokenIDs = [];
+      if (!payload.content.chain) {
+        try {
+          let response = await axios.get(
+            `https://api.coingecko.com/api/v3/coins/ethereum/contract/${payload.content.asset.asset_code}`
+          );
+          tokenIDs.push(response.data.id);
+        } catch (err) {
+          if (payload.content.asset.asset_code === "eth") {
+            tokenIDs.push = "ethereum";
+          } else {
+            console.log(err);
+          }
+        }
+      } else {
+        if (payload.content.asset.asset_code === null) {
+          switch (payload.content.chain) {
+            case "avalanche":
+              tokenIDs.push("avalanche-2");
+              break;
+            case "binance-smart-chain":
+              tokenIDs.push("binancecoin");
+              break;
+            case "xdai":
+              tokenIDs.push("dai");
+              break;
+            case "optimism":
+              tokenIDs.push("ethereum");
+              break;
+            case "arbitrum":
+              tokenIDs.push("ethereum");
+            default:
+          }
+        } else {
+          if (payload.content.chain === "optimism") {
+            payload.content.chain = "optimistic-ethereum";
+          }
+          if (payload.content.chain === "arbitrum") {
+            payload.content.chain = "arbitrum-one";
+          }
+          try {
+            let response = await axios.get(
+              `https://api.coingecko.com/api/v3/coins/${payload.content.chain}/contract/${payload.content.asset.asset_code}`
+            );
+            tokenIDs.push(response.data.id);
+          } catch (err) {
+            if (payload.content.asset.asset_code === "eth") {
+              tokenIDs.push("ethereum");
+            } else {
+              console.log(err);
+            }
+          }
+        }
       }
-    );
-    store.setStore({ userFavorites: _dbAddFav.data.tokenIDs });
+      console.log(tokenIDs);
+      let _dbAddFav = await axios.put(
+        `${cg_servers[1]}/favorites/${account.address}`,
+        // `http://localhost:3001/favorites/${account.address}`,
+        { tokenID: tokenIDs[0] },
+        {
+          headers: {
+            Authorization: `Bearer ${store.getStore("authToken")}`,
+          },
+        }
+      );
+      console.log(await _dbAddFav.data.tokenIDs);
+      store.setStore({ userFavorites: _dbAddFav.data.tokenIDs });
+      emitter.emit(DB_ADD_FAVORITE_RETURNED, await _dbAddFav.data);
+    } else {
+      let _dbAddFav = await axios.put(
+        `${cg_servers[1]}/favorites/${account.address}`,
+        // `http://localhost:3001/favorites/${account.address}`,
+        { tokenID: payload.content },
+        {
+          headers: {
+            Authorization: `Bearer ${store.getStore("authToken")}`,
+          },
+        }
+      );
+      store.setStore({ userFavorites: _dbAddFav.data.tokenIDs });
 
-    emitter.emit(DB_ADD_FAVORITE_RETURNED, await _dbAddFav.data);
+      emitter.emit(DB_ADD_FAVORITE_RETURNED, await _dbAddFav.data);
+    }
   };
 
   db_delFavorite = async (payload) => {

@@ -1358,7 +1358,8 @@ class TransactionsBig extends Component {
                       >
                         Price at tx
                       </Typography>
-                      {tx.changes[1].price && (
+
+                      {tx.changes[1].price && tx.changes[1].asset.price && (
                         <Typography
                           color={
                             tx.changes[1].price <
@@ -1371,7 +1372,7 @@ class TransactionsBig extends Component {
                           {formatMoney(tx.changes[1].price)}
                         </Typography>
                       )}
-                      {tx.changes[0].price && (
+                      {tx.changes[0].price && tx.changes[0].asset.price && (
                         <Typography
                           color={
                             tx.changes[0].price >
@@ -1392,7 +1393,7 @@ class TransactionsBig extends Component {
                       >
                         Price now
                       </Typography>
-                      {tx.changes[1].price && (
+                      {tx.changes[1].price && tx.changes[1].asset.price && (
                         <Typography
                           color={
                             tx.changes[1].price <
@@ -1404,7 +1405,7 @@ class TransactionsBig extends Component {
                           $ {formatMoney(tx.changes[1].asset.price.value)}
                         </Typography>
                       )}
-                      {tx.changes[0].price && (
+                      {tx.changes[0].price && tx.changes[0].asset.price && (
                         <Typography
                           color={
                             tx.changes[0].price >
@@ -1424,7 +1425,7 @@ class TransactionsBig extends Component {
                       >
                         Value at tx
                       </Typography>
-                      {tx.changes[1].price && (
+                      {tx.changes[1].price && tx.changes[1].asset.price && (
                         <Typography
                           color={
                             tx.changes[1].price <
@@ -1442,7 +1443,7 @@ class TransactionsBig extends Component {
                           )}
                         </Typography>
                       )}
-                      {tx.changes[0].price && (
+                      {tx.changes[0].price && tx.changes[0].asset.price && (
                         <Typography
                           color={
                             tx.changes[0].price >
@@ -1468,7 +1469,7 @@ class TransactionsBig extends Component {
                       >
                         Value now
                       </Typography>
-                      {tx.changes[1].price && (
+                      {tx.changes[1].price && tx.changes[1].asset.price && (
                         <Typography
                           color={
                             tx.changes[1].price <
@@ -1486,7 +1487,7 @@ class TransactionsBig extends Component {
                           )}
                         </Typography>
                       )}
-                      {tx.changes[0].price && (
+                      {tx.changes[0].price && tx.changes[0].asset.price && (
                         <Typography
                           color={
                             tx.changes[0].price >
@@ -1512,7 +1513,7 @@ class TransactionsBig extends Component {
                       >
                         % P/L
                       </Typography>
-                      {tx.changes[1].price && (
+                      {tx.changes[1].price && tx.changes[1].asset.price && (
                         <Typography
                           color={
                             tx.changes[1].price <
@@ -1528,7 +1529,7 @@ class TransactionsBig extends Component {
                           %
                         </Typography>
                       )}
-                      {tx.changes[0].price && (
+                      {tx.changes[0].price && tx.changes[0].asset.price && (
                         <Typography
                           color={
                             tx.changes[0].price >
@@ -1552,7 +1553,7 @@ class TransactionsBig extends Component {
                       >
                         $ P/L
                       </Typography>
-                      {tx.changes[1].price && (
+                      {tx.changes[1].price && tx.changes[1].asset.price && (
                         <Typography
                           color={
                             tx.changes[1].price <
@@ -1576,7 +1577,7 @@ class TransactionsBig extends Component {
                           ).toFixed(2)}
                         </Typography>
                       )}
-                      {tx.changes[0].price && (
+                      {tx.changes[0].price && tx.changes[0].asset.price && (
                         <Typography
                           color={
                             tx.changes[0].price >
@@ -1616,54 +1617,57 @@ class TransactionsBig extends Component {
                         ).toFixed(2)}
                       </Typography>
                     </Grid>
-                    {tx.changes[1].price && tx.changes[0].price && (
-                      <Grid
-                        item
-                        align={"right"}
-                        style={{ margin: "0 0 0 5px" }}
-                      >
-                        <Typography
-                          variant={"subtitle1"}
-                          className={classes.subtitle}
+                    {tx.changes[1].price &&
+                      tx.changes[1].asset.price &&
+                      tx.changes[0].price &&
+                      tx.changes[0].asset.price && (
+                        <Grid
+                          item
+                          align={"right"}
+                          style={{ margin: "0 0 0 5px" }}
                         >
-                          Total P/L
-                        </Typography>
-                        <Typography
-                          color={
-                            tx.changes[1].price <
-                            tx.changes[1].asset.price.value
-                              ? "primary"
-                              : "secondary"
-                          }
-                        >
-                          ${" "}
-                          {(
-                            tx.changes[1].asset.price.value *
-                              formatBigNumbers(
-                                tx.changes[1].value,
-                                tx.changes[1].asset.decimals
-                              ) -
-                            tx.changes[1].price *
-                              formatBigNumbers(
-                                tx.changes[1].value,
-                                tx.changes[1].asset.decimals
-                              ) +
-                            tx.changes[0].price *
-                              formatBigNumbers(
-                                tx.changes[0].value,
-                                tx.changes[0].asset.decimals
-                              ) -
-                            tx.changes[0].asset.price.value *
-                              formatBigNumbers(
-                                tx.changes[0].value,
-                                tx.changes[0].asset.decimals
-                              ) -
-                            formatMoney(formatBigNumbers(tx.fee.value, 18)) *
-                              tx.fee.price
-                          ).toFixed(2)}
-                        </Typography>
-                      </Grid>
-                    )}
+                          <Typography
+                            variant={"subtitle1"}
+                            className={classes.subtitle}
+                          >
+                            Total P/L
+                          </Typography>
+                          <Typography
+                            color={
+                              tx.changes[1].price <
+                              tx.changes[1].asset.price.value
+                                ? "primary"
+                                : "secondary"
+                            }
+                          >
+                            ${" "}
+                            {(
+                              tx.changes[1].asset.price.value *
+                                formatBigNumbers(
+                                  tx.changes[1].value,
+                                  tx.changes[1].asset.decimals
+                                ) -
+                              tx.changes[1].price *
+                                formatBigNumbers(
+                                  tx.changes[1].value,
+                                  tx.changes[1].asset.decimals
+                                ) +
+                              tx.changes[0].price *
+                                formatBigNumbers(
+                                  tx.changes[0].value,
+                                  tx.changes[0].asset.decimals
+                                ) -
+                              tx.changes[0].asset.price.value *
+                                formatBigNumbers(
+                                  tx.changes[0].value,
+                                  tx.changes[0].asset.decimals
+                                ) -
+                              formatMoney(formatBigNumbers(tx.fee.value, 18)) *
+                                tx.fee.price
+                            ).toFixed(2)}
+                          </Typography>
+                        </Grid>
+                      )}
                   </Grid>
                 )}
               </>

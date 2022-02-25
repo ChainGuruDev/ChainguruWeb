@@ -104,6 +104,9 @@ import {
   DB_GET_ASSET_FULLDATA_RETURNED,
   GECKO_GET_SPARKLINE_FROM_CONTRACT,
   GECKO_GET_SPARKLINE_FROM_CONTRACT_RETURNED,
+  SWITCH_VS_COIN_RETURNED,
+  LOGIN,
+  DB_ADD_FAVORITE,
 } from "../../constants";
 
 import {
@@ -439,6 +442,7 @@ class PortfolioBig extends Component {
       DB_GET_PORTFOLIO_POSITIONS_RETURNED,
       this.db_getPortfolioPositionsReturned
     );
+    emitter.on(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
     emitter.on(DB_GET_ASSET_FULLDATA_RETURNED, this.uniswapDetailsReturned);
     emitter.on(
       GECKO_GET_SPARKLINE_FROM_CONTRACT_RETURNED,
@@ -487,6 +491,8 @@ class PortfolioBig extends Component {
       DB_REMOVE_USER_WALLET_NICKNAME_RETURNED,
       this.setNicknameReturned
     );
+    emitter.removeListener(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
+
     emitter.removeListener(CHECK_ACCOUNT_RETURNED, this.checkAccountReturned);
     emitter.removeListener(DB_ADD_WALLET_RETURNED, this.dbWalletReturned);
     emitter.removeListener(DB_DEL_WALLET_RETURNED, this.dbWalletReturned);
@@ -528,6 +534,21 @@ class PortfolioBig extends Component {
         dbDataLoaded: false,
       });
     }
+  };
+
+  vsCoinReturned = (vsCoin) => {
+    console.log(`NEW VS COIN ${vsCoin}`);
+    this._isMounted &&
+      dispatcher.dispatch({
+        type: DB_GET_PORTFOLIO_POSITIONS,
+        wallet: this.state.userWallets,
+      });
+
+    this.setState({
+      loading: true,
+      dbDataLoaded: false,
+      vsCoin: vsCoin,
+    });
   };
 
   dbUserDataReturned = (data) => {
@@ -1984,7 +2005,25 @@ class PortfolioBig extends Component {
   modifyUserFavorites = (type, tokenData) => {
     if (type === "add") {
       console.log("adding");
-      console.log(tokenData);
+
+      const account = store.getStore("account");
+      const userAuth = store.getStore("userAuth");
+      if (!userAuth && account && account.address) {
+        dispatcher.dispatch({
+          type: LOGIN,
+          address: account.address,
+        });
+      }
+      if (userAuth) {
+        dispatcher.dispatch({
+          type: DB_ADD_FAVORITE,
+          content: tokenData,
+          contractToken: true,
+        });
+        this.setState({
+          isAddingFav: true,
+        });
+      }
     } else {
       console.log("removing");
       console.log(tokenData);
@@ -2025,9 +2064,17 @@ class PortfolioBig extends Component {
       });
     }
 
-    const isFavorite = (token) => {
+    const isFavorite = async (token, tokenData) => {
       const userFavorites = store.getStore("userFavorites");
-      return userFavorites.includes(token.toLowerCase());
+      if (userFavorites.includes(token.toLowerCase())) {
+        return userFavorites.includes(token.toLowerCase());
+      } else {
+        //TODO FIX MATCH BETWEEN COINGECKO ID AND ZERION
+        // console.log(token);
+        // console.log("token not found by name");
+        // console.log(tokenData);
+        // console.log(userFavorites);
+      }
     };
 
     let data;
