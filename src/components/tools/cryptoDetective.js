@@ -419,6 +419,7 @@ class CryptoDetective extends Component {
       colors.cgRed,
     ];
     let walletColors = [];
+    let query = "";
     data.wallets.forEach((item, i) => {
       var x = i;
       x %= colours.length;
@@ -438,6 +439,7 @@ class CryptoDetective extends Component {
             wallet: wallets,
             query: coinData.contract_address,
           });
+          query = coinData.contract_address;
         } else if (coinData.symbol === "eth") {
           dispatcherZerion.dispatch({
             type: ZERION_GET_ASSETSTATS,
@@ -449,6 +451,7 @@ class CryptoDetective extends Component {
             wallet: wallets,
             query: coinData.symbol,
           });
+          query = coinData.symbol;
         }
       }
     }
@@ -456,6 +459,7 @@ class CryptoDetective extends Component {
       this.setState({
         userWallets: wallets,
         walletColors: walletColors,
+        query: query,
         walletNicknames: data.walletNicknames,
       });
   };
@@ -487,6 +491,7 @@ class CryptoDetective extends Component {
             ],
           });
       }
+      let query = "";
       if (this._isMounted && userWallets) {
         if (data[0].contract_address) {
           dispatcherZerion.dispatch({
@@ -499,6 +504,7 @@ class CryptoDetective extends Component {
             wallet: userWallets,
             query: data[0].contract_address,
           });
+          query = data[0].contract_address;
         } else if (data[0].symbol === "eth") {
           dispatcherZerion.dispatch({
             type: ZERION_GET_ASSETSTATS,
@@ -510,6 +516,7 @@ class CryptoDetective extends Component {
             wallet: userWallets,
             query: data[0].symbol,
           });
+          query = data[0].symbol;
         }
       }
 
@@ -523,6 +530,7 @@ class CryptoDetective extends Component {
           coinData: data[0],
           dataLoaded: true,
           txDataLoaded: false,
+          query: query,
         });
     }
     if (data[0].error) {
@@ -2322,6 +2330,7 @@ class CryptoDetective extends Component {
                   tx={this.state.transactions}
                   wallets={this.state.userWallets}
                   selected="all"
+                  query={this.state.query}
                 />
               </AccordionDetails>
             </Accordion>

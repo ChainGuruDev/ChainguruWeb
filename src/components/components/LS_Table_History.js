@@ -32,6 +32,8 @@ import KeyboardArrowLeft from "@material-ui/icons/KeyboardArrowLeft";
 import KeyboardArrowRight from "@material-ui/icons/KeyboardArrowRight";
 import LastPageIcon from "@material-ui/icons/LastPage";
 import AssignmentTurnedInIcon from "@material-ui/icons/AssignmentTurnedIn";
+import CheckCircleIcon from "@material-ui/icons/CheckCircle";
+import CancelIcon from "@material-ui/icons/Cancel";
 
 //Import Constants
 import {
@@ -275,12 +277,7 @@ class LSTableHistory extends Component {
         ? newRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
         : newRows
       ).map((row) => (
-        <TableRow
-          hover={true}
-          key={row.dbid}
-          style={{ cursor: "pointer" }}
-          onClick={() => this.detective(row.id)}
-        >
+        <TableRow key={row.dbid}>
           <TableCell component="th" scope="row">
             <img
               className={classes.tokenLogo}
@@ -315,47 +312,9 @@ class LSTableHistory extends Component {
             <Typography variant={"h4"}>{row.endingFormatted}</Typography>
           </TableCell>
           <TableCell align="center">
-            {row.vote && (
-              <ButtonGroup
-                color="primary"
-                aria-label="LongShort_ButtonGroup"
-                style={{ pointerEvents: "none" }}
-              >
-                <Button
-                  startIcon={<TrendingUpIcon />}
-                  color="primary"
-                  variant="contained"
-                ></Button>
-                <Button
-                  disabled
-                  endIcon={<TrendingDownIcon />}
-                  color="secondary"
-                ></Button>
-              </ButtonGroup>
-            )}
-            {!row.vote && (
-              <ButtonGroup
-                color="primary"
-                aria-label="LongShort_ButtonGroup"
-                style={{ pointerEvents: "none" }}
-              >
-                <Button
-                  disabled
-                  startIcon={<TrendingUpIcon />}
-                  color="primary"
-                ></Button>
-                <Button
-                  endIcon={<TrendingDownIcon />}
-                  variant="contained"
-                  color="secondary"
-                ></Button>
-              </ButtonGroup>
-            )}
-          </TableCell>
-          <TableCell align="center">
             {row.result && (
               <Button
-                startIcon={<AssignmentTurnedInIcon />}
+                startIcon={<CheckCircleIcon />}
                 variant="outlined"
                 color="primary"
                 style={{ pointerEvents: "none" }}
@@ -363,16 +322,26 @@ class LSTableHistory extends Component {
                 disableRipple
               >
                 Right
+                {row.vote ? (
+                  <TrendingUpIcon style={{ marginLeft: 10 }} />
+                ) : (
+                  <TrendingDownIcon style={{ marginLeft: 10 }} />
+                )}
               </Button>
             )}
             {!row.result && (
               <Button
-                startIcon={<AssignmentTurnedInIcon />}
+                startIcon={<CancelIcon />}
                 variant="outlined"
                 color="secondary"
                 style={{ pointerEvents: "none" }}
               >
                 Wrong
+                {row.vote ? (
+                  <TrendingUpIcon style={{ marginLeft: 10 }} />
+                ) : (
+                  <TrendingDownIcon style={{ marginLeft: 10 }} />
+                )}
               </Button>
             )}
           </TableCell>
@@ -489,7 +458,6 @@ class LSTableHistory extends Component {
               <TableCell></TableCell>
               <TableCell></TableCell>
               <TableCell></TableCell>
-              <TableCell></TableCell>
             </TableRow>
             <TableRow>
               <TableCell></TableCell>
@@ -543,17 +511,7 @@ class LSTableHistory extends Component {
                   )}
                 Date End
               </TableCell>
-              <TableCell onClick={() => this.sortBy("vote")} align="center">
-                {this.state.sortBy === "vote" &&
-                  this.state.sortOrder === "asc" && (
-                    <ArrowDropUpRoundedIcon align="center" />
-                  )}
-                {this.state.sortBy === "vote" &&
-                  this.state.sortOrder === "dsc" && (
-                    <ArrowDropDownRoundedIcon align="center" />
-                  )}
-                Vote
-              </TableCell>
+
               <TableCell onClick={() => this.sortBy("result")} align="center">
                 {this.state.sortBy === "result" &&
                   this.state.sortOrder === "asc" && <ArrowDropUpRoundedIcon />}

@@ -2909,7 +2909,6 @@ ${nonce}`,
   };
 
   db_getAddressTx = async (data) => {
-    console.log(data);
     let vsCoin = store.getStore("vsCoin");
     let wallets = [];
     data.wallet.forEach((item, i) => {

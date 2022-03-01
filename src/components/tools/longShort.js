@@ -384,7 +384,7 @@ class LongShort extends Component {
                           placement="top"
                         >
                           <Grid item>
-                            <CoinSearchBar />
+                            <CoinSearchBar label="Find coins to long or short here" />
                           </Grid>
                         </Tooltip>
 

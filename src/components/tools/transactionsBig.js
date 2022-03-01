@@ -263,6 +263,7 @@ class TransactionsBig extends Component {
         });
       }
       if (prevProps.query !== this.props.query) {
+        console.log(this.props.query);
         this.setState({
           txQuery: this.props.query,
         });
@@ -288,6 +289,7 @@ class TransactionsBig extends Component {
     data.wallets.forEach((item, i) => {
       wallets.push(item.wallet);
     });
+    console.log(wallets);
     if (!this.state.loading) {
       this._isMounted &&
         dispatcher.dispatch({
@@ -1926,7 +1928,7 @@ class TransactionsBig extends Component {
     let newTxLimit = event.target.value;
     if (this.state.selectedWallet === "all") {
       this.state.userWallets.forEach((item, i) => {
-        wallets.push(item.wallet);
+        wallets.push(item);
       });
     } else {
       wallets = [this.state.selectedWallet];
@@ -1957,7 +1959,7 @@ class TransactionsBig extends Component {
 
     if (selectedWallet === "all") {
       userWallets.forEach((item, i) => {
-        wallets.push(item.wallet);
+        wallets.push(item);
       });
     } else {
       wallets = [selectedWallet];
