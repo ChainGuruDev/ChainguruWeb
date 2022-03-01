@@ -21,6 +21,7 @@ import {
   TableSortLabel,
   Typography,
   TableBody,
+  useMediaQuery,
 } from "@material-ui/core";
 
 import FirstPageIcon from "@material-ui/icons/FirstPage";
@@ -62,6 +63,35 @@ const styles = (theme) => ({
   footer: {
     flexShrink: 0,
     marginLeft: theme.spacing(2.5),
+  },
+  pagination: {
+    "& .MuiTablePagination-spacer": {
+      display: "none",
+    },
+  },
+  hideIfLessThanLg: {
+    [theme.breakpoints.down("lg")]: {
+      display: "none",
+    },
+    [theme.breakpoints.up("lg")]: {
+      display: "table-cell",
+    },
+  },
+  hideIfLessThanMd: {
+    [theme.breakpoints.down("md")]: {
+      display: "none",
+    },
+    [theme.breakpoints.up("md")]: {
+      display: "table-cell",
+    },
+  },
+  hideIfLessThanSm: {
+    [theme.breakpoints.down("sm")]: {
+      display: "none",
+    },
+    [theme.breakpoints.up("sm")]: {
+      display: "table-cell",
+    },
   },
 });
 
@@ -166,7 +196,7 @@ class CoinList extends Component {
 
   getCoinList = (coins) => {
     this.setState({
-      coins: coins.lenght,
+      coins: coins.length,
     });
   };
 
@@ -350,7 +380,7 @@ class CoinList extends Component {
               {formatMoney(row.current_price) + " " + getVsSymbol(vsCoin)}
             </Typography>
           </TableCell>
-          <TableCell align="right">
+          <TableCell align="right" className={classes.hideIfLessThanMd}>
             {row.price_change_percentage_A && (
               <Typography
                 variant={"body1"}
@@ -362,7 +392,7 @@ class CoinList extends Component {
               </Typography>
             )}
           </TableCell>
-          <TableCell align="right">
+          <TableCell align="right" className={classes.hideIfLessThanLg}>
             {row.price_change_percentage_B && (
               <Typography
                 variant={"body1"}
@@ -386,7 +416,7 @@ class CoinList extends Component {
               </Typography>
             )}
           </TableCell>
-          <TableCell align="right">
+          <TableCell align="right" className={classes.hideIfLessThanMd}>
             {row.price_change_percentage_D && (
               <Typography
                 variant={"body1"}
@@ -586,10 +616,25 @@ class CoinList extends Component {
                         Name
                       </TableCell>
                       <TableCell align="right">Price</TableCell>
-                      <TableCell align="right">{labelA}</TableCell>
-                      <TableCell align="right">{labelB}</TableCell>
+                      <TableCell
+                        align="right"
+                        className={classes.hideIfLessThanMd}
+                      >
+                        {labelA}
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        className={classes.hideIfLessThanLg}
+                      >
+                        {labelB}
+                      </TableCell>
                       <TableCell align="right">{labelC}</TableCell>
-                      <TableCell align="right">{labelD}</TableCell>
+                      <TableCell
+                        align="right"
+                        className={classes.hideIfLessThanMd}
+                      >
+                        {labelD}
+                      </TableCell>
                       <TableCell align="right">{labelE}</TableCell>
                       <TableCell align="right">
                         <TableSortLabel
@@ -605,22 +650,18 @@ class CoinList extends Component {
                   </TableHead>
                   <TableBody>{this.sortedList(geckoData)}</TableBody>
                   <TableFooter>
-                    <TableRow>
-                      <TablePagination
-                        rowsPerPageOptions={[10, 25, 50]}
-                        colSpan={3}
-                        count={coins}
-                        rowsPerPage={perPage}
-                        page={page}
-                        SelectProps={{
-                          inputProps: { "aria-label": "rows per page" },
-                          native: true,
-                        }}
-                        onChangePage={() => console.log()}
-                        onChangeRowsPerPage={handleChangeRowsPerPage}
-                        ActionsComponent={this.TablePaginationActions}
-                      />
-                    </TableRow>
+                    <TablePagination
+                      className={classes.pagination}
+                      rowsPerPageOptions={[10, 25, 50]}
+                      count={coins}
+                      rowsPerPage={perPage}
+                      page={page}
+                      SelectProps={{
+                        inputProps: { "aria-label": "rows per page" },
+                      }}
+                      onChangeRowsPerPage={handleChangeRowsPerPage}
+                      ActionsComponent={this.TablePaginationActions}
+                    />
                   </TableFooter>
                 </Table>
               </TableContainer>
