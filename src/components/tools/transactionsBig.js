@@ -1952,6 +1952,7 @@ class TransactionsBig extends Component {
       userWallets,
       txQuery,
     } = this.state;
+
     let wallets = [];
 
     if (selectedWallet === "all") {

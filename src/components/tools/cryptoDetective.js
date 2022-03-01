@@ -2321,6 +2321,7 @@ class CryptoDetective extends Component {
                 <TransactionsBig
                   tx={this.state.transactions}
                   wallets={this.state.userWallets}
+                  selected="all"
                 />
               </AccordionDetails>
             </Accordion>
