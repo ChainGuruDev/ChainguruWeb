@@ -11,7 +11,6 @@ import PortfolioChart from "../components/PortfolioChart.js";
 import StakingDetailsModal from "../components/stakingDetailsModal.js";
 import UniswapDetailsModal from "../components/uniswapDetailsModal.js";
 import SparklineChart from "../components/SparklineChart.js";
-
 import ProfileMini from "../profile/profileMini.js";
 
 import AccountBalanceWalletRoundedIcon from "@material-ui/icons/AccountBalanceWalletRounded";

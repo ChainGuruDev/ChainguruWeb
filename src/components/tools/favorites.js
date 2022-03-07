@@ -231,8 +231,7 @@ class Favorites extends Component {
 
     return (
       <div className={classes.root}>
-        {!account.address && <div>CONNECT WALLET</div>}
-        {account.address && (
+        {account.address ? (
           <Card className={classes.favCard} elevation={3}>
             <Grid className={classes.favGrid} container>
               <Grid className={classes.favTopBar} item xs={12} container>
@@ -299,6 +298,8 @@ class Favorites extends Component {
               </Grid>
             </Grid>
           </Card>
+        ) : (
+          <div>CONNECT WALLET</div>
         )}
       </div>
     );

@@ -113,6 +113,7 @@ import {
   DB_NEW_AVATAR,
   DB_NEW_AVATAR_RETURNED,
   DB_GET_LEADERBOARD,
+  DB_GET_LEADERBOARD_MINIGAME,
   DB_GET_LEADERBOARD_RETURNED,
   DB_GET_PORTFOLIO,
   DB_GET_PORTFOLIO_RETURNED,
@@ -520,6 +521,15 @@ class Store {
             break;
           case CHECK_BETA_ACCESS:
             this.web3CheckBetaAccess();
+            break;
+          case DB_GET_NFTS:
+            this.dbGetNfts();
+            break;
+          case DB_GET_NFTS_VALUE:
+            this.dbGetNftsValue();
+            break;
+          case DB_GET_LEADERBOARD_MINIGAME:
+            this.dbGetLeaderboardMinigame(payload);
             break;
           default: {
             break;
@@ -2607,6 +2617,33 @@ ${nonce}`,
     }
   };
 
+  dbGetLeaderboardMinigame = async (payload) => {
+    try {
+      const validGameId = ["longShort", "genesis"];
+      console.log(payload.minigameID);
+      if (validGameId.includes(payload.minigameID)) {
+        let user = store.getStore("account");
+        let leaderboard = await axios.get(
+          `${cg_servers[1]}/users/leaderboard/${payload.minigameID}`
+        );
+        let currentUser = await axios.get(
+          `${cg_servers[1]}/users/${user.address}/minigames`
+        );
+        const data = {
+          leaderboard: leaderboard.data,
+          currentUser: currentUser.data,
+        };
+        emitter.emit(DB_GET_LEADERBOARD_RETURNED, await data);
+      } else {
+        console.log("not valid gameId");
+      }
+    } catch (err) {
+      if (err) {
+        console.log(err.message);
+      }
+    }
+  };
+
   limitedGetChips = limiterGecko.wrap(this.db_getBluechips);
 
   limitedGetChipsUser = limiterGecko.wrap(this.db_getBluechipsUser);
@@ -3419,6 +3456,109 @@ ${nonce}`,
             DB_GET_ASSET_FULLDATA_RETURNED,
             assetFulldata.data["full-info"]
           );
+        } catch (err) {
+          console.log(err.message);
+          emitter.emit(ERROR, await err.message);
+        }
+      } else {
+        console.log(err.message);
+        emitter.emit(ERROR, await err.message);
+      }
+    }
+  };
+
+  dbGetNfts = async (payload) => {
+    let vsCoin = store.getStore("vsCoin");
+    let limit = 100;
+    let offset = 0;
+    if (payload.nftLimit) {
+      limit = payload.nftLimit;
+    }
+    if (payload.offset) {
+      offset = payload.offset;
+    }
+
+    try {
+      const nftData = await axios.post(
+        `${get_cgServer()}/zerion/address/nft`,
+        {
+          addresses: payload.addresses,
+          currency: vsCoin,
+          nft_limit: limit,
+          nft_offset: offset,
+        },
+        {
+          timeout: 5000,
+        }
+      );
+      emitter.emit(DB_GET_NFTS_RETURNED, nftData.data.nft);
+    } catch (err) {
+      if (
+        err.message === "Network Error" ||
+        err.message === "timeout of 5000ms exceeded"
+      ) {
+        try {
+          const nftData = await axios.post(
+            `${get_cgServer()}/zerion/address/nft`,
+            {
+              addresses: payload.addresses,
+              currency: vsCoin,
+              nft_limit: limit,
+              nft_offset: offset,
+            }
+          );
+          emitter.emit(DB_GET_NFTS_RETURNED, nftData.data.nft);
+        } catch (err) {
+          console.log(err.message);
+          emitter.emit(ERROR, await err.message);
+        }
+      } else {
+        console.log(err.message);
+        emitter.emit(ERROR, await err.message);
+      }
+    }
+  };
+
+  dbGetNftsValue = async (payload) => {
+    let vsCoin = store.getStore("vsCoin");
+    let valueType = "floor_price";
+
+    if (
+      payload.valueType &&
+      (payload.valueType === "floor_price" ||
+        payload.valueType === "last_price")
+    ) {
+      valueType = payload.nftLimit;
+    }
+
+    try {
+      const nftValue = await axios.post(
+        `${get_cgServer()}/zerion/address/nft_totalvalue`,
+        {
+          addresses: payload.addresses,
+          currency: vsCoin,
+          value_type: valueType,
+        },
+        {
+          timeout: 5000,
+        }
+      );
+      emitter.emit(DB_GET_NFTS_VALUE_RETURNED, nftValue.data);
+    } catch (err) {
+      if (
+        err.message === "Network Error" ||
+        err.message === "timeout of 5000ms exceeded"
+      ) {
+        try {
+          const nftValue = await axios.post(
+            `${get_cgServer()}/zerion/address/nft_totalvalue`,
+            {
+              addresses: payload.addresses,
+              currency: vsCoin,
+              value_type: valueType,
+            }
+          );
+          emitter.emit(DB_GET_NFTS_VALUE_RETURNED, nftValue.data);
         } catch (err) {
           console.log(err.message);
           emitter.emit(ERROR, await err.message);

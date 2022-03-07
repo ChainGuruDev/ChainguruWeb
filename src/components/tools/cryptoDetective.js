@@ -19,6 +19,7 @@ import {
   dynamicSort,
   getVsSymbol,
 } from "../helpers";
+
 import { colors } from "../../theme";
 
 //IMPORT MaterialUI elements

@@ -118,9 +118,10 @@ class FavoriteList extends Component {
 
   vsCoinReturned = (vsCoin) => {
     this.setState({ vsCoin: vsCoin });
+    const tokenIDs = store.getStore("userFavorites");
     dispatcher.dispatch({
       type: COINGECKO_POPULATE_FAVLIST,
-      tokenIDs: this.state.tokenIDs,
+      tokenIDs: tokenIDs,
     });
   };
 

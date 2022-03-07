@@ -15,6 +15,7 @@ import {
 import {
   DB_GET_LEADERBOARD,
   DB_GET_LEADERBOARD_RETURNED,
+  DB_GET_LEADERBOARD_MINIGAME,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -64,7 +65,8 @@ class LeaderboardMini extends Component {
     emitter.on(DB_GET_LEADERBOARD_RETURNED, this.dbGetLeaderboardReturned);
     this._isMounted &&
       dispatcher.dispatch({
-        type: DB_GET_LEADERBOARD,
+        type: DB_GET_LEADERBOARD_MINIGAME,
+        minigameID: "longShort",
       });
   }
 

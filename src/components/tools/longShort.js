@@ -354,8 +354,8 @@ class LongShort extends Component {
       longCombo,
       shortCombo,
       activeLS,
+      coinData,
     } = this.state;
-
     return (
       <div className={classes.root}>
         {!account.address && <div>CONNECT WALLET</div>}
@@ -388,7 +388,7 @@ class LongShort extends Component {
                           </Grid>
                         </Tooltip>
 
-                        {this.state.coinData && (
+                        {coinData && (
                           <Grid
                             container
                             direction="row"
@@ -398,9 +398,7 @@ class LongShort extends Component {
                             style={{ marginTop: 10 }}
                           >
                             <Grid
-                              onClick={() =>
-                                this.detective(this.state.coinData.id)
-                              }
+                              onClick={() => this.detective(coinData.id)}
                               style={{
                                 maxWidth: "max-content",
                                 cursor: "pointer",
@@ -408,15 +406,13 @@ class LongShort extends Component {
                               item
                             >
                               <Avatar
-                                alt={this.state.coinData.image.large}
-                                src={this.state.coinData.image.large}
+                                alt={coinData.image.large}
+                                src={coinData.image.large}
                                 style={{ maxWidth: "max-content" }}
                               />
                             </Grid>
                             <Grid
-                              onClick={() =>
-                                this.detective(this.state.coinData.id)
-                              }
+                              onClick={() => this.detective(coinData.id)}
                               style={{
                                 cursor: "pointer",
                               }}
@@ -424,19 +420,17 @@ class LongShort extends Component {
                             >
                               <Grid item>
                                 <Typography variant="h6">
-                                  {this.state.coinData.name}
+                                  {coinData.name}
                                 </Typography>
                               </Grid>
                               <Grid item>
                                 <Typography variant="subtitle2">
-                                  {this.state.coinData.symbol}
+                                  {coinData.symbol}
                                 </Typography>
                               </Grid>
                             </Grid>
                             <Grid
-                              onClick={() =>
-                                this.detective(this.state.coinData.id)
-                              }
+                              onClick={() => this.detective(coinData.id)}
                               style={{
                                 cursor: "pointer",
                               }}
@@ -449,18 +443,12 @@ class LongShort extends Component {
                               </Grid>
                               <Grid item>
                                 <Typography variant="h6">
-                                  ${" "}
-                                  {
-                                    this.state.coinData.market_data
-                                      .current_price.usd
-                                  }
+                                  $ {coinData.market_data.current_price.usd}
                                 </Typography>
                               </Grid>
                             </Grid>
                             <Grid
-                              onClick={() =>
-                                this.detective(this.state.coinData.id)
-                              }
+                              onClick={() => this.detective(coinData.id)}
                               style={{
                                 cursor: "pointer",
                               }}
@@ -473,9 +461,11 @@ class LongShort extends Component {
                               </Grid>
                               <Grid item>
                                 <Typography variant="h6">
-                                  {this.state.coinData.market_data.price_change_percentage_24h.toFixed(
-                                    2
-                                  )}
+                                  {this.state.coinData.market_data
+                                    .price_change_percentage_24h &&
+                                    this.state.coinData.market_data.price_change_percentage_24h.toFixed(
+                                      2
+                                    )}
                                   %
                                 </Typography>
                               </Grid>
@@ -494,9 +484,11 @@ class LongShort extends Component {
                               </Grid>
                               <Grid item>
                                 <Typography variant="h6">
-                                  {this.state.coinData.market_data.price_change_percentage_7d.toFixed(
-                                    2
-                                  )}
+                                  {this.state.coinData.market_data
+                                    .price_change_percentage_7d &&
+                                    this.state.coinData.market_data.price_change_percentage_7d.toFixed(
+                                      2
+                                    )}
                                   %
                                 </Typography>
                               </Grid>
