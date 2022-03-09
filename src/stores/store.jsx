@@ -1872,6 +1872,7 @@ ${nonce}`,
   db_getUserData = async (payload) => {
     //CHECK FOR PREVIOUS STORED DATA
     const storedUser = store.getStore("userData");
+    console.log("checking data");
     if (payload.address === storedUser.user) {
       //IF DATA IS FOUND AND FOR THE SAME USER RETURN
       emitter.emit(DB_USERDATA_RETURNED, await storedUser);
@@ -1890,6 +1891,8 @@ ${nonce}`,
         }
       );
       let wallets = [];
+      console.log(await _user.data);
+      await _user;
       _user.data.wallets.forEach((item, i) => {
         wallets.push(item.wallet);
       });
@@ -1918,6 +1921,8 @@ ${nonce}`,
         );
         // console.log("new user created");
         if (await _newUser) {
+          this.login({ address: payload.address });
+
           dispatcher.dispatch({
             type: DB_GET_USERDATA,
             address: payload.address,
