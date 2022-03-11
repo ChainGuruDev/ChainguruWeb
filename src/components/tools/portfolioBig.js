@@ -4059,21 +4059,19 @@ class PortfolioBig extends Component {
                                   >
                                     <MoreHorizIcon />
                                   </IconButton>
-                                  {this.state.account.address !== wallet && (
-                                    <IconButton
-                                      aria-label="remove"
-                                      onClick={(ev) => {
-                                        ev.stopPropagation();
-                                        this.removeWALLET(
-                                          ev,
-                                          wallet,
-                                          "watchlist"
-                                        );
-                                      }}
-                                    >
-                                      <BackspaceRoundedIcon />
-                                    </IconButton>
-                                  )}
+                                  <IconButton
+                                    aria-label="remove"
+                                    onClick={(ev) => {
+                                      ev.stopPropagation();
+                                      this.removeWALLET(
+                                        ev,
+                                        wallet,
+                                        "watchlist"
+                                      );
+                                    }}
+                                  >
+                                    <BackspaceRoundedIcon />
+                                  </IconButton>
                                 </div>
                               </MenuItem>
                             ))}
