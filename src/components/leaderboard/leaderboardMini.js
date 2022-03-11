@@ -16,6 +16,7 @@ import {
   DB_GET_LEADERBOARD,
   DB_GET_LEADERBOARD_RETURNED,
   DB_GET_LEADERBOARD_MINIGAME,
+  DB_CHECK_LS_RESULT_RETURNED,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -50,27 +51,45 @@ const styles = (theme) => ({
 });
 
 class LeaderboardMini extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
+
+    const minigame = props.minigame;
 
     this.state = {
       loading: true,
       leaderboard: null,
       currentUser: null,
+      minigame: "longShort",
     };
   }
 
   componentDidMount() {
     this._isMounted = true;
     emitter.on(DB_GET_LEADERBOARD_RETURNED, this.dbGetLeaderboardReturned);
+    emitter.on(DB_CHECK_LS_RESULT_RETURNED, this.db_checkLSResultReturned);
+
     this._isMounted &&
       dispatcher.dispatch({
         type: DB_GET_LEADERBOARD_MINIGAME,
-        minigameID: "longShort",
+        minigameID: this.state.minigame,
+      });
+  }
+
+  db_checkLSResultReturned() {
+    this._isMounted &&
+      dispatcher.dispatch({
+        type: DB_GET_LEADERBOARD_MINIGAME,
+        minigameID: this.state.minigame,
       });
   }
 
   componentWillUnmount() {
+    emitter.removeListener(
+      DB_CHECK_LS_RESULT_RETURNED,
+      this.db_checkLSResultReturned
+    );
+
     emitter.removeListener(
       DB_GET_LEADERBOARD_RETURNED,
       this.dbGetLeaderboardReturned
@@ -78,6 +97,7 @@ class LeaderboardMini extends Component {
   }
 
   dbGetLeaderboardReturned = (data) => {
+    // console.log(data);
     this._isMounted &&
       this.setState({
         loading: false,
@@ -88,7 +108,8 @@ class LeaderboardMini extends Component {
 
   drawLeaderboard = (data) => {
     const { classes } = this.props;
-    const { currentUser } = this.state;
+    const { currentUser, minigame } = this.state;
+
     let userHasPlayed = false;
     let userInTop10 = false;
     let currentUserIndex = null;
@@ -103,6 +124,7 @@ class LeaderboardMini extends Component {
         if (userIndex < 10) {
           userInTop10 = true;
         }
+
         data[userIndex].user = true;
         currentUser.user = true;
         currentUser.position = userIndex + 1;
@@ -168,7 +190,10 @@ class LeaderboardMini extends Component {
                     {user.nickname}
                   </Typography>
                   <Typography color="secondary" variant={"body2"}>
-                    xp: {user.experiencePoints}
+                    xp:{" "}
+                    {user.user
+                      ? user.minigames.longShort.experiencePoints
+                      : user.experiencePoints}
                   </Typography>
                 </Grid>
               )}
@@ -248,8 +273,19 @@ class LeaderboardMini extends Component {
                 </Grid>
               )}
               {!user.nickname && (
-                <Grid style={{ marginLeft: 10 }} item>
-                  Anon User
+                <Grid
+                  style={{
+                    marginLeft: 10,
+                    filter: "drop-shadow(1px 1px 1px rgba(0,0,0,0.25))",
+                  }}
+                  item
+                >
+                  <Typography color="primary" variant={i === 0 ? "h4" : "h5"}>
+                    Anon user
+                  </Typography>
+                  <Typography color="secondary" variant={"body2"}>
+                    xp: {user.experiencePoints}
+                  </Typography>
                 </Grid>
               )}
               <Grid style={{ margin: "0 0 0 auto", alignSelf: "center" }} item>

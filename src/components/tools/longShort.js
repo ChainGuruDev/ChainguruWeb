@@ -807,7 +807,7 @@ class LongShort extends Component {
             </Grid>
             <Grid item xs={3}>
               <ProfileMini />
-              <LeaderboardMini />
+              <LeaderboardMini minigame="longShort" />
             </Grid>
           </Grid>
         )}

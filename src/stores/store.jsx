@@ -578,7 +578,7 @@ class Store {
   };
 
   getNewAccessToken = async (expiry) => {
-    console.log("token about to expire, getting a new one");
+    // console.log("token about to expire, getting a new one");
     let user = store.getStore("account");
     this.login({ address: user.address });
   };
@@ -622,7 +622,7 @@ class Store {
           .call()
           .then((a) => {
             const access = a.includes("1");
-            console.log(access);
+            // console.log(access);
 
             this.setStore({
               hasBetaAccess: access,
@@ -631,9 +631,6 @@ class Store {
       }
     } catch (e) {
       console.log(e.message);
-      if (process.env.REACT_APP_CHAINGURU_VERSION === "beta") {
-        return emitter.emit(ERROR, "NO BETA FOR YOU");
-      }
     }
   };
 
@@ -1872,7 +1869,6 @@ ${nonce}`,
   db_getUserData = async (payload) => {
     //CHECK FOR PREVIOUS STORED DATA
     const storedUser = store.getStore("userData");
-    console.log("checking data");
     if (payload.address === storedUser.user) {
       //IF DATA IS FOUND AND FOR THE SAME USER RETURN
       emitter.emit(DB_USERDATA_RETURNED, await storedUser);
@@ -1891,7 +1887,6 @@ ${nonce}`,
         }
       );
       let wallets = [];
-      console.log(await _user.data);
       await _user;
       _user.data.wallets.forEach((item, i) => {
         wallets.push(item.wallet);
@@ -2527,7 +2522,7 @@ ${nonce}`,
           },
         }
       );
-      console.log(await data.data);
+
       emitter.emit(DB_CHECK_LS_RESULT_RETURNED, await data.data);
     } catch (err) {
       if (err) {
@@ -2625,7 +2620,7 @@ ${nonce}`,
   dbGetLeaderboardMinigame = async (payload) => {
     try {
       const validGameId = ["longShort", "genesis"];
-      console.log(payload.minigameID);
+      // console.log(payload.minigameID);
       if (validGameId.includes(payload.minigameID)) {
         let user = store.getStore("account");
         let leaderboard = await axios.get(
