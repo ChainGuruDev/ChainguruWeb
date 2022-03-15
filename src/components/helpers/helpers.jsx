@@ -214,9 +214,27 @@ function getLevelProgress(xp) {
   const nextLevelXP = convertLevelToXp(getLevel(xp) + 1);
 
   const neededXP = nextLevelXP - currentLevelXP;
-  const earnedXP = nextLevelXP - xp;
+  const earnedXP = xp - currentLevelXP;
 
-  return 100 - Math.ceil((earnedXP / neededXP) * 100);
+  // return Math.ceil((earnedXP * 100) / neededXP);
+  return Math.ceil((earnedXP * 100) / neededXP);
+}
+
+function getCurrentAndNextLevelXP(xp) {
+  const currentLevelXP = convertLevelToXp(getLevel(xp));
+  const nextLevelXP = convertLevelToXp(getLevel(xp) + 1);
+
+  const neededXP = nextLevelXP - currentLevelXP;
+  const earnedXP = xp - currentLevelXP;
+
+  return {
+    currentXP: xp,
+    currentLevelXP: currentLevelXP,
+    nextLevelXP: nextLevelXP,
+    earnedXP: earnedXP,
+    neededXP: neededXP,
+    progress: Math.ceil((earnedXP * 100) / neededXP),
+  };
 }
 
 export {
@@ -232,4 +250,5 @@ export {
   getVsSymbol,
   getLevel,
   getLevelProgress,
+  getCurrentAndNextLevelXP,
 };

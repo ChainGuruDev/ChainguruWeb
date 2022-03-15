@@ -2,7 +2,11 @@ import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { colors } from "../../theme";
-import { getLevel, getLevelProgress } from "../helpers";
+import {
+  getLevel,
+  getLevelProgress,
+  getCurrentAndNextLevelXP,
+} from "../helpers";
 
 import {
   Card,
@@ -120,7 +124,9 @@ class ProfileMini extends Component {
     }
     const userLevel = getLevel(data.experiencePoints);
     const levelProgress = getLevelProgress(data.experiencePoints);
-
+    const currentandrequiredXP = getCurrentAndNextLevelXP(
+      data.experiencePoints
+    );
     if (data.avatar) {
       let avatar = this.getAvatarType({ avatar: data.avatar });
 
@@ -233,7 +239,7 @@ class ProfileMini extends Component {
               />
               <CircularProgress
                 size={85}
-                variant="determinate"
+                variant="static"
                 value={this.state.levelProgress}
                 className={classes.levelProgress}
                 style={{ transform: "rotate(-90deg)" }}

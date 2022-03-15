@@ -65,31 +65,15 @@ class LeaderboardMini extends Component {
   }
 
   componentDidMount() {
-    this._isMounted = true;
     emitter.on(DB_GET_LEADERBOARD_RETURNED, this.dbGetLeaderboardReturned);
-    emitter.on(DB_CHECK_LS_RESULT_RETURNED, this.db_checkLSResultReturned);
 
-    this._isMounted &&
-      dispatcher.dispatch({
-        type: DB_GET_LEADERBOARD_MINIGAME,
-        minigameID: this.state.minigame,
-      });
-  }
-
-  db_checkLSResultReturned() {
-    this._isMounted &&
-      dispatcher.dispatch({
-        type: DB_GET_LEADERBOARD_MINIGAME,
-        minigameID: this.state.minigame,
-      });
+    dispatcher.dispatch({
+      type: DB_GET_LEADERBOARD_MINIGAME,
+      minigameID: this.state.minigame,
+    });
   }
 
   componentWillUnmount() {
-    emitter.removeListener(
-      DB_CHECK_LS_RESULT_RETURNED,
-      this.db_checkLSResultReturned
-    );
-
     emitter.removeListener(
       DB_GET_LEADERBOARD_RETURNED,
       this.dbGetLeaderboardReturned
@@ -97,13 +81,11 @@ class LeaderboardMini extends Component {
   }
 
   dbGetLeaderboardReturned = (data) => {
-    // console.log(data);
-    this._isMounted &&
-      this.setState({
-        loading: false,
-        leaderboard: data.leaderboard,
-        currentUser: data.currentUser,
-      });
+    this.setState({
+      loading: false,
+      leaderboard: data.leaderboard,
+      currentUser: data.currentUser,
+    });
   };
 
   drawLeaderboard = (data) => {
@@ -363,7 +345,7 @@ class LeaderboardMini extends Component {
 
   render() {
     const { classes } = this.props;
-    const { loading } = this.state;
+    const { loading, leaderboard } = this.state;
     const darkMode = store.getStore("theme") === "dark" ? true : false;
 
     return (
@@ -417,7 +399,7 @@ class LeaderboardMini extends Component {
                   Leaderboard
                 </Typography>
               </div>
-              {this.drawLeaderboard(this.state.leaderboard)}
+              {this.drawLeaderboard(leaderboard)}
             </Grid>
           )}
         </Grid>

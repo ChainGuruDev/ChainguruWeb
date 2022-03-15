@@ -50,6 +50,7 @@ import {
   DB_CHECK_LS_RESULT_RETURNED,
   DB_USERDATA_RETURNED,
   DB_GET_USERDATA,
+  DB_GET_LEADERBOARD_MINIGAME,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -257,6 +258,10 @@ class LongShort extends Component {
     dispatcher.dispatch({
       type: DB_GET_USERDATA,
       address: account.address,
+    });
+    dispatcher.dispatch({
+      type: DB_GET_LEADERBOARD_MINIGAME,
+      minigameID: "longShort",
     });
     this.setState({ modalOpen: true, modalData: data });
   };

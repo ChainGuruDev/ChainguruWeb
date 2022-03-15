@@ -388,7 +388,7 @@ class LSTableActive extends Component {
                   {row.timeRemaining}
                 </Typography>
                 <CircularProgress
-                  variant="determinate"
+                  variant="static"
                   value={row.percentComplete}
                   style={{ transform: "rotate(-90deg)" }}
                 />
