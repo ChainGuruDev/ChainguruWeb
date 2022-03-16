@@ -16,6 +16,7 @@ import {
   Avatar,
   Badge,
   Typography,
+  Tooltip,
 } from "@material-ui/core";
 
 import {
@@ -136,6 +137,7 @@ class ProfileMini extends Component {
         avatar: avatar,
         userLevel,
         levelProgress,
+        currentandrequiredXP,
       });
     } else {
       this.setState({
@@ -143,6 +145,7 @@ class ProfileMini extends Component {
         userData: data,
         userLevel,
         levelProgress,
+        currentandrequiredXP,
       });
     }
   };
@@ -231,12 +234,40 @@ class ProfileMini extends Component {
               color="secondary"
               max={99999}
             >
-              <Avatar
-                alt="avatar"
-                src={avatar}
-                className={classes.largeProfile}
-                onClick={() => this.setState({ avatarModalOpen: true })}
-              />
+              <Tooltip
+                title={
+                  <>
+                    <Typography color="inherit">
+                      Current XP{" "}
+                      <Typography variant="inline" color="primary">
+                        {this.state.currentandrequiredXP.currentXP}
+                      </Typography>
+                    </Typography>
+                    <Typography color="inherit">
+                      XP for next level{" "}
+                      <Typography variant="inline" color="primary">
+                        {this.state.currentandrequiredXP.nextLevelXP}
+                      </Typography>
+                    </Typography>
+                    <Typography color="inherit">
+                      Remaining{" "}
+                      <Typography variant="inline" color="primary">
+                        {this.state.currentandrequiredXP.neededXP}
+                      </Typography>
+                    </Typography>
+                  </>
+                }
+                arrow
+                placement="bottom"
+              >
+                <Avatar
+                  alt="avatar"
+                  src={avatar}
+                  className={classes.largeProfile}
+                  onClick={() => this.setState({ avatarModalOpen: true })}
+                />
+              </Tooltip>
+
               <CircularProgress
                 size={85}
                 variant="static"
@@ -256,9 +287,6 @@ class ProfileMini extends Component {
             >
               <Typography color="primary" variant={"h3"}>
                 {this.state.userData.nickname}
-              </Typography>
-              <Typography color="secondary" variant={"h5"}>
-                xp: {this.state.userData.experiencePoints}
               </Typography>
             </Grid>
           )}

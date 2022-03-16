@@ -7,6 +7,7 @@ import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
+import { colors } from "../../theme";
 
 import CoinSearchBar from "../components/CoinSearchBar.js";
 import LSResultDonutChart from "../components/LS_ResultDonutChart.js";
@@ -17,6 +18,7 @@ import SparklineChart from "../components/SparklineChart.js";
 
 import ProfileMini from "../profile/profileMini.js";
 import LeaderboardMini from "../leaderboard/leaderboardMini.js";
+import { timeConversion } from "../helpers";
 
 //import materialUI elements
 import {
@@ -29,6 +31,7 @@ import {
   Tooltip,
 } from "@material-ui/core";
 
+import Gauge from "../components/Gauge.js";
 //import materialUI icons
 import TrendingDownIcon from "@material-ui/icons/TrendingDown";
 import TrendingUpIcon from "@material-ui/icons/TrendingUp";
@@ -51,6 +54,8 @@ import {
   DB_USERDATA_RETURNED,
   DB_GET_USERDATA,
   DB_GET_LEADERBOARD_MINIGAME,
+  DB_GET_LS_SENTIMENT,
+  DB_GET_LS_SENTIMENT_RETURNED,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -92,6 +97,13 @@ const styles = (theme) => ({
     background: "rgba(125, 125, 125, 0.15)",
     borderRadius: "10px",
   },
+  gauge: {
+    strokeWidth: 10,
+  },
+  valueGauge: {
+    strokeWidth: 5,
+    fontSize: 25,
+  },
 });
 
 class LongShort extends Component {
@@ -100,7 +112,17 @@ class LongShort extends Component {
     const account = store.getStore("account");
     const userAuth = store.getStore("userAuth");
 
+    const seasonStart = new Date(Date.parse("07-Mar-2022".replace(/-/g, " ")));
+    const seasonEnd = new Date(seasonStart);
+    seasonEnd.setMonth(seasonEnd.getMonth() + 1);
+
+    const dateNow = new Date();
+    const timeRemaining = timeConversion(seasonEnd - dateNow);
+
     this.state = {
+      currentSeasonStart: seasonStart,
+      seasonEnd: seasonEnd,
+      timeRemaining: timeRemaining,
       account: account,
       loading: false,
       newSearchLoading: true,
@@ -109,6 +131,7 @@ class LongShort extends Component {
       activeLS: 0,
       longCombo: 0,
       shortCombo: 0,
+      sentimentData: { sentiment: 50, totalActiveVotes: 0 },
     };
 
     if (userAuth && account && account.address) {
@@ -128,6 +151,10 @@ class LongShort extends Component {
     emitter.on(DB_CREATE_LS_RETURNED, this.db_createLSReturned);
     emitter.on(DB_CHECK_LS_RESULT_RETURNED, this.db_checkLSResultReturned);
     emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
+    emitter.on(DB_GET_LS_SENTIMENT_RETURNED, this.dbGetLSSentimentReturned);
+    dispatcher.dispatch({
+      type: DB_GET_LS_SENTIMENT,
+    });
   }
 
   componentWillUnmount() {
@@ -143,6 +170,10 @@ class LongShort extends Component {
     emitter.removeListener(
       DB_CHECK_LS_RESULT_RETURNED,
       this.db_checkLSResultReturned
+    );
+    emitter.removeListener(
+      DB_GET_LS_SENTIMENT_RETURNED,
+      this.dbGetLSSentimentReturned
     );
     emitter.removeListener(DB_USERDATA_RETURNED, this.dbUserDataReturned);
   }
@@ -196,14 +227,24 @@ class LongShort extends Component {
     this.setState({ coinData: data[0] });
   };
 
+  dbGetLSSentimentReturned = (data) => {
+    console.log(data);
+    this.setState({
+      sentimentData: data,
+    });
+  };
+
   db_getUserLS = (data) => {
+    const { currentSeasonStart } = this.state;
+    var currentSeasonLS = data.filter(function (el) {
+      return new Date(el.voteEnding) >= currentSeasonStart;
+    });
     // sort complete and incomplete LongShorts
     let completeLS = [];
     let incompleteLS = [];
-    data.forEach((item, i) => {
+    currentSeasonLS.forEach((item, i) => {
       item.complete ? completeLS.push(item) : incompleteLS.push(item);
     });
-
     // sort stats by Type Long / Short
     let countLong = [0, 0];
     let countShort = [0, 0];
@@ -376,7 +417,7 @@ class LongShort extends Component {
                     spacing={1}
                     container
                   >
-                    <Grid item xs={8}>
+                    <Grid item xs={6}>
                       <Grid
                         container
                         direction="column"
@@ -584,7 +625,7 @@ class LongShort extends Component {
                       direction="row"
                       justify="flex-start"
                       alignItems="flex-start"
-                      xs={4}
+                      xs={3}
                     >
                       {countTotals && countTotals.ok + countTotals.bad > 0 && (
                         <Grid item container justify="center" xs={12}>
@@ -644,11 +685,17 @@ class LongShort extends Component {
                                     </Typography>{" "}
                                     <Typography variant="h3" color="primary">
                                       {" ("}
-                                      {(
+                                      {!isNaN(
                                         (countLong[0] /
                                           (countLong[0] + countLong[1])) *
-                                        100
-                                      ).toFixed(2)}{" "}
+                                          100
+                                      )
+                                        ? (
+                                            (countLong[0] /
+                                              (countLong[0] + countLong[1])) *
+                                            100
+                                          ).toFixed(2)
+                                        : 0}{" "}
                                       %)
                                     </Typography>
                                   </Grid>
@@ -668,11 +715,17 @@ class LongShort extends Component {
                                     </Typography>
                                     <Typography variant="h3" color="primary">
                                       {" ("}
-                                      {(
+                                      {!isNaN(
                                         (countShort[0] /
                                           (countShort[0] + countShort[1])) *
-                                        100
-                                      ).toFixed(2)}{" "}
+                                          100
+                                      )
+                                        ? (
+                                            (countShort[0] /
+                                              (countShort[0] + countShort[1])) *
+                                            100
+                                          ).toFixed(2)
+                                        : 0}{" "}
                                       %)
                                     </Typography>
                                   </Grid>
@@ -680,8 +733,32 @@ class LongShort extends Component {
                               </Grid>
                             </Grid>
                           )}
+                          {this.state.timeRemaining && (
+                            <Grid>
+                              <Typography variant="h4" color="primary">
+                                Season ends in {this.state.timeRemaining}
+                              </Typography>
+                            </Grid>
+                          )}
                         </Grid>
                       )}
+                    </Grid>
+                    <Grid item direction="row" style={{ maxWidth: 200 }}>
+                      <Gauge
+                        value={this.state.sentimentData.sentiment}
+                        color={function (value) {
+                          if (value < 40) {
+                            return colors.cgRed;
+                          } else if (value < 60) {
+                            return colors.cgYellow;
+                          } else if (value > 59) {
+                            return colors.cgGreen;
+                          }
+                        }}
+                        valueDialClass={classes.gauge}
+                        valueClass={classes.valueGauge}
+                        title="User Sentiment"
+                      />
                     </Grid>
                   </Grid>
                   {countLong && (

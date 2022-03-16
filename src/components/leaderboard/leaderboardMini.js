@@ -91,7 +91,6 @@ class LeaderboardMini extends Component {
   drawLeaderboard = (data) => {
     const { classes } = this.props;
     const { currentUser, minigame } = this.state;
-
     let userHasPlayed = false;
     let userInTop10 = false;
     let currentUserIndex = null;

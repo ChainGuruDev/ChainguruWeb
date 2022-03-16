@@ -167,6 +167,8 @@ import {
   DB_GET_ASSET_FULLDATA_RETURNED,
   CHECK_BETA_ACCESS,
   CHECK_BETA_ACCESS_RETURNED,
+  DB_GET_LS_SENTIMENT,
+  DB_GET_LS_SENTIMENT_RETURNED,
 } from "../constants";
 
 import {
@@ -530,6 +532,9 @@ class Store {
             break;
           case DB_GET_LEADERBOARD_MINIGAME:
             this.dbGetLeaderboardMinigame(payload);
+            break;
+          case DB_GET_LS_SENTIMENT:
+            this.dbGetLSSentiment();
             break;
           default: {
             break;
@@ -3566,6 +3571,17 @@ ${nonce}`,
       } else {
         console.log(err.message);
         emitter.emit(ERROR, await err.message);
+      }
+    }
+  };
+
+  dbGetLSSentiment = async () => {
+    try {
+      let data = await axios.get(`${cg_servers[1]}/longShort/sentiment`);
+      emitter.emit(DB_GET_LS_SENTIMENT_RETURNED, await data.data);
+    } catch (err) {
+      if (err) {
+        console.log(err.message);
       }
     }
   };

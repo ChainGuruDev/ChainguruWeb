@@ -224,7 +224,7 @@ function getCurrentAndNextLevelXP(xp) {
   const currentLevelXP = convertLevelToXp(getLevel(xp));
   const nextLevelXP = convertLevelToXp(getLevel(xp) + 1);
 
-  const neededXP = nextLevelXP - currentLevelXP;
+  const neededXP = nextLevelXP - xp;
   const earnedXP = xp - currentLevelXP;
 
   return {
