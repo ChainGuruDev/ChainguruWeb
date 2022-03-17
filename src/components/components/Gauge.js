@@ -26,7 +26,7 @@ const Gauge = (props) => {
   }, [props]);
 
   return (
-    <div ref={gaugeEl} className="gauge-container" style={{ strokeWidth: 50 }}>
+    <div ref={gaugeEl} className="gauge-container">
       <span class="label">{props.title}</span>
     </div>
   );

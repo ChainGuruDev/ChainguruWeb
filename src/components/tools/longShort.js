@@ -100,9 +100,17 @@ const styles = (theme) => ({
   gauge: {
     strokeWidth: 10,
   },
-  valueGauge: {
-    strokeWidth: 5,
-    fontSize: 25,
+  valueGaugeBull: {
+    fontSize: 20,
+    fill: "#79d8a2",
+  },
+  valueGaugeBear: {
+    fontSize: 20,
+    fill: "#f79d6b",
+  },
+  valueGaugeNeutral: {
+    fontSize: 20,
+    fill: "#fcc98b",
   },
 });
 
@@ -228,7 +236,6 @@ class LongShort extends Component {
   };
 
   dbGetLSSentimentReturned = (data) => {
-    console.log(data);
     this.setState({
       sentimentData: data,
     });
@@ -625,7 +632,7 @@ class LongShort extends Component {
                       direction="row"
                       justify="flex-start"
                       alignItems="flex-start"
-                      xs={3}
+                      xs={4}
                     >
                       {countTotals && countTotals.ok + countTotals.bad > 0 && (
                         <Grid item container justify="center" xs={12}>
@@ -743,22 +750,39 @@ class LongShort extends Component {
                         </Grid>
                       )}
                     </Grid>
-                    <Grid item direction="row" style={{ maxWidth: 200 }}>
-                      <Gauge
-                        value={this.state.sentimentData.sentiment}
-                        color={function (value) {
-                          if (value < 40) {
-                            return colors.cgRed;
-                          } else if (value < 60) {
-                            return colors.cgYellow;
-                          } else if (value > 59) {
-                            return colors.cgGreen;
+                    <Grid item container justify="center" xs={2}>
+                      <Grid style={{ maxWidth: 200, textAlign: "center" }}>
+                        <Gauge
+                          value={this.state.sentimentData.sentiment}
+                          color={function (value) {
+                            if (value < 40) {
+                              return colors.cgRed;
+                            } else if (value < 60) {
+                              return colors.cgYellow;
+                            } else if (value > 59) {
+                              return colors.cgGreen;
+                            }
+                          }}
+                          label={function (value) {
+                            if (value > 60) {
+                              return `Bullish`;
+                            } else if (value < 40) {
+                              return "Bearish";
+                            } else {
+                              return "Neutral";
+                            }
+                          }}
+                          valueDialClass={classes.gauge}
+                          valueClass={
+                            this.state.sentimentData.sentiment > 60
+                              ? classes.valueGaugeBull
+                              : this.state.sentimentData.sentiment < 40
+                              ? classes.valueGaugeBear
+                              : classes.valueGaugeNeutral
                           }
-                        }}
-                        valueDialClass={classes.gauge}
-                        valueClass={classes.valueGauge}
-                        title="User Sentiment"
-                      />
+                          title="User Sentiment"
+                        />
+                      </Grid>
                     </Grid>
                   </Grid>
                   {countLong && (
