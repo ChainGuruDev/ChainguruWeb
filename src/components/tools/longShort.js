@@ -102,15 +102,21 @@ const styles = (theme) => ({
   },
   valueGaugeBull: {
     fontSize: 20,
+    fontFamily: "Acumin Variable Concept Default ExtraCondensed UltraBlack",
+    transform: "translate(0,-8px)",
     fill: "#79d8a2",
   },
   valueGaugeBear: {
     fontSize: 20,
+    fontFamily: "Acumin Variable Concept Default ExtraCondensed UltraBlack",
+    transform: "translate(0,-8px)",
     fill: "#f79d6b",
   },
   valueGaugeNeutral: {
     fontSize: 20,
+    fontFamily: "Acumin Variable Concept Default ExtraCondensed UltraBlack",
     fill: "#fcc98b",
+    transform: "translate(0,-8px)",
   },
 });
 
@@ -740,18 +746,17 @@ class LongShort extends Component {
                               </Grid>
                             </Grid>
                           )}
-                          {this.state.timeRemaining && (
-                            <Grid>
-                              <Typography variant="h4" color="primary">
-                                Season ends in {this.state.timeRemaining}
-                              </Typography>
-                            </Grid>
-                          )}
                         </Grid>
                       )}
                     </Grid>
                     <Grid item container justify="center" xs={2}>
-                      <Grid style={{ maxWidth: 200, textAlign: "center" }}>
+                      <Grid
+                        style={{
+                          maxWidth: 200,
+                          textAlign: "center",
+                          width: "inherit",
+                        }}
+                      >
                         <Gauge
                           value={this.state.sentimentData.sentiment}
                           color={function (value) {

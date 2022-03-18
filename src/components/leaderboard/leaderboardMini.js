@@ -3,6 +3,8 @@ import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { colors } from "../../theme";
 
+import { timeConversion } from "../helpers";
+
 import {
   Card,
   Grid,
@@ -56,7 +58,15 @@ class LeaderboardMini extends Component {
 
     const minigame = props.minigame;
 
+    const seasonStart = new Date(Date.parse("07-Mar-2022".replace(/-/g, " ")));
+    const seasonEnd = new Date(seasonStart);
+    seasonEnd.setMonth(seasonEnd.getMonth() + 1);
+
+    const dateNow = new Date();
+    const timeRemaining = timeConversion(seasonEnd - dateNow);
+
     this.state = {
+      timeRemaining: timeRemaining,
       loading: true,
       leaderboard: null,
       currentUser: null,
@@ -398,6 +408,13 @@ class LeaderboardMini extends Component {
                   Leaderboard
                 </Typography>
               </div>
+              {this.state.timeRemaining && (
+                <Grid>
+                  <Typography variant="h4" color="primary">
+                    Season ends in {this.state.timeRemaining}
+                  </Typography>
+                </Grid>
+              )}
               {this.drawLeaderboard(leaderboard)}
             </Grid>
           )}

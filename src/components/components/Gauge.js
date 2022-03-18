@@ -1,5 +1,10 @@
 import React, { useEffect, useRef } from "react";
 import SvgGauge from "svg-gauge";
+import { ReactComponent as BullIcon } from "../../assets/bull.svg";
+import { ReactComponent as BearIcon } from "../../assets/bear.svg";
+
+//import materialUI elements
+import { Typography } from "@material-ui/core";
 
 const defaultOptions = {
   animDuration: 1,
@@ -26,8 +31,36 @@ const Gauge = (props) => {
   }, [props]);
 
   return (
-    <div ref={gaugeEl} className="gauge-container">
-      <span class="label">{props.title}</span>
+    <div
+      ref={gaugeEl}
+      className="gauge-container"
+      style={{ position: "relative" }}
+    >
+      <Typography variant={"h4"}>{props.title}</Typography>
+      <div
+        style={{
+          position: "absolute",
+          top: "50%",
+          right: "-15%",
+          transform: "scale(0.6)",
+        }}
+      >
+        <BullIcon
+          fill={props.value > 60 ? "rgb(121, 216, 162)" : "#fafafa20"}
+        />
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "-15%",
+          transform: "scale(0.6)",
+        }}
+      >
+        <BearIcon
+          fill={props.value < 40 ? "rgb(237, 134, 124)" : "#fafafa20"}
+        />
+      </div>
     </div>
   );
 };
