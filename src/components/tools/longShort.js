@@ -101,19 +101,19 @@ const styles = (theme) => ({
     strokeWidth: 10,
   },
   valueGaugeBull: {
-    fontSize: 20,
+    fontSize: 16,
     fontFamily: "Acumin Variable Concept Default ExtraCondensed UltraBlack",
     transform: "translate(0,-8px)",
     fill: "#79d8a2",
   },
   valueGaugeBear: {
-    fontSize: 20,
+    fontSize: 16,
     fontFamily: "Acumin Variable Concept Default ExtraCondensed UltraBlack",
     transform: "translate(0,-8px)",
     fill: "#f79d6b",
   },
   valueGaugeNeutral: {
-    fontSize: 20,
+    fontSize: 16,
     fontFamily: "Acumin Variable Concept Default ExtraCondensed UltraBlack",
     fill: "#fcc98b",
     transform: "translate(0,-8px)",
@@ -759,18 +759,19 @@ class LongShort extends Component {
                       >
                         <Gauge
                           value={this.state.sentimentData.sentiment}
+                          totalVotes={this.state.sentimentData.totalActiveVotes}
                           color={function (value) {
                             if (value < 40) {
                               return colors.cgRed;
-                            } else if (value < 60) {
+                            } else if (value < 59) {
                               return colors.cgYellow;
-                            } else if (value > 59) {
+                            } else if (value >= 60) {
                               return colors.cgGreen;
                             }
                           }}
                           label={function (value) {
                             if (value > 60) {
-                              return `Bullish`;
+                              return "Bullish";
                             } else if (value < 40) {
                               return "Bearish";
                             } else {
@@ -785,7 +786,7 @@ class LongShort extends Component {
                               ? classes.valueGaugeBear
                               : classes.valueGaugeNeutral
                           }
-                          title="User Sentiment"
+                          title="Chaingurians Sentiment"
                         />
                       </Grid>
                     </Grid>

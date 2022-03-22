@@ -38,6 +38,7 @@ import SettingsIcon from "@material-ui/icons/Settings";
 import FeedbackRoundedIcon from "@material-ui/icons/FeedbackRounded";
 
 import UnlockModal from "../unlock/unlockModal.jsx";
+import ProfileEditModal from "../profile/profileModal.jsx";
 
 import Store from "../../stores";
 const emitter = Store.emitter;
@@ -252,6 +253,7 @@ class Header extends Component {
       theme: theme,
       darkModeBool: this.getMode(),
       modalOpen: false,
+      profileModalOpen: false,
       gasColor: colors.lightGray,
       vsCoin: vsCoin,
     };
@@ -395,8 +397,10 @@ class Header extends Component {
         const ens = new ENS({ provider, network });
         if (ens && address) {
           try {
-            const addressEnsName = await ens.reverse(address).catch(() => {});
-            if (addressEnsName) {
+            const addressEnsName = await ens.reverse(address).catch((error) => {
+              console.log(error.message);
+            });
+            if (await addressEnsName) {
               this.setState({ addressEnsName });
             }
           } catch (err) {
@@ -443,7 +447,13 @@ class Header extends Component {
 
   render() {
     const { classes, t } = this.props;
-    const { account, addressEnsName, modalOpen, darkModeBool } = this.state;
+    const {
+      account,
+      addressEnsName,
+      modalOpen,
+      profileModalOpen,
+      darkModeBool,
+    } = this.state;
     var address = null;
     if (account.address) {
       address =
@@ -600,9 +610,7 @@ class Header extends Component {
                 </Typography>
               )}
               <IconButton
-                onClick={() => {
-                  this.nav("user/profile");
-                }}
+                onClick={this.profileModalClicked}
                 style={{ marginLeft: 10 }}
                 aria-label="settings"
               >
@@ -627,6 +635,7 @@ class Header extends Component {
           </div>
         </Grid>
         {modalOpen && this.renderModal()}
+        {profileModalOpen && this.renderProfileModal()}
       </Paper>
     );
   }
@@ -717,8 +726,25 @@ class Header extends Component {
     this.setState({ modalOpen: true });
   };
 
+  profileModalClicked = () => {
+    this.setState({ profileModalOpen: true });
+  };
+
   closeModal = () => {
     this.setState({ modalOpen: false });
+  };
+
+  closeProfileModal = () => {
+    this.setState({ profileModalOpen: false });
+  };
+
+  renderProfileModal = () => {
+    return (
+      <ProfileEditModal
+        closeModal={this.closeProfileModal}
+        modalOpen={this.state.profileModalOpen}
+      />
+    );
   };
 
   renderModal = () => {

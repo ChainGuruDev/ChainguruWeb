@@ -7,7 +7,6 @@ import {
   Typography,
   Divider,
   IconButton,
-  Box,
   Backdrop,
   Fade,
 } from "@material-ui/core";
@@ -24,7 +23,6 @@ import AddIcon from "@material-ui/icons/Add";
 
 import CloseIcon from "@material-ui/icons/Close";
 import { formatMoney, getVsSymbol } from "../helpers";
-import { colors } from "../../theme";
 
 import Store from "../../stores";
 const dispatcher = Store.dispatcher;
@@ -54,10 +52,6 @@ const styles = (theme) => ({
     position: "absolute",
     padding: "0px 15px",
   },
-});
-
-const Transition = React.forwardRef(function Transition(props, ref) {
-  return <Slide direction="up" ref={ref} {...props} />;
 });
 
 class StakingDetailsModal extends Component {
@@ -104,7 +98,6 @@ class StakingDetailsModal extends Component {
   render() {
     const { closeModal, modalOpen, classes, data, vsCoin } = this.props;
     const { sparklineData } = this.state;
-    const fullScreen = window.innerWidth < 450;
 
     return (
       <Modal

@@ -11,17 +11,13 @@ import PortfolioChart from "../components/PortfolioChart.js";
 import StakingDetailsModal from "../components/stakingDetailsModal.js";
 import UniswapDetailsModal from "../components/uniswapDetailsModal.js";
 import SparklineChart from "../components/SparklineChart.js";
-import ProfileMini from "../profile/profileMini.js";
 
 import AccountBalanceWalletRoundedIcon from "@material-ui/icons/AccountBalanceWalletRounded";
 import BackspaceRoundedIcon from "@material-ui/icons/BackspaceRounded";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 import AddCircleRoundedIcon from "@material-ui/icons/AddCircleRounded";
-import ArrowBackIosRoundedIcon from "@material-ui/icons/ArrowBackIosRounded";
 import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
 import PieChartIcon from "@material-ui/icons/PieChart";
-import LockIcon from "@material-ui/icons/Lock";
-import AddIcon from "@material-ui/icons/Add";
 import SearchIcon from "@material-ui/icons/Search";
 import KeyboardArrowRightRoundedIcon from "@material-ui/icons/KeyboardArrowRightRounded";
 import KeyboardArrowLeftRoundedIcon from "@material-ui/icons/KeyboardArrowLeftRounded";
@@ -316,7 +312,23 @@ const styles = (theme) => ({
     },
     zIndex: 5,
   },
-
+  scrollable: {
+    maxHeight: 500,
+    height: "100%",
+    overflowY: "auto",
+    marginTop: 10,
+    scrollbarColor: "rgb(121, 216, 162) rgba(48, 48, 48, 0.5)",
+    paddingRight: 10,
+    scrollbarWidth: "thin",
+    "&::-webkit-scrollbar": {
+      width: 7,
+      backgroundColor: "rgba(48, 48, 48, 0.5)",
+    },
+    "&::-webkit-scrollbar-thumb": {
+      backgroundColor: "rgb(121, 216, 162)",
+      borderRadius: 20,
+    },
+  },
   "@keyframes slideDown": {
     "0%": {
       marginTop: "-50px",
@@ -1116,6 +1128,15 @@ class PortfolioBig extends Component {
             title={<Typography color="inherit">Asset in {chain}</Typography>}
           >
             <img src="/chainIcons/polygon.png" className={classes.chainIcon} />
+          </Tooltip>
+        );
+        break;
+      case "fantom":
+        return (
+          <Tooltip
+            title={<Typography color="inherit">Asset in {chain}</Typography>}
+          >
+            <img src="/chainIcons/fantom.png" className={classes.chainIcon} />
           </Tooltip>
         );
         break;
@@ -2043,7 +2064,6 @@ class PortfolioBig extends Component {
       loadingStats,
     } = this.state;
     const { classes } = this.props;
-
     let sortedAssets = [];
     if (this.state.sortOrder === "asc") {
       sortedAssets = assetsData.sort(this.dynamicSort(sortBy));
@@ -4411,20 +4431,7 @@ class PortfolioBig extends Component {
                               className={classes.itemContainer}
                             >
                               <Divider variant="middle" />
-                              <Grid
-                                item
-                                xs={12}
-                                style={{
-                                  maxHeight: 500,
-                                  height: "100%",
-                                  overflowY: "auto",
-                                  marginTop: 10,
-                                  scrollbarColor:
-                                    "rgb(121, 216, 162) rgba(48, 48, 48, 0.5)",
-                                  paddingRight: 10,
-                                  scrollbarWidth: "thin",
-                                }}
-                              >
+                              <Grid item xs={12} className={classes.scrollable}>
                                 {this.drawAssets(assetsData, assetsPage)}
                               </Grid>
                               <Divider variant="middle" />
@@ -4561,20 +4568,7 @@ class PortfolioBig extends Component {
                               className={classes.itemContainer}
                             >
                               <Divider variant="middle" />
-                              <Grid
-                                item
-                                xs={12}
-                                style={{
-                                  height: "100%",
-                                  maxHeight: 500,
-                                  overflowY: "auto",
-                                  marginTop: 10,
-                                  scrollbarColor:
-                                    "rgb(121, 216, 162) rgba(48, 48, 48, 0.5)",
-                                  paddingRight: 10,
-                                  scrollbarWidth: "thin",
-                                }}
-                              >
+                              <Grid item xs={12} className={classes.scrollable}>
                                 {this.drawNonAssets(nonAssetsData)}
                               </Grid>
                               <Divider variant="middle" />
@@ -4701,20 +4695,7 @@ class PortfolioBig extends Component {
                               className={classes.itemContainer}
                             >
                               <Divider variant="middle" />
-                              <Grid
-                                item
-                                xs={12}
-                                style={{
-                                  height: "100%",
-                                  maxHeight: 500,
-                                  overflowY: "auto",
-                                  marginTop: 10,
-                                  scrollbarColor:
-                                    "rgb(121, 216, 162) rgba(48, 48, 48, 0.5)",
-                                  paddingRight: 10,
-                                  scrollbarWidth: "thin",
-                                }}
-                              >
+                              <Grid item xs={12} className={classes.scrollable}>
                                 {this.drawUniV2Assets(univ2Assets)}
                               </Grid>
                               <Divider variant="middle" />

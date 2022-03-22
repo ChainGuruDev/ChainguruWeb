@@ -19,6 +19,9 @@ import {
   Tooltip,
 } from "@material-ui/core";
 
+import EditRoundedIcon from "@material-ui/icons/EditRounded";
+import ProfileEditModal from "../profile/profileModal.jsx";
+
 import {
   LOGIN_RETURNED,
   CONNECTION_CONNECTED,
@@ -53,6 +56,28 @@ const styles = (theme) => ({
     height: "75px",
     zIndex: 1,
     boxShadow: "0px 0px 4px -2px black",
+    transition: "all .35s",
+    opacity: 1,
+  },
+  avatarContainer: {
+    cursor: "pointer",
+    maxWidth: "fit-content",
+    borderRadius: 50,
+    "&:hover": {
+      "& $largeProfile": {
+        opacity: "0.3",
+      },
+      "& $overlay": {
+        opacity: 1,
+      },
+    },
+  },
+  overlay: {
+    transform: "scale(1.25)",
+    transition: "all .35s",
+    position: "absolute",
+    opacity: 0,
+    zIndex: 200,
   },
   levelProgress: {
     position: "absolute",
@@ -73,6 +98,7 @@ class ProfileBig extends Component {
       account: account,
       loading: true,
       userAvatar: null,
+      profileModalOpen: false,
     };
 
     if (userAuth && account && account.address) {
@@ -262,12 +288,21 @@ class ProfileBig extends Component {
                 arrow
                 placement="bottom"
               >
-                <Avatar
-                  alt="avatar"
-                  src={avatar}
-                  className={classes.largeProfile}
-                  onClick={() => this.setState({ avatarModalOpen: true })}
-                />
+                <Grid
+                  container
+                  item
+                  justify="center"
+                  alignItems="center"
+                  className={classes.avatarContainer}
+                  onClick={this.profileModalClicked}
+                >
+                  <Avatar
+                    alt="avatar"
+                    src={avatar}
+                    className={classes.largeProfile}
+                  />
+                  <EditRoundedIcon className={classes.overlay} />
+                </Grid>
               </Tooltip>
               <CircularProgress
                 size={85}
@@ -296,9 +331,7 @@ class ProfileBig extends Component {
               <Button
                 variant={"outlined"}
                 color={"primary"}
-                onClick={() => {
-                  this.nav("../user/profile");
-                }}
+                onClick={this.profileModalClicked}
               >
                 Set Profile
               </Button>
@@ -313,7 +346,7 @@ class ProfileBig extends Component {
   // </Grid>
   render() {
     const { classes } = this.props;
-    const { loading } = this.state;
+    const { loading, profileModalOpen } = this.state;
 
     return (
       <Card className={classes.favCard} elevation={3}>
@@ -330,6 +363,7 @@ class ProfileBig extends Component {
             </Grid>
           )}
           {!loading && this.renderProfile()}
+          {profileModalOpen && this.renderProfileModal()}
         </Grid>
       </Card>
     );
@@ -337,6 +371,23 @@ class ProfileBig extends Component {
   nav = (screen) => {
     console.log(screen);
     this.props.history.push(screen);
+  };
+
+  profileModalClicked = () => {
+    this.setState({ profileModalOpen: true });
+  };
+
+  closeProfileModal = () => {
+    this.setState({ profileModalOpen: false });
+  };
+
+  renderProfileModal = () => {
+    return (
+      <ProfileEditModal
+        closeModal={this.closeProfileModal}
+        modalOpen={this.state.profileModalOpen}
+      />
+    );
   };
 }
 

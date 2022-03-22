@@ -171,14 +171,16 @@ import {
   DB_GET_LS_SENTIMENT_RETURNED,
 } from "../constants";
 
-import {
-  injected,
-  walletconnect,
-  walletlink,
-  ledger,
-  trezor,
-  frame,
-} from "./connectors";
+// import {
+//   injected,
+//   walletconnect,
+//   walletlink,
+//   ledger,
+//   trezor,
+//   frame,
+// } from "./connectors";
+
+import { injected } from "./connectors";
 
 import { getHash } from "../components/helpers";
 
@@ -239,12 +241,12 @@ class Store {
       events: [],
       connectorsByName: {
         MetaMask: injected,
-        TrustWallet: injected,
-        WalletConnect: walletconnect,
-        WalletLink: walletlink,
-        Ledger: ledger,
-        Trezor: trezor,
-        Frame: frame,
+        // TrustWallet: injected,
+        // WalletConnect: walletconnect,
+        // WalletLink: walletlink,
+        // Ledger: ledger,
+        // Trezor: trezor,
+        // Frame: frame,
       },
       web3context: null,
       languages: [
@@ -2834,8 +2836,6 @@ ${nonce}`,
           item.type = "NFT";
         }
       });
-      console.log("Get Portfolio");
-      console.log(portfolioAssets);
 
       emitter.emit(DB_GET_PORTFOLIO_RETURNED, portfolioAssets.data);
     } catch (err) {

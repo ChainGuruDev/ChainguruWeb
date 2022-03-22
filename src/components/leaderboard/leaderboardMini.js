@@ -50,6 +50,21 @@ const styles = (theme) => ({
     width: "50px",
     height: "50px",
   },
+  leaderboard: {
+    width: "100%",
+    maxHeight: 740,
+    scrollbarWidth: "thin",
+    overflowY: "auto",
+    scrollbarColor: "rgb(121, 216, 162) rgba(48, 48, 48, 0.5)",
+    "&::-webkit-scrollbar": {
+      width: 7,
+      backgroundColor: "rgba(48, 48, 48, 0.5)",
+    },
+    "&::-webkit-scrollbar-thumb": {
+      backgroundColor: "rgb(121, 216, 162)",
+      borderRadius: 20,
+    },
+  },
 });
 
 class LeaderboardMini extends Component {
@@ -124,10 +139,10 @@ class LeaderboardMini extends Component {
 
     if (data.length > 0) {
       //LIMIT TOP 10
-
       if (userHasPlayed && !userInTop10) {
-        const leaderboardTop10 = data.length > 10 ? data.slice(0, 9) : data;
-        leaderboardTop10.push(currentUser);
+        // const leaderboardTop10 = data.length > 10 ? data.slice(0, 9) : data;
+        const leaderboardTop10 = data;
+        // leaderboardTop10.push(currentUser);
         return leaderboardTop10.map((user, i) => (
           <li
             key={`${user}_${i}`}
@@ -189,8 +204,19 @@ class LeaderboardMini extends Component {
                 </Grid>
               )}
               {!user.nickname && (
-                <Grid style={{ marginLeft: 10 }} item>
-                  Anon User
+                <Grid
+                  style={{
+                    marginLeft: 10,
+                    filter: "drop-shadow(1px 1px 1px rgba(0,0,0,0.25))",
+                  }}
+                  item
+                >
+                  <Typography color="primary" variant={i === 0 ? "h4" : "h5"}>
+                    Anon user
+                  </Typography>
+                  <Typography color="secondary" variant={"body2"}>
+                    xp: {user.experiencePoints}
+                  </Typography>
                 </Grid>
               )}
               <Grid style={{ margin: "0 0 0 auto", alignSelf: "center" }} item>
@@ -206,7 +232,9 @@ class LeaderboardMini extends Component {
           </li>
         ));
       } else {
-        const leaderboardTop10 = data.length > 10 ? data.slice(0, 10) : data;
+        // const leaderboardTop10 = data.length > 10 ? data.slice(0, 10) : data;
+        const leaderboardTop10 = data;
+
         return leaderboardTop10.map((user, i) => (
           <li
             key={`${user}_${i}`}
@@ -415,7 +443,9 @@ class LeaderboardMini extends Component {
                   </Typography>
                 </Grid>
               )}
-              {this.drawLeaderboard(leaderboard)}
+              <div className={classes.leaderboard}>
+                {this.drawLeaderboard(leaderboard)}
+              </div>
             </Grid>
           )}
         </Grid>

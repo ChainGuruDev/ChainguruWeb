@@ -52,6 +52,17 @@ const Gauge = (props) => {
       <div
         style={{
           position: "absolute",
+          textAlign: "center",
+          top: "60%",
+          left: "40%",
+        }}
+      >
+        <Typography varaint={"body1"}>{props.totalVotes}</Typography>
+        <Typography varaint={"body1"}>Votes</Typography>
+      </div>
+      <div
+        style={{
+          position: "absolute",
           top: "50%",
           left: "-15%",
           transform: "scale(0.6)",

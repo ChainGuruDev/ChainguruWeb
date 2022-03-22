@@ -312,7 +312,6 @@ class PortfolioManagement extends Component {
               scrollButtons="auto"
               variant={isMobile ? "scrollable" : "standard"}
               indicatorColor="primary"
-              textColor="primary"
               centered={isBrowser}
             >
               <PortfolioTab
@@ -359,7 +358,6 @@ class PortfolioManagement extends Component {
               scrollButtons="auto"
               variant={isMobile ? "scrollable" : "standard"}
               indicatorColor="primary"
-              textColor="primary"
               centered={isBrowser}
             >
               <PortfolioTab

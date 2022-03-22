@@ -289,7 +289,6 @@ class TransactionsBig extends Component {
     data.wallets.forEach((item, i) => {
       wallets.push(item.wallet);
     });
-    console.log(wallets);
     if (!this.state.loading) {
       this._isMounted &&
         dispatcher.dispatch({

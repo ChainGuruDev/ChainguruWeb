@@ -317,6 +317,7 @@ class App extends Component {
             },
           },
         },
+
         MuiSnackbarContent: {
           root: {
             backgroundColor: colors.white,
