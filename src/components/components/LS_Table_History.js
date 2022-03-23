@@ -4,6 +4,7 @@ import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
+import { formatMoney } from "../helpers";
 
 //Import MaterialUI elements
 import {
@@ -203,7 +204,7 @@ class LSTableHistory extends Component {
           item.vote,
           item.voteEnding,
           dformat.toString(),
-          item.priceEnd.toFixed(2),
+          item.priceEnd,
           item.result,
           item._id
         );
@@ -290,7 +291,9 @@ class LSTableHistory extends Component {
             <Typography variant="subtitle1">{row.symbol}</Typography>
           </TableCell>
           <TableCell align="right">
-            <Typography variant={"h4"}>{row.priceStart}</Typography>
+            <Typography variant={"h4"}>
+              {formatMoney(row.priceStart)}
+            </Typography>
           </TableCell>
           <TableCell align="right">
             <Typography
@@ -305,7 +308,7 @@ class LSTableHistory extends Component {
                   : "secondary"
               }
             >
-              {row.priceEnd}
+              {formatMoney(row.priceEnd)}
             </Typography>
           </TableCell>
           <TableCell align="right">

@@ -31,6 +31,7 @@ const styles = (theme) => ({
     padding: "12px",
     display: "flex",
     flexWrap: "wrap",
+    flexDirection: "column",
   },
   cardContainer: {
     marginTop: "60px",
@@ -263,6 +264,7 @@ function MyComponent(props) {
         flexWrap: "wrap",
         justifyContent: width > 650 ? "space-between" : "center",
         alignItems: "center",
+        flexDirection: "column",
       }}
     >
       {Object.keys(connectorsByName).map((name) => {
@@ -308,6 +310,7 @@ function MyComponent(props) {
               padding: "12px 0px",
               display: "flex",
               justifyContent: "space-between",
+              flexDirection: "column",
             }}
           >
             <Button
@@ -318,6 +321,7 @@ function MyComponent(props) {
                 border: "1px solid #E1E1E1",
                 fontWeight: 500,
                 display: "flex",
+                flexDirection: "column",
                 justifyContent: "space-between",
                 minWidth: "250px",
               }}

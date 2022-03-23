@@ -51,6 +51,8 @@ import {
   COINGECKO_POPULATE_TXLIST_RETURNED,
   GECKO_GET_SPARKLINE_FROM_CONTRACT,
   GECKO_GET_SPARKLINE_FROM_CONTRACT_RETURNED,
+  GECKO_GET_PRICE_AT_DATE,
+  GECKO_GET_PRICE_AT_DATE_RETURNED,
   GET_COIN_LIST,
   COINLIST_RETURNED,
   GET_COIN_DATA,
@@ -537,6 +539,9 @@ class Store {
             break;
           case DB_GET_LS_SENTIMENT:
             this.dbGetLSSentiment();
+            break;
+          case GECKO_GET_PRICE_AT_DATE:
+            this.geckoGetPriceAtDate(payload);
             break;
           default: {
             break;
@@ -2673,6 +2678,35 @@ ${nonce}`,
     } catch (err) {
       console.log(err.message);
     }
+  };
+
+  geckoGetPriceAtDate = async (payload) => {
+    const date = new Date(Date.now());
+
+    for (var i = 0; i < payload.completedLS.length; i++) {
+      const fromTime =
+        (new Date(payload.completedLS[i].voteEnding).getTime() -
+          (new Date(payload.completedLS[i].voteEnding).getTime() % 1000)) /
+        1000;
+      const toTime = (date.getTime() - (date.getTime() % 1000)) / 1000;
+      let priceEnd = null;
+
+      try {
+        const _url = `https://api.coingecko.com/api/v3/coins/${payload.completedLS[i].tokenID}/market_chart/range?vs_currency=usd&from=${fromTime}&to=${toTime}`;
+        // console.log(_url);
+        const geckolist = await axios.get(_url);
+        // console.log(geckolist.data.prices[0][1]);
+        if (geckolist.data.prices) {
+          priceEnd = geckolist.data.prices[0][1];
+        } else {
+          throw "Wait a little more";
+        }
+        payload.completedLS[i].priceClosing = await priceEnd;
+      } catch (err) {
+        console.log(err.message);
+      }
+    }
+    emitter.emit(GECKO_GET_PRICE_AT_DATE_RETURNED, await payload.completedLS);
   };
 
   uniswapTrade = async (payload) => {

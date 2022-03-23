@@ -6,6 +6,11 @@ import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
+import { colors } from "../../theme";
+
+import { timeConversion } from "../helpers";
+
+import Gauge from "../components/Gauge.js";
 
 import LSvoteResultModal from "../components/lsVoteResultModal.js";
 import LSResultDonutChart from "../components/LS_ResultDonutChart.js";
@@ -45,6 +50,9 @@ import {
   DB_CREATE_LS,
   DB_CREATE_LS_RETURNED,
   DB_GET_USER_TOKEN_LS_RETURNED,
+  GECKO_GET_PRICE_AT_DATE_RETURNED,
+  DB_GET_LS_SENTIMENT,
+  DB_GET_LS_SENTIMENT_RETURNED,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -96,6 +104,27 @@ const styles = (theme) => ({
     borderRadius: "10px",
     textAlign: "center",
   },
+  gauge: {
+    strokeWidth: 10,
+  },
+  valueGaugeBull: {
+    fontSize: 16,
+    fontFamily: "Acumin Variable Concept Default ExtraCondensed UltraBlack",
+    transform: "translate(0,-8px)",
+    fill: "#79d8a2",
+  },
+  valueGaugeBear: {
+    fontSize: 16,
+    fontFamily: "Acumin Variable Concept Default ExtraCondensed UltraBlack",
+    transform: "translate(0,-8px)",
+    fill: "#f79d6b",
+  },
+  valueGaugeNeutral: {
+    fontSize: 16,
+    fontFamily: "Acumin Variable Concept Default ExtraCondensed UltraBlack",
+    fill: "#fcc98b",
+    transform: "translate(0,-8px)",
+  },
 });
 
 class LongShortMini extends Component {
@@ -104,7 +133,17 @@ class LongShortMini extends Component {
     const account = store.getStore("account");
     const userAuth = store.getStore("userAuth");
 
+    const seasonStart = new Date(Date.parse("07-Mar-2022".replace(/-/g, " ")));
+    const seasonEnd = new Date(seasonStart);
+    seasonEnd.setMonth(seasonEnd.getMonth() + 1);
+
+    const dateNow = new Date();
+    const timeRemaining = timeConversion(seasonEnd - dateNow);
+
     this.state = {
+      currentSeasonStart: seasonStart,
+      seasonEnd: seasonEnd,
+      timeRemaining: timeRemaining,
       account: account,
       loading: true,
       modalOpen: false,
@@ -114,6 +153,7 @@ class LongShortMini extends Component {
       tokenID: props.tokenID,
       loadingResult: false,
       loadingNewVote: false,
+      sentimentData: { sentiment: 50, totalActiveVotes: 0 },
     };
 
     if (userAuth && account && account.address) {
@@ -144,6 +184,15 @@ class LongShortMini extends Component {
     emitter.on(DB_GET_USER_TOKEN_LS_RETURNED, this.userTokenLSReturned);
     emitter.on(DB_CREATE_LS_RETURNED, this.db_createLSReturned);
     emitter.on(LOGIN_RETURNED, this.loginReturned);
+    emitter.on(
+      GECKO_GET_PRICE_AT_DATE_RETURNED,
+      this.geckoGetPriceAtDateReturned
+    );
+    emitter.on(DB_GET_LS_SENTIMENT_RETURNED, this.dbGetLSSentimentReturned);
+
+    dispatcher.dispatch({
+      type: DB_GET_LS_SENTIMENT,
+    });
   }
 
   componentWillUnmount() {
@@ -161,6 +210,14 @@ class LongShortMini extends Component {
     );
     emitter.removeListener(DB_CREATE_LS_RETURNED, this.db_createLSReturned);
     emitter.removeListener(LOGIN_RETURNED, this.loginReturned);
+    emitter.removeListener(
+      GECKO_GET_PRICE_AT_DATE_RETURNED,
+      this.geckoGetPriceAtDateReturned
+    );
+    emitter.removeListener(
+      DB_GET_LS_SENTIMENT_RETURNED,
+      this.dbGetLSSentimentReturned
+    );
   }
 
   connected = () => {
@@ -168,12 +225,23 @@ class LongShortMini extends Component {
     this.setState({
       account: account,
     });
+
+    dispatcher.dispatch({
+      type: DB_GET_USER_LS,
+      address: account.address,
+    });
   };
 
   disconnected = () => {
     const account = "";
     this.setState({
       account: account,
+    });
+  };
+
+  dbGetLSSentimentReturned = (data) => {
+    this.setState({
+      sentimentData: data,
     });
   };
 
@@ -233,12 +301,24 @@ class LongShortMini extends Component {
   };
 
   db_getUserLS = (data) => {
+    const { currentSeasonStart } = this.state;
+    var currentSeasonLS = data.filter(function (el) {
+      return new Date(el.voteEnding) >= currentSeasonStart;
+    });
     // sort complete and incomplete LongShorts
     let completeLS = [];
     let incompleteLS = [];
-    data.forEach((item, i) => {
-      item.complete ? completeLS.push(item) : incompleteLS.push(item);
+    currentSeasonLS.forEach((item, i) => {
+      if (item.complete) {
+        completeLS.push(item);
+      }
     });
+    data.forEach((item, i) => {
+      if (!item.complete) {
+        incompleteLS.push(item);
+      }
+    });
+
     // sort stats by Type Long / Short
     let countLong = [0, 0];
     let countShort = [0, 0];
@@ -262,6 +342,12 @@ class LongShortMini extends Component {
       countShort,
       activeLS: incompleteLS.length,
       loading: false,
+    });
+  };
+
+  geckoGetPriceAtDateReturned = (payload) => {
+    this.setState({
+      incompleteLS: payload,
     });
   };
 
@@ -451,7 +537,6 @@ class LongShortMini extends Component {
                       Short & Long
                     </Typography>
                   </div>
-                  <Divider />
                 </Grid>
                 {countTotals && countTotals.good + countTotals.bad > 0 && (
                   <>
@@ -957,6 +1042,54 @@ class LongShortMini extends Component {
                         )}
                     </Grid>
                   )}
+                <Grid
+                  item
+                  container
+                  justify="center"
+                  xs={12}
+                  className={classes.comboBarBorder}
+                  style={{ marginTop: 12 }}
+                >
+                  <Grid
+                    style={{
+                      maxWidth: 200,
+                      textAlign: "center",
+                      width: "inherit",
+                    }}
+                  >
+                    <Gauge
+                      value={this.state.sentimentData.sentiment}
+                      totalVotes={this.state.sentimentData.totalActiveVotes}
+                      color={function (value) {
+                        if (value < 40) {
+                          return colors.cgRed;
+                        } else if (value < 59) {
+                          return colors.cgYellow;
+                        } else if (value >= 60) {
+                          return colors.cgGreen;
+                        }
+                      }}
+                      label={function (value) {
+                        if (value > 60) {
+                          return "Bullish";
+                        } else if (value < 40) {
+                          return "Bearish";
+                        } else {
+                          return "Neutral";
+                        }
+                      }}
+                      valueDialClass={classes.gauge}
+                      valueClass={
+                        this.state.sentimentData.sentiment > 60
+                          ? classes.valueGaugeBull
+                          : this.state.sentimentData.sentiment < 40
+                          ? classes.valueGaugeBear
+                          : classes.valueGaugeNeutral
+                      }
+                      title="Chaingurians Sentiment"
+                    />
+                  </Grid>
+                </Grid>
                 {incompleteLS.length > 0 && (
                   <Grid item className={classes.favList} xs={12}>
                     <Divider style={{ marginTop: "12px" }} />

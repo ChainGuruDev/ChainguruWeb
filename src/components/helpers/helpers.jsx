@@ -10,7 +10,7 @@ function formatMoney(amount, decimalCount, decimal = ".", thousands = ",") {
     let num = parseFloat((amount = Math.abs(Number(amount) || 0)));
     if (decimalCount) {
       if (num > 0) {
-        if (num < 0.01) {
+        if (num <= 0.09) {
           decimalCount = 5;
           const myNum = num.toString().split(".");
           decimalCount = 0;
@@ -35,7 +35,6 @@ function formatMoney(amount, decimalCount, decimal = ".", thousands = ",") {
         }
       }
     }
-
     let i = parseInt(
       (amount = Math.abs(Number(amount) || 0).toFixed(decimalCount))
     ).toString();

@@ -56,6 +56,7 @@ import {
   DB_GET_LEADERBOARD_MINIGAME,
   DB_GET_LS_SENTIMENT,
   DB_GET_LS_SENTIMENT_RETURNED,
+  GECKO_GET_PRICE_AT_DATE_RETURNED,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -166,6 +167,10 @@ class LongShort extends Component {
     emitter.on(DB_CHECK_LS_RESULT_RETURNED, this.db_checkLSResultReturned);
     emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
     emitter.on(DB_GET_LS_SENTIMENT_RETURNED, this.dbGetLSSentimentReturned);
+    emitter.on(
+      GECKO_GET_PRICE_AT_DATE_RETURNED,
+      this.geckoGetPriceAtDateReturned
+    );
     dispatcher.dispatch({
       type: DB_GET_LS_SENTIMENT,
     });
@@ -180,6 +185,11 @@ class LongShort extends Component {
       DB_GET_USER_TOKEN_LS_RETURNED,
       this.userTokenLSReturned
     );
+    emitter.removeListener(
+      GECKO_GET_PRICE_AT_DATE_RETURNED,
+      this.geckoGetPriceAtDateReturned
+    );
+
     emitter.removeListener(DB_CREATE_LS_RETURNED, this.db_createLSReturned);
     emitter.removeListener(
       DB_CHECK_LS_RESULT_RETURNED,
@@ -256,7 +266,14 @@ class LongShort extends Component {
     let completeLS = [];
     let incompleteLS = [];
     currentSeasonLS.forEach((item, i) => {
-      item.complete ? completeLS.push(item) : incompleteLS.push(item);
+      if (item.complete) {
+        completeLS.push(item);
+      }
+    });
+    data.forEach((item, i) => {
+      if (!item.complete) {
+        incompleteLS.push(item);
+      }
     });
     // sort stats by Type Long / Short
     let countLong = [0, 0];
@@ -280,6 +297,12 @@ class LongShort extends Component {
       countLong,
       countShort,
       activeLS: incompleteLS.length,
+    });
+  };
+
+  geckoGetPriceAtDateReturned = (payload) => {
+    this.setState({
+      incompleteLS: payload,
     });
   };
 

@@ -36,7 +36,9 @@ const Gauge = (props) => {
       className="gauge-container"
       style={{ position: "relative" }}
     >
-      <Typography variant={"h4"}>{props.title}</Typography>
+      <Typography variant={"h4"} style={{ marginTop: 10 }}>
+        {props.title}
+      </Typography>
       <div
         style={{
           position: "absolute",

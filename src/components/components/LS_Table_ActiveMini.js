@@ -5,6 +5,8 @@ import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
 
+import { formatMoney } from "../helpers";
+
 //Import MaterialUI elements
 import {
   Grid,
@@ -25,6 +27,7 @@ import {
   COINGECKO_POPULATE_FAVLIST,
   COINGECKO_POPULATE_FAVLIST_RETURNED,
   DB_CHECK_LS_RESULT,
+  GECKO_GET_PRICE_AT_DATE,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -65,9 +68,25 @@ class LSTableActiveMini extends Component {
 
     //Get tokenIDs of active Long&Shorts to get data from CoinGecko
     let tokenIDs = [];
+    let completedLS = [];
+    const dateNow = new Date(Date.now());
+
     props.data.forEach((item, i) => {
       tokenIDs.push(item.tokenID);
+      //SWITCH TO >
+      if (dateNow.getTime() > new Date(item.voteEnding).getTime()) {
+        completedLS.push(item);
+      }
     });
+
+    if (completedLS.length > 0) {
+      dispatcher.dispatch({
+        type: GECKO_GET_PRICE_AT_DATE,
+        completedLS: completedLS,
+        versus: "usd",
+      });
+    }
+
     // console.log(tokenIDs);
     if (tokenIDs.length > 0) {
       dispatcher.dispatch({
@@ -103,6 +122,20 @@ class LSTableActiveMini extends Component {
 
   componentDidUpdate(prevProps) {
     if (prevProps.data !== this.props.data) {
+      this.props.data.forEach((item, i) => {
+        if (!item.priceClosing) {
+          let index = prevProps.data
+            .map(function (e) {
+              return e.tokenID;
+            })
+            .indexOf(item.tokenID);
+
+          if (prevProps.data[index].priceClosing) {
+            item.priceClosing = prevProps.data[index].priceClosing;
+          }
+        }
+      });
+
       let tokenIDs = [];
       this.props.data.forEach((item, i) => {
         tokenIDs.push(item.tokenID);
@@ -128,6 +161,7 @@ class LSTableActiveMini extends Component {
     symbol,
     current_price,
     priceStart,
+    priceClosing,
     vote,
     voteEnding,
     timeRemaining,
@@ -140,6 +174,7 @@ class LSTableActiveMini extends Component {
       symbol,
       current_price,
       priceStart,
+      priceClosing,
       vote,
       voteEnding,
       timeRemaining,
@@ -220,6 +255,7 @@ class LSTableActiveMini extends Component {
           item.symbol,
           item.current_price,
           lsData[index].priceStart,
+          lsData[index].priceClosing,
           lsData[index].vote,
           lsData[index].voteEnding,
           timeRemaining[0],
@@ -280,6 +316,7 @@ class LSTableActiveMini extends Component {
           item.symbol,
           item.current_price,
           item.priceStart,
+          item.priceClosing,
           item.vote,
           item.voteEnding,
           item.timeRemaining,
@@ -297,6 +334,7 @@ class LSTableActiveMini extends Component {
           item.symbol,
           item.current_price,
           item.priceStart,
+          item.priceClosing,
           item.vote,
           item.voteEnding,
           item.timeRemaining,
@@ -354,22 +392,45 @@ class LSTableActiveMini extends Component {
             }}
           >
             <Typography variant={"subtitle2"}>price Start</Typography>
-            <Typography variant={"h4"}>{row.priceStart}</Typography>
-            <Typography variant={"subtitle2"}>current price</Typography>
-            <Typography
-              variant={"h4"}
-              color={
-                row.current_price > row.priceStart && row.vote
-                  ? "primary"
-                  : row.current_price > row.priceStart && !row.vote
-                  ? "secondary"
-                  : row.current_price < row.priceStart && !row.vote
-                  ? "primary"
-                  : "secondary"
-              }
-            >
-              {row.current_price}
+            <Typography variant={"h4"}>
+              {formatMoney(row.priceStart)}
             </Typography>
+            <Typography variant={"subtitle2"}>current price</Typography>
+            {row.percentComplete >= 100 ? (
+              <Typography
+                variant={"h4"}
+                color={
+                  row.priceClosing > row.priceStart && row.vote
+                    ? "primary"
+                    : row.priceClosing > row.priceStart && !row.vote
+                    ? "secondary"
+                    : row.priceClosing < row.priceStart && !row.vote
+                    ? "primary"
+                    : "secondary"
+                }
+              >
+                {row.priceClosing ? (
+                  formatMoney(row.priceClosing)
+                ) : (
+                  <CircularProgress />
+                )}
+              </Typography>
+            ) : (
+              <Typography
+                variant={"h4"}
+                color={
+                  row.current_price > row.priceStart && row.vote
+                    ? "primary"
+                    : row.current_price > row.priceStart && !row.vote
+                    ? "secondary"
+                    : row.current_price < row.priceStart && !row.vote
+                    ? "primary"
+                    : "secondary"
+                }
+              >
+                {formatMoney(row.current_price)}
+              </Typography>
+            )}
           </Grid>
           <Grid
             item

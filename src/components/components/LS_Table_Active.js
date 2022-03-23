@@ -5,6 +5,8 @@ import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { withTranslation } from "react-i18next";
 
+import { formatMoney } from "../helpers";
+
 //Import MaterialUI elements
 import {
   Table,
@@ -28,10 +30,8 @@ import ArrowDropDownRoundedIcon from "@material-ui/icons/ArrowDropDownRounded";
 import ArrowDropUpRoundedIcon from "@material-ui/icons/ArrowDropUpRounded";
 import TrendingDownIcon from "@material-ui/icons/TrendingDown";
 import TrendingUpIcon from "@material-ui/icons/TrendingUp";
-import FirstPageIcon from "@material-ui/icons/FirstPage";
 import KeyboardArrowLeft from "@material-ui/icons/KeyboardArrowLeft";
 import KeyboardArrowRight from "@material-ui/icons/KeyboardArrowRight";
-import LastPageIcon from "@material-ui/icons/LastPage";
 import AssignmentTurnedInIcon from "@material-ui/icons/AssignmentTurnedIn";
 
 //Import Constants
@@ -39,6 +39,7 @@ import {
   COINGECKO_POPULATE_FAVLIST,
   COINGECKO_POPULATE_FAVLIST_RETURNED,
   DB_CHECK_LS_RESULT,
+  GECKO_GET_PRICE_AT_DATE,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -67,9 +68,25 @@ class LSTableActive extends Component {
 
     //Get tokenIDs of active Long&Shorts to get data from CoinGecko
     let tokenIDs = [];
+    let completedLS = [];
+    const dateNow = new Date(Date.now());
+
     props.data.forEach((item, i) => {
       tokenIDs.push(item.tokenID);
+      //SWITCH TO >
+      if (dateNow.getTime() > new Date(item.voteEnding).getTime()) {
+        completedLS.push(item);
+      }
     });
+
+    if (completedLS.length > 0) {
+      dispatcher.dispatch({
+        type: GECKO_GET_PRICE_AT_DATE,
+        completedLS: completedLS,
+        versus: "usd",
+      });
+    }
+
     if (tokenIDs.length > 0) {
       dispatcher.dispatch({
         type: COINGECKO_POPULATE_FAVLIST,
@@ -77,12 +94,10 @@ class LSTableActive extends Component {
         versus: "usd",
       });
     }
+
     this.state = {
       tokenIDs: tokenIDs,
       lsData: props.data,
-      page: 0,
-      rows: 5,
-      rowsPerPage: 5,
       sortBy: "voteEnding",
       sortOrder: "asc",
       sortData: [],
@@ -106,6 +121,20 @@ class LSTableActive extends Component {
 
   componentDidUpdate(prevProps) {
     if (prevProps.data !== this.props.data) {
+      this.props.data.forEach((item, i) => {
+        if (!item.priceClosing) {
+          let index = prevProps.data
+            .map(function (e) {
+              return e.tokenID;
+            })
+            .indexOf(item.tokenID);
+
+          if (prevProps.data[index] && prevProps.data[index].priceClosing) {
+            item.priceClosing = prevProps.data[index].priceClosing;
+          }
+        }
+      });
+
       let tokenIDs = [];
       this.props.data.forEach((item, i) => {
         tokenIDs.push(item.tokenID);
@@ -130,6 +159,7 @@ class LSTableActive extends Component {
     symbol,
     current_price,
     priceStart,
+    priceClosing,
     vote,
     voteEnding,
     timeRemaining,
@@ -142,6 +172,7 @@ class LSTableActive extends Component {
       symbol,
       current_price,
       priceStart,
+      priceClosing,
       vote,
       voteEnding,
       timeRemaining,
@@ -214,7 +245,6 @@ class LSTableActive extends Component {
           .indexOf(item.id);
 
         let timeRemaining = this.timeRemaining(lsData[index].voteEnding);
-
         let sortData = this.createData(
           item.image,
           item.name,
@@ -222,6 +252,7 @@ class LSTableActive extends Component {
           item.symbol,
           item.current_price,
           lsData[index].priceStart,
+          lsData[index].priceClosing,
           lsData[index].vote,
           lsData[index].voteEnding,
           timeRemaining[0],
@@ -229,6 +260,7 @@ class LSTableActive extends Component {
         );
         sort.push(sortData);
       });
+
       this.setState({ sortData: sort, coinData: data, loadingResult: false });
     }
   };
@@ -244,7 +276,7 @@ class LSTableActive extends Component {
 
   sortedList = (rowData) => {
     const { classes } = this.props;
-    const { sortBy, sortOrder, rowsPerPage, page, formatedRows } = this.state;
+    const { sortBy, sortOrder, formatedRows } = this.state;
 
     function dynamicSort(property) {
       var sortOrder = 1;
@@ -271,6 +303,7 @@ class LSTableActive extends Component {
           item.symbol,
           item.current_price,
           item.priceStart,
+          item.priceClosing,
           item.vote,
           item.voteEnding,
           item.timeRemaining,
@@ -288,6 +321,7 @@ class LSTableActive extends Component {
           item.symbol,
           item.current_price,
           item.priceStart,
+          item.priceClosing,
           item.vote,
           item.voteEnding,
           item.timeRemaining,
@@ -301,10 +335,7 @@ class LSTableActive extends Component {
       if (newRows.length !== formatedRows.length) {
         this.setState({ formatedRows: newRows });
       }
-      return (rowsPerPage > 0
-        ? newRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-        : newRows
-      ).map((row) => (
+      return newRows.map((row) => (
         <TableRow
           hover={true}
           key={row.name}
@@ -323,23 +354,46 @@ class LSTableActive extends Component {
             <Typography variant="subtitle1">{row.symbol}</Typography>
           </TableCell>
           <TableCell align="right">
-            <Typography variant={"h4"}>{row.priceStart}</Typography>
+            <Typography variant={"h4"}>
+              {formatMoney(row.priceStart)}
+            </Typography>
           </TableCell>
           <TableCell align="right">
-            <Typography
-              variant={"h4"}
-              color={
-                row.current_price > row.priceStart && row.vote
-                  ? "primary"
-                  : row.current_price > row.priceStart && !row.vote
-                  ? "secondary"
-                  : row.current_price < row.priceStart && !row.vote
-                  ? "primary"
-                  : "secondary"
-              }
-            >
-              {row.current_price}
-            </Typography>
+            {row.percentComplete >= 100 ? (
+              <Typography
+                variant={"h4"}
+                color={
+                  row.priceClosing > row.priceStart && row.vote
+                    ? "primary"
+                    : row.priceClosing > row.priceStart && !row.vote
+                    ? "secondary"
+                    : row.priceClosing < row.priceStart && !row.vote
+                    ? "primary"
+                    : "secondary"
+                }
+              >
+                {row.priceClosing ? (
+                  formatMoney(row.priceClosing)
+                ) : (
+                  <CircularProgress />
+                )}
+              </Typography>
+            ) : (
+              <Typography
+                variant={"h4"}
+                color={
+                  row.current_price > row.priceStart && row.vote
+                    ? "primary"
+                    : row.current_price > row.priceStart && !row.vote
+                    ? "secondary"
+                    : row.current_price < row.priceStart && !row.vote
+                    ? "primary"
+                    : "secondary"
+                }
+              >
+                {formatMoney(row.current_price)}
+              </Typography>
+            )}
           </TableCell>
           <TableCell align="center">
             {row.vote && (
@@ -432,75 +486,9 @@ class LSTableActive extends Component {
     this.nav("/short/detective/" + id);
   };
 
-  TablePaginationActions = (props) => {
-    const { classes } = this.props;
-    const { formatedRows, page, rowsPerPage } = this.state;
-    const count = formatedRows.length;
-
-    const handleFirstPageButtonClick = (event) => {
-      this.setState({ page: 0 });
-    };
-
-    const handleBackButtonClick = (event) => {
-      // console.log(event);
-      // console.log(count);
-      this.setState({ page: page - 1 });
-    };
-
-    const handleNextButtonClick = (event) => {
-      this.setState({ page: page + 1 });
-    };
-
-    const handleLastPageButtonClick = (event) => {
-      this.setState({ page: Math.max(0, Math.ceil(count / rowsPerPage) - 1) });
-    };
-
-    return (
-      <div className={classes.footer}>
-        <IconButton
-          onClick={handleFirstPageButtonClick}
-          disabled={page === 0}
-          aria-label="first page"
-        >
-          {<FirstPageIcon />}
-        </IconButton>
-        <IconButton
-          onClick={handleBackButtonClick}
-          disabled={page === 0}
-          aria-label="previous page"
-        >
-          {<KeyboardArrowLeft />}
-        </IconButton>
-        <IconButton
-          onClick={handleNextButtonClick}
-          disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-          aria-label="next page"
-        >
-          {<KeyboardArrowRight />}
-        </IconButton>
-        <IconButton
-          onClick={handleLastPageButtonClick}
-          disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-          aria-label="last page"
-        >
-          {<LastPageIcon />}
-        </IconButton>
-      </div>
-    );
-  };
-
   render() {
     const { classes } = this.props;
-    const { sortData, page, rowsPerPage, formatedRows } = this.state;
-
-    const handleChangePage = (newPage) => {
-      console.log(newPage);
-      this.setState({ page: newPage });
-    };
-
-    const handleChangeRowsPerPage = (event) => {
-      this.setState({ rowsPerPage: parseInt(event.target.value, 10), page: 0 });
-    };
+    const { sortData, formatedRows } = this.state;
 
     return (
       <TableContainer
@@ -590,24 +578,6 @@ class LSTableActive extends Component {
             </TableRow>
           </TableHead>
           {sortData && <TableBody>{this.sortedList(sortData)}</TableBody>}
-          <TableFooter>
-            <TableRow>
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25, { label: "All", value: -1 }]}
-                colSpan={0}
-                count={formatedRows.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                SelectProps={{
-                  inputProps: { "aria-label": "rows per page" },
-                  native: true,
-                }}
-                onChangePage={handleChangePage}
-                onChangeRowsPerPage={handleChangeRowsPerPage}
-                ActionsComponent={this.TablePaginationActions}
-              />
-            </TableRow>
-          </TableFooter>
         </Table>
       </TableContainer>
     );
