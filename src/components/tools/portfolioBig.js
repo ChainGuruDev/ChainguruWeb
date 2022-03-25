@@ -12,6 +12,8 @@ import StakingDetailsModal from "../components/stakingDetailsModal.js";
 import UniswapDetailsModal from "../components/uniswapDetailsModal.js";
 import SparklineChart from "../components/SparklineChart.js";
 
+import NFTPortfolio from "../components/nftPortfolio.js";
+
 import AccountBalanceWalletRoundedIcon from "@material-ui/icons/AccountBalanceWalletRounded";
 import BackspaceRoundedIcon from "@material-ui/icons/BackspaceRounded";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
@@ -4757,6 +4759,7 @@ class PortfolioBig extends Component {
                       </div>
                     </Grid>
                   )}
+                  <NFTPortfolio />
                 </Grid>
               </Grid>
             )}

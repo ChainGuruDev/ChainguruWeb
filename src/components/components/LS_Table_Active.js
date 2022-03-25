@@ -74,8 +74,13 @@ class LSTableActive extends Component {
     props.data.forEach((item, i) => {
       tokenIDs.push(item.tokenID);
       //SWITCH TO >
-      if (dateNow.getTime() > new Date(item.voteEnding).getTime()) {
-        completedLS.push(item);
+      if (item.voteEnding) {
+        if (
+          dateNow.getTime() >
+          new Date(item.voteEnding).getTime() + 5 * 60000
+        ) {
+          completedLS.push(item);
+        }
       }
     });
 
@@ -128,7 +133,6 @@ class LSTableActive extends Component {
               return e.tokenID;
             })
             .indexOf(item.tokenID);
-
           if (prevProps.data[index] && prevProps.data[index].priceClosing) {
             item.priceClosing = prevProps.data[index].priceClosing;
           }
@@ -209,8 +213,9 @@ class LSTableActive extends Component {
   };
 
   timeRemaining = (voteEnding) => {
-    let dateEnd = new Date(voteEnding);
-    let dateNow = new Date();
+    const dateEndBase = new Date(voteEnding);
+    const dateEnd = new Date(dateEndBase.getTime() + 5 * 60000);
+    const dateNow = new Date();
     let remaining = dateEnd - dateNow;
     // let timeLimit = 12 * 60 * 60 * 1000; // 12hs for beta testing
     let timeLimit = 24 * 60 * 60 * 1000; // 24hs for release
@@ -243,8 +248,10 @@ class LSTableActive extends Component {
             return e.tokenID;
           })
           .indexOf(item.id);
-
-        let timeRemaining = this.timeRemaining(lsData[index].voteEnding);
+        let timeRemaining = ["", 0];
+        if (lsData[index].voteEnding) {
+          timeRemaining = this.timeRemaining(lsData[index].voteEnding);
+        }
         let sortData = this.createData(
           item.image,
           item.name,

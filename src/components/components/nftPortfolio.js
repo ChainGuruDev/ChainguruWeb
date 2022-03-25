@@ -22,7 +22,7 @@ import {
 } from "../../constants";
 
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-
+import NFTCarousel from "./nftCarousel.js";
 import Store from "../../stores";
 const store = Store.store;
 const emitter = Store.emitter;
@@ -30,6 +30,38 @@ const dispatcher = Store.dispatcher;
 
 const styles = (theme) => ({
   root: {},
+  nftAssetsGrid: {
+    borderColor: "#777",
+    borderRadius: "10px",
+    borderStyle: "solid",
+    borderWidth: "thin",
+    padding: "10px",
+    background: `#9991`,
+    minHeight: "100%",
+  },
+  expandIcon: {
+    webkitTransition: "all 0.5s cubic-bezier(.22,.61,.36,1)",
+    mozTransition: "all 0.5s cubic-bezier(.22,.61,.36,1)",
+    oTransition: "all 0.5s cubic-bezier(.22,.61,.36,1)",
+    transition: "all 0.5s cubic-bezier(.22,.61,.36,1)",
+    transform: "rotate(180deg)",
+  },
+  unexpandIcon: {
+    webkitTransition: "all 0.5s cubic-bezier(.22,.61,.36,1)",
+    mozTransition: "all 0.5s cubic-bezier(.22,.61,.36,1)",
+    oTransition: "all 0.5s cubic-bezier(.22,.61,.36,1)",
+    transition: "all 0.5s cubic-bezier(.22,.61,.36,1)",
+    transform: "rotate(0deg)",
+  },
+  expand: {
+    opacity: 1,
+    transition: "all .5s cubic-bezier(.65,.05,.36,1)",
+  },
+  contract: {
+    opacity: 0,
+    maxHeight: "0px",
+    transition: "all .5s cubic-bezier(.65,.05,.36,1)",
+  },
 });
 
 class NFTPortfolio extends Component {
@@ -38,23 +70,45 @@ class NFTPortfolio extends Component {
 
     let vs = store.getStore("vsCoin");
     let userWallets = store.getStore("userWallets");
-    console.log(userWallets);
 
     this.state = {
       vsCoin: vs,
       expanded: false,
       userWallets: userWallets,
+      nftValueType: "floor_price",
+      nftTotalValue: null,
     };
   }
 
   componentDidMount() {
+    this._isMounted = true;
     emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
     emitter.on(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
+    emitter.on(DB_GET_NFTS_VALUE_RETURNED, this.dbGetNftValueReturned);
+    emitter.on(DB_GET_NFTS_RETURNED, this.dbGetNftsReturned);
+    this._isMounted &&
+      dispatcher.dispatch({
+        type: DB_GET_NFTS_VALUE,
+        addresses: this.state.userWallets,
+        value_type: this.state.nftValueType,
+      });
+    this._isMounted &&
+      dispatcher.dispatch({
+        type: DB_GET_NFTS,
+        addresses: this.state.userWallets,
+      });
   }
 
   componentWillUnmount() {
     emitter.removeListener(DB_USERDATA_RETURNED, this.dbUserDataReturned);
     emitter.removeListener(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
+    emitter.removeListener(DB_GET_NFTS_RETURNED, this.dbGetNftsReturned);
+    emitter.removeListener(
+      DB_GET_NFTS_VALUE_RETURNED,
+      this.dbGetNftValueReturned
+    );
+
+    this._isMounted = false;
   }
 
   vsCoinReturned = (vsCoin) => {
@@ -63,6 +117,18 @@ class NFTPortfolio extends Component {
 
   dbUserDataReturned = (data) => {
     console.log(data);
+  };
+
+  dbGetNftValueReturned = (data) => {
+    this.setState({
+      nftTotalValue: data["nft-total-value"],
+    });
+  };
+
+  dbGetNftsReturned = (nfts) => {
+    this.setState({
+      nftData: nfts,
+    });
   };
 
   sortedList = (rowData) => {
@@ -165,41 +231,42 @@ class NFTPortfolio extends Component {
     this.props.history.push(screen);
   };
 
-  expandContract = (currentState, section) => {
-    if (section === "staked") {
-      let newState = !currentState;
-      var rotated = currentState;
+  expandContract = (currentState) => {
+    let newState = !currentState;
+    var rotated = currentState;
 
-      var expandContract = document.getElementById("expandContractNft");
-      var expandedContainer = document.getElementById(
-        "expandedNFTItemsContainer"
-      );
+    var expandContract = document.getElementById("expandContractNft");
+    var expandedContainer = document.getElementById(
+      "expandedNFTItemsContainer"
+    );
 
-      if (!this.state.expandedHeight) {
-        if (expandedContainer) {
-          var expandedHeight = expandedContainer.clientHeight + 10 + "px";
-        }
-      } else {
-        var expandedHeight = this.state.expandedHeight;
-      }
+    if (!this.state.expandedHeight) {
       if (expandedContainer) {
-        expandedContainer.style.transform = newState
-          ? "translateY(0%)"
-          : `translateY(-${expandedHeight})`;
-        expandContract.style.opacity = newState ? 1 : 0;
+        var expandedHeight = expandedContainer.clientHeight + 10 + "px";
       }
-      expandContract.style.maxHeight = newState ? expandedHeight : 0;
-
-      this._isMounted &&
-        this.setState({
-          expanded: newState,
-        });
+    } else {
+      var expandedHeight = this.state.expandedHeight;
     }
+    if (expandedContainer) {
+      expandedContainer.style.transform = newState
+        ? "translateY(0%)"
+        : `translateY(-${expandedHeight})`;
+      expandContract.style.opacity = newState ? 1 : 0;
+    }
+    expandContract.style.maxHeight = newState ? expandedHeight : 0;
+    this._isMounted &&
+      this.setState({
+        expanded: newState,
+      });
+  };
+
+  drawNFTs = (userNfts) => {
+    return;
   };
 
   render() {
     const { classes } = this.props;
-    const { vsCoin, expanded } = this.state;
+    const { vsCoin, expanded, nftTotalValue, nftData } = this.state;
 
     return (
       <Grid
@@ -214,14 +281,20 @@ class NFTPortfolio extends Component {
               NFTs
             </Typography>
             <Grid item container direction="row" style={{ width: "auto" }}>
-              {this.drawTotalValue(univ2Assets)}
+              <Typography
+                color="primary"
+                variant={"h3"}
+                style={{ marginRight: 5 }}
+              >
+                {getVsSymbol(this.state.vsCoin) +
+                  " " +
+                  formatMoney(nftTotalValue)}
+              </Typography>
               <IconButton
                 color="primary"
                 aria-label="Show Portfolio Data"
                 size="small"
-                onClick={() =>
-                  this.expandContract(univ2AssetsExpanded, "univ2")
-                }
+                onClick={() => this.expandContract(expanded)}
               >
                 {
                   <ExpandMoreIcon
@@ -244,22 +317,7 @@ class NFTPortfolio extends Component {
                 id="expandedNFTItemsContainer"
                 className={classes.itemContainer}
               >
-                <Divider variant="middle" />
-                <Grid
-                  item
-                  xs={12}
-                  style={{
-                    height: "100%",
-                    maxHeight: 500,
-                    overflowY: "auto",
-                    marginTop: 10,
-                    scrollbarColor: "rgb(121, 216, 162) rgba(48, 48, 48, 0.5)",
-                    paddingRight: 10,
-                    scrollbarWidth: "thin",
-                  }}
-                >
-                  {this.drawUniV2Assets(univ2Assets)}
-                </Grid>
+                <NFTCarousel galleryItems={nftData} />
               </div>
             </Grid>
           </Grid>

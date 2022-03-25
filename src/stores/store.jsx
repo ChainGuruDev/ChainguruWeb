@@ -529,10 +529,10 @@ class Store {
             this.web3CheckBetaAccess();
             break;
           case DB_GET_NFTS:
-            this.dbGetNfts();
+            this.dbGetNfts(payload);
             break;
           case DB_GET_NFTS_VALUE:
-            this.dbGetNftsValue();
+            this.dbGetNftsValue(payload);
             break;
           case DB_GET_LEADERBOARD_MINIGAME:
             this.dbGetLeaderboardMinigame(payload);
@@ -3597,6 +3597,7 @@ ${nonce}`,
               value_type: valueType,
             }
           );
+
           emitter.emit(DB_GET_NFTS_VALUE_RETURNED, nftValue.data);
         } catch (err) {
           console.log(err.message);
