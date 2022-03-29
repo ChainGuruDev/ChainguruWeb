@@ -130,7 +130,7 @@ class LSTableActiveMini extends Component {
             })
             .indexOf(item.tokenID);
 
-          if (prevProps.data[index].priceClosing) {
+          if (prevProps.data[index] && prevProps.data[index].priceClosing) {
             item.priceClosing = prevProps.data[index].priceClosing;
           }
         }

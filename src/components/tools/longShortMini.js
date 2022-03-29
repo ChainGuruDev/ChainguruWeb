@@ -346,6 +346,24 @@ class LongShortMini extends Component {
   };
 
   geckoGetPriceAtDateReturned = (payload) => {
+    let prevLS = [...this.state.incompleteLS];
+
+    if (prevLS !== payload) {
+      prevLS.forEach((item, i) => {
+        if (!item.priceClosing) {
+          let index = payload
+            .map(function (e) {
+              return e.tokenID;
+            })
+            .indexOf(item.tokenID);
+
+          if (payload[index] && payload[index].priceClosing) {
+            item.priceClosing = payload[index].priceClosing;
+          }
+        }
+      });
+    }
+
     this.setState({
       incompleteLS: payload,
     });
