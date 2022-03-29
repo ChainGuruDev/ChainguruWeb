@@ -133,6 +133,7 @@ class LSTableActive extends Component {
               return e.tokenID;
             })
             .indexOf(item.tokenID);
+
           if (prevProps.data[index] && prevProps.data[index].priceClosing) {
             item.priceClosing = prevProps.data[index].priceClosing;
           }
