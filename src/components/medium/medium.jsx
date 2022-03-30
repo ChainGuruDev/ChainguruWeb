@@ -334,9 +334,8 @@ class Medium extends Component {
 
     return (
       <div className={classes.rootTabs} id="rootMedium">
-        <AppBar position="static" color="default">
-          {process.env.REACT_APP_CHAINGURU_VERSION === "beta" &&
-          hasBetaAccess ? (
+        {process.env.REACT_APP_CHAINGURU_VERSION === "beta" && hasBetaAccess && (
+          <AppBar position="static" color="default">
             <Tabs
               value={valueTab}
               onChange={handleChangeTabs}
@@ -366,62 +365,8 @@ class Medium extends Component {
                 {...a11yProps(5)}
               />
             </Tabs>
-          ) : (
-            <Tabs
-              value={valueTab}
-              onChange={handleChangeTabs}
-              variant={isMobile ? "scrollable" : "standard"}
-              aria-label="tool tabs"
-              scrollButtons="auto"
-              indicatorColor="primary"
-              textColor="primary"
-              centered={!isMobile}
-            >
-              <div
-                style={{ filter: "blur(3px)", cursor: "default" }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-              >
-                <Tab
-                  label="Crypto Compare"
-                  icon={<CompareArrowsIcon />}
-                  {...a11yProps(0)}
-                />
-              </div>
-              <Tab label="Favorites" icon={<FlashOnIcon />} {...a11yProps(1)} />
-              <div
-                style={{
-                  filter: valueTab === 2 ? "none" : "blur(3px)",
-                  cursor: valueTab === 2 ? "" : "default",
-                }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-              >
-                <Tab
-                  label="Crypto Detective"
-                  icon={<SearchIcon />}
-                  {...a11yProps(2)}
-                />
-              </div>
-              <div
-                style={{ filter: "blur(3px)", cursor: "default" }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-              >
-                <Tab label="Coins" icon={<LensIcon />} {...a11yProps(3)} />
-                <Tab label="Swap" icon={<SwapHorizIcon />} {...a11yProps(4)} />
-                <Tab
-                  label="News"
-                  icon={<MenuBookRoundedIcon />}
-                  {...a11yProps(5)}
-                />
-              </div>
-            </Tabs>
-          )}
-        </AppBar>
+          </AppBar>
+        )}
         <div
           style={{
             flex: 1,

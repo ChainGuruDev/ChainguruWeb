@@ -302,75 +302,24 @@ class PortfolioManagement extends Component {
 
     return (
       <Grid className={classes.rootTabs}>
-        <AppBar position="static" color="default">
-          {process.env.REACT_APP_CHAINGURU_VERSION === "beta" &&
-          hasBetaAccess ? (
-            <PortfolioTabs
-              value={valueTab}
-              onChange={handleChangeTabs}
-              aria-label="tool tabs"
-              scrollButtons="auto"
-              variant={isMobile ? "scrollable" : "standard"}
-              indicatorColor="primary"
-              centered={isBrowser}
-            >
-              <PortfolioTab
-                label="Dashboard"
-                icon={<DashboardIcon />}
-                {...a11yProps(0)}
-              />
-              <PortfolioTab
-                label="Transactions"
-                icon={<ReceiptIcon />}
-                {...a11yProps(1)}
-              />
-              <PortfolioTab
-                label="HeatMap"
-                icon={<ViewQuiltIcon />}
-                {...a11yProps(2)}
-              />
-              <PortfolioTab
-                label="CryptoConverter"
-                icon={<ShuffleIcon />}
-                {...a11yProps(3)}
-              />
-              <PortfolioTab
-                label="Portfolio Radar"
-                icon={<TrackChangesRoundedIcon />}
-                {...a11yProps(4)}
-              />
-              <PortfolioTab
-                label="Swap"
-                icon={<SwapHorizIcon />}
-                {...a11yProps(5)}
-              />
-              <Tab
-                label="News"
-                icon={<MenuBookRoundedIcon />}
-                {...a11yProps(6)}
-              />
-            </PortfolioTabs>
-          ) : (
-            <PortfolioTabs
-              value={valueTab}
-              onChange={handleChangeTabs}
-              aria-label="tool tabs"
-              scrollButtons="auto"
-              variant={isMobile ? "scrollable" : "standard"}
-              indicatorColor="primary"
-              centered={isBrowser}
-            >
-              <PortfolioTab
-                label="Dashboard"
-                icon={<DashboardIcon />}
-                {...a11yProps(0)}
-              />
-              <div
-                style={{ filter: "blur(3px)", cursor: "default" }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
+        {process.env.REACT_APP_CHAINGURU_VERSION === "beta" &&
+          hasBetaAccess ===
+          (
+            <AppBar position="static" color="default">
+              <PortfolioTabs
+                value={valueTab}
+                onChange={handleChangeTabs}
+                aria-label="tool tabs"
+                scrollButtons="auto"
+                variant={isMobile ? "scrollable" : "standard"}
+                indicatorColor="primary"
+                centered={isBrowser}
               >
+                <PortfolioTab
+                  label="Dashboard"
+                  icon={<DashboardIcon />}
+                  {...a11yProps(0)}
+                />
                 <PortfolioTab
                   label="Transactions"
                   icon={<ReceiptIcon />}
@@ -401,10 +350,9 @@ class PortfolioManagement extends Component {
                   icon={<MenuBookRoundedIcon />}
                   {...a11yProps(6)}
                 />
-              </div>
-            </PortfolioTabs>
+              </PortfolioTabs>
+            </AppBar>
           )}
-        </AppBar>
         <div
           style={{
             flex: 1,
