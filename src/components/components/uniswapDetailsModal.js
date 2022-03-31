@@ -244,13 +244,13 @@ class UniswapDetailsModal extends Component {
                           {(item.quantity * assetBalance).toFixed(2)}{" "}
                           {item.asset.symbol}{" "}
                           <span style={{ color: "gray" }}>● </span>
-                          {
+                          {item.asset.price && (
                             <span style={{ color: "gray" }}>
                               {getVsSymbol(vsCoin) +
                                 " " +
                                 formatMoney(item.asset.price.value)}
                             </span>
-                          }
+                          )}
                         </Typography>
                       </Grid>
                       <Grid item xs={12}>

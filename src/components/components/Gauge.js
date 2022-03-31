@@ -14,7 +14,6 @@ const defaultOptions = {
   min: 0,
   dialStartAngle: 180,
   dialEndAngle: 0,
-
   // Put any other defaults you want. e.g. dialStartAngle, dialEndAngle, radius, etc.
 };
 
@@ -56,11 +55,12 @@ const Gauge = (props) => {
           position: "absolute",
           textAlign: "center",
           top: "60%",
-          left: "40%",
+          left: "30%",
         }}
       >
-        <Typography varaint={"body1"}>{props.totalVotes}</Typography>
-        <Typography varaint={"body1"}>Votes</Typography>
+        <Typography variant={"body1"}>{props.totalVotes}</Typography>
+        <Typography variant={"body1"}>Active</Typography>
+        <Typography variant={"body1"}>Forecasts</Typography>
       </div>
       <div
         style={{

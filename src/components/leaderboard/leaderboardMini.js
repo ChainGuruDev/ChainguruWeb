@@ -4,6 +4,8 @@ import { withStyles } from "@material-ui/core/styles";
 import { colors } from "../../theme";
 
 import { timeConversion } from "../helpers";
+import { ReactComponent as GenesisPlayerIcon } from "../../assets/genesis.svg";
+import { ReactComponent as GenesisTop3Icon } from "../../assets/genesisTop3.svg";
 
 import {
   Card,
@@ -12,7 +14,9 @@ import {
   CircularProgress,
   Avatar,
   Typography,
+  Tooltip,
 } from "@material-ui/core";
+import LocalActivityIcon from "@material-ui/icons/LocalActivity";
 
 import {
   DB_GET_LEADERBOARD,
@@ -63,6 +67,26 @@ const styles = (theme) => ({
     "&::-webkit-scrollbar-thumb": {
       backgroundColor: "rgb(121, 216, 162)",
       borderRadius: 20,
+    },
+  },
+  genesisIcon: {
+    width: 30,
+    height: 30,
+    marginLeft: 5,
+    "&.pos1": {
+      width: 45,
+      height: 45,
+      fill: "goldenrod",
+    },
+    "&.pos2": {
+      width: 40,
+      height: 40,
+      fill: "lightgray",
+    },
+    "&.pos3": {
+      width: 35,
+      height: 35,
+      fill: "chocolate",
     },
   },
 });
@@ -139,187 +163,222 @@ class LeaderboardMini extends Component {
 
     if (data.length > 0) {
       //LIMIT TOP 10
-      if (userHasPlayed && !userInTop10) {
-        // const leaderboardTop10 = data.length > 10 ? data.slice(0, 9) : data;
-        const leaderboardTop10 = data;
-        // leaderboardTop10.push(currentUser);
-        return leaderboardTop10.map((user, i) => (
-          <li
-            key={`${user}_${i}`}
-            style={{
-              display: "inherit",
-              minWidth: "100%",
-              marginLeft: "-20px",
-              paddingLeft: "10px",
 
-              background: user.user
-                ? "linear-gradient(90deg, rgba(121, 216, 162, 0.2) 0%, rgba(0,0,0, 0) 50%)"
-                : "",
-            }}
+      // const leaderboardTop10 = data.length > 10 ? data.slice(0, 9) : data;
+      const leaderboardTop10 = data;
+      // leaderboardTop10.push(currentUser);
+      return leaderboardTop10.map((user, i) => (
+        <li
+          key={`${user}_${i}`}
+          style={{
+            display: "inherit",
+            minWidth: "100%",
+            marginLeft: "-20px",
+            paddingLeft: "10px",
+
+            background: user.user
+              ? "linear-gradient(90deg, rgba(121, 216, 162, 0.2) 0%, rgba(0,0,0, 0) 50%)"
+              : "",
+          }}
+        >
+          <Grid
+            item
+            container
+            direction="row"
+            alignItems="flex-start"
+            style={{ padding: "10px" }}
           >
             <Grid
-              item
               container
-              direction="row"
-              alignItems="flex-start"
-              style={{ padding: "10px" }}
+              item
+              style={{
+                maxWidth: "max-content",
+                filter:
+                  i === 0
+                    ? `drop-shadow(0px 0px 3px ${colors.cgGreen})`
+                    : `drop-shadow(0px 0px 3px ${colors.black})`,
+              }}
+              alignItems="center"
             >
+              <Avatar
+                alt="avatar"
+                src={this.getAvatarType(user)}
+                className={
+                  i === 0 ? classes.firstProfile : classes.largeProfile
+                }
+              />
+            </Grid>
+            {user.nickname && (
               <Grid
-                container
-                item
                 style={{
-                  maxWidth: "max-content",
-                  filter:
-                    i === 0
-                      ? `drop-shadow(0px 0px 3px ${colors.cgGreen})`
-                      : `drop-shadow(0px 0px 3px ${colors.black})`,
+                  marginLeft: 10,
+                  filter: "drop-shadow(1px 1px 1px rgba(0,0,0,0.25))",
                 }}
-                alignItems="center"
+                item
               >
-                <Avatar
-                  alt="avatar"
-                  src={this.getAvatarType(user)}
-                  className={
-                    i === 0 ? classes.firstProfile : classes.largeProfile
-                  }
-                />
-              </Grid>
-              {user.nickname && (
-                <Grid
-                  style={{
-                    marginLeft: 10,
-                    filter: "drop-shadow(1px 1px 1px rgba(0,0,0,0.25))",
-                  }}
-                  item
-                >
-                  <Typography color="primary" variant={i === 0 ? "h4" : "h5"}>
-                    {user.nickname}
-                  </Typography>
-                  <Typography color="secondary" variant={"body2"}>
-                    xp:{" "}
-                    {user.user
-                      ? user.minigames.longShort.experiencePoints
-                      : user.experiencePoints}
-                  </Typography>
-                </Grid>
-              )}
-              {!user.nickname && (
-                <Grid
-                  style={{
-                    marginLeft: 10,
-                    filter: "drop-shadow(1px 1px 1px rgba(0,0,0,0.25))",
-                  }}
-                  item
-                >
-                  <Typography color="primary" variant={i === 0 ? "h4" : "h5"}>
-                    Anon user
-                  </Typography>
-                  <Typography color="secondary" variant={"body2"}>
-                    xp: {user.experiencePoints}
-                  </Typography>
-                </Grid>
-              )}
-              <Grid style={{ margin: "0 0 0 auto", alignSelf: "center" }} item>
-                <Typography
-                  variant={i === 0 ? "h2" : "h3"}
-                  color={i === 0 ? "primary" : "inherit"}
-                >
-                  {user.position}
+                <Typography color="primary" variant={i === 0 ? "h4" : "h5"}>
+                  {user.nickname}
+                </Typography>
+                <Typography color="secondary" variant={"body2"}>
+                  xp:{" "}
+                  {user.user
+                    ? user.minigames.longShort.experiencePoints
+                    : user.experiencePoints}
                 </Typography>
               </Grid>
-            </Grid>
-            <Divider />
-          </li>
-        ));
-      } else {
-        // const leaderboardTop10 = data.length > 10 ? data.slice(0, 10) : data;
-        const leaderboardTop10 = data;
-
-        return leaderboardTop10.map((user, i) => (
-          <li
-            key={`${user}_${i}`}
-            style={{
-              display: "inherit",
-              minWidth: "100%",
-              marginLeft: "-20px",
-              paddingLeft: "10px",
-              background: user.user
-                ? "linear-gradient(90deg, rgba(121, 216, 162, 0.2) 0%, rgba(0,0,0, 0) 50%)"
-                : "",
-            }}
-          >
-            <Grid
-              item
-              container
-              direction="row"
-              alignItems="flex-start"
-              style={{ padding: "10px" }}
-            >
+            )}
+            {!user.nickname && (
               <Grid
-                container
-                item
                 style={{
-                  maxWidth: "max-content",
-                  filter:
-                    i === 0
-                      ? `drop-shadow(0px 0px 3px ${colors.cgGreen})`
-                      : `drop-shadow(0px 0px 3px ${colors.black})`,
+                  marginLeft: 10,
+                  filter: "drop-shadow(1px 1px 1px rgba(0,0,0,0.25))",
                 }}
-                alignItems="center"
+                item
               >
-                <Avatar
-                  alt="avatar"
-                  src={this.getAvatarType(user)}
-                  className={
-                    i === 0 ? classes.firstProfile : classes.largeProfile
-                  }
-                />
-              </Grid>
-              {user.nickname && (
-                <Grid
-                  style={{
-                    marginLeft: 10,
-                    filter: "drop-shadow(1px 1px 1px rgba(0,0,0,0.25))",
-                  }}
-                  item
-                >
-                  <Typography color="primary" variant={i === 0 ? "h4" : "h5"}>
-                    {user.nickname}
-                  </Typography>
-                  <Typography color="secondary" variant={"body2"}>
-                    xp: {user.experiencePoints}
-                  </Typography>
-                </Grid>
-              )}
-              {!user.nickname && (
-                <Grid
-                  style={{
-                    marginLeft: 10,
-                    filter: "drop-shadow(1px 1px 1px rgba(0,0,0,0.25))",
-                  }}
-                  item
-                >
-                  <Typography color="primary" variant={i === 0 ? "h4" : "h5"}>
-                    Anon user
-                  </Typography>
-                  <Typography color="secondary" variant={"body2"}>
-                    xp: {user.experiencePoints}
-                  </Typography>
-                </Grid>
-              )}
-              <Grid style={{ margin: "0 0 0 auto", alignSelf: "center" }} item>
-                <Typography
-                  variant={i === 0 ? "h2" : "h3"}
-                  color={i === 0 ? "primary" : "initial"}
-                >
-                  {user.position}
+                <Typography color="primary" variant={i === 0 ? "h4" : "h5"}>
+                  Anon user
+                </Typography>
+                <Typography color="secondary" variant={"body2"}>
+                  xp: {user.experiencePoints}
                 </Typography>
               </Grid>
+            )}
+            <Grid item>
+              {user.minigames.genesis.experiencePoints &&
+                user.minigames.genesis.position > 3 && (
+                  <>
+                    <Tooltip
+                      arrow
+                      title={
+                        <>
+                          <Typography variant={"subtitle1"} color="primary">
+                            Genesis Season Player
+                          </Typography>
+                          <Typography>
+                            Position:{" "}
+                            <Typography variant="inline" color="primary">
+                              {user.minigames.genesis.position}
+                            </Typography>
+                          </Typography>
+                          <Typography>
+                            XP Gained:{" "}
+                            <Typography variant="inline" color="primary">
+                              {user.minigames.genesis.experiencePoints}
+                            </Typography>
+                          </Typography>
+                          <Typography>
+                            Bull/Bear:{" "}
+                            <Typography variant="inline" color="primary">
+                              {user.minigames.genesis.stats[0].bullBearProfile}
+                            </Typography>
+                          </Typography>
+                          <Typography>
+                            Guru Profile:{" "}
+                            <Typography variant="inline" color="primary">
+                              {user.minigames.genesis.stats[0].guruProfile}
+                            </Typography>
+                          </Typography>
+                          <Typography>
+                            Correct Forecasts:{" "}
+                            <Typography variant="inline" color="primary">
+                              {
+                                user.minigames.genesis.stats[0]
+                                  .totalCorrectPercent
+                              }
+                              % (
+                              {
+                                user.minigames.genesis.stats[0]
+                                  .totalPredictionsGood
+                              }
+                              /
+                              {user.minigames.genesis.stats[0].totalPredictions}
+                              )
+                            </Typography>
+                          </Typography>
+                        </>
+                      }
+                      placement="bottom"
+                    >
+                      <GenesisPlayerIcon className={classes.genesisIcon} />
+                    </Tooltip>
+                  </>
+                )}
+              {user.minigames.genesis.experiencePoints &&
+                user.minigames.genesis.position <= 3 && (
+                  <>
+                    <Tooltip
+                      arrow
+                      title={
+                        <>
+                          <Typography variant={"subtitle1"} color="primary">
+                            {user.minigames.genesis.position === 1
+                              ? "Genesis Season Winner"
+                              : "Genesis Season Player"}
+                          </Typography>
+                          <Typography>
+                            Position:{" "}
+                            <Typography variant="inline" color="primary">
+                              {user.minigames.genesis.position}
+                            </Typography>
+                          </Typography>
+                          <Typography>
+                            XP Gained:{" "}
+                            <Typography variant="inline" color="primary">
+                              {user.minigames.genesis.experiencePoints}
+                            </Typography>
+                          </Typography>
+                          <Typography>
+                            Bull/Bear:{" "}
+                            <Typography variant="inline" color="primary">
+                              {user.minigames.genesis.stats[0].bullBearProfile}
+                            </Typography>
+                          </Typography>
+                          <Typography>
+                            Guru Profile:{" "}
+                            <Typography variant="inline" color="primary">
+                              {user.minigames.genesis.stats[0].guruProfile}
+                            </Typography>
+                          </Typography>
+                          <Typography>
+                            Correct Forecasts:{" "}
+                            <Typography variant="inline" color="primary">
+                              {
+                                user.minigames.genesis.stats[0]
+                                  .totalCorrectPercent
+                              }
+                              % (
+                              {
+                                user.minigames.genesis.stats[0]
+                                  .totalPredictionsGood
+                              }
+                              /
+                              {user.minigames.genesis.stats[0].totalPredictions}
+                              )
+                            </Typography>
+                          </Typography>
+                        </>
+                      }
+                      placement="bottom"
+                    >
+                      <GenesisTop3Icon
+                        className={`${classes.genesisIcon} pos${user.minigames.genesis.position}`}
+                      />
+                    </Tooltip>
+                  </>
+                )}
             </Grid>
-            <Divider />
-          </li>
-        ));
-      }
+            <Grid style={{ margin: "0 0 0 auto", alignSelf: "center" }} item>
+              <Typography
+                variant={i === 0 ? "h2" : "h3"}
+                color={i === 0 ? "primary" : "inherit"}
+              >
+                {user.position}
+              </Typography>
+            </Grid>
+          </Grid>
+          <Divider />
+        </li>
+      ));
     }
   };
 
