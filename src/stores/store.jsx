@@ -2631,12 +2631,13 @@ ${nonce}`,
 
   dbGetLeaderboardMinigame = async (payload) => {
     try {
-      const validGameId = ["longShort", "genesis"];
-      // console.log(payload.minigameID);
+      const validGameId = ["longShort", "genesis", "global"];
       if (validGameId.includes(payload.minigameID)) {
         let user = store.getStore("account");
+        // IMPORTANT
+        // VOLVER A CAMBIAR LOCALBACKEND A cg_servers[1] y 0
         let leaderboard = await axios.get(
-          `${cg_servers[1]}/users/leaderboard/${payload.minigameID}`
+          `${cg_servers[1]}/users/leaderboard/${payload.minigameID}/${payload.season}`
         );
         let currentUser = await axios.get(
           `${cg_servers[1]}/users/${user.address}/minigames`

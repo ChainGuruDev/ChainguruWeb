@@ -6,6 +6,8 @@ import { colors } from "../../theme";
 import { timeConversion } from "../helpers";
 import { ReactComponent as GenesisPlayerIcon } from "../../assets/genesis.svg";
 import { ReactComponent as GenesisTop3Icon } from "../../assets/genesisTop3.svg";
+import { ReactComponent as TrophyLSIcon } from "../../assets/trophyLS.svg";
+import { ReactComponent as MedalLSIcon } from "../../assets/medalLS.svg";
 
 import {
   Card,
@@ -15,6 +17,11 @@ import {
   Avatar,
   Typography,
   Tooltip,
+  InputLabel,
+  MenuItem,
+  FormHelperText,
+  FormControl,
+  Select,
 } from "@material-ui/core";
 import LocalActivityIcon from "@material-ui/icons/LocalActivity";
 
@@ -89,6 +96,27 @@ const styles = (theme) => ({
       fill: "chocolate",
     },
   },
+  lsSeasonIcon: {
+    width: 25,
+    height: 25,
+    fill: "black",
+    marginLeft: 5,
+    "&.pos1": {
+      width: 35,
+      height: 35,
+      fill: "goldenrod",
+    },
+    "&.pos2": {
+      width: 30,
+      height: 30,
+      fill: "lightgray",
+    },
+    "&.pos3": {
+      width: 25,
+      height: 25,
+      fill: "chocolate",
+    },
+  },
 });
 
 class LeaderboardMini extends Component {
@@ -96,12 +124,25 @@ class LeaderboardMini extends Component {
     super(props);
 
     const minigame = props.minigame;
+    const dateNow = new Date();
+
+    const currentSeason =
+      dateNow >= new Date(Date.parse("06-Apr-2022 23:59:59".replace(/-/g, " ")))
+        ? 2
+        : 1;
 
     const seasonStart = new Date(Date.parse("07-Mar-2022".replace(/-/g, " ")));
+    seasonStart.setMonth(seasonStart.getMonth() + currentSeason - 1);
+    // seasonStart.setDate(7);
+    // seasonStart.setHours(11);
+    // seasonStart.setMinutes(0);
     const seasonEnd = new Date(seasonStart);
-    seasonEnd.setMonth(seasonEnd.getMonth() + 1);
+    seasonEnd.setMonth(seasonStart.getMonth() + 1);
+    seasonEnd.setDate(6);
+    seasonEnd.setHours(23);
+    seasonEnd.setMinutes(59);
+    seasonEnd.setSeconds(59);
 
-    const dateNow = new Date();
     const timeRemaining = timeConversion(seasonEnd - dateNow);
 
     this.state = {
@@ -110,6 +151,12 @@ class LeaderboardMini extends Component {
       leaderboard: null,
       currentUser: null,
       minigame: "longShort",
+      validMinigames: ["longShort", "global"],
+      currentSeason: currentSeason,
+      validSeasons: ["genesis", 1, 2],
+      season: currentSeason,
+      anchorElRankingType: null,
+      newSeasonEnabled: currentSeason === 2 ? true : false,
     };
   }
 
@@ -137,9 +184,75 @@ class LeaderboardMini extends Component {
     });
   };
 
+  drawUserLSSeasonAwards = (user) => {
+    const { classes } = this.props;
+    if (user.minigames.lsSeasons.length > 0) {
+      return user.minigames.lsSeasons.map((item, i) => (
+        <>
+          <Tooltip
+            arrow
+            title={
+              <>
+                <Typography variant={"subtitle1"} color="primary">
+                  {item.position === 1
+                    ? `Season ${item.season} Winner`
+                    : `Season ${item.season} Player`}
+                </Typography>
+                <Typography>
+                  Position:{" "}
+                  <Typography variant="inline" color="primary">
+                    {item.position}
+                  </Typography>
+                </Typography>
+                <Typography>
+                  XP Gained:{" "}
+                  <Typography variant="inline" color="primary">
+                    {item.experiencePoints}
+                  </Typography>
+                </Typography>
+                <Typography>
+                  Bull/Bear:{" "}
+                  <Typography variant="inline" color="primary">
+                    {item.stats.bullBearProfile}
+                  </Typography>
+                </Typography>
+                <Typography>
+                  Guru Profile:{" "}
+                  <Typography variant="inline" color="primary">
+                    {item.stats.guruProfile}
+                  </Typography>
+                </Typography>
+                <Typography>
+                  Correct Forecasts:{" "}
+                  <Typography variant="inline" color="primary">
+                    {item.stats.totalCorrectPercent}%{" "}
+                    {item.stats.totalPredictionsGood}/
+                    {item.stats.totalPredictions}
+                  </Typography>
+                </Typography>
+              </>
+            }
+            placement="bottom"
+          >
+            <div style={{ display: "inline" }}>
+              {item.position > 3 && (
+                <MedalLSIcon className={classes.lsSeasonIcon} />
+              )}
+              {item.position <= 3 && (
+                <TrophyLSIcon
+                  className={`${classes.lsSeasonIcon} pos${item.position}`}
+                />
+              )}
+            </div>
+          </Tooltip>
+        </>
+      ));
+    }
+  };
+
   drawLeaderboard = (data) => {
     const { classes } = this.props;
-    const { currentUser, minigame } = this.state;
+    const { currentUser, minigame, season } = this.state;
     let userHasPlayed = false;
     let userInTop10 = false;
     let currentUserIndex = null;
@@ -185,7 +298,7 @@ class LeaderboardMini extends Component {
             item
             container
             direction="row"
-            alignItems="flex-start"
+            alignItems="center"
             style={{ padding: "10px" }}
           >
             <Grid
@@ -220,10 +333,8 @@ class LeaderboardMini extends Component {
                   {user.nickname}
                 </Typography>
                 <Typography color="secondary" variant={"body2"}>
-                  xp:{" "}
-                  {user.user
-                    ? user.minigames.longShort.experiencePoints
-                    : user.experiencePoints}
+                  xp:
+                  {user.experiencePoints}
                 </Typography>
               </Grid>
             )}
@@ -367,6 +478,11 @@ class LeaderboardMini extends Component {
                   </>
                 )}
             </Grid>
+            <Grid item>
+              {this.state.newSeasonEnabled &&
+                user.minigames.lsSeasons.length > 0 &&
+                this.drawUserLSSeasonAwards(user)}
+            </Grid>
             <Grid style={{ margin: "0 0 0 auto", alignSelf: "center" }} item>
               <Typography
                 variant={i === 0 ? "h2" : "h3"}
@@ -441,8 +557,61 @@ class LeaderboardMini extends Component {
 
   render() {
     const { classes } = this.props;
-    const { loading, leaderboard } = this.state;
+    const {
+      loading,
+      leaderboard,
+      minigame,
+      validMinigames,
+      season,
+      validSeasons,
+    } = this.state;
     const darkMode = store.getStore("theme") === "dark" ? true : false;
+
+    const handleChangeSeason = (event) => {
+      if (event.target.value !== season) {
+        if (event.target.value === this.state.currentSeason) {
+          dispatcher.dispatch({
+            type: DB_GET_LEADERBOARD_MINIGAME,
+            minigameID: "longShort",
+          });
+        } else {
+          dispatcher.dispatch({
+            type: DB_GET_LEADERBOARD_MINIGAME,
+            minigameID: "longShort",
+            season: event.target.value,
+          });
+        }
+        this.setState({
+          season: event.target.value,
+        });
+      }
+    };
+
+    const handleChangeRankingType = (event) => {
+      if (event.target.value !== minigame) {
+        if (event.target.value === "global") {
+          dispatcher.dispatch({
+            type: DB_GET_LEADERBOARD,
+          });
+        } else {
+          if (this.state.season === this.state.currentSeason) {
+            dispatcher.dispatch({
+              type: DB_GET_LEADERBOARD_MINIGAME,
+              minigameID: event.target.value,
+            });
+          } else {
+            dispatcher.dispatch({
+              type: DB_GET_LEADERBOARD_MINIGAME,
+              minigameID: event.target.value,
+              season: this.state.season,
+            });
+          }
+        }
+        this.setState({
+          minigame: event.target.value,
+        });
+      }
+    };
 
     return (
       <Card
@@ -495,10 +664,39 @@ class LeaderboardMini extends Component {
                   Leaderboard
                 </Typography>
               </div>
+              <Grid container justify={"space-around"}>
+                <Grid item>
+                  <Select
+                    labelId="rankingType-label"
+                    id="rankingType-helper"
+                    value={minigame}
+                    onChange={handleChangeRankingType}
+                  >
+                    <MenuItem value={"longShort"}>Short & Long</MenuItem>
+                    <MenuItem value={"global"}>Global Ranking</MenuItem>
+                  </Select>
+                </Grid>
+                <Grid item>
+                  {minigame !== "global" && (
+                    <Select
+                      labelId="season-select-label"
+                      id="season-select-helper"
+                      value={season}
+                      onChange={handleChangeSeason}
+                    >
+                      <MenuItem value={"genesis"}>Genesis</MenuItem>
+                      <MenuItem value={1}>1</MenuItem>
+                      {this.state.newSeasonEnabled && (
+                        <MenuItem value={2}>2</MenuItem>
+                      )}
+                    </Select>
+                  )}
+                </Grid>
+              </Grid>
               {this.state.timeRemaining && (
                 <Grid>
                   <Typography variant="h4" color="primary">
-                    Season ends in {this.state.timeRemaining}
+                    Current season ends in {this.state.timeRemaining}
                   </Typography>
                 </Grid>
               )}
