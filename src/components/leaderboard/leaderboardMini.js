@@ -664,7 +664,11 @@ class LeaderboardMini extends Component {
                   Leaderboard
                 </Typography>
               </div>
-              <Grid container justify={"space-around"}>
+              <Grid
+                container
+                justify={"space-between"}
+                style={{ marginTop: 5 }}
+              >
                 <Grid item>
                   <Select
                     labelId="rankingType-label"
