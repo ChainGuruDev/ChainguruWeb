@@ -2615,7 +2615,7 @@ ${nonce}`,
       let user = store.getStore("account");
       let leaderboard = await axios.get(`${cg_servers[1]}/users/leaderboard`);
       let currentUser = await axios.get(
-        `${cg_servers[1]}/users/${user.address}/minigames`
+        `${cg_servers[0]}/users/${user.address}/minigames`
       );
       const data = {
         leaderboard: leaderboard.data,
@@ -2640,7 +2640,7 @@ ${nonce}`,
           `${cg_servers[1]}/users/leaderboard/${payload.minigameID}/${payload.season}`
         );
         let currentUser = await axios.get(
-          `${cg_servers[1]}/users/${user.address}/minigames`
+          `${cg_servers[0]}/users/${user.address}/minigames`
         );
         const data = {
           leaderboard: leaderboard.data,

@@ -127,14 +127,28 @@ class LongShort extends Component {
     const account = store.getStore("account");
     const userAuth = store.getStore("userAuth");
 
-    const seasonStart = new Date(Date.parse("07-Mar-2022".replace(/-/g, " ")));
-    const seasonEnd = new Date(seasonStart);
-    seasonEnd.setMonth(seasonEnd.getMonth() + 1);
-
     const dateNow = new Date();
-    const timeRemaining = timeConversion(seasonEnd - dateNow);
 
+    const currentSeason =
+      dateNow >= new Date(Date.parse("06-May-2022 23:59:59".replace(/-/g, " ")))
+        ? 3
+        : 2;
+    const seasonStart = new Date(Date.parse("07-Mar-2022".replace(/-/g, " ")));
+
+    seasonStart.setMonth(seasonStart.getMonth() + currentSeason - 1);
+    // seasonStart.setDate(7);
+    // seasonStart.setHours(11);
+    // seasonStart.setMinutes(0);
+    const seasonEnd = new Date(seasonStart);
+    seasonEnd.setMonth(seasonStart.getMonth() + 1);
+    seasonEnd.setDate(6);
+    seasonEnd.setHours(23);
+    seasonEnd.setMinutes(59);
+    seasonEnd.setSeconds(59);
+
+    const timeRemaining = timeConversion(seasonEnd - dateNow);
     this.state = {
+      currentSeason: currentSeason,
       currentSeasonStart: seasonStart,
       seasonEnd: seasonEnd,
       timeRemaining: timeRemaining,
@@ -259,6 +273,7 @@ class LongShort extends Component {
 
   db_getUserLS = (data) => {
     const { currentSeasonStart } = this.state;
+
     var currentSeasonLS = data.filter(function (el) {
       return new Date(el.voteEnding) >= currentSeasonStart;
     });
@@ -290,6 +305,7 @@ class LongShort extends Component {
       bad: countLong[1] + countShort[1],
     };
 
+    console.log(countLong, countShort, countTotals);
     this.setState({
       completeLS,
       incompleteLS,
