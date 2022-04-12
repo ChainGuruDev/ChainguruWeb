@@ -595,7 +595,7 @@ class Store {
     this.login({ address: user.address });
   };
 
-  setNewAccessToken = (token, tokenExp) => {
+  setNewAccessToken = async (token, tokenExp) => {
     clearTimeout(this.tokenTimer);
     // console.log("new temp access token");
 
@@ -604,8 +604,16 @@ class Store {
       authTokenExp: tokenExp,
       userAuth: true,
     });
+    const currentTimeServer = await axios.get(`${cg_servers[1]}/users/date`);
     const currentTime = Math.floor(Date.now() / 1000);
-    const timeLeft = tokenExp - currentTime - 30;
+
+    let timeLeft = 0;
+    if (!currentTimeServer) {
+      timeLeft = tokenExp - currentTime - 30;
+    } else {
+      timeLeft = tokenExp - currentTimeServer.data - 30;
+    }
+
     this.tokenTimer = setTimeout(
       () => this.getNewAccessToken(timeLeft),
       timeLeft * 1000
@@ -1794,7 +1802,10 @@ ${nonce}`,
     );
     // console.log(authToken);
     if (authToken.data.token && authToken.data.tokenExp) {
-      this.setNewAccessToken(authToken.data.token, authToken.data.tokenExp);
+      await this.setNewAccessToken(
+        authToken.data.token,
+        authToken.data.tokenExp
+      );
     }
   };
 
@@ -1802,7 +1813,7 @@ ${nonce}`,
     async (payload) => {
       return this.debouncedLogin(payload);
     },
-    150,
+    250,
     { leading: true, trailing: false }
   );
 
@@ -1819,9 +1830,10 @@ ${nonce}`,
         const noAddress = "no valid address";
         throw noAddress;
       }
+      console.log("user Login");
       //DEV ROUTE
       let _userExists = await axios.get(
-        `${cg_servers[1]}/users/${payload.address}`
+        `${cg_servers[0]}/users/${payload.address}`
       );
       try {
         let login = await axios.post(
@@ -1833,7 +1845,7 @@ ${nonce}`,
             withCredentials: true,
           }
         );
-        this.setNewAccessToken(login.data.token, login.data.tokenExp);
+        await this.setNewAccessToken(login.data.token, login.data.tokenExp);
       } catch (err) {
         console.log(err.message);
         if (_userExists.data.user && _userExists.data.nonce) {
@@ -1874,7 +1886,7 @@ ${nonce}`,
     async (payload) => {
       return this.db_getUserData(payload);
     },
-    150,
+    250,
     { leading: true, trailing: false }
   );
 
@@ -1888,7 +1900,7 @@ ${nonce}`,
     //CHECK FOR UPDATES IN USER DATA
     try {
       let _user = await axios.post(
-        `${cg_servers[1]}/users/data`,
+        `${cg_servers[0]}/users/data`,
         {
           user: payload.address,
         },
@@ -1923,7 +1935,7 @@ ${nonce}`,
       try {
         console.log("new user detected");
         let _newUser = await axios.put(
-          `${cg_servers[1]}/users/${payload.address}`
+          `${cg_servers[0]}/users/${payload.address}`
           // `http://localhost:3001/users/${payload.address}`
         );
         // console.log("new user created");

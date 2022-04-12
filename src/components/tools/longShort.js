@@ -305,7 +305,6 @@ class LongShort extends Component {
       bad: countLong[1] + countShort[1],
     };
 
-    console.log(countLong, countShort, countTotals);
     this.setState({
       completeLS,
       incompleteLS,

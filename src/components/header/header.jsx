@@ -361,14 +361,21 @@ class Header extends Component {
   };
 
   connectionConnected = () => {
-    let _acc = store.getStore("account");
+    const _acc = store.getStore("account");
     this.setState({ account: _acc });
     //WALLET IS NOW CONNECTED
     //CHECK IF USER IS ALREADY CREATED
-    dispatcher.dispatch({
-      type: LOGIN,
-      address: _acc.address,
-    });
+    const userAuth = store.getStore("userAuth");
+
+    if (_acc && _acc.address) {
+      if (!userAuth) {
+        dispatcher.dispatch({
+          type: LOGIN,
+          address: _acc.address,
+        });
+      }
+    }
+
     // dispatcher.dispatch({
     //   type: DB_GET_USERDATA,
     //   address: _acc.address,

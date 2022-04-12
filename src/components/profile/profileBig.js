@@ -369,7 +369,6 @@ class ProfileBig extends Component {
     );
   }
   nav = (screen) => {
-    console.log(screen);
     this.props.history.push(screen);
   };
 

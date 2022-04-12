@@ -386,7 +386,6 @@ class ProfileMini extends Component {
   };
 
   nav = (screen) => {
-    console.log(screen);
     this.props.history.push(screen);
   };
 }

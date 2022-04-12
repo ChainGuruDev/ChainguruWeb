@@ -70,7 +70,6 @@ const styles = (theme) => ({
     },
     "& .title": {
       transition: "opacity 0.5s ease-in-out",
-
       opacity: 0,
       color: colors.white,
     },
