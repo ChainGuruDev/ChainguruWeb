@@ -3,7 +3,7 @@ import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { colors } from "../../theme";
 
-import { timeConversion } from "../helpers";
+import { timeConversion, getLongShortSeasonData } from "../helpers";
 import { ReactComponent as GenesisPlayerIcon } from "../../assets/genesis.svg";
 import { ReactComponent as GenesisTop3Icon } from "../../assets/genesisTop3.svg";
 import { ReactComponent as TrophyLSIcon } from "../../assets/trophyLS.svg";
@@ -30,6 +30,8 @@ import {
   DB_GET_LEADERBOARD_RETURNED,
   DB_GET_LEADERBOARD_MINIGAME,
   DB_CHECK_LS_RESULT_RETURNED,
+  DB_GET_USER_LS_SEASON_DATA,
+  DB_GET_USER_LS_SEASON_DATA_RETURNED,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -124,45 +126,32 @@ class LeaderboardMini extends Component {
     super(props);
 
     const minigame = props.minigame;
-    const dateNow = new Date();
 
-    const currentSeason =
-      dateNow >= new Date(Date.parse("06-Apr-2022 23:59:59".replace(/-/g, " ")))
-        ? 2
-        : 1;
-
-    const seasonStart = new Date(Date.parse("07-Mar-2022".replace(/-/g, " ")));
-    seasonStart.setMonth(seasonStart.getMonth() + currentSeason - 1);
-    // seasonStart.setDate(7);
-    // seasonStart.setHours(11);
-    // seasonStart.setMinutes(0);
-    const seasonEnd = new Date(seasonStart);
-    seasonEnd.setMonth(seasonStart.getMonth() + 1);
-    seasonEnd.setDate(6);
-    seasonEnd.setHours(23);
-    seasonEnd.setMinutes(59);
-    seasonEnd.setSeconds(59);
-
-    const timeRemaining = timeConversion(seasonEnd - dateNow);
+    const lsSeasonData = getLongShortSeasonData();
 
     this.state = {
-      timeRemaining: timeRemaining,
+      timeRemaining: lsSeasonData.timeRemaining,
       loading: true,
       leaderboard: null,
       currentUser: null,
       minigame: "longShort",
       validMinigames: ["longShort", "global"],
-      currentSeason: currentSeason,
+      currentSeason: lsSeasonData.currentSeason,
       validSeasons: ["genesis", 1, 2],
-      season: currentSeason,
+      season: lsSeasonData.currentSeason,
       anchorElRankingType: null,
-      newSeasonEnabled: currentSeason === 2 ? true : false,
+      newSeasonEnabled: lsSeasonData.currentSeason === 2 ? true : false,
+      loadingUserSeasonData: true,
+      hoverUserSeasonData: null,
     };
   }
 
   componentDidMount() {
     emitter.on(DB_GET_LEADERBOARD_RETURNED, this.dbGetLeaderboardReturned);
-
+    emitter.on(
+      DB_GET_USER_LS_SEASON_DATA_RETURNED,
+      this.lsUserSeasonDataReturned
+    );
     dispatcher.dispatch({
       type: DB_GET_LEADERBOARD_MINIGAME,
       minigameID: this.state.minigame,
@@ -173,6 +162,10 @@ class LeaderboardMini extends Component {
     emitter.removeListener(
       DB_GET_LEADERBOARD_RETURNED,
       this.dbGetLeaderboardReturned
+    );
+    emitter.removeListener(
+      DB_GET_USER_LS_SEASON_DATA_RETURNED,
+      this.lsUserSeasonDataReturned
     );
   }
 
@@ -250,9 +243,33 @@ class LeaderboardMini extends Component {
     }
   };
 
+  handleLeaveProfile = () => {
+    dispatcher.dispatch({
+      type: "DB_GET_USER_LS_SEASON_DATA",
+      cancelRequest: true,
+    });
+    this.setState({
+      userLSSeasonData: null,
+      loadingUserSeasonData: true,
+    });
+  };
+
+  lsUserSeasonDataReturned = (data) => {
+    this.setState({
+      hoverUserSeasonData: data,
+      loadingUserSeasonData: false,
+    });
+  };
+
   drawLeaderboard = (data) => {
     const { classes } = this.props;
-    const { currentUser, minigame, season } = this.state;
+    const {
+      currentUser,
+      minigame,
+      season,
+      hoverUserSeasonData,
+      loadingUserSeasonData,
+    } = this.state;
     let userHasPlayed = false;
     let userInTop10 = false;
     let currentUserIndex = null;
@@ -306,20 +323,128 @@ class LeaderboardMini extends Component {
               item
               style={{
                 maxWidth: "max-content",
+                marginLeft: 5,
                 filter:
                   i === 0
                     ? `drop-shadow(0px 0px 3px ${colors.cgGreen})`
                     : `drop-shadow(0px 0px 3px ${colors.black})`,
               }}
               alignItems="center"
+              onMouseEnter={() =>
+                dispatcher.dispatch({
+                  type: "DB_GET_USER_LS_SEASON_DATA",
+                  nickname: user.nickname,
+                  season: this.state.currentSeason,
+                })
+              }
+              onMouseLeave={this.handleLeaveProfile}
             >
-              <Avatar
-                alt="avatar"
-                src={this.getAvatarType(user)}
-                className={
-                  i === 0 ? classes.firstProfile : classes.largeProfile
+              <Tooltip
+                title={
+                  !loadingUserSeasonData ? (
+                    <>
+                      <Typography
+                        variant="h4"
+                        style={{ textAlign: "center" }}
+                        color="primary"
+                      >
+                        Season Stats
+                      </Typography>
+                      <Divider />
+                      <Typography color="inherit">
+                        Guru Level{" "}
+                        <Typography variant="inherit" color="primary">
+                          {hoverUserSeasonData.stats.guruProfile}
+                        </Typography>
+                      </Typography>
+                      <Typography color="inherit">
+                        Total Forecasts{" "}
+                        <Typography variant="inherit" color="primary">
+                          {hoverUserSeasonData.stats.totalPredictions}
+                        </Typography>
+                      </Typography>
+                      <Typography color="inherit">
+                        Correct Forecasts{" "}
+                        <Typography variant="inherit" color="primary">
+                          {hoverUserSeasonData.stats.totalCorrectPercent}% (
+                          {hoverUserSeasonData.stats.totalPredictionsGood}/
+                          {hoverUserSeasonData.stats.totalPredictions})
+                        </Typography>
+                      </Typography>
+                      {hoverUserSeasonData.longShortStrike.seasonHighLong >
+                        0 && (
+                        <Typography color="inherit">
+                          Season Best Long Combo{" "}
+                          <Typography variant="inherit" color="primary">
+                            {hoverUserSeasonData.longShortStrike.seasonHighLong}
+                          </Typography>
+                        </Typography>
+                      )}
+                      {hoverUserSeasonData.longShortStrike.seasonHighShort >
+                        0 && (
+                        <Typography color="inherit">
+                          Season Best Short Combo{" "}
+                          <Typography variant="inherit" color="primary">
+                            {
+                              hoverUserSeasonData.longShortStrike
+                                .seasonHighShort
+                            }
+                          </Typography>
+                        </Typography>
+                      )}
+                      <Divider />
+                      <Typography color="inherit">
+                        Bull/Bear Level{" "}
+                        <Typography variant="inherit" color="primary">
+                          {hoverUserSeasonData.stats.bullBearProfile}
+                        </Typography>
+                      </Typography>
+                      {hoverUserSeasonData.stats.bullRatio >
+                      hoverUserSeasonData.stats.bearRatio ? (
+                        <Typography color="inherit">
+                          {hoverUserSeasonData.stats.bullRatio}%{" "}
+                          <Typography variant="inherit" color="primary">
+                            Bull
+                          </Typography>
+                        </Typography>
+                      ) : (
+                        <Typography color="inherit">
+                          {hoverUserSeasonData.stats.bearRatio}%{" "}
+                          <Typography variant="inherit" color="primary">
+                            Bear
+                          </Typography>
+                        </Typography>
+                      )}
+                      <Typography color="inherit">
+                        Total Longs{" "}
+                        <Typography variant="inherit" color="primary">
+                          {hoverUserSeasonData.stats.totalLongs}
+                        </Typography>
+                      </Typography>
+                      <Typography color="inherit">
+                        Total Shorts{" "}
+                        <Typography variant="inherit" color="primary">
+                          {hoverUserSeasonData.stats.totalShorts}
+                        </Typography>
+                      </Typography>
+                    </>
+                  ) : (
+                    <>
+                      <CircularProgress />
+                    </>
+                  )
                 }
-              />
+                arrow
+                placement="left-start"
+              >
+                <Avatar
+                  alt="avatar"
+                  src={this.getAvatarType(user)}
+                  className={
+                    i === 0 ? classes.firstProfile : classes.largeProfile
+                  }
+                />
+              </Tooltip>
             </Grid>
             {user.nickname && (
               <Grid

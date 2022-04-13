@@ -171,6 +171,8 @@ import {
   CHECK_BETA_ACCESS_RETURNED,
   DB_GET_LS_SENTIMENT,
   DB_GET_LS_SENTIMENT_RETURNED,
+  DB_GET_USER_LS_SEASON_DATA,
+  DB_GET_USER_LS_SEASON_DATA_RETURNED,
 } from "../constants";
 
 // import {
@@ -217,6 +219,7 @@ const dispatcher = new Dispatcher();
 const emitter = new Emitter();
 
 let assetStatsRequest = null;
+let lsUserSeasonStatsRequest = null;
 let portfolioChartRequest = null;
 
 const cg_servers = [
@@ -271,11 +274,15 @@ class Store {
       userWallets: null,
       userNickname: null,
       hasBetaAccess: false,
+      userLSSeasonData: null,
     };
 
     dispatcher.register(
       function (payload) {
         switch (payload.type) {
+          case DB_GET_USER_LS_SEASON_DATA:
+            this.db_getUserLSSeasonData(payload);
+            break;
           case CONNECT_LEDGER:
             this.connectLedger(payload);
             break;
@@ -3630,6 +3637,46 @@ ${nonce}`,
     } catch (err) {
       if (err) {
         console.log(err.message);
+      }
+    }
+  };
+
+  db_getUserLSSeasonData = async (payload) => {
+    if (payload.cancelRequest) {
+      if (lsUserSeasonStatsRequest) {
+        lsUserSeasonStatsRequest.cancel("req. cancelled");
+      }
+    } else {
+      if (lsUserSeasonStatsRequest) {
+        lsUserSeasonStatsRequest.cancel("req. cancelled");
+      }
+      const CancelToken = axios.CancelToken;
+      lsUserSeasonStatsRequest = CancelToken.source();
+
+      try {
+        let data = await axios
+          .post(
+            `${get_cgServer()}/longShortSeason/lsUserSeasonData`,
+            {
+              nickname: payload.nickname,
+              season: payload.season,
+            },
+            {
+              cancelToken: lsUserSeasonStatsRequest.token,
+            }
+          )
+          .catch(function (thrown) {
+            if (axios.isCancel(thrown)) {
+              console.log("Request canceled");
+            }
+          });
+        if (data) {
+          emitter.emit(DB_GET_USER_LS_SEASON_DATA_RETURNED, await data.data);
+        }
+      } catch (err) {
+        if (err) {
+          console.log(err.message);
+        }
       }
     }
   };

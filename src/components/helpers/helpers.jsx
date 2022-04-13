@@ -236,6 +236,37 @@ function getCurrentAndNextLevelXP(xp) {
   };
 }
 
+function getLongShortSeasonData() {
+  const dateNow = new Date();
+
+  const currentSeason =
+    dateNow >= new Date(Date.parse("06-Apr-2022 23:59:59".replace(/-/g, " ")))
+      ? 2
+      : 1;
+
+  const seasonStart = new Date(Date.parse("07-Mar-2022".replace(/-/g, " ")));
+  seasonStart.setMonth(seasonStart.getMonth() + currentSeason - 1);
+  // seasonStart.setDate(7);
+  // seasonStart.setHours(11);
+  // seasonStart.setMinutes(0);
+  const seasonEnd = new Date(seasonStart);
+  seasonEnd.setMonth(seasonStart.getMonth() + 1);
+  seasonEnd.setDate(6);
+  seasonEnd.setHours(23);
+  seasonEnd.setMinutes(59);
+  seasonEnd.setSeconds(59);
+
+  const timeRemaining = timeConversion(seasonEnd - dateNow);
+
+  const lsSeasonData = {
+    currentSeason,
+    seasonStart,
+    seasonEnd,
+    timeRemaining,
+  };
+  return lsSeasonData;
+}
+
 export {
   formatMoney,
   formatMoneyMCAP,
@@ -250,4 +281,5 @@ export {
   getLevel,
   getLevelProgress,
   getCurrentAndNextLevelXP,
+  getLongShortSeasonData,
 };
