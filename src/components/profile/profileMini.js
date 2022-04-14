@@ -28,6 +28,7 @@ import {
   CONNECTION_DISCONNECTED,
   DB_GET_USERDATA,
   DB_USERDATA_RETURNED,
+  DB_NEW_NICKNAME_RETURNED,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -114,6 +115,7 @@ class ProfileMini extends Component {
     emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
     emitter.on(DB_USERDATA_RETURNED, this.dbUserDataReturned);
     emitter.on(LOGIN_RETURNED, this.loginReturned);
+    emitter.on(DB_NEW_NICKNAME_RETURNED, this.dbUserDataReturned);
   }
 
   componentWillUnmount() {
@@ -123,6 +125,7 @@ class ProfileMini extends Component {
       CONNECTION_DISCONNECTED,
       this.connectionDisconnected
     );
+    emitter.removeListener(DB_NEW_NICKNAME_RETURNED, this.dbUserDataReturned);
     emitter.removeListener(LOGIN_RETURNED, this.loginReturned);
   }
 

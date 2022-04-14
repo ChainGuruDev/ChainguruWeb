@@ -23,6 +23,7 @@ import {
   Button,
   ButtonGroup,
   CircularProgress,
+  Grid,
 } from "@material-ui/core";
 
 //IMPORT icons
@@ -149,6 +150,7 @@ class LSTableActive extends Component {
           type: COINGECKO_POPULATE_FAVLIST,
           tokenIDs: tokenIDs,
           versus: "usd",
+          lsType: "active",
         });
       }
       this.setState({
@@ -237,13 +239,13 @@ class LSTableActive extends Component {
   };
 
   geckoDataReturned = (data) => {
-    if (data[1] !== "complete") {
+    if (data[1] === "active") {
       // Create array with items to sort later in table
       let sort = [];
       //MERGE DATA FROM COINGECKO TOKENS and our DB LS positions
       const { lsData } = this.state;
       //MATCH DBs FROM TOKEN IDS
-      data.forEach((item, i) => {
+      data[0].forEach((item, i) => {
         let index = lsData
           .map(function (e) {
             return e.tokenID;
@@ -269,7 +271,11 @@ class LSTableActive extends Component {
         sort.push(sortData);
       });
 
-      this.setState({ sortData: sort, coinData: data, loadingResult: false });
+      this.setState({
+        sortData: sort,
+        coinData: data[0],
+        loadingResult: false,
+      });
     }
   };
 
@@ -463,7 +469,7 @@ class LSTableActive extends Component {
                 onClick={(event) => this.checkResult(event, row.id)}
                 color="primary"
               >
-                Results
+                Claim
               </Button>
             )}
             {row.percentComplete >= 100 && this.state.loadingResult && (

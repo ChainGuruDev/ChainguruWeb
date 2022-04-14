@@ -160,7 +160,12 @@ class LongShort extends Component {
       activeLS: 0,
       longCombo: 0,
       shortCombo: 0,
-      sentimentData: { sentiment: 50, totalActiveVotes: 0 },
+      sentimentData: {
+        sentiment: 50,
+        totalActiveVotes: 0,
+        totalLongs: 0,
+        totalShorts: 0,
+      },
     };
 
     if (userAuth && account && account.address) {
@@ -327,7 +332,6 @@ class LongShort extends Component {
                 return e.tokenID;
               })
               .indexOf(item.tokenID);
-
             if (payload[index] && payload[index].priceClosing) {
               item.priceClosing = payload[index].priceClosing;
             }
@@ -475,6 +479,7 @@ class LongShort extends Component {
       shortCombo,
       activeLS,
       coinData,
+      sentimentData,
     } = this.state;
     return (
       <div className={classes.root}>
@@ -819,8 +824,12 @@ class LongShort extends Component {
                         }}
                       >
                         <Gauge
-                          value={this.state.sentimentData.sentiment}
-                          totalVotes={this.state.sentimentData.totalActiveVotes}
+                          value={sentimentData.sentiment}
+                          totalVotes={sentimentData.totalActiveVotes}
+                          votes={[
+                            sentimentData.totalLongs,
+                            sentimentData.totalShorts,
+                          ]}
                           color={function (value) {
                             if (value < 40) {
                               return colors.cgRed;
@@ -841,9 +850,9 @@ class LongShort extends Component {
                           }}
                           valueDialClass={classes.gauge}
                           valueClass={
-                            this.state.sentimentData.sentiment > 60
+                            sentimentData.sentiment > 60
                               ? classes.valueGaugeBull
-                              : this.state.sentimentData.sentiment < 40
+                              : sentimentData.sentiment < 40
                               ? classes.valueGaugeBear
                               : classes.valueGaugeNeutral
                           }

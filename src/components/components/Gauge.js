@@ -4,7 +4,7 @@ import { ReactComponent as BullIcon } from "../../assets/bull.svg";
 import { ReactComponent as BearIcon } from "../../assets/bear.svg";
 
 //import materialUI elements
-import { Typography } from "@material-ui/core";
+import { Typography, Tooltip } from "@material-ui/core";
 
 const defaultOptions = {
   animDuration: 1,
@@ -46,9 +46,26 @@ const Gauge = (props) => {
           transform: "scale(0.6)",
         }}
       >
-        <BullIcon
-          fill={props.value > 60 ? "rgb(121, 216, 162)" : "#fafafa20"}
-        />
+        <Tooltip
+          title={
+            <>
+              <Typography
+                variant="h3"
+                style={{ textAlign: "center" }}
+                color="primary"
+              >
+                {props.votes[0]}
+              </Typography>
+              <Typography style={{ textAlign: "center" }} color="primary">
+                Long Forecasts
+              </Typography>
+            </>
+          }
+        >
+          <BullIcon
+            fill={props.value > 60 ? "rgb(121, 216, 162)" : "#fafafa20"}
+          />
+        </Tooltip>
       </div>
       <div
         style={{
@@ -70,9 +87,26 @@ const Gauge = (props) => {
           transform: "scale(0.6)",
         }}
       >
-        <BearIcon
-          fill={props.value < 40 ? "rgb(237, 134, 124)" : "#fafafa20"}
-        />
+        <Tooltip
+          title={
+            <>
+              <Typography
+                variant="h3"
+                style={{ textAlign: "center" }}
+                color="secondary"
+              >
+                {props.votes[1]}
+              </Typography>
+              <Typography style={{ textAlign: "center" }} color="secondary">
+                Short Forecasts
+              </Typography>
+            </>
+          }
+        >
+          <BearIcon
+            fill={props.value < 40 ? "rgb(237, 134, 124)" : "#fafafa20"}
+          />
+        </Tooltip>
       </div>
     </div>
   );

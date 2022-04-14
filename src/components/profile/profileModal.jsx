@@ -176,8 +176,8 @@ class ProfileEditModal extends Component {
   };
 
   dbNewNicknameReturned = (data) => {
+    const { closeModal } = this.props;
     if (!data.error) {
-      console.log("newNick");
       setTimeout(() => {
         const snackbarObj = {
           snackbarMessage: "Nickname Changed",
@@ -189,6 +189,7 @@ class ProfileEditModal extends Component {
           snackbarMessage: snackbarObj.snackbarMessage,
           snackbarType: snackbarObj.snackbarType,
         });
+        closeModal();
       });
     } else {
       console.log("error");
@@ -289,9 +290,10 @@ class ProfileEditModal extends Component {
   };
 
   setNickname = () => {
+    const { classes, closeModal } = this.props;
+
     if (!this.state.newNickname) {
-      console.log(this.state.newNickname);
-      this.props.history.goBack();
+      closeModal();
     }
     dispatcher.dispatch({
       type: DB_NEW_NICKNAME,

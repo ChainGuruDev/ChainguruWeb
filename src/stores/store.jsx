@@ -1594,7 +1594,6 @@ class Store {
 
   geckoPopulateFavList = async (payload) => {
     let vsCoin = store.getStore("vsCoin");
-    // console.log(payload);
     // console.log(payload.lsType);
     if (!payload.lsType) {
       try {
@@ -1609,13 +1608,13 @@ class Store {
         console.log(err);
       }
     } else {
-      // console.log("LongShort query type " + payload.lsType);
       try {
         let data = await CoinGeckoClient.coins.markets({
           ids: payload.tokenIDs,
           vs_currency: vsCoin,
-          sparkline: true,
-          price_change_percentage: "1h,24h,7d,30d,1y",
+          sparkline: payload.lsType === "userActivePositions" ? false : true,
+          price_change_percentage:
+            payload.lsType === "userActivePositions" ? "" : "1h,24h,7d,30d,1y",
         });
         emitter.emit(
           COINGECKO_POPULATE_FAVLIST_RETURNED,
@@ -3654,24 +3653,45 @@ ${nonce}`,
       lsUserSeasonStatsRequest = CancelToken.source();
 
       try {
-        let data = await axios
-          .post(
-            `${get_cgServer()}/longShortSeason/lsUserSeasonData`,
-            {
-              nickname: payload.nickname,
-              season: payload.season,
-            },
-            {
-              cancelToken: lsUserSeasonStatsRequest.token,
-            }
-          )
-          .catch(function (thrown) {
-            if (axios.isCancel(thrown)) {
-              console.log("Request canceled");
-            }
-          });
-        if (data) {
-          emitter.emit(DB_GET_USER_LS_SEASON_DATA_RETURNED, await data.data);
+        if (!payload.season) {
+          let data = await axios
+            .post(
+              `${get_cgServer()}/longShortSeason/lsUserGlobalData`,
+              {
+                nickname: payload.nickname,
+              },
+              {
+                cancelToken: lsUserSeasonStatsRequest.token,
+              }
+            )
+            .catch(function (thrown) {
+              if (axios.isCancel(thrown)) {
+                console.log("Request canceled");
+              }
+            });
+          if (data) {
+            emitter.emit(DB_GET_USER_LS_SEASON_DATA_RETURNED, await data.data);
+          }
+        } else {
+          let data = await axios
+            .post(
+              `${get_cgServer()}/longShortSeason/lsUserSeasonData`,
+              {
+                nickname: payload.nickname,
+                season: payload.season,
+              },
+              {
+                cancelToken: lsUserSeasonStatsRequest.token,
+              }
+            )
+            .catch(function (thrown) {
+              if (axios.isCancel(thrown)) {
+                console.log("Request canceled");
+              }
+            });
+          if (data) {
+            emitter.emit(DB_GET_USER_LS_SEASON_DATA_RETURNED, await data.data);
+          }
         }
       } catch (err) {
         if (err) {

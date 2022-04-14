@@ -104,7 +104,7 @@ class LSvoteResultModal extends Component {
     const { closeModal, modalOpen, modalData } = this.props;
     const { classes } = this.props;
     const fullScreen = window.innerWidth < 450;
-
+    console.log(modalData);
     let answerOK;
     if (modalData) {
       answerOK = modalData.result;
@@ -136,9 +136,14 @@ class LSvoteResultModal extends Component {
                 >
                   <Grid item>
                     {answerOK && (
-                      <Typography variant="h3" gutterBottom color="primary">
-                        To the moon!!!
-                      </Typography>
+                      <>
+                        <Typography variant="h3" gutterBottom color="primary">
+                          Well done Guru!
+                        </Typography>
+                        <Typography variant="h3" gutterBottom color="primary">
+                          Correct Forecast!
+                        </Typography>
+                      </>
                     )}
                     {!answerOK && (
                       <Typography variant="h3" gutterBottom color="secondary">

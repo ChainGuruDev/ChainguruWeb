@@ -32,6 +32,8 @@ import {
   DB_CHECK_LS_RESULT_RETURNED,
   DB_GET_USER_LS_SEASON_DATA,
   DB_GET_USER_LS_SEASON_DATA_RETURNED,
+  COINGECKO_POPULATE_FAVLIST,
+  COINGECKO_POPULATE_FAVLIST_RETURNED,
 } from "../../constants";
 
 import Store from "../../stores";
@@ -149,6 +151,10 @@ class LeaderboardMini extends Component {
   componentDidMount() {
     emitter.on(DB_GET_LEADERBOARD_RETURNED, this.dbGetLeaderboardReturned);
     emitter.on(
+      COINGECKO_POPULATE_FAVLIST_RETURNED,
+      this.activePositionDataReturned
+    );
+    emitter.on(
       DB_GET_USER_LS_SEASON_DATA_RETURNED,
       this.lsUserSeasonDataReturned
     );
@@ -166,6 +172,10 @@ class LeaderboardMini extends Component {
     emitter.removeListener(
       DB_GET_USER_LS_SEASON_DATA_RETURNED,
       this.lsUserSeasonDataReturned
+    );
+    emitter.removeListener(
+      COINGECKO_POPULATE_FAVLIST_RETURNED,
+      this.activePositionDataReturned
     );
   }
 
@@ -255,10 +265,43 @@ class LeaderboardMini extends Component {
   };
 
   lsUserSeasonDataReturned = (data) => {
+    let tokenIDs = [];
+    for (var i = 0; i < data.activePositions.length; i++) {
+      tokenIDs.push(data.activePositions[i].tokenId);
+    }
+    if (tokenIDs.length > 0) {
+      dispatcher.dispatch({
+        type: COINGECKO_POPULATE_FAVLIST,
+        tokenIDs: tokenIDs,
+        versus: "usd",
+        lsType: "userActivePositions",
+      });
+    }
     this.setState({
       hoverUserSeasonData: data,
-      loadingUserSeasonData: false,
     });
+  };
+
+  activePositionDataReturned = (data) => {
+    if (data[1] === "userActivePositions") {
+      let hoveredUserData = this.state.hoverUserSeasonData;
+      const tokenData = data[0];
+      let activePositions = [];
+      if (tokenData.length > 0) {
+        for (var i = 0; i < tokenData.length; i++) {
+          const extraTokenData = {
+            name: tokenData[i].name,
+            tokenId: tokenData[i].id,
+            image: tokenData[i].image,
+            symbol: tokenData[i].symbol,
+          };
+          activePositions.push(extraTokenData);
+        }
+      }
+      this.setState({
+        loadingUserSeasonData: false,
+      });
+    }
   };
 
   drawLeaderboard = (data) => {
@@ -334,7 +377,8 @@ class LeaderboardMini extends Component {
                 dispatcher.dispatch({
                   type: "DB_GET_USER_LS_SEASON_DATA",
                   nickname: user.nickname,
-                  season: this.state.currentSeason,
+                  season:
+                    minigame === "longShort" ? this.state.currentSeason : null,
                 })
               }
               onMouseLeave={this.handleLeaveProfile}
@@ -348,7 +392,9 @@ class LeaderboardMini extends Component {
                         style={{ textAlign: "center" }}
                         color="primary"
                       >
-                        Season Stats
+                        {minigame === "longShort"
+                          ? "Season Stats"
+                          : "Global Stats"}
                       </Typography>
                       <Divider />
                       <Typography color="inherit">
@@ -371,26 +417,104 @@ class LeaderboardMini extends Component {
                           {hoverUserSeasonData.stats.totalPredictions})
                         </Typography>
                       </Typography>
-                      {hoverUserSeasonData.longShortStrike.seasonHighLong >
-                        0 && (
-                        <Typography color="inherit">
-                          Season Best Long Combo{" "}
-                          <Typography variant="inherit" color="primary">
-                            {hoverUserSeasonData.longShortStrike.seasonHighLong}
-                          </Typography>
-                        </Typography>
-                      )}
-                      {hoverUserSeasonData.longShortStrike.seasonHighShort >
-                        0 && (
-                        <Typography color="inherit">
-                          Season Best Short Combo{" "}
-                          <Typography variant="inherit" color="primary">
-                            {
-                              hoverUserSeasonData.longShortStrike
-                                .seasonHighShort
-                            }
-                          </Typography>
-                        </Typography>
+                      {minigame === "global" ? (
+                        <>
+                          {(hoverUserSeasonData.longShortStrike.long > 0 ||
+                            hoverUserSeasonData.longShortStrike
+                              .allTimeHighLong > 0 ||
+                            hoverUserSeasonData.longShortStrike.short > 0 ||
+                            hoverUserSeasonData.longShortStrike
+                              .allTimeHighShort > 0) && <Divider />}
+                          {hoverUserSeasonData.longShortStrike.long > 0 && (
+                            <Typography color="inherit">
+                              Current Long Combo{" "}
+                              <Typography variant="inherit" color="primary">
+                                {hoverUserSeasonData.longShortStrike.long}
+                              </Typography>
+                            </Typography>
+                          )}
+                          {hoverUserSeasonData.longShortStrike.allTimeHighLong >
+                            0 && (
+                            <Typography color="inherit">
+                              All Time Best Long Combo{" "}
+                              <Typography variant="inherit" color="primary">
+                                {
+                                  hoverUserSeasonData.longShortStrike
+                                    .allTimeHighLong
+                                }
+                              </Typography>
+                            </Typography>
+                          )}
+                          {hoverUserSeasonData.longShortStrike.short > 0 && (
+                            <Typography color="inherit">
+                              Current Short Combo{" "}
+                              <Typography variant="inherit" color="primary">
+                                {hoverUserSeasonData.longShortStrike.short}
+                              </Typography>
+                            </Typography>
+                          )}
+                          {hoverUserSeasonData.longShortStrike
+                            .allTimeHighShort > 0 && (
+                            <Typography color="inherit">
+                              All Time Best Short Combo{" "}
+                              <Typography variant="inherit" color="primary">
+                                {
+                                  hoverUserSeasonData.longShortStrike
+                                    .allTimeHighShort
+                                }
+                              </Typography>
+                            </Typography>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          {(hoverUserSeasonData.longShortStrike.long > 0 ||
+                            hoverUserSeasonData.longShortStrike.seasonHighLong >
+                              0 ||
+                            hoverUserSeasonData.longShortStrike.short > 0 ||
+                            hoverUserSeasonData.longShortStrike
+                              .seasonHighShort > 0) && <Divider />}
+                          {hoverUserSeasonData.longShortStrike.long > 0 && (
+                            <Typography color="inherit">
+                              Current Long Combo{" "}
+                              <Typography variant="inherit" color="primary">
+                                {hoverUserSeasonData.longShortStrike.long}
+                              </Typography>
+                            </Typography>
+                          )}
+                          {hoverUserSeasonData.longShortStrike.seasonHighLong >
+                            0 && (
+                            <Typography color="inherit">
+                              Season Best Long Combo{" "}
+                              <Typography variant="inherit" color="primary">
+                                {
+                                  hoverUserSeasonData.longShortStrike
+                                    .seasonHighLong
+                                }
+                              </Typography>
+                            </Typography>
+                          )}
+                          {hoverUserSeasonData.longShortStrike.short > 0 && (
+                            <Typography color="inherit">
+                              Current Short Combo{" "}
+                              <Typography variant="inherit" color="primary">
+                                {hoverUserSeasonData.longShortStrike.short}
+                              </Typography>
+                            </Typography>
+                          )}
+                          {hoverUserSeasonData.longShortStrike.seasonHighShort >
+                            0 && (
+                            <Typography color="inherit">
+                              Season Best Short Combo{" "}
+                              <Typography variant="inherit" color="primary">
+                                {
+                                  hoverUserSeasonData.longShortStrike
+                                    .seasonHighShort
+                                }
+                              </Typography>
+                            </Typography>
+                          )}
+                        </>
                       )}
                       <Divider />
                       <Typography color="inherit">
