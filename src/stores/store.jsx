@@ -1836,7 +1836,6 @@ ${nonce}`,
         const noAddress = "no valid address";
         throw noAddress;
       }
-      console.log("user Login");
       //DEV ROUTE
       let _userExists = await axios.get(
         `${cg_servers[0]}/users/${payload.address}`
@@ -3685,9 +3684,9 @@ ${nonce}`,
               }
             )
             .catch(function (thrown) {
-              if (axios.isCancel(thrown)) {
-                console.log("Request canceled");
-              }
+              // if (axios.isCancel(thrown)) {
+              //   console.log("Request canceled");
+              // }
             });
           if (data) {
             emitter.emit(DB_GET_USER_LS_SEASON_DATA_RETURNED, await data.data);

@@ -178,6 +178,7 @@ class LongShort extends Component {
 
   componentDidMount() {
     emitter.on(CONNECTION_CONNECTED, this.connected);
+    emitter.on(LOGIN_RETURNED, this.connected);
     emitter.on(CONNECTION_DISCONNECTED, this.disconnected);
     emitter.on(DB_GET_USER_LS_RETURNED, this.db_getUserLS);
     emitter.on(COIN_DATA_RETURNED, this.coinDataReturned);
@@ -197,6 +198,7 @@ class LongShort extends Component {
 
   componentWillUnmount() {
     emitter.removeListener(CONNECTION_CONNECTED, this.connected);
+    emitter.removeListener(LOGIN_RETURNED, this.connected);
     emitter.removeListener(CONNECTION_DISCONNECTED, this.disconnected);
     emitter.removeListener(DB_GET_USER_LS_RETURNED, this.db_getUserLS);
     emitter.removeListener(COIN_DATA_RETURNED, this.coinDataReturned);
@@ -278,7 +280,6 @@ class LongShort extends Component {
 
   db_getUserLS = (data) => {
     const { currentSeasonStart } = this.state;
-
     var currentSeasonLS = data.filter(function (el) {
       return new Date(el.voteEnding) >= currentSeasonStart;
     });

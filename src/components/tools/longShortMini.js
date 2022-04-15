@@ -179,6 +179,9 @@ class LongShortMini extends Component {
         type: DB_GET_USERDATA,
         address: account.address,
       });
+      if (props.tokenID) {
+        this.checkTokenLS(props.tokenID);
+      }
     }
   }
 
@@ -186,6 +189,7 @@ class LongShortMini extends Component {
     if (prevProps.tokenID !== this.props.tokenID) {
       this.setState({ tokenID: this.props.tokenID });
       // console.log(this.props.tokenID);
+      this.checkTokenLS(this.props.tokenID);
     }
   }
 
@@ -278,7 +282,6 @@ class LongShortMini extends Component {
     let complete = false;
     let vote = false;
     let active = false;
-
     if (data[0]) {
       active = true;
       if (data[0].complete) {
@@ -288,7 +291,6 @@ class LongShortMini extends Component {
         vote = data[0].vote;
       }
     }
-
     this.setState({
       loadingNewVote: false,
       tokenLS_Loading: false,
@@ -403,6 +405,7 @@ class LongShortMini extends Component {
         type: DB_GET_USERDATA,
         address: account.address,
       });
+      this.checkTokenLS(data.tokenID);
       this.setState({ modalOpen: true, modalData: data, loadingResult: false });
     }
   };
@@ -501,8 +504,8 @@ class LongShortMini extends Component {
 
   render() {
     const { classes } = this.props;
-    const { loading } = this.state;
     const {
+      loading,
       countTotals,
       countLong,
       countShort,
@@ -514,17 +517,8 @@ class LongShortMini extends Component {
       shortCombo,
       tokenID,
       loadingNewVote,
+      sentimentData,
     } = this.state;
-
-    const MyComponent = React.forwardRef(function MyComponent(props, ref) {
-      //  Spread the props to the underlying DOM element.
-      return (
-        <div {...props} ref={ref}>
-          Bin
-        </div>
-      );
-    });
-
     return (
       <>
         <Card
@@ -1095,8 +1089,12 @@ class LongShortMini extends Component {
                     }}
                   >
                     <Gauge
-                      value={this.state.sentimentData.sentiment}
-                      totalVotes={this.state.sentimentData.totalActiveVotes}
+                      value={sentimentData.sentiment}
+                      totalVotes={sentimentData.totalActiveVotes}
+                      votes={[
+                        sentimentData.totalLongs,
+                        sentimentData.totalShorts,
+                      ]}
                       color={function (value) {
                         if (value < 40) {
                           return colors.cgRed;
@@ -1117,9 +1115,9 @@ class LongShortMini extends Component {
                       }}
                       valueDialClass={classes.gauge}
                       valueClass={
-                        this.state.sentimentData.sentiment > 60
+                        sentimentData.sentiment > 60
                           ? classes.valueGaugeBull
-                          : this.state.sentimentData.sentiment < 40
+                          : sentimentData.sentiment < 40
                           ? classes.valueGaugeBear
                           : classes.valueGaugeNeutral
                       }

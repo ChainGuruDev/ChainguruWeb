@@ -281,9 +281,16 @@ class LSTableActiveMini extends Component {
 
   detective = (event, id) => {
     if (event.target.id === "row") {
+      let timeframe = "short";
+      if (this.props.match.path.includes("medium")) {
+        timeframe = "medium";
+      } else if (this.props.match.path.includes("long")) {
+        timeframe = "long";
+      }
+
       event.stopPropagation = true;
       event.preventDefault = true;
-      this.nav("/short/detective/" + id);
+      this.nav(`/${timeframe}/detective/${id}`);
     }
   };
 
@@ -370,6 +377,7 @@ class LSTableActiveMini extends Component {
               marginRight: "10px",
               textAlign: "center",
               alignSelf: "center",
+              pointerEvents: "none",
             }}
           >
             <img
@@ -378,7 +386,11 @@ class LSTableActiveMini extends Component {
               src={row.image}
             />
           </Grid>
-          <Grid item style={{ alignSelf: "center" }} align="left">
+          <Grid
+            item
+            style={{ alignSelf: "center", pointerEvents: "none" }}
+            align="left"
+          >
             <Typography variant={"h4"}>{row.name}</Typography>
             <Typography variant="subtitle1">{row.symbol}</Typography>
           </Grid>
@@ -389,6 +401,7 @@ class LSTableActiveMini extends Component {
               padding: "10px 0px",
               marginRight: "0px",
               marginLeft: "auto",
+              pointerEvents: "none",
             }}
           >
             <Typography variant={"subtitle2"}>price Start</Typography>

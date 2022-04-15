@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import {
-  Typography,
   AppBar,
   Tabs,
   Tab,

@@ -6,7 +6,6 @@ import ReactHtmlParser from "react-html-parser";
 //IMPORT COMPONENTS
 import CoinSearchBar from "../components/CoinSearchBar.js";
 import PriceChart from "../components/Chart.js";
-import LSvoteResultModal from "../components/lsVoteResultModal.js";
 
 import LongShortMini from "./longShortMini.js";
 import TransactionsBig from "./transactionsBig.js";
@@ -24,7 +23,6 @@ import { colors } from "../../theme";
 
 //IMPORT MaterialUI elements
 import {
-  Box,
   Card,
   Grid,
   Button,
@@ -50,8 +48,6 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ArrowDropUpRoundedIcon from "@material-ui/icons/ArrowDropUpRounded";
 import ArrowDropDownRoundedIcon from "@material-ui/icons/ArrowDropDownRounded";
 
-import TrendingUpIcon from "@material-ui/icons/TrendingUp";
-import TrendingDownIcon from "@material-ui/icons/TrendingDown";
 //WEB LINKS ICONS
 import LinkIcon from "@material-ui/icons/Link";
 import ForumIcon from "@material-ui/icons/Forum";
@@ -72,22 +68,8 @@ import {
   SWITCH_VS_COIN_RETURNED,
   GET_COIN_PRICECHART,
   COIN_PRICECHART_RETURNED,
-  DB_GET_TOKEN_LS,
-  DB_GET_TOKEN_LS_RETURNED,
-  DB_GET_USER_TOKEN_LS,
-  DB_GET_USER_TOKEN_LS_RETURNED,
-  DB_GET_ASSETSTATS,
-  DB_GET_ASSETSTATS_RETURNED,
-  DB_CREATE_LS,
-  DB_CREATE_LS_RETURNED,
-  DB_CHECK_LS_RESULT,
-  DB_CHECK_LS_RESULT_RETURNED,
   DB_GET_USERDATA,
   DB_USERDATA_RETURNED,
-  DB_GET_PORTFOLIO_ASSET_STATS,
-  DB_GET_PORTFOLIO_ASSET_STATS_RETURNED,
-  DB_GET_PORTFOLIO,
-  DB_GET_PORTFOLIO_RETURNED,
   GETTING_NEW_CHART_DATA,
   DB_GET_ADDRESS_TX,
   DB_GET_ADDRESS_TX_RETURNED,
@@ -95,7 +77,6 @@ import {
 } from "../../constants";
 
 import {
-  ERROR_ZERION,
   ZERION_GET_ASSETSTATS,
   ZERION_ASSETSTATS_RETURNED,
 } from "../../constants/zerion.js";
@@ -108,7 +89,6 @@ const store = Store.store;
 const dispatcher = Store.dispatcher;
 
 const emitterZerion = Zerion_Store.emitter;
-const storeZerion = Zerion_Store.store;
 const dispatcherZerion = Zerion_Store.dispatcher;
 
 const CryptoNews = React.lazy(() => import("../tools/news.js"));
@@ -249,10 +229,6 @@ class CryptoDetective extends Component {
       timeFrame: "max",
       coinData: null,
       tokenLS: [],
-      userTokenLS: [],
-      lsEnabled: false,
-      lsLoaded: false,
-      modalOpen: false,
       loadingPriceChart: true,
       userWallets: userWallets,
       portfolioBalances: null,
@@ -270,10 +246,6 @@ class CryptoDetective extends Component {
     emitter.on(COIN_DATA_RETURNED, this.coinDataReturned);
     emitter.on(GRAPH_TIMEFRAME_CHANGED, this.graphTimeFrameChanged);
     emitter.on(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
-    emitter.on(DB_GET_TOKEN_LS_RETURNED, this.db_GetTokenLSReturned);
-    emitter.on(DB_GET_USER_TOKEN_LS_RETURNED, this.db_getUserTokenLSReturned);
-    emitter.on(DB_CREATE_LS_RETURNED, this.db_createLSReturned);
-    emitter.on(DB_CHECK_LS_RESULT_RETURNED, this.db_checkLSResultReturned);
     emitter.on(COIN_PRICECHART_RETURNED, this.priceChartReturned);
     emitter.on(GETTING_NEW_CHART_DATA, this.newSearch);
     emitter.on(DB_GET_ADDRESS_TX_RETURNED, this.txReturned);
@@ -312,19 +284,7 @@ class CryptoDetective extends Component {
     emitter.removeListener(COIN_DATA_RETURNED, this.coinDataReturned);
     emitter.removeListener(GRAPH_TIMEFRAME_CHANGED, this.graphTimeFrameChanged);
     emitter.removeListener(SWITCH_VS_COIN_RETURNED, this.vsCoinReturned);
-    emitter.removeListener(
-      DB_GET_TOKEN_LS_RETURNED,
-      this.db_GetTokenLSReturned
-    );
-    emitter.removeListener(
-      DB_GET_USER_TOKEN_LS_RETURNED,
-      this.db_getUserTokenLSReturned
-    );
-    emitter.removeListener(DB_CREATE_LS_RETURNED, this.db_createLSReturned);
-    emitter.removeListener(
-      DB_CHECK_LS_RESULT_RETURNED,
-      this.db_checkLSResultReturned
-    );
+
     emitterZerion.removeListener(
       ZERION_ASSETSTATS_RETURNED,
       this.db_getAssetStatsReturned
@@ -341,6 +301,7 @@ class CryptoDetective extends Component {
   componentDidUpdate(prevProps) {
     if (prevProps.match.params.coinID !== this.props.match.params.coinID) {
       if (this.props.match.params.coinID) {
+        window.scrollTo({ top: 0, behavior: "smooth" });
         this._isMounted &&
           this.setState({
             loading: true,
@@ -410,7 +371,6 @@ class CryptoDetective extends Component {
 
   userDataReturned = (data) => {
     const { coinData } = this.state;
-    const { classes } = this.props;
     let wallets = [];
     let colours = [
       colors.cgGreen,
@@ -470,15 +430,11 @@ class CryptoDetective extends Component {
   };
 
   coinDataReturned = async (data) => {
-    let account = await store.getStore("account");
     let userWallets = null;
     if (this.state.userWallets) {
       userWallets = this.state.userWallets;
     }
-    // else if (account.address) {
-    //   userWallets = [account.address];
-    // }
-    // console.log(data[0]);
+
     if (!data[0].error) {
       if (data[0].id) {
         this._isMounted &&
@@ -520,12 +476,6 @@ class CryptoDetective extends Component {
           query = data[0].symbol;
         }
       }
-
-      this._isMounted &&
-        dispatcher.dispatch({
-          type: DB_GET_TOKEN_LS,
-          tokenID: data[0].id,
-        });
       this._isMounted &&
         this.setState({
           coinData: data[0],
@@ -599,118 +549,6 @@ class CryptoDetective extends Component {
     }
   };
 
-  db_GetTokenLSReturned = async (data) => {
-    this._isMounted &&
-      dispatcher.dispatch({
-        type: DB_GET_USER_TOKEN_LS,
-        tokenID: this.state.coinData.id,
-      });
-    let results = await this.getVoteResults(data);
-    this._isMounted &&
-      this.setState({ tokenLS: data, voteResults: await results });
-  };
-
-  getVoteResults = async (data) => {
-    let voteShort = 0;
-    let voteLong = 0;
-    for (var i = 0; i < data.length; i++) {
-      data[i].vote ? voteLong++ : voteShort++;
-    }
-    let shareLong =
-      ((voteLong / (voteLong + voteShort)) * 100).toString() + "%";
-    let shareShort =
-      ((voteShort / (voteLong + voteShort)) * 100).toString() + "%";
-
-    let voteResults = {
-      long: { result: voteLong, percent: shareLong },
-      short: { result: voteShort, percent: shareShort },
-    };
-    return voteResults;
-  };
-
-  db_getUserTokenLSReturned = (data) => {
-    if (data.length > 0) {
-      //TODO CALCULATE REMAINING TIME UNTIL P&D is ready
-      // console.log({ message: "user has active LS", data: data[0] });
-      this._isMounted &&
-        this.setState({
-          userTokenLS: data[0],
-          lsEnabled: false,
-          lsLoaded: true,
-        });
-    } else {
-      // console.log({ message: "user has no LS running", data: data });
-      this._isMounted &&
-        this.setState({ userTokenLS: data, lsEnabled: true, lsLoaded: true });
-    }
-  };
-
-  timeRemaining = () => {
-    let dateEnd = new Date(this.state.userTokenLS.voteEnding);
-    let dateNow = new Date();
-    let remaining = dateEnd - dateNow;
-    // let timeLimit = 120 * 1000; // 2min for testing
-    //let timeLimit = 12 * 60 * 60 * 1000; // 12hs for beta testing
-    let timeLimit = 24 * 60 * 60 * 1000; // 24hs for release
-
-    let percentComplete = 0;
-    if (remaining <= 0) {
-      percentComplete = 100;
-    } else {
-      percentComplete = ((timeLimit - remaining) / timeLimit) * 100;
-    }
-    return percentComplete;
-  };
-
-  db_createLSReturned = (data) => {
-    // console.log(data);
-
-    this._isMounted &&
-      dispatcher.dispatch({
-        type: DB_GET_TOKEN_LS,
-        tokenID: this.state.coinData.id,
-      });
-    this._isMounted && this.setState({ userTokenLS: data, pdEnabled: false });
-  };
-
-  db_checkLSResultReturned = (data) => {
-    // console.log(data);
-    this._isMounted &&
-      dispatcher.dispatch({
-        type: DB_GET_TOKEN_LS,
-        tokenID: this.state.coinData.id,
-      });
-    this._isMounted && this.setState({ modalOpen: true, modalData: data });
-
-    //TODO: TRIGGER FUNCTION TO ADD SCREEN DIM AND DIALOG SHOWING RESULT HERE <<<
-  };
-
-  db_checkLSResult = (data) => {
-    this._isMounted &&
-      dispatcher.dispatch({
-        type: DB_CHECK_LS_RESULT,
-        tokenID: this.state.coinData.id,
-      });
-  };
-
-  long = () => {
-    this._isMounted &&
-      dispatcher.dispatch({
-        type: DB_CREATE_LS,
-        tokenID: this.state.coinData.id,
-        vote: "long",
-      });
-  };
-
-  short = () => {
-    this._isMounted &&
-      dispatcher.dispatch({
-        type: DB_CREATE_LS,
-        tokenID: this.state.coinData.id,
-        vote: "short",
-      });
-  };
-
   db_getAssetStatsReturned = (stats, balance) => {
     let portfolioBalances = [];
     let portfolioStats = {
@@ -781,17 +619,17 @@ class CryptoDetective extends Component {
 
   expandPortfolioData = (currentState) => {
     let newState = !currentState;
-    var rotated = currentState;
 
     var expandContract = document.getElementById("expandContract");
     var expandedContainer = document.getElementById("expandedItemsContainer");
 
+    var expandedHeight;
     if (!this.state.expandedHeight) {
       if (expandedContainer) {
-        var expandedHeight = expandedContainer.clientHeight + 10 + "px";
+        expandedHeight = expandedContainer.clientHeight + 10 + "px";
       }
     } else {
-      var expandedHeight = this.state.expandedHeight;
+      expandedHeight = this.state.expandedHeight;
     }
     if (expandedContainer) {
       expandedContainer.style.transform = newState
@@ -839,7 +677,7 @@ class CryptoDetective extends Component {
                   style={{ marginLeft: 5 }}
                   color="primary"
                 >
-                  {formatMoney(coinData.market_data.market_cap[vs], "0") +
+                  {formatMoneyMCAP(coinData.market_data.market_cap[vs], "0") +
                     " " +
                     getVsSymbol(vs)}
                 </Typography>
@@ -1550,9 +1388,8 @@ class CryptoDetective extends Component {
   };
 
   drawWalletsWithAsset = (portfolioBalances) => {
-    const { classes } = this.props;
     const { walletNicknames, walletColors } = this.state;
-    const { coinData, vs, voteResults } = this.state;
+    const { coinData, vs } = this.state;
 
     let walletNick;
     return portfolioBalances.map((row, i) => (
@@ -1600,7 +1437,7 @@ class CryptoDetective extends Component {
 
   dataDisplaySide = () => {
     const { classes } = this.props;
-    const { coinData, vs, voteResults } = this.state;
+    const { coinData, vs } = this.state;
 
     return (
       <div>
@@ -2340,23 +2177,9 @@ class CryptoDetective extends Component {
     );
   };
 
-  closeModal = () => {
-    this._isMounted && this.setState({ modalOpen: false });
-  };
-
-  renderModal = (data) => {
-    return (
-      <LSvoteResultModal
-        closeModal={this.closeModal}
-        modalOpen={this.state.modalOpen}
-        modalData={data}
-      />
-    );
-  };
-
   render() {
     const { classes } = this.props;
-    const { dataLoaded, coinData, modalOpen, modalData, userAuth } = this.state;
+    const { dataLoaded, coinData } = this.state;
     return (
       <div className={classes.root}>
         <Grid
@@ -2372,7 +2195,6 @@ class CryptoDetective extends Component {
             {dataLoaded && this.dataDisplayMain(coinData)}
           </Grid>
         </Grid>
-        {modalOpen && this.renderModal(modalData)}
       </div>
     );
   }

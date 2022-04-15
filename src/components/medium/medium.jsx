@@ -8,7 +8,6 @@ import {
   Tabs,
   Tab,
   Box,
-  Typography,
   CircularProgress,
   Card,
 } from "@material-ui/core";
