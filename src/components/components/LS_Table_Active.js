@@ -71,7 +71,6 @@ class LSTableActive extends Component {
     let tokenIDs = [];
     let completedLS = [];
     const dateNow = new Date(Date.now());
-
     props.data.forEach((item, i) => {
       tokenIDs.push(item.tokenID);
       //SWITCH TO >
@@ -98,6 +97,7 @@ class LSTableActive extends Component {
         type: COINGECKO_POPULATE_FAVLIST,
         tokenIDs: tokenIDs,
         versus: "usd",
+        lsType: "active",
       });
     }
 
