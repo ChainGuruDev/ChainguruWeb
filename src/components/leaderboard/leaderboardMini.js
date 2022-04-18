@@ -22,8 +22,15 @@ import {
   FormHelperText,
   FormControl,
   Select,
+  Badge,
 } from "@material-ui/core";
+
 import LocalActivityIcon from "@material-ui/icons/LocalActivity";
+import TrendingDownIcon from "@material-ui/icons/TrendingDown";
+import TrendingUpIcon from "@material-ui/icons/TrendingUp";
+import RadioButtonUncheckedIcon from "@material-ui/icons/RadioButtonUnchecked";
+import RadioButtonCheckedIcon from "@material-ui/icons/RadioButtonChecked";
+import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 
 import {
   DB_GET_LEADERBOARD,
@@ -64,6 +71,10 @@ const styles = (theme) => ({
   largeProfile: {
     width: "50px",
     height: "50px",
+  },
+  activeForecastLogo: {
+    width: "35px",
+    height: "35px",
   },
   leaderboard: {
     width: "100%",
@@ -284,7 +295,7 @@ class LeaderboardMini extends Component {
 
   activePositionDataReturned = (data) => {
     if (data[1] === "userActivePositions") {
-      let hoveredUserData = this.state.hoverUserSeasonData;
+      let hoveredUserData = { ...this.state.hoverUserSeasonData };
       const tokenData = data[0];
       let activePositions = [];
       if (tokenData.length > 0) {
@@ -298,10 +309,83 @@ class LeaderboardMini extends Component {
           activePositions.push(extraTokenData);
         }
       }
+
+      for (var i = 0; i < activePositions.length; i++) {
+        const tokenIndex = hoveredUserData.activePositions.findIndex(
+          (arrayItem) => arrayItem.tokenId === activePositions[i].tokenId
+        ); // 1
+        if (tokenIndex !== -1) {
+          hoveredUserData.activePositions[tokenIndex].name =
+            activePositions[i].name;
+          hoveredUserData.activePositions[tokenIndex].image =
+            activePositions[i].image;
+          hoveredUserData.activePositions[tokenIndex].symbol =
+            activePositions[i].symbol;
+        }
+      }
       this.setState({
+        hoverUserSeasonData: hoveredUserData,
         loadingUserSeasonData: false,
       });
     }
+  };
+
+  drawCombo = (number, type, ls) => {
+    if (number > 7 && type !== "combo") {
+      number = 7;
+    }
+    const comboMax = 7;
+    const remaining = comboMax - number;
+    const combo = [];
+
+    if (type === "combo") {
+      if (number > 7) {
+        combo.push(
+          <Typography color="primary" variant={"h4"}>
+            {number} (2x Bonus Active)
+          </Typography>
+        );
+      } else {
+        for (var i = 0; i < number; i++) {
+          combo.push(
+            <CheckCircleIcon
+              key={`active_${i}`}
+              fontSize="small"
+              color={ls === "long" ? "primary" : "secondary"}
+            />
+          );
+        }
+        for (var l = 0; l < remaining; l++) {
+          combo.push(
+            <RadioButtonUncheckedIcon
+              key={`unchecked_${l}`}
+              fontSize="small"
+              color="disabled"
+            />
+          );
+        }
+      }
+    } else {
+      for (var j = 0; j < number; j++) {
+        combo.push(
+          <RadioButtonCheckedIcon
+            key={`checked_${j}`}
+            fontSize="small"
+            color="primary"
+          />
+        );
+      }
+      for (var k = 0; k < remaining; k++) {
+        combo.push(
+          <RadioButtonUncheckedIcon
+            key={`checked_left${k}`}
+            fontSize="small"
+            color="disabled"
+          />
+        );
+      }
+    }
+    return combo;
   };
 
   drawLeaderboard = (data) => {
@@ -336,7 +420,6 @@ class LeaderboardMini extends Component {
 
     if (data.length > 0) {
       //LIMIT TOP 10
-
       // const leaderboardTop10 = data.length > 10 ? data.slice(0, 9) : data;
       const leaderboardTop10 = data;
       // leaderboardTop10.push(currentUser);
@@ -417,106 +500,7 @@ class LeaderboardMini extends Component {
                           {hoverUserSeasonData.stats.totalPredictions})
                         </Typography>
                       </Typography>
-                      {minigame === "global" ? (
-                        <>
-                          {(hoverUserSeasonData.longShortStrike.long > 0 ||
-                            hoverUserSeasonData.longShortStrike
-                              .allTimeHighLong > 0 ||
-                            hoverUserSeasonData.longShortStrike.short > 0 ||
-                            hoverUserSeasonData.longShortStrike
-                              .allTimeHighShort > 0) && <Divider />}
-                          {hoverUserSeasonData.longShortStrike.long > 0 && (
-                            <Typography color="inherit">
-                              Current Long Combo{" "}
-                              <Typography variant="inherit" color="primary">
-                                {hoverUserSeasonData.longShortStrike.long}
-                              </Typography>
-                            </Typography>
-                          )}
-                          {hoverUserSeasonData.longShortStrike.allTimeHighLong >
-                            0 && (
-                            <Typography color="inherit">
-                              All Time Best Long Combo{" "}
-                              <Typography variant="inherit" color="primary">
-                                {
-                                  hoverUserSeasonData.longShortStrike
-                                    .allTimeHighLong
-                                }
-                              </Typography>
-                            </Typography>
-                          )}
-                          {hoverUserSeasonData.longShortStrike.short > 0 && (
-                            <Typography color="inherit">
-                              Current Short Combo{" "}
-                              <Typography variant="inherit" color="primary">
-                                {hoverUserSeasonData.longShortStrike.short}
-                              </Typography>
-                            </Typography>
-                          )}
-                          {hoverUserSeasonData.longShortStrike
-                            .allTimeHighShort > 0 && (
-                            <Typography color="inherit">
-                              All Time Best Short Combo{" "}
-                              <Typography variant="inherit" color="primary">
-                                {
-                                  hoverUserSeasonData.longShortStrike
-                                    .allTimeHighShort
-                                }
-                              </Typography>
-                            </Typography>
-                          )}
-                        </>
-                      ) : (
-                        <>
-                          {(hoverUserSeasonData.longShortStrike.long > 0 ||
-                            hoverUserSeasonData.longShortStrike.seasonHighLong >
-                              0 ||
-                            hoverUserSeasonData.longShortStrike.short > 0 ||
-                            hoverUserSeasonData.longShortStrike
-                              .seasonHighShort > 0) && <Divider />}
-                          {hoverUserSeasonData.longShortStrike.long > 0 && (
-                            <Typography color="inherit">
-                              Current Long Combo{" "}
-                              <Typography variant="inherit" color="primary">
-                                {hoverUserSeasonData.longShortStrike.long}
-                              </Typography>
-                            </Typography>
-                          )}
-                          {hoverUserSeasonData.longShortStrike.seasonHighLong >
-                            0 && (
-                            <Typography color="inherit">
-                              Season Best Long Combo{" "}
-                              <Typography variant="inherit" color="primary">
-                                {
-                                  hoverUserSeasonData.longShortStrike
-                                    .seasonHighLong
-                                }
-                              </Typography>
-                            </Typography>
-                          )}
-                          {hoverUserSeasonData.longShortStrike.short > 0 && (
-                            <Typography color="inherit">
-                              Current Short Combo{" "}
-                              <Typography variant="inherit" color="primary">
-                                {hoverUserSeasonData.longShortStrike.short}
-                              </Typography>
-                            </Typography>
-                          )}
-                          {hoverUserSeasonData.longShortStrike.seasonHighShort >
-                            0 && (
-                            <Typography color="inherit">
-                              Season Best Short Combo{" "}
-                              <Typography variant="inherit" color="primary">
-                                {
-                                  hoverUserSeasonData.longShortStrike
-                                    .seasonHighShort
-                                }
-                              </Typography>
-                            </Typography>
-                          )}
-                        </>
-                      )}
-                      <Divider />
+                      <Divider variant="middle" />
                       <Typography color="inherit">
                         Bull/Bear Level{" "}
                         <Typography variant="inherit" color="primary">
@@ -551,6 +535,165 @@ class LeaderboardMini extends Component {
                           {hoverUserSeasonData.stats.totalShorts}
                         </Typography>
                       </Typography>
+                      <Divider variant="middle" />
+                      <Typography
+                        variant="h4"
+                        style={{ textAlign: "center", marginTop: 5 }}
+                        color="primary"
+                      >
+                        Active Forecasts
+                      </Typography>
+                      <Grid
+                        item
+                        container
+                        direction={"row"}
+                        justify={"space-around"}
+                        style={{ marginBottom: 5 }}
+                      >
+                        {hoverUserSeasonData.activePositions.map((forecast) => (
+                          <Grid
+                            item
+                            xs={3}
+                            spacing={2}
+                            style={{
+                              textAlign: "center",
+                              marginBottom: 5,
+                            }}
+                          >
+                            <Typography
+                              style={{
+                                textAlign: "center",
+                                textTransform: "uppercase",
+                              }}
+                            >
+                              {forecast.symbol}
+                            </Typography>
+                            <Badge
+                              anchorOrigin={{
+                                vertical: "bottom",
+                                horizontal: "right",
+                              }}
+                              overlap="circle"
+                              badgeContent={
+                                forecast.vote ? (
+                                  <TrendingUpIcon style={{ fontSize: 15 }} />
+                                ) : (
+                                  <TrendingDownIcon style={{ fontSize: 15 }} />
+                                )
+                              }
+                              color={forecast.vote ? "primary" : "secondary"}
+                            >
+                              <Avatar
+                                alt="avatar"
+                                src={forecast.image}
+                                className={classes.activeForecastLogo}
+                              />
+                            </Badge>
+                          </Grid>
+                        ))}
+                      </Grid>
+                      <Divider variant="middle" />
+                      <Typography
+                        variant="h4"
+                        style={{ textAlign: "center", marginTop: 5 }}
+                        color="primary"
+                      >
+                        Long Combo
+                      </Typography>
+                      <Grid
+                        item
+                        container
+                        direction={"row"}
+                        justify={"space-around"}
+                      >
+                        {this.drawCombo(
+                          hoverUserSeasonData.longShortStrike.long,
+                          "combo",
+                          "long"
+                        )}
+                      </Grid>
+                      {minigame === "global" ? (
+                        <>
+                          {hoverUserSeasonData.longShortStrike.allTimeHighLong >
+                            0 && (
+                            <Typography color="inherit">
+                              All Time Best Long Combo{" "}
+                              <Typography variant="inherit" color="primary">
+                                {
+                                  hoverUserSeasonData.longShortStrike
+                                    .allTimeHighLong
+                                }
+                              </Typography>
+                            </Typography>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          {hoverUserSeasonData.longShortStrike.seasonHighLong >
+                            0 && (
+                            <Typography color="inherit">
+                              Season Best Long Combo{" "}
+                              <Typography variant="inherit" color="primary">
+                                {
+                                  hoverUserSeasonData.longShortStrike
+                                    .seasonHighLong
+                                }
+                              </Typography>
+                            </Typography>
+                          )}
+                        </>
+                      )}
+                      <Divider variant="middle" />
+                      <Typography
+                        variant="h4"
+                        style={{ textAlign: "center", marginTop: 5 }}
+                        color="primary"
+                      >
+                        Short Combo
+                      </Typography>
+                      <Grid
+                        item
+                        container
+                        direction={"row"}
+                        justify={"space-around"}
+                      >
+                        {this.drawCombo(
+                          hoverUserSeasonData.longShortStrike.short,
+                          "combo",
+                          "short"
+                        )}
+                      </Grid>
+                      {minigame === "global" ? (
+                        <>
+                          {hoverUserSeasonData.longShortStrike
+                            .allTimeHighShort > 0 && (
+                            <Typography color="inherit">
+                              All Time Best Short Combo{" "}
+                              <Typography variant="inherit" color="primary">
+                                {
+                                  hoverUserSeasonData.longShortStrike
+                                    .allTimeHighShort
+                                }
+                              </Typography>
+                            </Typography>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          {hoverUserSeasonData.longShortStrike.seasonHighShort >
+                            0 && (
+                            <Typography color="inherit">
+                              Season Best Short Combo{" "}
+                              <Typography variant="inherit" color="primary">
+                                {
+                                  hoverUserSeasonData.longShortStrike
+                                    .seasonHighShort
+                                }
+                              </Typography>
+                            </Typography>
+                          )}
+                        </>
+                      )}
                     </>
                   ) : (
                     <>
