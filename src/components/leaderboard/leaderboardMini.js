@@ -287,10 +287,15 @@ class LeaderboardMini extends Component {
         versus: "usd",
         lsType: "userActivePositions",
       });
+      this.setState({
+        hoverUserSeasonData: data,
+      });
+    } else {
+      this.setState({
+        loadingUserSeasonData: false,
+        hoverUserSeasonData: data,
+      });
     }
-    this.setState({
-      hoverUserSeasonData: data,
-    });
   };
 
   activePositionDataReturned = (data) => {
@@ -535,63 +540,75 @@ class LeaderboardMini extends Component {
                           {hoverUserSeasonData.stats.totalShorts}
                         </Typography>
                       </Typography>
-                      <Divider variant="middle" />
-                      <Typography
-                        variant="h4"
-                        style={{ textAlign: "center", marginTop: 5 }}
-                        color="primary"
-                      >
-                        Active Forecasts
-                      </Typography>
-                      <Grid
-                        item
-                        container
-                        direction={"row"}
-                        justify={"space-around"}
-                        style={{ marginBottom: 5 }}
-                      >
-                        {hoverUserSeasonData.activePositions.map((forecast) => (
+                      {hoverUserSeasonData.activePositions.length > 0 && (
+                        <>
+                          <Divider variant="middle" />
+                          <Typography
+                            variant="h4"
+                            style={{ textAlign: "center", marginTop: 5 }}
+                            color="primary"
+                          >
+                            Active Forecasts
+                          </Typography>
                           <Grid
                             item
-                            xs={3}
-                            spacing={2}
-                            style={{
-                              textAlign: "center",
-                              marginBottom: 5,
-                            }}
+                            container
+                            direction={"row"}
+                            justify={"space-around"}
+                            style={{ marginBottom: 5 }}
                           >
-                            <Typography
-                              style={{
-                                textAlign: "center",
-                                textTransform: "uppercase",
-                              }}
-                            >
-                              {forecast.symbol}
-                            </Typography>
-                            <Badge
-                              anchorOrigin={{
-                                vertical: "bottom",
-                                horizontal: "right",
-                              }}
-                              overlap="circle"
-                              badgeContent={
-                                forecast.vote ? (
-                                  <TrendingUpIcon style={{ fontSize: 15 }} />
-                                ) : (
-                                  <TrendingDownIcon style={{ fontSize: 15 }} />
-                                )
-                              }
-                              color={forecast.vote ? "primary" : "secondary"}
-                            >
-                              <Avatar
-                                alt="avatar"
-                                src={forecast.image}
-                                className={classes.activeForecastLogo}
-                              />
-                            </Badge>
+                            {hoverUserSeasonData.activePositions.map(
+                              (forecast) => (
+                                <Grid
+                                  item
+                                  xs={3}
+                                  spacing={2}
+                                  style={{
+                                    textAlign: "center",
+                                    marginBottom: 5,
+                                  }}
+                                >
+                                  <Typography
+                                    style={{
+                                      textAlign: "center",
+                                      textTransform: "uppercase",
+                                    }}
+                                  >
+                                    {forecast.symbol}
+                                  </Typography>
+                                  <Badge
+                                    anchorOrigin={{
+                                      vertical: "bottom",
+                                      horizontal: "right",
+                                    }}
+                                    overlap="circle"
+                                    badgeContent={
+                                      forecast.vote ? (
+                                        <TrendingUpIcon
+                                          style={{ fontSize: 15 }}
+                                        />
+                                      ) : (
+                                        <TrendingDownIcon
+                                          style={{ fontSize: 15 }}
+                                        />
+                                      )
+                                    }
+                                    color={
+                                      forecast.vote ? "primary" : "secondary"
+                                    }
+                                  >
+                                    <Avatar
+                                      alt="avatar"
+                                      src={forecast.image}
+                                      className={classes.activeForecastLogo}
+                                    />
+                                  </Badge>
+                                </Grid>
+                              )
+                            )}
                           </Grid>
-                        ))}
-                      </Grid>
+                        </>
+                      )}
                       <Divider variant="middle" />
                       <Typography
                         variant="h4"

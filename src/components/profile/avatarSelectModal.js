@@ -10,7 +10,13 @@ import {
   Grid,
 } from "@material-ui/core";
 
-import { ERROR, DB_NEW_AVATAR, DB_NEW_AVATAR_RETURNED } from "../../constants";
+import {
+  ERROR,
+  DB_NEW_AVATAR,
+  DB_NEW_AVATAR_RETURNED,
+  DB_UTILS_RESIZE_IMG,
+  DB_UTILS_RESIZE_IMG_RETURNED,
+} from "../../constants";
 
 import { colors } from "../../theme";
 import ipfs from "../ipfs";
@@ -65,17 +71,20 @@ class AvatarSelectModal extends Component {
       error: null,
       loading: false,
       selectedAvatar: null,
+      largeImage: false,
     };
   }
 
   componentDidMount() {
     emitter.on(ERROR, this.error);
     emitter.on(DB_NEW_AVATAR_RETURNED, this.newAvatarReturned);
+    emitter.on(DB_UTILS_RESIZE_IMG_RETURNED, this.resizedReturned);
   }
 
   componentWillUnmount() {
     emitter.removeListener(ERROR, this.error);
     emitter.removeListener(DB_NEW_AVATAR_RETURNED, this.newAvatarReturned);
+    emitter.removeListener(DB_UTILS_RESIZE_IMG_RETURNED, this.resizedReturned);
   }
 
   error = (err) => {
@@ -118,20 +127,59 @@ class AvatarSelectModal extends Component {
   handleFile = (event) => {
     event.preventDefault();
     const file = event.target.files[0];
-    const reader = new window.FileReader();
-    reader.readAsArrayBuffer(file);
-    reader.onloadend = () => {
-      this.convertToBuffer(reader);
-    };
+    //Check if file provided is an image
+    if (!/image/i.test(file.type)) {
+      alert("File " + file.name + " is not an image.");
+      return false;
+    }
+    const fileSizeMB = parseFloat((file.size / Math.pow(1024, 2)).toFixed(2));
+    const maxFileSizeMB = 5;
+    if (fileSizeMB > maxFileSizeMB) {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onloadend = async () => {
+        const buffer = await this.convertToBuffer(reader);
+        this.resizeImage(file, file.name);
+      };
+    } else {
+      const reader = new FileReader();
+      reader.readAsArrayBuffer(file);
+      reader.onloadend = async () => {
+        const buffer = await this.convertToBuffer(reader);
+        this.uploadImage(buffer);
+      };
+    }
+  };
+
+  resizeImage = (file, name) => {
+    this.setState({
+      largeImage: true,
+    });
+    dispatcher.dispatch({
+      type: DB_UTILS_RESIZE_IMG,
+      file: file,
+      filename: name,
+    });
+  };
+
+  resizedReturned = (data) => {
+    console.log("image resized");
+    this.setState({
+      imagePath: "https://cloudflare-ipfs.com/ipfs/" + data.path,
+      isUploading: false,
+      largeImage: false,
+      selectedAvatar: 9,
+    });
   };
 
   convertToBuffer = async (reader) => {
     this.setState({ isUploading: true });
     const buffer = await Buffer.from(reader.result);
-    this.uploadImage(await buffer);
+    return await buffer;
   };
 
   uploadImage = async (buffer) => {
+    console.log("uploading");
     let results = await ipfs.add(buffer);
     this.setState({
       imagePath: "https://cloudflare-ipfs.com/ipfs/" + (await results.path),
@@ -312,11 +360,17 @@ class AvatarSelectModal extends Component {
                       component="span"
                       style={{
                         display: "flex",
+                        textAlign: "center",
                       }}
                       disabled={this.state.isUploading}
                     >
-                      {this.state.isUploading && <CircularProgress size={24} />}
+                      {this.state.isUploading && !this.state.largeImage && (
+                        <CircularProgress size={24} />
+                      )}
                       {!this.state.isUploading && "Upload"}
+                      {this.state.isUploading &&
+                        this.state.largeImage &&
+                        "Optimizing large file..."}
                     </Button>
                   </label>
                 </form>
