@@ -3125,7 +3125,7 @@ ${nonce}`,
 
         const portfolioAssetStats = await axios
           .post(
-            `${get_cgServer()}/zerion/assets/stats`,
+            `${cg_servers[0]}/zerion/assets/stats`,
             {
               address: payload.wallet[i],
               currency: vsCoin,
@@ -3206,7 +3206,7 @@ ${nonce}`,
 
       const portfolioAssetStats = await axios
         .post(
-          `${get_cgServer()}/zerion/assets/stats`,
+          `${cg_servers[0]}/zerion/assets/stats`,
           {
             address: payload.wallet,
             currency: vsCoin,
@@ -3265,7 +3265,7 @@ ${nonce}`,
       if (Array.isArray(payload.wallet)) {
         const charts = await axios
           .post(
-            `${get_cgServer()}/zerion/address/chart`,
+            `${cg_servers[0]}/zerion/address/chart`,
             {
               addresses: payload.wallet,
               currency: vsCoin,
@@ -3302,7 +3302,7 @@ ${nonce}`,
 
           if (Array.isArray(payload.wallet)) {
             const charts = await axios.post(
-              `${get_cgServer()}/zerion/address/chart`,
+              `${cg_servers[0]}/zerion/address/chart`,
               {
                 addresses: payload.wallet,
                 currency: vsCoin,
@@ -3450,7 +3450,7 @@ ${nonce}`,
 
     try {
       const portfolioAssets = await axios.post(
-        `${get_cgServer()}/zerion/address/positions`,
+        `${cg_servers[0]}/zerion/address/positions`,
         {
           addresses: payload.wallet,
           currency: vsCoin,
@@ -3464,7 +3464,7 @@ ${nonce}`,
       ) {
         try {
           const portfolioAssets = await axios.post(
-            `${get_cgServer()}/zerion/address/positions`,
+            `${cg_servers[0]}/zerion/address/positions`,
             {
               addresses: payload.wallet,
               currency: vsCoin,
@@ -3489,7 +3489,7 @@ ${nonce}`,
     let vsCoin = store.getStore("vsCoin");
     try {
       const assetFulldata = await axios.post(
-        `${get_cgServer()}/zerion/assets/full_info`,
+        `${cg_servers[0]}/zerion/assets/full_info`,
         {
           asset_code: payload.payload,
           currency: vsCoin,
@@ -3509,7 +3509,7 @@ ${nonce}`,
       ) {
         try {
           const assetFulldata = await axios.post(
-            `${get_cgServer()}/zerion/assets/full_info`,
+            `${cg_servers[0]}/zerion/assets/full_info`,
             {
               asset_code: payload.payload,
               currency: vsCoin,
@@ -3543,7 +3543,7 @@ ${nonce}`,
 
     try {
       const nftData = await axios.post(
-        `${get_cgServer()}/zerion/address/nft`,
+        `${cg_servers[0]}/zerion/address/nft`,
         {
           addresses: payload.addresses,
           currency: vsCoin,
@@ -3562,7 +3562,7 @@ ${nonce}`,
       ) {
         try {
           const nftData = await axios.post(
-            `${get_cgServer()}/zerion/address/nft`,
+            `${cg_servers[0]}/zerion/address/nft`,
             {
               addresses: payload.addresses,
               currency: vsCoin,
@@ -3596,7 +3596,7 @@ ${nonce}`,
 
     try {
       const nftValue = await axios.post(
-        `${get_cgServer()}/zerion/address/nft_totalvalue`,
+        `${cg_servers[0]}/zerion/address/nft_totalvalue`,
         {
           addresses: payload.addresses,
           currency: vsCoin,
@@ -3614,7 +3614,7 @@ ${nonce}`,
       ) {
         try {
           const nftValue = await axios.post(
-            `${get_cgServer()}/zerion/address/nft_totalvalue`,
+            `${cg_servers[0]}/zerion/address/nft_totalvalue`,
             {
               addresses: payload.addresses,
               currency: vsCoin,
@@ -3661,7 +3661,7 @@ ${nonce}`,
         if (!payload.season) {
           let data = await axios
             .post(
-              `${get_cgServer()}/longShortSeason/lsUserGlobalData`,
+              `${cg_servers[0]}/longShortSeason/lsUserGlobalData`,
               {
                 nickname: payload.nickname,
               },
@@ -3680,7 +3680,7 @@ ${nonce}`,
         } else {
           let data = await axios
             .post(
-              `${get_cgServer()}/longShortSeason/lsUserSeasonData`,
+              `${cg_servers[0]}/longShortSeason/lsUserSeasonData`,
               {
                 nickname: payload.nickname,
                 season: payload.season,
