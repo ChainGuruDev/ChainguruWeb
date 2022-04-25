@@ -650,18 +650,20 @@ class CoinList extends Component {
                   </TableHead>
                   <TableBody>{this.sortedList(geckoData)}</TableBody>
                   <TableFooter>
-                    <TablePagination
-                      className={classes.pagination}
-                      rowsPerPageOptions={[10, 25, 50]}
-                      count={coins}
-                      rowsPerPage={perPage}
-                      page={page}
-                      SelectProps={{
-                        inputProps: { "aria-label": "rows per page" },
-                      }}
-                      onChangeRowsPerPage={handleChangeRowsPerPage}
-                      ActionsComponent={this.TablePaginationActions}
-                    />
+                    <TableRow>
+                      <TablePagination
+                        className={classes.pagination}
+                        rowsPerPageOptions={[10, 25, 50]}
+                        count={coins}
+                        rowsPerPage={perPage}
+                        page={page}
+                        SelectProps={{
+                          inputProps: { "aria-label": "rows per page" },
+                        }}
+                        onChangeRowsPerPage={handleChangeRowsPerPage}
+                        ActionsComponent={this.TablePaginationActions}
+                      />
+                    </TableRow>
                   </TableFooter>
                 </Table>
               </TableContainer>

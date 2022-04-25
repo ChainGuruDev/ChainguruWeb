@@ -202,64 +202,63 @@ class LeaderboardMini extends Component {
     const { classes } = this.props;
     if (user.minigames.lsSeasons.length > 0) {
       return user.minigames.lsSeasons.map((item, i) => (
-        <>
-          <Tooltip
-            arrow
-            title={
-              <>
-                <Typography variant={"subtitle1"} color="primary">
-                  {item.position === 1
-                    ? `Season ${item.season} Winner`
-                    : `Season ${item.season} Player`}
+        <Tooltip
+          key={item.position}
+          arrow
+          title={
+            <>
+              <Typography variant={"subtitle1"} color="primary">
+                {item.position === 1
+                  ? `Season ${item.season} Winner`
+                  : `Season ${item.season} Player`}
+              </Typography>
+              <Typography>
+                Position:{" "}
+                <Typography variant="inline" color="primary">
+                  {item.position}
                 </Typography>
-                <Typography>
-                  Position:{" "}
-                  <Typography variant="inline" color="primary">
-                    {item.position}
-                  </Typography>
+              </Typography>
+              <Typography>
+                XP Gained:{" "}
+                <Typography variant="inline" color="primary">
+                  {item.experiencePoints}
                 </Typography>
-                <Typography>
-                  XP Gained:{" "}
-                  <Typography variant="inline" color="primary">
-                    {item.experiencePoints}
-                  </Typography>
+              </Typography>
+              <Typography>
+                Bull/Bear:{" "}
+                <Typography variant="inline" color="primary">
+                  {item.stats.bullBearProfile}
                 </Typography>
-                <Typography>
-                  Bull/Bear:{" "}
-                  <Typography variant="inline" color="primary">
-                    {item.stats.bullBearProfile}
-                  </Typography>
+              </Typography>
+              <Typography>
+                Guru Profile:{" "}
+                <Typography variant="inline" color="primary">
+                  {item.stats.guruProfile}
                 </Typography>
-                <Typography>
-                  Guru Profile:{" "}
-                  <Typography variant="inline" color="primary">
-                    {item.stats.guruProfile}
-                  </Typography>
+              </Typography>
+              <Typography>
+                Correct Forecasts:{" "}
+                <Typography variant="inline" color="primary">
+                  {item.stats.totalCorrectPercent}%{" "}
+                  {item.stats.totalPredictionsGood}/
+                  {item.stats.totalPredictions}
                 </Typography>
-                <Typography>
-                  Correct Forecasts:{" "}
-                  <Typography variant="inline" color="primary">
-                    {item.stats.totalCorrectPercent}%{" "}
-                    {item.stats.totalPredictionsGood}/
-                    {item.stats.totalPredictions}
-                  </Typography>
-                </Typography>
-              </>
-            }
-            placement="bottom"
-          >
-            <div style={{ display: "inline" }}>
-              {item.position > 3 && (
-                <MedalLSIcon className={classes.lsSeasonIcon} />
-              )}
-              {item.position <= 3 && (
-                <TrophyLSIcon
-                  className={`${classes.lsSeasonIcon} pos${item.position}`}
-                />
-              )}
-            </div>
-          </Tooltip>
-        </>
+              </Typography>
+            </>
+          }
+          placement="bottom"
+        >
+          <div style={{ display: "inline" }}>
+            {item.position > 3 && (
+              <MedalLSIcon className={classes.lsSeasonIcon} />
+            )}
+            {item.position <= 3 && (
+              <TrophyLSIcon
+                className={`${classes.lsSeasonIcon} pos${item.position}`}
+              />
+            )}
+          </div>
+        </Tooltip>
       ));
     }
   };
@@ -472,6 +471,7 @@ class LeaderboardMini extends Component {
               onMouseLeave={this.handleLeaveProfile}
             >
               <Tooltip
+                key={user.nickname}
                 title={
                   !loadingUserSeasonData ? (
                     <>
@@ -558,11 +558,11 @@ class LeaderboardMini extends Component {
                             style={{ marginBottom: 5 }}
                           >
                             {hoverUserSeasonData.activePositions.map(
-                              (forecast) => (
+                              (forecast, i) => (
                                 <Grid
+                                  key={forecast.symbol + i}
                                   item
                                   xs={3}
-                                  spacing={2}
                                   style={{
                                     textAlign: "center",
                                     marginBottom: 5,
