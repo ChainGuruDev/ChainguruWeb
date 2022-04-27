@@ -203,7 +203,6 @@ class LeaderboardMini extends Component {
     if (user.minigames.lsSeasons.length > 0) {
       return user.minigames.lsSeasons.map((item, i) => (
         <Tooltip
-          key={item.position}
           arrow
           title={
             <>
@@ -471,7 +470,6 @@ class LeaderboardMini extends Component {
               onMouseLeave={this.handleLeaveProfile}
             >
               <Tooltip
-                key={user.nickname}
                 title={
                   !loadingUserSeasonData ? (
                     <>
@@ -558,11 +556,11 @@ class LeaderboardMini extends Component {
                             style={{ marginBottom: 5 }}
                           >
                             {hoverUserSeasonData.activePositions.map(
-                              (forecast, i) => (
+                              (forecast) => (
                                 <Grid
-                                  key={forecast.symbol + i}
                                   item
                                   xs={3}
+                                  spacing={2}
                                   style={{
                                     textAlign: "center",
                                     marginBottom: 5,
@@ -973,6 +971,7 @@ class LeaderboardMini extends Component {
       validMinigames,
       season,
       validSeasons,
+      sortBy,
     } = this.state;
     const darkMode = store.getStore("theme") === "dark" ? true : false;
 
@@ -982,12 +981,15 @@ class LeaderboardMini extends Component {
           dispatcher.dispatch({
             type: DB_GET_LEADERBOARD_MINIGAME,
             minigameID: "longShort",
+            sortBy: sortBy,
+            season: "current",
           });
         } else {
           dispatcher.dispatch({
             type: DB_GET_LEADERBOARD_MINIGAME,
             minigameID: "longShort",
             season: event.target.value,
+            sortBy: sortBy,
           });
         }
         this.setState({
@@ -1007,12 +1009,15 @@ class LeaderboardMini extends Component {
             dispatcher.dispatch({
               type: DB_GET_LEADERBOARD_MINIGAME,
               minigameID: event.target.value,
+              season: "current",
+              sortBy: sortBy,
             });
           } else {
             dispatcher.dispatch({
               type: DB_GET_LEADERBOARD_MINIGAME,
               minigameID: event.target.value,
               season: this.state.season,
+              sortBy: sortBy,
             });
           }
         }

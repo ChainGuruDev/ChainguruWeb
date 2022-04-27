@@ -2654,24 +2654,50 @@ ${nonce}`,
 
   dbGetLeaderboardMinigame = async (payload) => {
     try {
-      const validGameId = ["longShort", "genesis", "global"];
-      if (validGameId.includes(payload.minigameID)) {
-        let user = store.getStore("account");
-        // IMPORTANT
-        // VOLVER A CAMBIAR LOCALBACKEND A cg_servers[1] y 0
-        let leaderboard = await axios.get(
-          `${cg_servers[1]}/users/leaderboard/${payload.minigameID}/${payload.season}`
-        );
-        let currentUser = await axios.get(
-          `${cg_servers[1]}/users/${user.address}/minigames`
-        );
-        const data = {
-          leaderboard: leaderboard.data,
-          currentUser: currentUser.data,
-        };
-        emitter.emit(DB_GET_LEADERBOARD_RETURNED, await data);
+      if (!payload.sortBy) {
+        const validGameId = ["longShort", "genesis", "global"];
+        if (validGameId.includes(payload.minigameID)) {
+          let user = store.getStore("account");
+          // IMPORTANT
+          // VOLVER A CAMBIAR LOCALBACKEND A cg_servers[1] y 0
+          let leaderboard = await axios.get(
+            `${cg_servers[1]}/users/leaderboard/${payload.minigameID}/${payload.season}`
+          );
+          let currentUser = await axios.get(
+            `${cg_servers[1]}/users/${user.address}/minigames`
+          );
+          const data = {
+            leaderboard: leaderboard.data,
+            currentUser: currentUser.data,
+          };
+          emitter.emit(DB_GET_LEADERBOARD_RETURNED, await data);
+        } else {
+          console.log("not valid gameId");
+        }
       } else {
-        console.log("not valid gameId");
+        const validGameId = ["longShort", "global"];
+        if (validGameId.includes(payload.minigameID)) {
+          let user = store.getStore("account");
+          // IMPORTANT
+          // VOLVER A CAMBIAR LOCALBACKEND A cg_servers[1] y 0
+          let leaderboard = await axios.post(
+            `${localBackend[0]}/longShortSeason/lsAllUserSeasonData`,
+            {
+              season: payload.season === "genesis" ? 0 : payload.season,
+              sortBy: payload.sortBy,
+            }
+          );
+          let currentUser = await axios.get(
+            `${localBackend[0]}/users/${user.address}/minigames`
+          );
+          const data = {
+            leaderboard: await leaderboard.data,
+            currentUser: await currentUser.data,
+          };
+          emitter.emit(DB_GET_LEADERBOARD_RETURNED, await data);
+        } else {
+          console.log("not valid gameId");
+        }
       }
     } catch (err) {
       if (err) {
