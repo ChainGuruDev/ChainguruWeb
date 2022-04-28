@@ -53,7 +53,6 @@ import {
   DB_CHECK_LS_RESULT_RETURNED,
   DB_USERDATA_RETURNED,
   DB_GET_USERDATA,
-  DB_GET_LEADERBOARD_MINIGAME,
   DB_GET_LS_SENTIMENT,
   DB_GET_LS_SENTIMENT_RETURNED,
   GECKO_GET_PRICE_AT_DATE_RETURNED,
@@ -378,10 +377,6 @@ class LongShort extends Component {
     dispatcher.dispatch({
       type: DB_GET_USERDATA,
       address: account.address,
-    });
-    dispatcher.dispatch({
-      type: DB_GET_LEADERBOARD_MINIGAME,
-      minigameID: "longShort",
     });
     this.setState({ modalOpen: true, modalData: data });
   };

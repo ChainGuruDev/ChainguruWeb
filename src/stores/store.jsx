@@ -2,6 +2,8 @@ import config from "../config";
 import Web3 from "web3";
 import Bottleneck from "bottleneck";
 import debounce from "lodash/throttle";
+import { timeConversion, getLongShortSeasonData } from "../components/helpers";
+
 import {
   ERROR,
   CONNECT_LEDGER,
@@ -617,7 +619,7 @@ class Store {
       authTokenExp: tokenExp,
       userAuth: true,
     });
-    const currentTimeServer = await axios.get(`${cg_servers[1]}/users/date`);
+    const currentTimeServer = await axios.get(`${cg_servers[0]}/users/date`);
     const currentTime = Math.floor(Date.now() / 1000);
 
     let timeLeft = 0;
@@ -1378,7 +1380,7 @@ class Store {
   _getGasPrice = async () => {
     try {
       // const url = "https://chainguru-db.herokuapp.com/gas/checkGas";
-      const url = `${cg_servers[1]}/gas/checkGas`;
+      const url = `${cg_servers[0]}/gas/checkGas`;
 
       const priceString = await axios.get(url);
       // console.log(priceString.data.result);
@@ -1805,7 +1807,7 @@ ${nonce}`,
 
   handleAuthenticate = async (user, signature) => {
     const authToken = await axios.post(
-      `${cg_servers[1]}/auth`,
+      `${cg_servers[0]}/auth`,
       {
         publicAddress: user,
         signature,
@@ -1833,7 +1835,7 @@ ${nonce}`,
     try {
       //
       // let _userExists = await axios.get(
-      //   `cg_servers[1]/users/data`,
+      //   `cg_servers[0]/users/data`,
       //   {
       //     user: payload.address,
       //   }
@@ -1844,11 +1846,11 @@ ${nonce}`,
       }
       //DEV ROUTE
       let _userExists = await axios.get(
-        `${cg_servers[1]}/users/${payload.address}`
+        `${cg_servers[0]}/users/${payload.address}`
       );
       try {
         let login = await axios.post(
-          `${cg_servers[1]}/auth/login`,
+          `${cg_servers[0]}/auth/login`,
           {
             user: _userExists.data.user,
           },
@@ -1877,7 +1879,7 @@ ${nonce}`,
       try {
         console.log("new user detected");
         let _newUser = await axios.put(
-          `${cg_servers[1]}/users/${payload.address}`
+          `${cg_servers[0]}/users/${payload.address}`
           // `http://localhost:3001/users/${payload.address}`
         );
         console.log("new user created");
@@ -1911,7 +1913,7 @@ ${nonce}`,
     //CHECK FOR UPDATES IN USER DATA
     try {
       let _user = await axios.post(
-        `${cg_servers[1]}/users/data`,
+        `${cg_servers[0]}/users/data`,
         {
           user: payload.address,
         },
@@ -1946,7 +1948,7 @@ ${nonce}`,
       try {
         console.log("new user detected");
         let _newUser = await axios.put(
-          `${cg_servers[1]}/users/${payload.address}`
+          `${cg_servers[0]}/users/${payload.address}`
           // `http://localhost:3001/users/${payload.address}`
         );
         // console.log("new user created");
@@ -1965,11 +1967,11 @@ ${nonce}`,
   };
 
   db_getCoinCategories = async (payload) => {
-    // "cg_servers[1]"
+    // "cg_servers[0]"
     let _dbCategories;
     try {
       _dbCategories = await axios.put(
-        `${cg_servers[1]}/tokens/getTokensbyIDs`,
+        `${cg_servers[0]}/tokens/getTokensbyIDs`,
         // `http://localhost:3001/tokens/getTokensbyIDs`,
         { tokenIDs: payload.tokenIDs }
       );
@@ -2043,7 +2045,7 @@ ${nonce}`,
       }
       console.log(tokenIDs);
       let _dbAddFav = await axios.put(
-        `${cg_servers[1]}/favorites/${account.address}`,
+        `${cg_servers[0]}/favorites/${account.address}`,
         // `http://localhost:3001/favorites/${account.address}`,
         { tokenID: tokenIDs[0] },
         {
@@ -2057,7 +2059,7 @@ ${nonce}`,
       emitter.emit(DB_ADD_FAVORITE_RETURNED, await _dbAddFav.data);
     } else {
       let _dbAddFav = await axios.put(
-        `${cg_servers[1]}/favorites/${account.address}`,
+        `${cg_servers[0]}/favorites/${account.address}`,
         // `http://localhost:3001/favorites/${account.address}`,
         { tokenID: payload.content },
         {
@@ -2076,7 +2078,7 @@ ${nonce}`,
     const account = store.getStore("account");
 
     let _dbDelFav = await axios.delete(
-      `${cg_servers[1]}/favorites/${account.address}`,
+      `${cg_servers[0]}/favorites/${account.address}`,
       {
         headers: {
           Authorization: `Bearer ${store.getStore("authToken")}`,
@@ -2092,7 +2094,7 @@ ${nonce}`,
     const account = store.getStore("account");
 
     let _dbAddBl = await axios.put(
-      `${cg_servers[1]}/blacklist/${account.address}`,
+      `${cg_servers[0]}/blacklist/${account.address}`,
       { tokenID: payload.content },
       {
         headers: {
@@ -2107,7 +2109,7 @@ ${nonce}`,
     const account = store.getStore("account");
 
     let _dbDelBl = await axios.delete(
-      `${cg_servers[1]}/blacklist/${account.address}`,
+      `${cg_servers[0]}/blacklist/${account.address}`,
       {
         headers: {
           Authorization: `Bearer ${store.getStore("authToken")}`,
@@ -2136,7 +2138,7 @@ ${nonce}`,
         });
     }
     let _dbAddWallet = await axios.put(
-      `${cg_servers[1]}/wallets/${account.address}`,
+      `${cg_servers[0]}/wallets/${account.address}`,
       { address: address },
       {
         headers: {
@@ -2166,7 +2168,7 @@ ${nonce}`,
     }
 
     let _dbAddWallet = await axios.put(
-      `${cg_servers[1]}/wallets/watchlist/${account.address}`,
+      `${cg_servers[0]}/wallets/watchlist/${account.address}`,
       { address: address },
       {
         headers: {
@@ -2181,7 +2183,7 @@ ${nonce}`,
     const account = store.getStore("account");
     if (data.payload.type === "portfolio") {
       let _dbDelWallet = await axios.delete(
-        `${cg_servers[1]}/wallets/${account.address}`,
+        `${cg_servers[0]}/wallets/${account.address}`,
         {
           headers: {
             Authorization: `Bearer ${store.getStore("authToken")}`,
@@ -2192,7 +2194,7 @@ ${nonce}`,
       emitter.emit(DB_DEL_WALLET_RETURNED, await _dbDelWallet.data);
     } else {
       let _dbDelWallet = await axios.delete(
-        `${cg_servers[1]}/wallets/watchlist/${account.address}`,
+        `${cg_servers[0]}/wallets/watchlist/${account.address}`,
         {
           headers: {
             Authorization: `Bearer ${store.getStore("authToken")}`,
@@ -2209,12 +2211,12 @@ ${nonce}`,
     let _dbUpdateWalletBal;
     try {
       await axios
-        .put(`${cg_servers[1]}/wallets/updateOne`, {
+        .put(`${cg_servers[0]}/wallets/updateOne`, {
           wallet: payload.wallet,
         })
         .then(
           (_dbUpdateWalletBal = await axios.put(
-            `${cg_servers[1]}/wallets/balance`,
+            `${cg_servers[0]}/wallets/balance`,
             {
               wallet: payload.wallet,
             }
@@ -2232,7 +2234,7 @@ ${nonce}`,
     const account = store.getStore("account");
     try {
       let _dbUpdateWallet = await axios.put(
-        `${cg_servers[1]}/movements/updateOne`,
+        `${cg_servers[0]}/movements/updateOne`,
         // `http://localhost:3001/movements/updateOne`,
         {
           userID: account.address,
@@ -2272,12 +2274,12 @@ ${nonce}`,
 
     try {
       await axios
-        .put(`${cg_servers[1]}/wallets/updateOne`, {
+        .put(`${cg_servers[0]}/wallets/updateOne`, {
           wallet: payload.wallet,
         })
         .then(
           (_dbUpdateWalletTX = await axios.put(
-            `${cg_servers[1]}/movements/auto`,
+            `${cg_servers[0]}/movements/auto`,
             {
               user: account.address,
               wallet: payload.wallet,
@@ -2303,7 +2305,7 @@ ${nonce}`,
     console.log(payload.newMovements);
     try {
       let _dbUpdateWallet = await axios.put(
-        `${cg_servers[1]}/movements/updateWallet`,
+        `${cg_servers[0]}/movements/updateWallet`,
         {
           userID: account.address,
           wallet: payload.selectedWallet,
@@ -2326,7 +2328,7 @@ ${nonce}`,
     // TODO UPDATE TO ONLINE DB https://chainguru-db.herokuapp.com/
     const vs = store.getStore("vsCoin");
 
-    let data = await axios.get(`${cg_servers[1]}/bluechips/guru`);
+    let data = await axios.get(`${cg_servers[0]}/bluechips/guru`);
 
     const tokenIDs = data.data[0].tokenIDs;
     try {
@@ -2346,7 +2348,7 @@ ${nonce}`,
     const vs = store.getStore("vsCoin");
 
     let data = await axios.post(
-      `${cg_servers[1]}/bluechips/user/`,
+      `${cg_servers[0]}/bluechips/user/`,
       {
         user: from,
       },
@@ -2380,7 +2382,7 @@ ${nonce}`,
       const from = getHash(user);
       try {
         let data = await axios.post(
-          `${cg_servers[1]}/blueChips/guru/check`,
+          `${cg_servers[0]}/blueChips/guru/check`,
           {
             user: user,
             from: from,
@@ -2404,7 +2406,7 @@ ${nonce}`,
     const from = store.getStore("account").address;
     try {
       let data = await axios.post(
-        `${cg_servers[1]}/bluechips/user/add`,
+        `${cg_servers[0]}/bluechips/user/add`,
         {
           user: from,
           tokenID: payload.tokenID,
@@ -2426,7 +2428,7 @@ ${nonce}`,
   db_DelBluechip = async (payload) => {
     const from = store.getStore("account").address;
     try {
-      let data = await axios.delete(`${cg_servers[1]}/bluechips/user/del`, {
+      let data = await axios.delete(`${cg_servers[0]}/bluechips/user/del`, {
         headers: {
           Authorization: `Bearer ${store.getStore("authToken")}`,
         },
@@ -2449,7 +2451,7 @@ ${nonce}`,
 
     try {
       let data = await axios.post(
-        `${cg_servers[1]}/blueChips/guru`,
+        `${cg_servers[0]}/blueChips/guru`,
         {
           user: user,
           from: from,
@@ -2473,7 +2475,7 @@ ${nonce}`,
     const user = store.getStore("account").address;
     const from = getHash(user);
     try {
-      let data = await axios.delete(`${cg_servers[1]}/blueChips/guru`, {
+      let data = await axios.delete(`${cg_servers[0]}/blueChips/guru`, {
         headers: {
           Authorization: `Bearer ${store.getStore("authToken")}`,
         },
@@ -2494,7 +2496,7 @@ ${nonce}`,
   db_getTokenLS = async (payload) => {
     try {
       let data = await axios.get(
-        `${cg_servers[1]}/longShort/token?tokenID=${payload.tokenID}`
+        `${cg_servers[0]}/longShort/token?tokenID=${payload.tokenID}`
       );
       emitter.emit(DB_GET_TOKEN_LS_RETURNED, await data.data);
     } catch (err) {
@@ -2508,7 +2510,7 @@ ${nonce}`,
     const account = await store.getStore("account");
     try {
       let data = await axios.get(
-        `${cg_servers[1]}/longShort/token?tokenID=${payload.tokenID}&userID=${account.address}`
+        `${cg_servers[0]}/longShort/token?tokenID=${payload.tokenID}&userID=${account.address}`
       );
       emitter.emit(DB_GET_USER_TOKEN_LS_RETURNED, await data.data);
     } catch (err) {
@@ -2522,7 +2524,7 @@ ${nonce}`,
     const account = store.getStore("account");
     try {
       let data = await axios.put(
-        `${cg_servers[1]}/longShort/new`,
+        `${cg_servers[0]}/longShort/new`,
         {
           tokenID: payload.tokenID,
           user: account.address,
@@ -2546,7 +2548,7 @@ ${nonce}`,
     const account = store.getStore("account");
     try {
       let data = await axios.put(
-        `${cg_servers[1]}/longShort/checkResult`,
+        `${cg_servers[0]}/longShort/checkResult`,
         {
           user: account.address,
           tokenID: payload.tokenID,
@@ -2570,7 +2572,7 @@ ${nonce}`,
     const account = store.getStore("account");
     try {
       let data = await axios.put(
-        `${cg_servers[1]}/users/${account.address}/setNickname`,
+        `${cg_servers[0]}/users/${account.address}/setNickname`,
         {
           newNickname: payload.nickname,
         },
@@ -2592,7 +2594,7 @@ ${nonce}`,
     const account = store.getStore("account");
     try {
       let data = await axios.put(
-        `${cg_servers[1]}/users/${account.address}/setAvatar`,
+        `${cg_servers[0]}/users/${account.address}/setAvatar`,
         {
           newAvatar: payload.avatar,
         },
@@ -2616,13 +2618,13 @@ ${nonce}`,
         //   `https://chainguru-db.herokuapp.com/longShort/user?userID=${account.address}&onlyActive=true`
         // );
         let data = await axios.get(
-          `${cg_servers[1]}/longShort/user?userID=${account.address}&onlyActive=true`
+          `${cg_servers[0]}/longShort/user?userID=${account.address}&onlyActive=true`
         );
 
         emitter.emit(DB_GET_USER_LS_RETURNED, await data.data);
       } else {
         let data = await axios.get(
-          `${cg_servers[1]}/longShort/user?userID=${account.address}`
+          `${cg_servers[0]}/longShort/user?userID=${account.address}`
         );
         emitter.emit(DB_GET_USER_LS_RETURNED, await data.data);
       }
@@ -2636,9 +2638,9 @@ ${nonce}`,
   db_getLeaderboard = async () => {
     try {
       let user = store.getStore("account");
-      let leaderboard = await axios.get(`${cg_servers[1]}/users/leaderboard`);
+      let leaderboard = await axios.get(`${cg_servers[0]}/users/leaderboard`);
       let currentUser = await axios.get(
-        `${cg_servers[1]}/users/${user.address}/minigames`
+        `${cg_servers[0]}/users/${user.address}/minigames`
       );
       const data = {
         leaderboard: leaderboard.data,
@@ -2654,17 +2656,20 @@ ${nonce}`,
 
   dbGetLeaderboardMinigame = async (payload) => {
     try {
-      if (!payload.sortBy) {
-        const validGameId = ["longShort", "genesis", "global"];
+      const validGameId = ["longShort", "genesis", "global"];
+      const lsSeasonData = getLongShortSeasonData();
+      //RETURN GLOBAL LEADERBOARDS
+      if (payload.minigameID === "global") {
         if (validGameId.includes(payload.minigameID)) {
           let user = store.getStore("account");
+          const season = "global";
           // IMPORTANT
-          // VOLVER A CAMBIAR LOCALBACKEND A cg_servers[1] y 0
+          // VOLVER A CAMBIAR LOCALBACKEND A cg_servers[0] y 0
           let leaderboard = await axios.get(
-            `${cg_servers[1]}/users/leaderboard/${payload.minigameID}/${payload.season}`
+            `${cg_servers[0]}/users/leaderboard/${payload.minigameID}/${season}/${payload.sortBy}`
           );
           let currentUser = await axios.get(
-            `${cg_servers[1]}/users/${user.address}/minigames`
+            `${cg_servers[0]}/users/${user.address}/minigames`
           );
           const data = {
             leaderboard: leaderboard.data,
@@ -2675,28 +2680,53 @@ ${nonce}`,
           console.log("not valid gameId");
         }
       } else {
-        const validGameId = ["longShort", "global"];
-        if (validGameId.includes(payload.minigameID)) {
-          let user = store.getStore("account");
-          // IMPORTANT
-          // VOLVER A CAMBIAR LOCALBACKEND A cg_servers[1] y 0
-          let leaderboard = await axios.post(
-            `${localBackend[0]}/longShortSeason/lsAllUserSeasonData`,
-            {
-              season: payload.season === "genesis" ? 0 : payload.season,
-              sortBy: payload.sortBy,
+        if (payload.season === lsSeasonData.currentSeason || !payload.season) {
+          if (validGameId.includes(payload.minigameID)) {
+            let season;
+            if (!payload.season) {
+              payload.season = lsSeasonData.currentSeason;
             }
-          );
-          let currentUser = await axios.get(
-            `${localBackend[0]}/users/${user.address}/minigames`
-          );
-          const data = {
-            leaderboard: await leaderboard.data,
-            currentUser: await currentUser.data,
-          };
-          emitter.emit(DB_GET_LEADERBOARD_RETURNED, await data);
+            let user = store.getStore("account");
+            // IMPORTANT
+            // VOLVER A CAMBIAR LOCALBACKEND A cg_servers[0] y 0
+            let leaderboard = await axios.post(
+              `${cg_servers[0]}/longShortSeason/lsAllUserSeasonData`,
+              { season: payload.season, sortBy: payload.sortBy }
+            );
+            let currentUser = await axios.get(
+              `${cg_servers[0]}/users/${user.address}/minigames`
+            );
+            const data = {
+              leaderboard: leaderboard.data,
+              currentUser: currentUser.data,
+            };
+            emitter.emit(DB_GET_LEADERBOARD_RETURNED, await data);
+          } else {
+            console.log("not valid gameId");
+          }
         } else {
-          console.log("not valid gameId");
+          const validGameId = ["longShort", "genesis", "global"];
+          if (validGameId.includes(payload.minigameID)) {
+            let user = store.getStore("account");
+
+            const season = payload.season;
+
+            // IMPORTANT
+            // VOLVER A CAMBIAR LOCALBACKEND A cg_servers[0] y 0
+            let leaderboard = await axios.get(
+              `${cg_servers[0]}/users/leaderboard/${payload.minigameID}/${season}/${payload.sortBy}`
+            );
+            let currentUser = await axios.get(
+              `${cg_servers[0]}/users/${user.address}/minigames`
+            );
+            const data = {
+              leaderboard: leaderboard.data,
+              currentUser: currentUser.data,
+            };
+            emitter.emit(DB_GET_LEADERBOARD_RETURNED, await data);
+          } else {
+            console.log("not valid gameId");
+          }
         }
       }
     } catch (err) {
@@ -2825,7 +2855,7 @@ ${nonce}`,
       if (data.payload.wallet.length > 1) {
         wallets = [];
 
-        assetData = await axios.post(`${cg_servers[1]}/zerion/address/assets`, {
+        assetData = await axios.post(`${cg_servers[0]}/zerion/address/assets`, {
           addresses: data.payload.wallet,
           currency: vsCoin,
           asset_code: [data.payload.assetCode],
@@ -2834,14 +2864,14 @@ ${nonce}`,
           wallets.push(assetData.data[i].wallet_address);
         }
       } else {
-        assetData = await axios.post(`${cg_servers[1]}/zerion/address/assets`, {
+        assetData = await axios.post(`${cg_servers[0]}/zerion/address/assets`, {
           addresses: wallets,
           currency: vsCoin,
           asset_code: [data.payload.assetCode],
         });
       }
       let portfolioAssetStats = await axios.post(
-        `${cg_servers[1]}/zerion/assets/stats`,
+        `${cg_servers[0]}/zerion/assets/stats`,
         {
           address: wallets,
           currency: vsCoin,
@@ -2899,7 +2929,7 @@ ${nonce}`,
 
     try {
       const portfolioAssets = await axios.post(
-        `${cg_servers[1]}/zerion/address/assets`,
+        `${cg_servers[0]}/zerion/address/assets`,
         {
           addresses: payload.wallet,
           currency: vsCoin,
@@ -2966,7 +2996,7 @@ ${nonce}`,
 
     try {
       const portfolioAssets = await axios.post(
-        `${cg_servers[1]}/zerion/address/getAssetsMultiChain`,
+        `${cg_servers[0]}/zerion/address/getAssetsMultiChain`,
         {
           addresses: payload.wallet,
           currency: vsCoin,
@@ -3054,7 +3084,7 @@ ${nonce}`,
     }
     try {
       const addressTx = await axios.post(
-        `${cg_servers[1]}/zerion/address/tx`,
+        `${cg_servers[0]}/zerion/address/tx`,
         payload
       );
       emitter.emit(DB_GET_ADDRESS_TX_RETURNED, addressTx.data);
@@ -3068,7 +3098,7 @@ ${nonce}`,
     let vsCoin = store.getStore("vsCoin");
     try {
       const portfolioStats = await axios.post(
-        `${cg_servers[1]}/zerion/address/portfolio`,
+        `${cg_servers[0]}/zerion/address/portfolio`,
         {
           addresses: payload.wallet,
           currency: vsCoin,
@@ -3088,7 +3118,7 @@ ${nonce}`,
       ) {
         try {
           const portfolioStats = await axios.post(
-            `${cg_servers[1]}/zerion/address/portfolio`,
+            `${cg_servers[0]}/zerion/address/portfolio`,
             {
               addresses: payload.wallet,
               currency: vsCoin,
@@ -3151,7 +3181,7 @@ ${nonce}`,
 
         const portfolioAssetStats = await axios
           .post(
-            `${cg_servers[1]}/zerion/assets/stats`,
+            `${cg_servers[0]}/zerion/assets/stats`,
             {
               address: payload.wallet[i],
               currency: vsCoin,
@@ -3232,7 +3262,7 @@ ${nonce}`,
 
       const portfolioAssetStats = await axios
         .post(
-          `${cg_servers[1]}/zerion/assets/stats`,
+          `${cg_servers[0]}/zerion/assets/stats`,
           {
             address: payload.wallet,
             currency: vsCoin,
@@ -3291,7 +3321,7 @@ ${nonce}`,
       if (Array.isArray(payload.wallet)) {
         const charts = await axios
           .post(
-            `${cg_servers[1]}/zerion/address/chart`,
+            `${cg_servers[0]}/zerion/address/chart`,
             {
               addresses: payload.wallet,
               currency: vsCoin,
@@ -3328,7 +3358,7 @@ ${nonce}`,
 
           if (Array.isArray(payload.wallet)) {
             const charts = await axios.post(
-              `${cg_servers[1]}/zerion/address/chart`,
+              `${cg_servers[0]}/zerion/address/chart`,
               {
                 addresses: payload.wallet,
                 currency: vsCoin,
@@ -3358,7 +3388,7 @@ ${nonce}`,
     let vsCoin = store.getStore("vsCoin");
     try {
       if (Array.isArray(payload.wallet)) {
-        let charts = await axios.post(`${cg_servers[1]}/zerion/address/tx`, {
+        let charts = await axios.post(`${cg_servers[0]}/zerion/address/tx`, {
           addresses: payload.wallet,
           currency: vsCoin,
         });
@@ -3393,7 +3423,7 @@ ${nonce}`,
 
     try {
       let data = await axios.put(
-        `${cg_servers[1]}/users/${account.address}/walletnick`,
+        `${cg_servers[0]}/users/${account.address}/walletnick`,
         {
           wallet: payload.wallet,
           nick: payload.nick,
@@ -3415,7 +3445,7 @@ ${nonce}`,
     const account = store.getStore("account");
     try {
       let data = await axios.put(
-        `${cg_servers[1]}/users/${account.address}/walletnickRemove`,
+        `${cg_servers[0]}/users/${account.address}/walletnickRemove`,
         {
           wallet: payload.wallet,
         },
@@ -3447,7 +3477,7 @@ ${nonce}`,
       if (payload.params.page) {
         searchParams.page = payload.params.page;
       }
-      let news = await axios.post(`${cg_servers[1]}/cryptopanic/getNews`, {
+      let news = await axios.post(`${cg_servers[0]}/cryptopanic/getNews`, {
         params: searchParams,
       });
       emitter.emit(DB_GET_CRYPTONEWS_RETURNED, await news.data);
@@ -3461,7 +3491,7 @@ ${nonce}`,
     let user = store.getStore("account");
     try {
       let data = await axios.get(
-        `${cg_servers[1]}/users/${user.address}/minigames`
+        `${cg_servers[0]}/users/${user.address}/minigames`
       );
       emitter.emit(DB_GET_USER_GAMESTATS_RETURNED, await data.data);
     } catch (err) {
@@ -3476,7 +3506,7 @@ ${nonce}`,
 
     try {
       const portfolioAssets = await axios.post(
-        `${cg_servers[1]}/zerion/address/positions`,
+        `${cg_servers[0]}/zerion/address/positions`,
         {
           addresses: payload.wallet,
           currency: vsCoin,
@@ -3490,7 +3520,7 @@ ${nonce}`,
       ) {
         try {
           const portfolioAssets = await axios.post(
-            `${cg_servers[1]}/zerion/address/positions`,
+            `${cg_servers[0]}/zerion/address/positions`,
             {
               addresses: payload.wallet,
               currency: vsCoin,
@@ -3515,7 +3545,7 @@ ${nonce}`,
     let vsCoin = store.getStore("vsCoin");
     try {
       const assetFulldata = await axios.post(
-        `${cg_servers[1]}/zerion/assets/full_info`,
+        `${cg_servers[0]}/zerion/assets/full_info`,
         {
           asset_code: payload.payload,
           currency: vsCoin,
@@ -3535,7 +3565,7 @@ ${nonce}`,
       ) {
         try {
           const assetFulldata = await axios.post(
-            `${cg_servers[1]}/zerion/assets/full_info`,
+            `${cg_servers[0]}/zerion/assets/full_info`,
             {
               asset_code: payload.payload,
               currency: vsCoin,
@@ -3569,7 +3599,7 @@ ${nonce}`,
 
     try {
       const nftData = await axios.post(
-        `${cg_servers[1]}/zerion/address/nft`,
+        `${cg_servers[0]}/zerion/address/nft`,
         {
           addresses: payload.addresses,
           currency: vsCoin,
@@ -3588,7 +3618,7 @@ ${nonce}`,
       ) {
         try {
           const nftData = await axios.post(
-            `${cg_servers[1]}/zerion/address/nft`,
+            `${cg_servers[0]}/zerion/address/nft`,
             {
               addresses: payload.addresses,
               currency: vsCoin,
@@ -3622,7 +3652,7 @@ ${nonce}`,
 
     try {
       const nftValue = await axios.post(
-        `${cg_servers[1]}/zerion/address/nft_totalvalue`,
+        `${cg_servers[0]}/zerion/address/nft_totalvalue`,
         {
           addresses: payload.addresses,
           currency: vsCoin,
@@ -3640,7 +3670,7 @@ ${nonce}`,
       ) {
         try {
           const nftValue = await axios.post(
-            `${cg_servers[1]}/zerion/address/nft_totalvalue`,
+            `${cg_servers[0]}/zerion/address/nft_totalvalue`,
             {
               addresses: payload.addresses,
               currency: vsCoin,
@@ -3662,7 +3692,7 @@ ${nonce}`,
 
   dbGetLSSentiment = async () => {
     try {
-      let data = await axios.get(`${cg_servers[1]}/longShort/sentiment`);
+      let data = await axios.get(`${cg_servers[0]}/longShort/sentiment`);
       emitter.emit(DB_GET_LS_SENTIMENT_RETURNED, await data.data);
     } catch (err) {
       if (err) {
@@ -3687,7 +3717,7 @@ ${nonce}`,
         if (!payload.season) {
           let data = await axios
             .post(
-              `${cg_servers[1]}/longShortSeason/lsUserGlobalData`,
+              `${cg_servers[0]}/longShortSeason/lsUserGlobalData`,
               {
                 nickname: payload.nickname,
               },
@@ -3706,7 +3736,7 @@ ${nonce}`,
         } else {
           let data = await axios
             .post(
-              `${cg_servers[1]}/longShortSeason/lsUserSeasonData`,
+              `${cg_servers[0]}/longShortSeason/lsUserSeasonData`,
               {
                 nickname: payload.nickname,
                 season: payload.season,
@@ -3753,13 +3783,13 @@ ${nonce}`,
 
         // do something with jsonResponse
       };
-      request.open("POST", `${cg_servers[1]}/utils/resize`, true);
+      request.open("POST", `${cg_servers[0]}/utils/resize`, true);
       request.send(form);
     } catch (err) {
       console.log(err.message);
     }
     // try {
-    //   let data = await axios.put(`${localBackend[0]}/utils/resize2`, {
+    //   let data = await axios.put(`${cg_servers[0]}/utils/resize2`, {
     //     form,
     //   });
     //   console.log(await data.headers);

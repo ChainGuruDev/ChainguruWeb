@@ -156,6 +156,7 @@ class LeaderboardMini extends Component {
       newSeasonEnabled: lsSeasonData.currentSeason === 2 ? true : false,
       loadingUserSeasonData: true,
       hoverUserSeasonData: null,
+      sortBy: "experiencePoints",
     };
   }
 
@@ -169,9 +170,11 @@ class LeaderboardMini extends Component {
       DB_GET_USER_LS_SEASON_DATA_RETURNED,
       this.lsUserSeasonDataReturned
     );
+    emitter.on(DB_CHECK_LS_RESULT_RETURNED, this.db_checkLSResultReturned);
     dispatcher.dispatch({
       type: DB_GET_LEADERBOARD_MINIGAME,
       minigameID: this.state.minigame,
+      season: this.state.season,
     });
   }
 
@@ -179,6 +182,10 @@ class LeaderboardMini extends Component {
     emitter.removeListener(
       DB_GET_LEADERBOARD_RETURNED,
       this.dbGetLeaderboardReturned
+    );
+    emitter.removeListener(
+      DB_CHECK_LS_RESULT_RETURNED,
+      this.db_checkLSResultReturned
     );
     emitter.removeListener(
       DB_GET_USER_LS_SEASON_DATA_RETURNED,
@@ -275,8 +282,10 @@ class LeaderboardMini extends Component {
 
   lsUserSeasonDataReturned = (data) => {
     let tokenIDs = [];
-    for (var i = 0; i < data.activePositions.length; i++) {
-      tokenIDs.push(data.activePositions[i].tokenId);
+    if (data.activePositions) {
+      for (var i = 0; i < data.activePositions.length; i++) {
+        tokenIDs.push(data.activePositions[i].tokenId);
+      }
     }
     if (tokenIDs.length > 0) {
       dispatcher.dispatch({
@@ -399,6 +408,7 @@ class LeaderboardMini extends Component {
       season,
       hoverUserSeasonData,
       loadingUserSeasonData,
+      sortBy,
     } = this.state;
     let userHasPlayed = false;
     let userInTop10 = false;
@@ -479,7 +489,7 @@ class LeaderboardMini extends Component {
                         color="primary"
                       >
                         {minigame === "longShort"
-                          ? "Season Stats"
+                          ? "Current Season Stats"
                           : "Global Stats"}
                       </Typography>
                       <Divider />
@@ -890,14 +900,74 @@ class LeaderboardMini extends Component {
                 user.minigames.lsSeasons.length > 0 &&
                 this.drawUserLSSeasonAwards(user)}
             </Grid>
-            <Grid style={{ margin: "0 0 0 auto", alignSelf: "center" }} item>
-              <Typography
-                variant={i === 0 ? "h2" : "h3"}
-                color={i === 0 ? "primary" : "inherit"}
+            {sortBy === "experiencePoints" && (
+              <Grid style={{ margin: "0 0 0 auto", alignSelf: "center" }} item>
+                <Typography
+                  variant={i === 0 ? "h2" : "h3"}
+                  color={i === 0 ? "primary" : "inherit"}
+                >
+                  {user.position}
+                </Typography>
+              </Grid>
+            )}
+            {sortBy === "seasonHighLong" && (
+              <Grid style={{ margin: "0 0 0 auto", alignSelf: "center" }} item>
+                <Typography
+                  variant={i === 0 ? "h2" : "h3"}
+                  color={i === 0 ? "primary" : "inherit"}
+                >
+                  {user.longShortStrike.seasonHighLong}
+                </Typography>
+              </Grid>
+            )}
+            {sortBy === "seasonHighShort" && (
+              <Grid style={{ margin: "0 0 0 auto", alignSelf: "center" }} item>
+                <Typography
+                  variant={i === 0 ? "h2" : "h3"}
+                  color={i === 0 ? "primary" : "inherit"}
+                >
+                  {user.longShortStrike.seasonHighShort}
+                </Typography>
+              </Grid>
+            )}
+            {sortBy === "allTimeHighLong" && (
+              <Grid style={{ margin: "0 0 0 auto", alignSelf: "center" }} item>
+                <Typography
+                  variant={i === 0 ? "h2" : "h3"}
+                  color={i === 0 ? "primary" : "inherit"}
+                >
+                  {user.longShortStrike.allTimeHighLong}
+                </Typography>
+              </Grid>
+            )}
+            {sortBy === "allTimeHighShort" && (
+              <Grid style={{ margin: "0 0 0 auto", alignSelf: "center" }} item>
+                <Typography
+                  variant={i === 0 ? "h2" : "h3"}
+                  color={i === 0 ? "primary" : "inherit"}
+                >
+                  {user.longShortStrike.allTimeHighShort}
+                </Typography>
+              </Grid>
+            )}
+            {sortBy === "guruProfile" && (
+              <Grid
+                style={{
+                  margin: "0 0 0 auto",
+                  alignSelf: "center",
+                  textAlign: "right",
+                }}
+                item
               >
-                {user.position}
-              </Typography>
-            </Grid>
+                <Typography color={i === 0 ? "primary" : "inherit"}>
+                  {user.stats.guruProfile}
+                </Typography>
+                <Typography color={i === 0 ? "primary" : "inherit"}>
+                  {user.stats.totalCorrectPercent}%
+                  {` (${user.stats.totalPredictionsGood}/${user.stats.totalPredictions})`}
+                </Typography>
+              </Grid>
+            )}
           </Grid>
           <Divider />
         </li>
@@ -962,6 +1032,43 @@ class LeaderboardMini extends Component {
     return currentAvatar;
   };
 
+  getSortMenuItems = () => {
+    if (this.state.minigame === "global") {
+      return [
+        <MenuItem value={"experiencePoints"}>XP</MenuItem>,
+        <MenuItem value={"guruProfile"}>Guru Ranking</MenuItem>,
+        <MenuItem value={"allTimeHighLong"}>ATH Long Combo</MenuItem>,
+        <MenuItem value={"allTimeHighShort"}>ATH Short Combo</MenuItem>,
+      ];
+    } else {
+      if (this.state.season >= 2) {
+        return [
+          <MenuItem value={"experiencePoints"}>XP</MenuItem>,
+          <MenuItem value={"guruProfile"}>Guru Ranking</MenuItem>,
+          <MenuItem value={"seasonHighLong"}>Season High Long Combo</MenuItem>,
+          <MenuItem value={"seasonHighShort"}>
+            Season High Short Combo
+          </MenuItem>,
+        ];
+      } else {
+        return [
+          <MenuItem value={"experiencePoints"}>XP</MenuItem>,
+          <MenuItem value={"guruProfile"}>Guru Ranking</MenuItem>,
+        ];
+      }
+    }
+  };
+
+  db_checkLSResultReturned = () => {
+    dispatcher.dispatch({
+      type: DB_GET_LEADERBOARD_MINIGAME,
+      minigameID: this.state.minigame,
+      season: this.state.season,
+      sortBy: "experiencePoints",
+    });
+    this.setState({ loading: true });
+  };
+
   render() {
     const { classes } = this.props;
     const {
@@ -977,23 +1084,16 @@ class LeaderboardMini extends Component {
 
     const handleChangeSeason = (event) => {
       if (event.target.value !== season) {
-        if (event.target.value === this.state.currentSeason) {
-          dispatcher.dispatch({
-            type: DB_GET_LEADERBOARD_MINIGAME,
-            minigameID: "longShort",
-            sortBy: sortBy,
-            season: "current",
-          });
-        } else {
-          dispatcher.dispatch({
-            type: DB_GET_LEADERBOARD_MINIGAME,
-            minigameID: "longShort",
-            season: event.target.value,
-            sortBy: sortBy,
-          });
-        }
+        dispatcher.dispatch({
+          type: DB_GET_LEADERBOARD_MINIGAME,
+          minigameID: minigame,
+          season: event.target.value,
+          sortBy: "experiencePoints",
+        });
         this.setState({
           season: event.target.value,
+          sortBy: "experiencePoints",
+          loading: true,
         });
       }
     };
@@ -1005,24 +1105,39 @@ class LeaderboardMini extends Component {
             type: DB_GET_LEADERBOARD,
           });
         } else {
-          if (this.state.season === this.state.currentSeason) {
-            dispatcher.dispatch({
-              type: DB_GET_LEADERBOARD_MINIGAME,
-              minigameID: event.target.value,
-              season: "current",
-              sortBy: sortBy,
-            });
-          } else {
-            dispatcher.dispatch({
-              type: DB_GET_LEADERBOARD_MINIGAME,
-              minigameID: event.target.value,
-              season: this.state.season,
-              sortBy: sortBy,
-            });
-          }
+          dispatcher.dispatch({
+            type: DB_GET_LEADERBOARD_MINIGAME,
+            minigameID: event.target.value,
+            season: this.state.season,
+            sortBy: "experiencePoints",
+          });
         }
         this.setState({
+          sortBy: "experiencePoints",
           minigame: event.target.value,
+          loading: true,
+        });
+      }
+    };
+
+    const handleChangeSortBy = (event) => {
+      if (event.target.value !== sortBy) {
+        if (event.target.value === "global") {
+          dispatcher.dispatch({
+            type: DB_GET_LEADERBOARD,
+            sortBy: event.target.value,
+          });
+        } else {
+          dispatcher.dispatch({
+            type: DB_GET_LEADERBOARD_MINIGAME,
+            minigameID: this.state.minigame,
+            season: this.state.season,
+            sortBy: event.target.value,
+          });
+        }
+        this.setState({
+          sortBy: event.target.value,
+          loading: true,
         });
       }
     };
@@ -1080,35 +1195,63 @@ class LeaderboardMini extends Component {
               </div>
               <Grid
                 container
-                justify={"space-between"}
-                style={{ marginTop: 5 }}
+                justify={"space-around"}
+                style={{ marginTop: 15 }}
               >
                 <Grid item>
-                  <Select
-                    labelId="rankingType-label"
-                    id="rankingType-helper"
-                    value={minigame}
-                    onChange={handleChangeRankingType}
-                  >
-                    <MenuItem value={"longShort"}>Short & Long</MenuItem>
-                    <MenuItem value={"global"}>Global Ranking</MenuItem>
-                  </Select>
-                </Grid>
-                <Grid item>
-                  {minigame !== "global" && (
+                  <FormControl variant="outlined">
+                    <InputLabel htmlFor="outlined-age-native-simple">
+                      MiniGame
+                    </InputLabel>
                     <Select
-                      labelId="season-select-label"
-                      id="season-select-helper"
-                      value={season}
-                      onChange={handleChangeSeason}
+                      labelId="rankingType-label"
+                      id="rankingType-helper"
+                      value={minigame}
+                      onChange={handleChangeRankingType}
+                      label="Minigame"
                     >
-                      <MenuItem value={"genesis"}>Genesis</MenuItem>
-                      <MenuItem value={1}>1</MenuItem>
-                      {this.state.newSeasonEnabled && (
-                        <MenuItem value={2}>2</MenuItem>
-                      )}
+                      <MenuItem value={"longShort"}>Short & Long</MenuItem>
+                      <MenuItem value={"global"}>Global Ranking</MenuItem>
                     </Select>
-                  )}
+                  </FormControl>
+                </Grid>
+                {minigame !== "global" && (
+                  <Grid item>
+                    <FormControl variant="outlined">
+                      <InputLabel htmlFor="outlined-age-native-simple">
+                        Season
+                      </InputLabel>
+                      <Select
+                        labelId="season-select-label"
+                        id="season-select-helper"
+                        value={season}
+                        onChange={handleChangeSeason}
+                        label="Season"
+                      >
+                        <MenuItem value={"genesis"}>Genesis</MenuItem>
+                        <MenuItem value={1}>1</MenuItem>
+                        {this.state.newSeasonEnabled && (
+                          <MenuItem value={2}>2</MenuItem>
+                        )}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                )}
+                <Grid item>
+                  <FormControl variant="outlined">
+                    <InputLabel htmlFor="outlined-age-native-simple">
+                      Sort By
+                    </InputLabel>
+                    <Select
+                      labelId="sortBy-label"
+                      id="sortBy-helper"
+                      value={sortBy}
+                      onChange={handleChangeSortBy}
+                      label="Sort By"
+                    >
+                      {this.getSortMenuItems()}
+                    </Select>
+                  </FormControl>
                 </Grid>
               </Grid>
               {this.state.timeRemaining && (
