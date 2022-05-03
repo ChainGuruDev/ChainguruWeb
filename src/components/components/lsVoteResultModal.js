@@ -49,10 +49,16 @@ class LSvoteResultModal extends Component {
     const fullScreen = window.innerWidth < 450;
 
     let answerOK;
-    if (modalData) {
+    let geckoData = false;
+    let forecastTimeout = false;
+    if (!modalData.type) {
+      geckoData = true;
       answerOK = modalData.result;
     } else {
-      answerOK = false;
+      if (modalData.type === "forecastDeletedAfterTimeout") {
+        forecastTimeout = true;
+      }
+      geckoData = false;
     }
 
     return (
@@ -77,35 +83,92 @@ class LSvoteResultModal extends Component {
                   justify="flex-start"
                   alignItems="stretch"
                 >
-                  <Grid item>
-                    {answerOK && (
-                      <>
-                        <Typography variant="h3" gutterBottom color="primary">
-                          Well done Guru!
-                        </Typography>
-                        <Typography variant="h3" gutterBottom color="primary">
-                          Correct Forecast!
-                        </Typography>
-                      </>
-                    )}
-                    {!answerOK && (
-                      <Typography variant="h3" gutterBottom color="secondary">
-                        Ups...
-                      </Typography>
-                    )}
-                  </Grid>
-                  <Grid item>
-                    {modalData && (
-                      <Typography>
-                        Price at Start: {modalData.priceStart}
-                      </Typography>
-                    )}
-                    {modalData && (
-                      <Typography>
-                        Price at End: {modalData.priceEnd}
-                      </Typography>
-                    )}
-                  </Grid>
+                  {geckoData ? (
+                    <>
+                      <Grid item>
+                        {answerOK && (
+                          <>
+                            <Typography
+                              variant="h3"
+                              gutterBottom
+                              color="primary"
+                            >
+                              Well done Guru!
+                            </Typography>
+                            <Typography
+                              variant="h3"
+                              gutterBottom
+                              color="primary"
+                            >
+                              Correct Forecast!
+                            </Typography>
+                          </>
+                        )}
+                        {!answerOK && (
+                          <Typography
+                            variant="h3"
+                            gutterBottom
+                            color="secondary"
+                          >
+                            Ups...
+                          </Typography>
+                        )}
+                      </Grid>
+                      <Grid item>
+                        {modalData && (
+                          <Typography>
+                            Price at Start: {modalData.priceStart}
+                          </Typography>
+                        )}
+                        {modalData && (
+                          <Typography>
+                            Price at End: {modalData.priceEnd}
+                          </Typography>
+                        )}
+                      </Grid>
+                    </>
+                  ) : (
+                    <Grid item>
+                      {forecastTimeout ? (
+                        <>
+                          <Typography
+                            variant="h3"
+                            gutterBottom
+                            color="secondary"
+                          >
+                            Forecast canceled.
+                          </Typography>
+                          <Typography variant="h4" gutterBottom>
+                            Coingecko still has no updated price data for the
+                            forecast timeframe after 6hs since forecast ended.
+                          </Typography>
+                          <Typography variant="h4" gutterBottom color="primary">
+                            This did NOT affect your XP or combo status.
+                          </Typography>
+                        </>
+                      ) : (
+                        <>
+                          <Typography
+                            variant="h4"
+                            gutterBottom
+                            color="secondary"
+                          >
+                            Coingecko is missing price data at forecast end
+                            time.
+                          </Typography>
+                          <Typography variant="h4" gutterBottom>
+                            If after {modalData.timeLeftHuman} there's still no
+                            data available for that timeframe, forecast will be
+                            automagically canceled and deleted on your next
+                            claim attempt.
+                          </Typography>
+                          <Typography variant="h4" gutterBottom color="primary">
+                            This will NOT affect your XP or combo status.
+                          </Typography>
+                        </>
+                      )}
+                    </Grid>
+                  )}
                 </Grid>
               </div>
             </div>
