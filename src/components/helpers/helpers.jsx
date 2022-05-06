@@ -240,10 +240,10 @@ function getLongShortSeasonData() {
   const dateNow = new Date();
 
   const currentSeason =
-    dateNow >= new Date(Date.parse("06-Apr-2022 23:59:59".replace(/-/g, " ")))
-      ? 2
-      : 1;
-
+    dateNow >= new Date(Date.parse("06-May-2022 23:59:59".replace(/-/g, " ")))
+      ? 3
+      : 2;
+  console.log(currentSeason);
   const seasonStart = new Date(Date.parse("07-Mar-2022".replace(/-/g, " ")));
   seasonStart.setMonth(seasonStart.getMonth() + currentSeason - 1);
   // seasonStart.setDate(7);

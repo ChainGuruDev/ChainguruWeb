@@ -150,10 +150,10 @@ class LeaderboardMini extends Component {
       minigame: "longShort",
       validMinigames: ["longShort", "global"],
       currentSeason: lsSeasonData.currentSeason,
-      validSeasons: ["genesis", 1, 2],
+      validSeasons: ["genesis", 1, 2, 3],
       season: lsSeasonData.currentSeason,
       anchorElRankingType: null,
-      newSeasonEnabled: lsSeasonData.currentSeason === 2 ? true : false,
+      newSeasonEnabled: lsSeasonData.currentSeason === 3 ? true : false,
       loadingUserSeasonData: true,
       hoverUserSeasonData: null,
       sortBy: "experiencePoints",
@@ -1230,8 +1230,9 @@ class LeaderboardMini extends Component {
                       >
                         <MenuItem value={"genesis"}>Genesis</MenuItem>
                         <MenuItem value={1}>1</MenuItem>
+                        <MenuItem value={2}>2</MenuItem>
                         {this.state.newSeasonEnabled && (
-                          <MenuItem value={2}>2</MenuItem>
+                          <MenuItem value={3}>3</MenuItem>
                         )}
                       </Select>
                     </FormControl>
