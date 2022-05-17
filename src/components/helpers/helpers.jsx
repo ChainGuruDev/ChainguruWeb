@@ -243,7 +243,6 @@ function getLongShortSeasonData() {
     dateNow >= new Date(Date.parse("06-May-2022 23:59:59".replace(/-/g, " ")))
       ? 3
       : 2;
-  console.log(currentSeason);
   const seasonStart = new Date(Date.parse("07-Mar-2022".replace(/-/g, " ")));
   seasonStart.setMonth(seasonStart.getMonth() + currentSeason - 1);
   // seasonStart.setDate(7);

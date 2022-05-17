@@ -5565,6 +5565,7 @@ const config = {
   ],
 
   umiDigitalContract: "0xd194f079cc291fe9db7dad95444eec1246413636",
+  umiDigitalContract2: "0x90ad78735BC59a5dCb6a038728684c484CD5860D",
 
   umiDigitalABI: [
     {
@@ -6105,6 +6106,7 @@ const config = {
   ],
 
   ChainguruEditionsUmi: [64, 63, 62, 61, 60, 52],
+  ChainguruEditionsUmi2: [26],
 };
 
 export default config;

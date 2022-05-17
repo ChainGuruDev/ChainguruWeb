@@ -646,7 +646,14 @@ class Store {
     );
     let betaAccessEditions = config.ChainguruEditionsUmi;
 
+    let umiNftContract2 = new web3.eth.Contract(
+      config.umiDigitalABI,
+      config.umiDigitalContract2
+    );
+    let betaAccessEditions2 = config.ChainguruEditionsUmi2;
+
     let balanceAddressArray = [];
+
     try {
       if (account.address) {
         for (var i = 0; i < betaAccessEditions.length; i++) {
@@ -658,6 +665,16 @@ class Store {
           .then((a) => {
             const access = a.includes("1");
             // console.log(access);
+
+            this.setStore({
+              hasBetaAccess: access,
+            });
+          });
+        let hasBetaAccess2 = await umiNftContract2.methods
+          .balanceOfBatch([account.address], betaAccessEditions2)
+          .call()
+          .then((a) => {
+            const access = a.includes("1");
 
             this.setStore({
               hasBetaAccess: access,

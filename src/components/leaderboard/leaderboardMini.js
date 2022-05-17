@@ -281,6 +281,7 @@ class LeaderboardMini extends Component {
   };
 
   lsUserSeasonDataReturned = (data) => {
+    console.log(data);
     let tokenIDs = [];
     if (data.activePositions) {
       for (var i = 0; i < data.activePositions.length; i++) {
