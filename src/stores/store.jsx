@@ -659,13 +659,15 @@ class Store {
         for (var i = 0; i < betaAccessEditions.length; i++) {
           balanceAddressArray.push(account.address);
         }
+        let access1 = false;
+        let access2 = false;
         let hasBetaAccess = await umiNftContract.methods
           .balanceOfBatch(balanceAddressArray, betaAccessEditions)
           .call()
           .then((a) => {
             const access = a.includes("1");
             // console.log(access);
-
+            access1 = access;
             this.setStore({
               hasBetaAccess: access,
             });
@@ -675,11 +677,18 @@ class Store {
           .call()
           .then((a) => {
             const access = a.includes("1");
-
-            this.setStore({
-              hasBetaAccess: access,
-            });
+            access2 = access;
           });
+
+        if (access1 || access2) {
+          this.setStore({
+            hasBetaAccess: true,
+          });
+        } else {
+          this.setStore({
+            hasBetaAccess: false,
+          });
+        }
       }
     } catch (e) {
       console.log(e.message);
